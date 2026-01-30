@@ -1,0 +1,238 @@
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+
+// Generate JWT token
+const generateToken = (userId) => {
+  return jwt.sign(
+    { userId }, 
+    process.env.JWT_SECRET, 
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
+};
+
+/**
+ * Register a new user
+ * POST /auth/register
+ */
+exports.register = async (req, res) => {
+  try {
+    const { email, password, fullName, phoneNumber, brandName, companyName, role } = req.body;
+
+    // Validate required fields
+    if (!email || !password || !fullName || !phoneNumber) {
+      return res.status(400).json({ 
+        error: 'Email, password, full name, and phone number are required' 
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        error: 'Please provide a valid email address' 
+      });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        error: 'Password must be at least 6 characters long' 
+      });
+    }
+
+    // Validate full name
+    if (fullName.trim().length < 2) {
+      return res.status(400).json({ 
+        error: 'Full name must be at least 2 characters' 
+      });
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      return res.status(400).json({ 
+        error: 'Please provide a valid phone number' 
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'User with this email already exists' 
+      });
+    }
+
+    // Only allow ADMIN role creation by existing admins (or first user)
+    const userCount = await User.countDocuments();
+    const finalRole = role === 'ADMIN' && userCount > 0 
+      ? 'USER' // Prevent admin creation unless it's the first user
+      : (role === 'ADMIN' && userCount === 0 ? 'ADMIN' : 'USER');
+
+    // Validate that at least one of brandName or companyName is provided
+    if (!brandName && !companyName) {
+      return res.status(400).json({ 
+        error: 'Either brand name or company name must be provided' 
+      });
+    }
+
+    // Create user
+    const user = new User({
+      email: email.toLowerCase().trim(),
+      password,
+      fullName: fullName.trim(),
+      phoneNumber: phoneNumber.trim(),
+      brandName: brandName ? brandName.trim() : null,
+      companyName: companyName ? companyName.trim() : null,
+      role: finalRole
+    });
+
+    await user.save();
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    res.status(201).json({
+      user: {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        brandName: user.brandName,
+        companyName: user.companyName,
+        role: user.role
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Mongoose validation error
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        error: messages.join(', ') 
+      });
+    }
+
+    // Mongoose duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] || 'email';
+      return res.status(400).json({ 
+        error: `User with this ${field} already exists` 
+      });
+    }
+
+    // JWT error
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(500).json({ 
+        error: 'Token generation failed. Please try again.' 
+      });
+    }
+
+    // Database connection error
+    if (error.name === 'MongoServerError' || error.message?.includes('MongoServerError')) {
+      return res.status(500).json({ 
+        error: 'Database connection error. Please try again later.' 
+      });
+    }
+
+    // Expose error message in development, generic in production
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? error.message || 'Registration failed'
+      : 'Registration failed. Please try again.';
+    
+    res.status(500).json({ 
+      error: errorMessage 
+    });
+  }
+};
+
+/**
+ * Login user
+ * POST /auth/login
+ */
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Email and password are required' 
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.status(401).json({ 
+        error: 'Invalid email or password' 
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        error: 'Invalid email or password' 
+      });
+    }
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    res.json({
+      user: {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        brandName: user.brandName,
+        companyName: user.companyName,
+        role: user.role
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      error: 'Login failed. Please try again.' 
+    });
+  }
+};
+
+/**
+ * Get current authenticated user
+ * GET /auth/me
+ */
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'User not found' 
+      });
+    }
+
+    res.json({
+      user: {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        brandName: user.brandName,
+        companyName: user.companyName,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Get me error:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve user information' 
+    });
+  }
+};
+
