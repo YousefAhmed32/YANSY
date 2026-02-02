@@ -28,13 +28,21 @@ export const trackEvent = async (eventType, data = {}) => {
   };
 
   try {
-    await fetch('/api/analytics/events', {
+    const res = await fetch('/api/analytics/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(event),
     });
+    // #region agent log
+    if (!res.ok) {
+      fetch('http://127.0.0.1:7242/ingest/38a3d643-6b14-4c50-b906-466350701782', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'analytics.js:trackEvent', message: 'analytics_response_not_ok', data: { status: res.status, statusText: res.statusText }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H3' }) }).catch(() => {});
+    }
+    // #endregion
   } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/38a3d643-6b14-4c50-b906-466350701782', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'analytics.js:trackEvent', message: 'analytics_fetch_error', data: { errMsg: error && error.message }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H2' }) }).catch(() => {});
+    // #endregion
     console.error('Analytics tracking error:', error);
   }
 };

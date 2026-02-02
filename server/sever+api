@@ -30,22 +30,17 @@ MONGODB_URI=
 */
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/yansy';
 
-/* ================== CORS — من .env مع دعم أكثر من origin ================== */
-const CLIENT_URL_RAW = process.env.CLIENT_URL || 'https://yansytech.com';
-const ALLOWED_ORIGINS = CLIENT_URL_RAW.split(',').map((s) => s.trim()).filter(Boolean);
-const corsOptions = {
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
-    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-};
+/* ================== FIX 2 — CLIENT URL غلط عندك ==================
+كان عندك:
+CLIENT_URL=http:https://yansy.com   ❌
+ده بيكسر CORS و Socket
+*/
+const CLIENT_URL = "https://yansytech.com";
 
 /* ================== SOCKET ================== */
 const io = new Server(httpServer, {
   cors: {
-    origin: ALLOWED_ORIGINS.length === 1 ? ALLOWED_ORIGINS[0] : ALLOWED_ORIGINS,
+    origin: CLIENT_URL,
     credentials: true
   }
 });
@@ -58,7 +53,10 @@ mongoose.connect(MONGODB_URI)
 app.set('trust proxy', 1);
 
 /* ================== MIDDLEWARE ================== */
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: CLIENT_URL,
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -109,11 +107,8 @@ app.use(errorHandler);
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 
 /* ================== SERVER ================== */
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 httpServer.listen(PORT, () => {
-  // #region agent log
-  require('http').request({ hostname: '127.0.0.1', port: 7242, path: '/ingest/38a3d643-6b14-4c50-b906-466350701782', method: 'POST', headers: { 'Content-Type': 'application/json' } }, () => {}).on('error', () => {}).end(JSON.stringify({ location: 'server.js:listen', message: 'server_listening', data: { port: PORT }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H2' }));
-  // #endregion
   console.log(`🚀 Server running on ${PORT}`);
 });

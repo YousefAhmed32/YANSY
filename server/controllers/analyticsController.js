@@ -2,6 +2,11 @@ const { AnalyticsEvent, Session } = require('../models/Analytics');
 
 // Track event
 exports.trackEvent = async (req, res, next) => {
+  // #region agent log
+  try {
+    require('http').request({ hostname: '127.0.0.1', port: 7242, path: '/ingest/38a3d643-6b14-4c50-b906-466350701782', method: 'POST', headers: { 'Content-Type': 'application/json' } }, () => {}).on('error', () => {}).end(JSON.stringify({ location: 'analyticsController.js:trackEvent', message: 'trackEvent_entry', data: { bodyKeys: req.body ? Object.keys(req.body) : [], hasSessionId: !!(req.body && req.body.sessionId) }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H3' }));
+  } catch (e) {}
+  // #endregion
   try {
     const {
       eventType,
@@ -31,7 +36,17 @@ exports.trackEvent = async (req, res, next) => {
     });
 
     res.status(201).json({ event });
+    // #region agent log
+    try {
+      require('http').request({ hostname: '127.0.0.1', port: 7242, path: '/ingest/38a3d643-6b14-4c50-b906-466350701782', method: 'POST', headers: { 'Content-Type': 'application/json' } }, () => {}).on('error', () => {}).end(JSON.stringify({ location: 'analyticsController.js:trackEvent', message: 'trackEvent_success', data: {}, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H3' }));
+    } catch (e) {}
+    // #endregion
   } catch (error) {
+    // #region agent log
+    try {
+      require('http').request({ hostname: '127.0.0.1', port: 7242, path: '/ingest/38a3d643-6b14-4c50-b906-466350701782', method: 'POST', headers: { 'Content-Type': 'application/json' } }, () => {}).on('error', () => {}).end(JSON.stringify({ location: 'analyticsController.js:trackEvent', message: 'trackEvent_error', data: { errMsg: error && error.message, errName: error && error.name }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H3' }));
+    } catch (e) {}
+    // #endregion
     next(error);
   }
 };

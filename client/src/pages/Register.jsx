@@ -106,13 +106,17 @@ const Register = () => {
     
     if (register.rejected.match(result)) {
       setLocalError(result.payload || 'Registration failed');
-      if (formRef.current) {
-        gsap.fromTo(
-          formRef.current.querySelector('[data-error]'),
-          { opacity: 0, y: -10 },
-          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-        );
-      }
+      // GSAP بعد أن يظهر عنصر الخطأ في الـ DOM (بعد إعادة رسم React)
+      setTimeout(() => {
+        const errorEl = formRef.current?.querySelector('[data-error]');
+        if (errorEl) {
+          gsap.fromTo(
+            errorEl,
+            { opacity: 0, y: -10 },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+          );
+        }
+      }, 0);
     }
   };
 
