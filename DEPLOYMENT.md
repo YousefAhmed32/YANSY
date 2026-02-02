@@ -1,118 +1,96 @@
-# نشر YANSY على Hostinger VPS — yansytech.com
+# Production (HTTPS) Deployment Guide
 
-دليل إعداد المشروع على VPS من Hostinger باستخدام الدومين **yansytech.com** و **api.yansytech.com**.
-
----
-
-## المتطلبات على السيرفر
-
-- **Node.js** 18+ (يفضل 20 LTS)
-- **npm** أو **pnpm**
-- **Nginx**
-- **PM2** (تشغيل الـ API)
-- **MongoDB** (محلي أو MongoDB Atlas)
-- **Git**
+This document summarizes fixes applied for moving from local development (HTTP, localhost) to production (HTTPS, remote server), and how to run the app in production.
 
 ---
 
-## 1. إعداد السيرفر (مرة واحدة)
+## 1. MongoDB Connection
 
-### الاتصال بـ VPS
+**Issue:** Environment variable name mismatch (`MONGO_URI` vs `MONGODB_URI`).
 
-```bash
-ssh root@YOUR_VPS_IP
-# أو مستخدم عادي: ssh user@YOUR_VPS_IP
-```
+**Fix:** Backend now accepts **both** `MONGODB_URI` and `MONGO_URI` (prefer `MONGODB_URI`).
 
-### تثبيت Node.js 20 (Ubuntu/Debian)
+- **Local:** `MONGODB_URI=mongodb://localhost:27017/yansy`
+- **Atlas:** `MONGODB_URI=mongodb+srv://USER:PASS@cluster.mongodb.net/yansy?retryWrites=true&w=majority`
 
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-node -v   # يجب أن يظهر v20.x
-```
-
-### تثبيت Nginx و PM2
-
-```bash
-sudo apt update
-sudo apt install -y nginx
-sudo npm install -g pm2
-```
-
-### تثبيت MongoDB (اختياري — أو استخدم Atlas)
-
-```bash
-# Ubuntu 22.04
-wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-sudo apt update
-sudo apt install -y mongodb-org
-sudo systemctl start mongod
-sudo systemctl enable mongod
-```
+Use the same variable in `.env` on the server so connection works for both local MongoDB and MongoDB Atlas.
 
 ---
 
-## 2. إعداد الدومين في Hostinger
+## 2. CORS & HTTPS
 
-1. من لوحة Hostinger: **Domains** → **yansytech.com**
-2. أضف سجل **A** يشير إلى IP الـ VPS:
-   - `yansytech.com` → `YOUR_VPS_IP`
-   - `www.yansytech.com` → `YOUR_VPS_IP`
-   - `api.yansytech.com` → `YOUR_VPS_IP`
-3. انتظر انتشار الـ DNS (قد يستغرق دقائق إلى 48 ساعة).
+**Fixes applied:**
 
----
+- CORS uses `CLIENT_URL` (comma-separated for multiple origins) with `credentials: true` for cookies/JWT.
+- In development, requests with no `origin` are allowed (e.g. Postman).
+- CORS rejection is handled in the error handler and returns `403` JSON instead of throwing.
+- `methods` and `allowedHeaders` are set for `Authorization` and `Content-Type`.
 
-## 3. استنساخ المشروع على الـ VPS
-
-```bash
-# إنشاء مجلد التطبيق
-sudo mkdir -p /var/www
-# إذا استخدمت مستخدم عادي:
-mkdir -p ~/apps
-cd ~/apps   # أو /var/www حسب الصلاحيات
-
-# استنساخ المشروع
-git clone https://github.com/YOUR_USERNAME/Company-YANSY.git yansy
-cd yansy
-```
+**Production:** Set `CLIENT_URL=https://yourdomain.com` (or multiple: `https://yourdomain.com,http://localhost:5173` for dev).
 
 ---
 
-## 4. متغيرات البيئة (Production)
+## 3. Authentication & Cookies
 
-### على السيرفر — Backend
+**Fixes applied:**
 
-```bash
-cd /var/www/yansy/server   # أو ~/apps/yansy/server
-cp .env.production.example .env
-nano .env
-```
+- **JWT cookie:** On login/register the backend sets an **httpOnly, secure (in production), sameSite** cookie in addition to returning the token in the JSON body. This allows auth to work over HTTPS with credentials.
+- **Cookie name:** `token` (same as `req.cookies.token` in auth middleware).
+- **Logout:** `POST /api/auth/logout` clears the cookie; frontend also clears `localStorage` and calls this endpoint.
+- **Duplicate submit:** Login and Register forms use a `submittingRef` guard and `disabled={loading}` so repeated clicks do not send multiple requests. Backend still returns `400` for duplicate email (MongoDB `11000`).
 
-عدّل القيم التالية:
+**Why:** Cookies are sent automatically with `withCredentials: true`; the backend accepts token from either `Authorization` header or `Cookie`, so auth works whether the frontend uses localStorage or the cookie.
+
+---
+
+## 4. Frontend (API & Redirects)
+
+**Fixes applied:**
+
+- **Axios:** `withCredentials: true` on the API client so cookies are sent on cross-origin HTTPS requests.
+- **Token:** Request interceptor sends `Authorization: Bearer <token>` from `localStorage` when present; cookie is sent automatically.
+- **401 handling:** On 401, token is removed from `localStorage` and user is redirected to `/login` only when not already on a public route (`/`, `/home`, `/login`, `/register`).
+- **Redirect after login/register:** Existing `useEffect` that watches `isAuthenticated` and calls `navigate('/app/dashboard')` is unchanged.
+- **Session restore:** On app load, `getMe()` is always dispatched once so that cookie-only auth (e.g. after clearing localStorage) still restores the user.
+- **Analytics:** `trackEvent` and session-end use `VITE_API_URL` as base URL so production requests hit the backend over HTTPS instead of relative `/api/...`.
+
+**Production:** Set `VITE_API_URL=https://api.yourdomain.com/api` and `VITE_SOCKET_URL=https://api.yourdomain.com` in the client build env (e.g. `.env.production` or CI).
+
+---
+
+## 5. Debugging & Common Errors
+
+| Error | Cause | Fix |
+|-------|--------|-----|
+| **Invalid email/password** | Wrong credentials or user not found. | Check email/password; ensure user exists and password hash matches. |
+| **Token expired** | JWT past `JWT_EXPIRES_IN`. | User must log in again; optionally increase `JWT_EXPIRES_IN` (e.g. `7d`). |
+| **Database connection error** | Wrong `MONGODB_URI`, network, or Atlas IP allowlist. | Verify URI, network, and Atlas “Network Access” allowlist (e.g. `0.0.0.0/0` for VPS). |
+| **Not allowed by CORS** | Frontend origin not in `CLIENT_URL`. | Add the exact frontend origin (e.g. `https://yansytech.com`) to `CLIENT_URL`. |
+| **401 on protected routes** | No token/cookie or invalid/expired token. | Ensure login sets cookie and/or localStorage; use HTTPS so secure cookies work; clear cache/cookies and log in again. |
+
+**Logging:** Backend uses `console.error` for auth and DB errors; ensure `NODE_ENV=production` and log aggregation is configured on the server.
+
+---
+
+## 6. Environment Variables
+
+### Backend (server `.env`)
 
 ```env
 PORT=5000
 NODE_ENV=production
-MONGO_URI=mongodb://localhost:27017/yansy
-# أو MongoDB Atlas: mongodb+srv://user:pass@cluster.mongodb.net/yansy
-JWT_SECRET=استخدم_سلسلة_عشوائية_قوية
+
+# Prefer MONGODB_URI; MONGO_URI also supported
+MONGODB_URI=mongodb+srv://USER:PASS@cluster.mongodb.net/yansy?retryWrites=true&w=majority
+
+JWT_SECRET=<strong-secret e.g. openssl rand -base64 32>
 JWT_EXPIRES_IN=7d
+
+# Exact frontend origin(s), comma-separated
 CLIENT_URL=https://yansytech.com
 ```
 
-### قبل البناء — Frontend
-
-على جهازك أو على السيرفر قبل تشغيل `npm run build`:
-
-```bash
-cd client
-cp .env.production.example .env.production
-```
-
-تأكد أن القيم:
+### Frontend (build / `.env.production`)
 
 ```env
 VITE_API_URL=https://api.yansytech.com/api
@@ -121,87 +99,21 @@ VITE_SOCKET_URL=https://api.yansytech.com
 
 ---
 
-## 5. Nginx
+## 7. Cache & Cookies
 
-### نسخ الإعداد
+If users see old behavior or auth issues after deployment:
 
-```bash
-sudo cp deploy/nginx/yansytech.com.conf /etc/nginx/sites-available/yansytech.com
-sudo ln -sf /etc/nginx/sites-available/yansytech.com /etc/nginx/sites-enabled/
-# أو على بعض التوزيعات:
-# sudo cp deploy/nginx/yansytech.com.conf /etc/nginx/conf.d/yansytech.com.conf
-```
-
-### التحقق وإعادة التشغيل
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
+1. **Hard refresh:** Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac).
+2. **Clear site data:** DevTools → Application → Storage → “Clear site data” (or clear cookies and localStorage for the site).
+3. **Log out and log in again** so a new JWT and cookie are set with the correct domain and flags.
 
 ---
 
-## 6. أول نشر (Deploy)
+## 8. Checklist Before Go-Live
 
-```bash
-cd /var/www/yansy   # أو ~/apps/yansy
-chmod +x deploy/deploy.sh
-./deploy/deploy.sh
-```
-
-السكربت يقوم بـ:
-
-- بناء الـ client مع `VITE_API_URL` و `VITE_SOCKET_URL`
-- نسخ مخرجات البناء إلى `/var/www/yansytech.com`
-- تثبيت تبعيات الـ server
-- تشغيل/إعادة تشغيل الـ API عبر PM2
-
----
-
-## 7. SSL (HTTPS) مع Let's Encrypt
-
-بعد التأكد أن `yansytech.com` و `api.yansytech.com` يشيران لـ VPS:
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d yansytech.com -d www.yansytech.com -d api.yansytech.com
-```
-
-ثم في `deploy/nginx/yansytech.com.conf`:
-
-- أزل التعليق عن بلوكات `server { listen 443 ... }` للـ frontend والـ API.
-- أضف `return 301 https://...` في بلوكات الـ `listen 80` إذا رغبت بإعادة توجيه HTTP إلى HTTPS.
-- أعد تحميل Nginx: `sudo nginx -t && sudo systemctl reload nginx`.
-
----
-
-## 8. أوامر مفيدة
-
-| المهمة              | الأمر |
-|---------------------|--------|
-| إعادة تشغيل الـ API | `pm2 restart yansy-api` |
-| عرض السجلات         | `pm2 logs yansy-api` |
-| حالة التطبيق         | `pm2 status` |
-| إعادة نشر كامل       | `./deploy/deploy.sh` |
-
----
-
-## 9. تحديث المشروع لاحقاً
-
-```bash
-cd /var/www/yansy   # أو ~/apps/yansy
-git pull
-./deploy/deploy.sh
-```
-
----
-
-## ملخص الروابط
-
-| الخدمة   | الرابط |
-|----------|--------|
-| الموقع   | https://yansytech.com |
-| الـ API  | https://api.yansytech.com |
-| Health   | https://api.yansytech.com/api/health |
-
-بعد تطبيق الخطوات أعلاه يكون المشروع جاهزاً للعمل على Hostinger VPS على دومين yansytech.com.
+- [ ] Backend `.env`: `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (HTTPS frontend URL).
+- [ ] Frontend build env: `VITE_API_URL` and `VITE_SOCKET_URL` point to backend over HTTPS.
+- [ ] CORS: `CLIENT_URL` includes the exact frontend origin (no trailing slash).
+- [ ] MongoDB Atlas (if used): Network Access allows your server IP (or `0.0.0.0/0` for testing).
+- [ ] HTTPS: Backend and frontend both served over HTTPS so secure cookies work.
+- [ ] After deploy: Test login, register, protected routes, and logout; clear cookies/cache if needed.

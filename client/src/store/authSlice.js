@@ -57,7 +57,12 @@ export const getMe = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk('auth/logout', async () => {
+export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
+  try {
+    await api.post('/auth/logout');
+  } catch {
+    // Ignore network errors; still clear local state
+  }
   localStorage.removeItem('token');
 });
 

@@ -23,23 +23,23 @@ const feedbackRoutes = require('./routes/feedback');
 const app = express();
 const httpServer = createServer(app);
 
-/* ================== FIX 1 — ENV NAMES ==================
-أنت في .env كاتب:
-MONGODB_URI=
-لكن هنا كنت مستخدم MONGO_URI
-*/
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/yansy';
+/* ================== MongoDB — support both MONGODB_URI and MONGO_URI ================== */
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/yansy';
 
-/* ================== CORS — من .env مع دعم أكثر من origin ================== */
-const CLIENT_URL_RAW = process.env.CLIENT_URL || 'https://yansytech.com';
+/* ================== CORS — multiple origins, credentials for HTTPS/cookies ================== */
+const CLIENT_URL_RAW = process.env.CLIENT_URL || (process.env.NODE_ENV === 'production' ? 'https://yansytech.com' : 'http://localhost:5173,http://127.0.0.1:5173');
 const ALLOWED_ORIGINS = CLIENT_URL_RAW.split(',').map((s) => s.trim()).filter(Boolean);
 const corsOptions = {
   origin: (origin, cb) => {
+    // Allow requests with no origin (e.g. Postman, same-origin, server-side)
     if (!origin) return cb(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    if (process.env.NODE_ENV === 'development') return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 /* ================== SOCKET ================== */

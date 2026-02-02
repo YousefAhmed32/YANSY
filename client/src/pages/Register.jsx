@@ -24,6 +24,7 @@ const Register = () => {
   const formRef = useRef(null);
   const personalSectionRef = useRef(null);
   const businessSectionRef = useRef(null);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -73,8 +74,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     setLocalError('');
-    
+
     if (!email || !password || !fullName || !phoneNumber) {
       setLocalError('Please fill in all required fields');
       return;
@@ -95,18 +97,19 @@ const Register = () => {
       return;
     }
 
-    const result = await dispatch(register({ 
-      email, 
-      password, 
-      fullName, 
-      phoneNumber, 
-      brandName: brandName || null, 
-      companyName: companyName || null 
+    submittingRef.current = true;
+    const result = await dispatch(register({
+      email,
+      password,
+      fullName,
+      phoneNumber,
+      brandName: brandName || null,
+      companyName: companyName || null
     }));
-    
+    submittingRef.current = false;
+
     if (register.rejected.match(result)) {
       setLocalError(result.payload || 'Registration failed');
-      // GSAP بعد أن يظهر عنصر الخطأ في الـ DOM (بعد إعادة رسم React)
       setTimeout(() => {
         const errorEl = formRef.current?.querySelector('[data-error]');
         if (errorEl) {

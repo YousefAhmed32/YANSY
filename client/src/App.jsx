@@ -30,15 +30,9 @@ function App() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    // Session initialization
     initSession();
-    
-    // Verify token on app load
-    const token = localStorage.getItem('token');
-    if (token) {
-      dispatch(getMe());
-    }
-    // Theme and language are now handled by context providers
+    // Restore session: try cookie (HTTPS) or localStorage token; getMe() sends credentials
+    dispatch(getMe());
   }, [dispatch]);
 
   return (

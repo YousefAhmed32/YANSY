@@ -1,18 +1,45 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const COOKIE_NAME = 'token';
+const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 // Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign(
-    { userId }, 
-    process.env.JWT_SECRET, 
+    { userId },
+    process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
 
 /**
+ * Set JWT as httpOnly cookie for HTTPS production (and optional local).
+ * Frontend can still use Authorization header from localStorage; cookie is sent automatically.
+ */
+const setTokenCookie = (res, token) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = {
+    httpOnly: true,
+    maxAge: COOKIE_MAX_AGE_MS,
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
+    path: '/'
+  };
+  res.cookie(COOKIE_NAME, token, cookieOptions);
+};
+
+/**
+ * Clear JWT cookie (for logout).
+ */
+const clearTokenCookie = (res) => {
+  res.clearCookie(COOKIE_NAME, { path: '/', httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production' });
+};
+
+/**
  * Register a new user
  * POST /auth/register
+ * Duplicate email returns 400 (handled below); double-submit from client is mitigated by frontend disabled state.
  */
 exports.register = async (req, res) => {
   try {
@@ -89,8 +116,9 @@ exports.register = async (req, res) => {
 
     await user.save();
 
-    // Generate token
+    // Generate token and set httpOnly cookie (HTTPS-safe)
     const token = generateToken(user._id);
+    setTokenCookie(res, token);
 
     res.status(201).json({
       user: {
@@ -180,8 +208,9 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate token and set httpOnly cookie (HTTPS-safe)
     const token = generateToken(user._id);
+    setTokenCookie(res, token);
 
     res.json({
       user: {
@@ -210,10 +239,10 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        error: 'User not found' 
+      return res.status(404).json({
+        error: 'User not found'
       });
     }
 
@@ -230,9 +259,18 @@ exports.getMe = async (req, res) => {
     });
   } catch (error) {
     console.error('Get me error:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve user information' 
+    res.status(500).json({
+      error: 'Failed to retrieve user information'
     });
   }
+};
+
+/**
+ * Logout — clear JWT cookie so cookie-based auth is cleared on server.
+ * POST /auth/logout
+ */
+exports.logout = (req, res) => {
+  clearTokenCookie(res);
+  res.json({ message: 'Logged out' });
 };
 

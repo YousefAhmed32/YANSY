@@ -24,6 +24,7 @@ const Login = () => {
   const titleRef = useRef(null);
   const subtitleRef = useRef(null);
   const formRef = useRef(null);
+  const submittingRef = useRef(false);
 
   // Theme-aware classes
   const bgClass = isDark ? 'bg-black' : 'bg-white';
@@ -73,14 +74,17 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     setLocalError('');
-    
+
     if (!email || !password) {
       setLocalError(t('auth.fillAllFields', 'Please fill in all fields'));
       return;
     }
 
+    submittingRef.current = true;
     const result = await dispatch(login({ email, password }));
+    submittingRef.current = false;
     
     if (login.rejected.match(result)) {
       setLocalError(result.payload || t('auth.loginFailed', 'Login failed'));

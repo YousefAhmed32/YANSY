@@ -4,6 +4,10 @@ let sessionStartTime = Date.now();
 let scrollDepth = 0;
 let sectionViewTimes = {};
 
+// Same base URL as api.js so production (HTTPS) requests hit backend
+const getApiBase = () =>
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000/api' : '');
+
 // Initialize session
 export const initSession = () => {
   sessionId = localStorage.getItem('sessionId') || generateSessionId();
@@ -27,8 +31,11 @@ export const trackEvent = async (eventType, data = {}) => {
     ...data,
   };
 
+  const base = getApiBase();
+  if (!base) return;
+
   try {
-    const res = await fetch('/api/analytics/events', {
+    const res = await fetch(`${base.replace(/\/$/, '')}/analytics/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -100,12 +107,15 @@ export const endSession = async () => {
   await trackEvent('session_end', {
     duration,
   });
-  await fetch('/api/analytics/sessions/end', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ sessionId }),
-  });
+  const base = getApiBase();
+  if (base) {
+    await fetch(`${base.replace(/\/$/, '')}/analytics/sessions/end`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ sessionId }),
+    });
+  }
 };
 
 // Setup scroll tracking
