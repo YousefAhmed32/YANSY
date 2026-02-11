@@ -469,8 +469,8 @@ const Home = () => {
       </section>
 
 
-      {/* ========== TEAM SECTION ========== */}
-      <section
+{/* ========== TEAM SECTION - NO PHOTOS ========== */}
+<section
   ref={(el) => (sectionsRef.current[2] = el)}
   className="min-h-screen flex flex-col items-center px-4 py-32 bg-black"
 >
@@ -480,59 +480,96 @@ const Home = () => {
     </h2>
     
     <p className="text-xl md:text-2xl font-light text-white/50 mb-24 max-w-3xl mx-auto">
-      {homeT('team.subtitle', 'Our team combines deep expertise across product strategy, design, and engineering. We focus on quality over scale — senior talent delivering enterprise-grade solutions for growing companies.')}
+      {homeT('team.subtitle', 'Senior team with deep expertise across product strategy, design, and engineering. We focus on quality over scale.')}
     </p>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
-      {/* Team Member 1 */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Team Member 1 - Creative */}
       <div
         ref={(el) => (teamRef.current[0] = el)}
-        className="opacity-0 transform transition duration-700 hover:scale-105"
+        className="opacity-0 group relative overflow-hidden"
       >
-        <div className="relative aspect-[1/1] w-full overflow-hidden rounded-full mb-6 group shadow-lg shadow-black/30">
-          <img
-            src="/assets/image/p2.png"
-            alt={homeT('team.member1.name', 'Sara Ahmed')}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
+        <div className="relative p-12 bg-gradient-to-br from-white/5 to-white/0 border border-white/10 hover:border-[#d4af37]/50 transition-all duration-500">
+          {/* Icon/Symbol */}
+          <div className="mb-8 flex justify-center">
+            <div className="w-20 h-20 rounded-full border-2 border-[#d4af37]/30 flex items-center justify-center">
+              <svg className="w-10 h-10 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </div>
+          </div>
+
+          <h3 className="text-2xl md:text-3xl font-light mb-2 text-white/90">
+            {homeT('team.member1.name', 'Sara Ahmed')}
+          </h3>
+          <p className="text-sm font-light text-[#d4af37] tracking-widest uppercase mb-6">
+            {homeT('team.member1.role', 'Chief Creative Officer')}
+          </p>
+          <p className="text-base font-light text-white/50 leading-relaxed">
+            {homeT('team.member1.bio', '8+ years leading design systems for enterprise clients. Former design lead at major tech companies.')}
+          </p>
+
+          {/* Accent line */}
+          <span className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
-        <h3 className="text-2xl md:text-3xl font-semibold mb-1 text-white/90">{homeT('team.member1.name', 'Sara Ahmed')}</h3>
-        <p className="text-lg font-light text-white/50 tracking-wide uppercase">{homeT('team.member1.role', 'Chief Creative Officer')}</p>
       </div>
 
-      {/* Team Member 2 */}
+      {/* Team Member 2 - Engineering */}
       <div
         ref={(el) => (teamRef.current[1] = el)}
-        className="opacity-0 transform transition duration-700 hover:scale-105"
+        className="opacity-0 group relative overflow-hidden"
       >
-        <div className="relative aspect-[1/1] w-full overflow-hidden rounded-full mb-6 group shadow-lg shadow-black/30">
-          <img
-            src="/assets/image/p4 - Copy.png"
-            alt={homeT('team.member2.name', 'Yousef Ahmed')}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
+        <div className="relative p-12 bg-gradient-to-br from-white/5 to-white/0 border border-white/10 hover:border-[#d4af37]/50 transition-all duration-500">
+          {/* Icon/Symbol */}
+          <div className="mb-8 flex justify-center">
+            <div className="w-20 h-20 rounded-full border-2 border-[#d4af37]/30 flex items-center justify-center">
+              <svg className="w-10 h-10 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+          </div>
+
+          <h3 className="text-2xl md:text-3xl font-light mb-2 text-white/90">
+            {homeT('team.member2.name', 'Yousef Ahmed')}
+          </h3>
+          <p className="text-sm font-light text-[#d4af37] tracking-widest uppercase mb-6">
+            {homeT('team.member2.role', 'Lead Software Engineer')}
+          </p>
+          <p className="text-base font-light text-white/50 leading-relaxed">
+            {homeT('team.member2.bio', 'Full-stack architect specializing in scalable systems. Built platforms serving millions of users.')}
+          </p>
+
+          <span className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
-        <h3 className="text-2xl md:text-3xl font-semibold mb-1 text-white/90">{homeT('team.member2.name', 'Yousef Ahmed')}</h3>
-        <p className="text-lg font-light text-white/50 tracking-wide uppercase">{homeT('team.member2.role', 'Lead Software Engineer')}</p>
       </div>
 
-      {/* Team Member 3 */}
+      {/* Team Member 3 - Product */}
       <div
         ref={(el) => (teamRef.current[2] = el)}
-        className="opacity-0 transform transition duration-700 hover:scale-105"
+        className="opacity-0 group relative overflow-hidden"
       >
-        <div className="relative aspect-[1/1] w-full overflow-hidden rounded-full mb-6 group shadow-lg shadow-black/30">
-          <img
-            src="/assets/image/p3.png"
-            alt={homeT('team.member3.name', 'Mahmoud Ali')}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 rounded-full opacity-0 group-hover:opacity-100 transition duration-500" />
+        <div className="relative p-12 bg-gradient-to-br from-white/5 to-white/0 border border-white/10 hover:border-[#d4af37]/50 transition-all duration-500">
+          {/* Icon/Symbol */}
+          <div className="mb-8 flex justify-center">
+            <div className="w-20 h-20 rounded-full border-2 border-[#d4af37]/30 flex items-center justify-center">
+              <svg className="w-10 h-10 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+          </div>
+
+          <h3 className="text-2xl md:text-3xl font-light mb-2 text-white/90">
+            {homeT('team.member3.name', 'Mahmoud Ali')}
+          </h3>
+          <p className="text-sm font-light text-[#d4af37] tracking-widest uppercase mb-6">
+            {homeT('team.member3.role', 'Head of Product Strategy')}
+          </p>
+          <p className="text-base font-light text-white/50 leading-relaxed">
+            {homeT('team.member3.bio', 'Product strategist with proven track record launching B2B SaaS products. Data-driven decision maker.')}
+          </p>
+
+          <span className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
-        <h3 className="text-2xl md:text-3xl font-semibold mb-1 text-white/90">{homeT('team.member3.name', 'Mahmoud Ali')}</h3>
-        <p className="text-lg font-light text-white/50 tracking-wide uppercase">{homeT('team.member3.role', 'Head of Design')}</p>
       </div>
     </div>
   </div>
@@ -947,54 +984,120 @@ const Home = () => {
       </section>
 
       {/* ========== SERVICES GRID (STATIC) ========== */}
-      <section
-        ref={(el) => (sectionsRef.current[9] = el)}
-        className="min-h-screen flex items-center px-4 py-32 bg-black"
-      >
-        <div className={`max-w-7xl mx-auto ${isRTL ? 'rtl' : ''}`}>
-          <h2 className={`text-6xl md:text-7xl lg:text-8xl font-light mb-20 tracking-tight ${isRTL ? 'text-right' : 'text-left'}`}>
-            {homeT('whatWeBuild.title', 'What we build')}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            <div ref={(el) => (textsRef.current[12] = el)} className="opacity-0">
-              <h3 className="text-3xl md:text-4xl font-light mb-4">{homeT('whatWeBuild.websites.title', 'Websites')}</h3>
-              <p className="text-lg font-light text-white/50">
-                {homeT('whatWeBuild.websites.description', 'Brand experiences that leave lasting impressions.')}
-              </p>
-            </div>
-            <div ref={(el) => (textsRef.current[13] = el)} className="opacity-0">
-              <h3 className="text-3xl md:text-4xl font-light mb-4">{homeT('whatWeBuild.ecommerce.title', 'E-commerce')}</h3>
-              <p className="text-lg font-light text-white/50">
-                {homeT('whatWeBuild.ecommerce.description', 'Platforms that scale with your business.')}
-              </p>
-            </div>
-            <div ref={(el) => (textsRef.current[14] = el)} className="opacity-0">
-              <h3 className="text-3xl md:text-4xl font-light mb-4">{homeT('whatWeBuild.saas.title', 'SaaS')}</h3>
-              <p className="text-lg font-light text-white/50">
-                {homeT('whatWeBuild.saas.description', 'Complex systems. Simple experiences.')}
-              </p>
-            </div>
-            <div ref={(el) => (textsRef.current[15] = el)} className="opacity-0">
-              <h3 className="text-3xl md:text-4xl font-light mb-4">{homeT('whatWeBuild.mobile.title', 'Mobile Apps')}</h3>
-              <p className="text-lg font-light text-white/50">
-                {homeT('whatWeBuild.mobile.description', 'Native and cross-platform solutions.')}
-              </p>
-            </div>
-            <div ref={(el) => (textsRef.current[16] = el)} className="opacity-0">
-              <h3 className="text-3xl md:text-4xl font-light mb-4">{homeT('whatWeBuild.designSystems.title', 'Design Systems')}</h3>
-              <p className="text-lg font-light text-white/50">
-                {homeT('whatWeBuild.designSystems.description', 'Consistent, scalable design at enterprise level.')}
-              </p>
-            </div>
-            <div ref={(el) => (textsRef.current[17] = el)} className="opacity-0">
-              <h3 className="text-3xl md:text-4xl font-light mb-4">{homeT('whatWeBuild.apis.title', 'APIs')}</h3>
-              <p className="text-lg font-light text-white/50">
-                {homeT('whatWeBuild.apis.description', 'Robust, documented, developer-friendly.')}
-              </p>
-            </div>
-          </div>
+   {/* ========== SERVICES GRID (STATIC) ========== */}
+<section
+  ref={(el) => (sectionsRef.current[9] = el)}
+  className="min-h-screen flex items-center px-4 py-32 bg-black"
+>
+  <div className={`max-w-7xl mx-auto ${isRTL ? 'rtl' : ''}`}>
+    {/* Header */}
+    <div className={`mb-20 ${isRTL ? 'text-right' : 'text-left'}`}>
+      <h2 className="text-6xl md:text-7xl lg:text-8xl font-light mb-6 tracking-tight">
+        {homeT('whatWeBuild.title', 'Some of our services')}
+      </h2>
+      <p className="text-xl md:text-2xl font-light text-white/50 max-w-4xl">
+        {homeT('whatWeBuild.subtitle', 'We build custom digital solutions tailored to your needs — even if they\'re not listed here')}
+      </p>
+    </div>
+
+    {/* Grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+      
+      {/* Websites */}
+      <div ref={(el) => (textsRef.current[12] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.websites.title', 'Websites')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.websites.description', 'Brand experiences that leave lasting impressions.')}
+        </p>
+      </div>
+      
+      {/* E-commerce */}
+      <div ref={(el) => (textsRef.current[13] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.ecommerce.title', 'E-commerce')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.ecommerce.description', 'Platforms that scale with your business.')}
+        </p>
+      </div>
+      
+      {/* SaaS */}
+      <div ref={(el) => (textsRef.current[14] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.saas.title', 'SaaS')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.saas.description', 'Complex systems. Simple experiences.')}
+        </p>
+      </div>
+      
+      {/* 🆕 Educational Platforms */}
+      <div ref={(el) => (textsRef.current[15] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.educationalPlatforms.title', 'Educational Platforms')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.educationalPlatforms.description', 'Interactive learning systems with course, student, and certificate management.')}
+        </p>
+      </div>
+      
+      {/* Medical Websites */}
+      <div ref={(el) => (textsRef.current[16] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.medicalWebsites.title', 'Medical Websites')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.medicalWebsites.description', 'Professional websites for clinics and hospitals showcasing services and doctors.')}
+        </p>
+      </div>
+      
+      {/* Medical Booking Systems */}
+      <div ref={(el) => (textsRef.current[17] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.medicalBooking.title', 'Medical Booking Systems')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.medicalBooking.description', 'Smart booking platforms with advanced scheduling and auto-reminders.')}
+        </p>
+      </div>
+      
+      {/* Professional Dashboards */}
+      <div ref={(el) => (textsRef.current[18] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.dashboards.title', 'Professional Dashboards')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.dashboards.description', 'Comprehensive management systems for data, reports, and operations.')}
+        </p>
+      </div>
+      
+      {/* Delivery Apps */}
+      <div ref={(el) => (textsRef.current[19] = el)} className="opacity-0">
+        <h3 className="text-3xl md:text-4xl font-light mb-4">
+          {homeT('whatWeBuild.deliveryApps.title', 'Delivery Apps')}
+        </h3>
+        <p className="text-lg font-light text-white/50">
+          {homeT('whatWeBuild.deliveryApps.description', 'Complete delivery platforms with real-time tracking and secure payments.')}
+        </p>
+      </div>
+      
+      {/* 🎯 Custom Solutions - الأهم! */}
+      <div ref={(el) => (textsRef.current[20] = el)} className="opacity-0 md:col-span-2 lg:col-span-1">
+        <div className="relative p-8 border border-[#d4af37]/30 rounded-lg bg-gradient-to-br from-[#d4af37]/5 to-transparent hover:border-[#d4af37]/60 transition-all duration-500">
+          <h3 className="text-3xl md:text-4xl font-light mb-4 text-[#d4af37]">
+            {homeT('whatWeBuild.customSolutions.title', 'Custom Solutions')}
+          </h3>
+          <p className="text-lg font-light text-white/70">
+            {homeT('whatWeBuild.customSolutions.description', 'Have a different idea? We turn any concept into a successful digital product.')}
+          </p>
         </div>
-      </section>
+      </div>
+      
+    </div>
+  </div>
+</section>
 
       {/* ========== CONTACT / WHATSAPP CTA ========== */}
       <section id="contact" className="min-h-screen flex items-center justify-center bg-black px-4 py-32">
@@ -1019,16 +1122,20 @@ const Home = () => {
               {homeT('contact.startProject', 'Start Your Project')}
             </button>
             
+            {/* زر احجز استشارة - معدّل لواتساب */}
             <a
-              href="https://calendly.com/yansy/discovery"
+              href="https://wa.me/201090385390?text=مرحباً%20YANSY%2C%20أود%20حجز%20استشارة%20مجانية%20لمناقشة%20مشروعي.%0A%0AHello%20YANSY%2C%20I%20would%20like%20to%20schedule%20a%20free%20consultation%20to%20discuss%20my%20project."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-12 py-5 border border-white/20 text-white text-sm font-light tracking-widest uppercase hover:bg-white hover:text-black transition-all duration-500"
+              className={`group inline-flex items-center gap-3 px-12 py-5 border border-white/20 text-white text-sm font-light tracking-widest uppercase hover:bg-white hover:text-black transition-all duration-500 ${isRTL ? 'flex-row-reverse' : ''}`}
             >
-              {homeT('contact.scheduleCall', 'Schedule a Call')}
+              <svg className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>
+              <span>{homeT('contact.scheduleCall', 'Schedule a Call')}</span>
             </a>
             
-            {/* Enhanced WhatsApp CTA */}
+            {/* زر واتساب الإضافي */}
             <a
               href="https://wa.me/201090385390?text=Hello%2C%20I%27d%20like%20to%20discuss%20a%20project%20with%20YANSY."
               target="_blank"
@@ -1065,4 +1172,3 @@ const Home = () => {
 };
 
 export default Home;
-

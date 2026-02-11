@@ -235,7 +235,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
                     <div className="flex items-center gap-4 mb-4">
                       <span className={`px-3 py-1 text-xs font-light tracking-wide uppercase border rounded ${
                         project.status === 'cancelled'
-                          ? 'text-red-400 bg-red-500/20 border-red-500/30'
+                          ? 'text- bg-[#e67e22]/20 border-[#e67e22]/30'
                           : project.progress === 100
                           ? 'text-[#d4af37] bg-[#d4af37]/20 border-[#d4af37]/30'
                           : project.progress >= 80

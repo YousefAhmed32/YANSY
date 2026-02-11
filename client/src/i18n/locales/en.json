@@ -341,40 +341,53 @@
           "description": "Security built into every layer. From infrastructure to code. No compromises."
         }
       },
-      "whatWeBuild": {
-        "title": "What we build",
-        "websites": {
-          "title": "Websites",
-          "description": "Brand experiences that leave lasting impressions."
-        },
-        "ecommerce": {
-          "title": "E-commerce",
-          "description": "Platforms that scale with your business."
-        },
-        "saas": {
-          "title": "SaaS",
-          "description": "Complex systems. Simple experiences."
-        },
-        "mobile": {
-          "title": "Mobile Apps",
-          "description": "Native and cross-platform solutions."
-        },
-        "designSystems": {
-          "title": "Design Systems",
-          "description": "Consistent, scalable design at enterprise level."
-        },
-        "apis": {
-          "title": "APIs",
-          "description": "Robust, documented, developer-friendly."
-        }
-      },
+    "whatWeBuild": {
+  "title": "Some of our services",
+  "subtitle": "We build custom digital solutions tailored to your needs — even if they're not listed here",
+  "websites": {
+    "title": "Websites",
+    "description": "Brand experiences that leave lasting impressions."
+  },
+  "ecommerce": {
+    "title": "E-commerce",
+    "description": "Platforms that scale with your business."
+  },
+  "saas": {
+    "title": "SaaS",
+    "description": "Complex systems. Simple experiences."
+  },
+  "educationalPlatforms": {
+    "title": "Educational Platforms",
+    "description": "Interactive learning systems with course, student, and certificate management."
+  },
+  "medicalWebsites": {
+    "title": "Medical Websites",
+    "description": "Professional websites for clinics and hospitals showcasing services and doctors."
+  },
+  "medicalBooking": {
+    "title": "Medical Booking Systems",
+    "description": "Smart booking platforms with advanced scheduling and auto-reminders."
+  },
+  "dashboards": {
+    "title": "Professional Dashboards",
+    "description": "Comprehensive management systems for data, reports, and operations."
+  },
+  "deliveryApps": {
+    "title": "Delivery Apps",
+    "description": "Complete delivery platforms with real-time tracking and secure payments."
+  },
+  "customSolutions": {
+    "title": "Custom Solutions",
+    "description": "Have a different idea? We turn any concept into a successful digital product."
+  }
+},
       "contact": {
         "title": "Let's talk",
         "subtitle": "Ready to discuss your project?",
-        "description": "Book a 30-minute discovery call to explore how we can help. We respond within 24 hours.",
+        "description": "Book a free consultation to discuss your project. We respond within 24 hours.",
         "startProject": "Start Your Project",
-        "scheduleCall": "Schedule a Call",
-        "whatsapp": "WhatsApp",
+        "scheduleCall": "Book Free Consultation",
+        "whatsapp": "Chat on WhatsApp",
         "trust1": "✓ Free consultation",
         "trust2": "✓ No obligation",
         "trust3": "✓ Response within 24h"
@@ -564,4 +577,3 @@
     }
   }
 }
-

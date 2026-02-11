@@ -264,7 +264,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     >
                       <option value="">{t('projectForm.steps.budget.select')}</option>
                       {budgetOptions.map(option => (
-                        <option key={option.value} value={option.value} className="bg-black text-red-500">
+                        <option key={option.value} value={option.value} className="bg-black text-white">
                           {option.label}
                         </option>
                       ))}
