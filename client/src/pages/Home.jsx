@@ -925,9 +925,7 @@ const Home = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-16 gap-y-20">
             <div ref={(el) => (clientsRef.current[0] = el)} className="opacity-0">
-              <div className="text-3xl md:text-4xl font-light text-white/30">React...........................</div>
-              <div className="text-3xl md:text-4xl font-light text-white/30">React...........................</div>
-              <div className="text-3xl md:text-4xl font-light text-white/30">React.dfadfasdfasdf.....................</div>
+              <div className="text-3xl md:text-4xl font-light text-white/30">React</div>
             </div>
             <div ref={(el) => (clientsRef.current[1] = el)} className="opacity-0">
               <div className="text-3xl md:text-4xl font-light text-white/30">Node.js</div>
