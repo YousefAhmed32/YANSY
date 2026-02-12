@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en" dir="ltr">
   <head>
-    <!-- Basic Meta Tags -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -10,252 +9,57 @@
     <!-- Google Verification -->
     <meta name="google-site-verification" content="Vbesj7FFuDZK1EUK5BSQyrDGq1IpvLtF4S-fBfXjx5A" />
 
-    <!-- Primary Meta Tags -->
-    <title>%VITE_SITE_NAME%</title>
-    <meta name="title" content="%VITE_SITE_NAME%" />
-    <meta name="description" content="%VITE_SITE_DESCRIPTION%" />
-    <meta
-      name="keywords"
-      content="YANSY, Yansy, yansy, YANSYTECH, yansytech, Yansy tech, yansy tech, يانسي, يانسي تك, 
-      full-stack development, web development, mobile app development, software development, 
-      make website, build website, create website, website design, web design, 
-      enterprise software, SaaS development, SaaS platform, cloud solutions, 
-      e-commerce development, online store, e-commerce platform, shopping website, 
-      web applications, progressive web apps, PWA, single page application, 
-      React development, Node.js development, MERN stack, JavaScript development, 
-      TypeScript development, Next.js, Vue.js, Angular, 
-      scalable systems, microservices, API development, REST API, GraphQL, 
-      UI/UX design, user interface design, user experience, responsive design, 
-      product strategy, digital transformation, business automation, 
-      software engineering, custom software, enterprise solutions, 
-      startup development, MVP development, product development, 
-      database design, PostgreSQL, MongoDB, MySQL, 
-      cloud hosting, AWS, Azure, Google Cloud, Docker, Kubernetes, 
-      DevOps, CI/CD, deployment, server management, 
-      mobile apps, iOS development, Android development, React Native, Flutter, 
-      payment integration, Stripe, PayPal, payment gateway, 
-      CMS development, content management, WordPress, headless CMS, 
-      analytics, data visualization, business intelligence,tech company, 
-      chatbots, AI integration, machine learning, 
-      SEO optimization, performance optimization, speed optimization, 
-      security, authentication, authorization, data protection, 
-      Egypt software company, Egyptian web development, Middle East tech, 
-      تطوير مواقع, تصميم مواقع, برمجة تطبيقات, تطوير تطبيقات الجوال, 
-      متجر إلكتروني, التجارة الإلكترونية, منصة SaaS, 
-      شركة برمجيات, حلول رقمية, تحول رقمي, 
-      تطوير برمجيات مخصصة, تصميم واجهات المستخدم, 
-      React, Node.js, MongoDB, PostgreSQL, AWS, 
-      Hurghada tech, Red Sea technology, Egypt development"
-    />
-    <meta name="author" content="YANSY Digital Systems" />
+    <!-- Primary SEO -->
+    <title>YANSY TECH | Digital Product Engineering</title>
+    <meta name="description" content="YANSY TECH builds enterprise-grade digital products, SaaS platforms, e-commerce systems, and scalable web applications." />
+    <meta name="author" content="YANSY TECH" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="%VITE_SITE_URL%" />
+    <link rel="canonical" href="https://yansytech.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yansytech.com/" />
+    <meta property="og:site_name" content="YANSY TECH" />
+    <meta property="og:title" content="YANSY TECH | Digital Product Engineering" />
+    <meta property="og:description" content="Enterprise SaaS, e-commerce, and scalable platform engineering." />
+    <meta property="og:image" content="https://yansytech.com/assets/image/logo/logoweb8" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="YANSY TECH | Digital Product Engineering" />
+    <meta name="twitter:description" content="We build scalable SaaS platforms and enterprise web systems." />
+    <meta name="twitter:image" content="https://yansytech.com/assets/image/logo/logoweb8" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="256x256" href="/assets/image/logo/logoweb.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/image/logo/logoweb.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/image/logo/apple-touch.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" type="image/png" href="/assets/image/logo/logoweb8.png" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="%VITE_SITE_URL%" />
-    <meta property="og:site_name" content="YANSY" />
-    <meta property="og:title" content="%VITE_SITE_NAME%" />
-    <meta property="og:description" content="%VITE_SITE_DESCRIPTION%" />
-    <meta property="og:image" content="%VITE_SITE_LOGO%" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="ar_AR" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="%VITE_SITE_URL%" />
-    <meta name="twitter:title" content="%VITE_SITE_NAME%" />
-    <meta name="twitter:description" content="%VITE_SITE_DESCRIPTION%" />
-    <meta name="twitter:image" content="%VITE_SITE_LOGO%" />
-
-    <!-- Additional SEO -->
-    <meta name="geo.region" content="EG-BA" />
-    <meta name="geo.placename" content="Hurghada, Red Sea, Egypt" />
-    <meta name="geo.position" content="27.2579;33.8116" />
-    <meta name="ICBM" content="27.2579, 33.8116" />
-    <meta name="language" content="English, Arabic" />
-    <meta name="rating" content="general" />
-    <meta name="referrer" content="no-referrer-when-downgrade" />
-
-    <!-- Performance & Preconnect -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-
-    <!-- Schema.org Structured Data (JSON-LD) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "YANSY",
-      "alternateName": ["YANSYTECH", "Yansy Tech", "يانسي"],
-      "url": "https://yansytech.com",
-      "logo": "https://yansytech.com/assets/image/logo/logoweb.png",
-      "description": "Full-stack digital product development for growing companies. We build enterprise SaaS platforms, e-commerce solutions, and scalable web applications.",
-      "foundingDate": "2020",
-      "knowsAbout": [
-        "Web Development",
-        "Mobile App Development",
-        "E-commerce Development",
-        "SaaS Development",
-        "UI/UX Design",
-        "Full-Stack Development",
-        "React Development",
-        "Node.js Development"
-      ],
-      "areaServed": {
-        "@type": "Place",
-        "name": "Worldwide"
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+20-1090385390",
-        "contactType": "Customer Service",
-        "availableLanguage": ["English", "Arabic"],
-        "areaServed": "EG"
-      },
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Hurghada",
-        "addressRegion": "Red Sea",
-        "addressCountry": "EG"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/company/yansy",
-        "https://twitter.com/yansy",
-        "https://wa.me/201090385390"
-      ]
-    }
-    </script>
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ProfessionalService",
-      "name": "YANSY",
-      "alternateName": "YANSYTECH",
-      "image": "https://yansytech.com/assets/image/logo/logoweb.png",
-      "url": "https://yansytech.com",
-      "telephone": "+20-1090385390",
-      "priceRange": "$$",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Hurghada",
-        "addressRegion": "Red Sea",
-        "addressCountry": "EG"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 27.2579,
-        "longitude": 33.8116
-      },
-      "openingHoursSpecification": {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Sunday"
-        ],
-        "opens": "09:00",
-        "closes": "18:00"
-      },
-      "makesOffer": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Web Development",
-            "description": "Custom website development and web applications"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "E-commerce Development",
-            "description": "Online stores and e-commerce platforms"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "SaaS Development",
-            "description": "Software as a Service platforms"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Mobile App Development",
-            "description": "iOS and Android mobile applications"
-          }
-        }
-      ]
-    }
-    </script>
-
+    <!-- ⭐ تعريف اسم الموقع لجوجل (المهم) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "YANSY",
+      "name": "YANSY TECH",
       "alternateName": "YANSYTECH",
-      "url": "https://yansytech.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://yansytech.com/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "url": "https://yansytech.com/"
     }
     </script>
 
+    <!-- Organization Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": "YANSY",
-      "image": "https://yansytech.com/assets/image/logo/logoweb.png",
-      "telephone": "+20-1090385390",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Hurghada",
-        "addressRegion": "Red Sea Governorate",
-        "addressCountry": "Egypt"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 27.2579,
-        "longitude": 33.8116
-      },
-      "url": "https://yansytech.com",
-      "priceRange": "$$"
+      "@type": "Organization",
+      "name": "YANSY TECH",
+      "url": "https://yansytech.com/",
+      "logo": "https://yansytech.com/assets/image/logo/logoweb8",
+      "description": "Enterprise digital product development and scalable platform engineering."
     }
     </script>
   </head>
 
   <body class="bg-black text-white antialiased">
-    <noscript>
-      <div style="text-align: center; padding: 50px; background: #000; color: #fff;">
-        <h1>YANSY - Full-Stack Digital Product Development</h1>
-        <p>For the best experience, please enable JavaScript in your browser.</p>
-      </div>
-    </noscript>
-    
     <div id="root"></div>
-
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
