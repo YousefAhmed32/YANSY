@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { register, clearError } from '../store/authSlice';
 import { gsap } from 'gsap';
 
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
   
   const [email, setEmail] = useState('');
@@ -78,22 +80,22 @@ const Register = () => {
     setLocalError('');
 
     if (!email || !password || !fullName || !phoneNumber) {
-      setLocalError('Please fill in all required fields');
+      setLocalError(t('auth.fillAllFields'));
       return;
     }
 
     if (password.length < 6) {
-      setLocalError('Password must be at least 6 characters');
+      setLocalError(t('register.passwordMinLength'));
       return;
     }
 
     if (fullName.trim().length < 2) {
-      setLocalError('Full name must be at least 2 characters');
+      setLocalError(t('register.nameMinLength'));
       return;
     }
 
     if (!brandName && !companyName) {
-      setLocalError('Please provide either a brand name or company name');
+      setLocalError(t('register.brandOrCompanyRequired'));
       return;
     }
 
@@ -109,7 +111,7 @@ const Register = () => {
     submittingRef.current = false;
 
     if (register.rejected.match(result)) {
-      setLocalError(result.payload || 'Registration failed');
+      setLocalError(result.payload || t('register.registrationFailed'));
       setTimeout(() => {
         const errorEl = formRef.current?.querySelector('[data-error]');
         if (errorEl) {
@@ -156,13 +158,13 @@ const Register = () => {
             ref={titleRef}
             className="text-5xl md:text-6xl font-light tracking-tight mb-4 text-white/90"
           >
-            Start your journey
+            {t('auth.registerTitle')}
           </h1>
           <p 
             ref={subtitleRef}
             className="text-lg md:text-xl font-light text-white/50 max-w-xl mx-auto"
           >
-            Join YANSY digital studio and start building something great
+            {t('register.subtitle')}
           </p>
         </div>
 
@@ -188,7 +190,7 @@ const Register = () => {
           <div ref={personalSectionRef} className="space-y-8">
             <div className="pb-4 border-b border-white/10">
               <h2 className="text-sm font-light text-white/60 tracking-widest uppercase">
-                Personal Information
+                {t('register.personalInfo')}
               </h2>
             </div>
 
@@ -199,7 +201,7 @@ const Register = () => {
                   htmlFor="fullName" 
                   className="block text-sm font-light text-white/60 tracking-wide uppercase"
                 >
-                  Full Name *
+                  {t('register.fullName')} *
                 </label>
                 <input
                   id="fullName"
@@ -213,7 +215,7 @@ const Register = () => {
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
                   className="w-full px-0 py-4 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 font-light text-lg focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Enter your full name"
+                  placeholder={t('register.fullNamePlaceholder')}
                 />
               </div>
 
@@ -223,7 +225,7 @@ const Register = () => {
                   htmlFor="email" 
                   className="block text-sm font-light text-white/60 tracking-wide uppercase"
                 >
-                  Email Address *
+                  {t('auth.email')} *
                 </label>
                 <input
                   id="email"
@@ -237,7 +239,7 @@ const Register = () => {
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
                   className="w-full px-0 py-4 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 font-light text-lg focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="your.email@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
 
@@ -247,7 +249,7 @@ const Register = () => {
                   htmlFor="phoneNumber" 
                   className="block text-sm font-light text-white/60 tracking-wide uppercase"
                 >
-                  Phone Number *
+                  {t('register.phoneNumber')} *
                 </label>
                 <input
                   id="phoneNumber"
@@ -261,7 +263,7 @@ const Register = () => {
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
                   className="w-full px-0 py-4 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 font-light text-lg focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="+1 (555) 123-4567"
+                  placeholder={t('register.phoneNumberPlaceholder')}
                 />
               </div>
 
@@ -271,7 +273,7 @@ const Register = () => {
                   htmlFor="password" 
                   className="block text-sm font-light text-white/60 tracking-wide uppercase"
                 >
-                  Password *
+                  {t('auth.password')} *
                 </label>
                 <input
                   id="password"
@@ -285,7 +287,7 @@ const Register = () => {
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
                   className="w-full px-0 py-4 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 font-light text-lg focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Minimum 6 characters"
+                  placeholder={t('register.passwordPlaceholder')}
                 />
               </div>
             </div>
@@ -295,10 +297,10 @@ const Register = () => {
           <div ref={businessSectionRef} className="space-y-8">
             <div className="pb-4 border-b border-white/10">
               <h2 className="text-sm font-light text-white/60 tracking-widest uppercase">
-                Business Information
+                {t('register.businessInfo')}
               </h2>
               <p className="mt-2 text-xs font-light text-white/40">
-                Provide either a brand name or company name
+                {t('register.brandOrCompanyHint')}
               </p>
             </div>
 
@@ -309,7 +311,7 @@ const Register = () => {
                   htmlFor="brandName" 
                   className="block text-sm font-light text-white/60 tracking-wide uppercase"
                 >
-                  Brand Name
+                  {t('register.brandName')}
                 </label>
                 <input
                   id="brandName"
@@ -321,7 +323,7 @@ const Register = () => {
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
                   className="w-full px-0 py-4 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 font-light text-lg focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Your brand name"
+                  placeholder={t('register.brandNamePlaceholder')}
                 />
               </div>
 
@@ -331,7 +333,7 @@ const Register = () => {
                   htmlFor="companyName" 
                   className="block text-sm font-light text-white/60 tracking-wide uppercase"
                 >
-                  Company Name
+                  {t('register.companyName')}
                 </label>
                 <input
                   id="companyName"
@@ -343,7 +345,7 @@ const Register = () => {
                   onBlur={() => setFocusedField(null)}
                   disabled={loading}
                   className="w-full px-0 py-4 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 font-light text-lg focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Your company name"
+                  placeholder={t('register.companyNamePlaceholder')}
                 />
               </div>
             </div>
@@ -356,26 +358,26 @@ const Register = () => {
               disabled={loading}
               className="w-full px-8 py-4 border border-[#d4af37] text-[#d4af37] text-sm font-light tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#d4af37]"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? t('register.creatingAccount') : t('register.createAccount')}
             </button>
           </div>
 
           {/* Privacy Note */}
           <div className="text-center pt-4">
             <p className="text-xs font-light text-white/30">
-              Your information is secure and will never be shared
+              {t('register.privacyNote')}
             </p>
           </div>
 
           {/* Login Link */}
           <div className="text-center pt-4">
             <p className="text-sm font-light text-white/40">
-              Already have an account?{' '}
+              {t('auth.hasAccount')}{' '}
               <Link
                 to="/login"
                 className="text-white/60 hover:text-[#d4af37] transition-colors duration-300 underline underline-offset-4"
               >
-                Sign in
+                {t('auth.signIn')}
               </Link>
             </p>
           </div>

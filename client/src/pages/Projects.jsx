@@ -87,11 +87,11 @@ const Projects = () => {
   }, [projects]);
 
   const getStatusText = (progress, status) => {
-    if (status === 'cancelled') return 'Cancelled';
-    if (status === 'delivered' || progress === 100) return 'Delivered';
-    if (progress >= 80) return 'Near Completion';
-    if (progress > 0) return 'In Progress';
-    return 'Pending';
+    if (status === 'cancelled') return t('projects.statusCancelled');
+    if (status === 'delivered' || progress === 100) return t('projects.statusDelivered');
+    if (progress >= 80) return t('projects.statusNearCompletion');
+    if (progress > 0) return t('projects.statusInProgress');
+    return t('projects.statusPending');
   };
 
   const getStatusColor = (progress, status) => {
@@ -128,6 +128,13 @@ const Projects = () => {
     }
   };
 
+  const getProjectsCountLabel = (count) => {
+    return `${count} ${count === 1 ? t('projects.projectSingular') : t('projects.projectPlural')}`;
+  };
+
+  const getUpdatesCountLabel = (count) => {
+    return `${count} ${count === 1 ? t('projects.updateSingular') : t('projects.updatePlural')}`;
+  };
 
   if (loading) {
     return (
@@ -157,7 +164,7 @@ const Projects = () => {
             {user?.role === 'ADMIN' ? t('projects.allProjects') : t('projects.myProjects')}
           </h1>
           <p className="text-sm md:text-lg font-light text-white/50">
-            {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+            {getProjectsCountLabel(projects.length)}
           </p>
         </div>
         <button
@@ -165,8 +172,8 @@ const Projects = () => {
           className="px-4 py-2 md:px-6 md:py-3 border border-[#d4af37] text-[#d4af37] text-xs md:text-sm font-light tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-all duration-500 flex items-center gap-2"
         >
           <Plus className="h-4 w-4 md:h-5 md:w-5" />
-          <span className="hidden sm:inline">{user?.role === 'ADMIN' ? t('projects.createProject') : 'Add New Project'}</span>
-          <span className="sm:hidden">Add</span>
+          <span className="hidden sm:inline">{user?.role === 'ADMIN' ? t('projects.createProject') : t('projects.addNewProject')}</span>
+          <span className="sm:hidden">{t('projects.addShort')}</span>
         </button>
       </div>
 
@@ -211,7 +218,7 @@ const Projects = () => {
               </div>
 
               <p className="text-xs md:text-sm font-light text-white/50 mb-4 md:mb-6 line-clamp-2">
-                {project.description || 'No description'}
+                {project.description || t('projects.noDescription')}
               </p>
 
               <div className="space-y-3 md:space-y-4">
@@ -219,7 +226,7 @@ const Projects = () => {
                 {(project.progress > 0 || project.status !== 'pending') && (
                   <div>
                     <div className="flex justify-between text-xs md:text-sm mb-2">
-                      <span className="text-white/60 font-light">Progress</span>
+                      <span className="text-white/60 font-light">{t('projects.progress')}</span>
                       <span className="text-white/90 font-light">
                         {project.progress || 0}%
                       </span>
@@ -244,7 +251,7 @@ const Projects = () => {
                   <div className="flex items-center gap-2 text-xs text-white/50">
                     <Calendar className="h-3 w-3" />
                     <span className="font-light">
-                      Updated {new Date(project.updatedAt).toLocaleDateString()}
+                      {t('projects.updatedOn')} {new Date(project.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
                 )}
@@ -254,7 +261,7 @@ const Projects = () => {
                   <div className="flex items-center gap-2 text-xs text-white/50">
                     <FileText className="h-3 w-3" />
                     <span className="font-light">
-                      {project.updates.length} {project.updates.length === 1 ? 'update' : 'updates'}
+                      {getUpdatesCountLabel(project.updates.length)}
                     </span>
                   </div>
                 )}
@@ -267,7 +274,7 @@ const Projects = () => {
                   className="flex-1 px-4 py-2 text-xs font-light tracking-wide uppercase border border-white/20 text-white/70 hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 text-center"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  View Details
+                  {t('projects.viewDetails')}
                 </Link>
                 <Link
                   to={`/app/projects/${project._id}?tab=messages`}

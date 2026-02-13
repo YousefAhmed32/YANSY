@@ -4,69 +4,105 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Menu, X, ChevronRight } from 'lucide-react';
 import { gsap } from 'gsap';
 import LanguageSelector from './LanguageSelector';
 
 const Header = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { isDark } = useTheme();
-  const { isRTL, dir, language } = useLanguage();
+  const { language } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const headerRef = useRef(null);
   const logoRef = useRef(null);
-  const brandZoneRef = useRef(null);
-  const navZoneRef = useRef(null);
-  const utilityZoneRef = useRef(null);
-  const ctaZoneRef = useRef(null);
-  const bgRef = useRef(null);
+  const navItemsRef = useRef([]);
+  const ctaRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
-  // Cinematic sequential reveal on load
+  // WhatsApp configuration
+  const whatsappNumber = '201090385390';
+  const whatsappMessage = encodeURIComponent(
+    t('landing.whatsapp.message', 'Hello, I need help with YANSY')
+  );
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // Scroll handling
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 50;
+      setIsScrolled(scrolled);
+
+      if (headerRef.current) {
+        const bgColor = isDark 
+          ? scrolled ? 'rgba(0, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0)'
+          : scrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0)';
+        
+        gsap.to(headerRef.current, {
+          backgroundColor: bgColor,
+          backdropFilter: scrolled ? 'blur(20px)' : 'blur(0px)',
+          borderBottomColor: scrolled 
+            ? (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')
+            : 'transparent',
+          duration: 0.4,
+          ease: 'power2.out'
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isDark]);
+
+  // Initial animation
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Logo fade in
+      // Logo animation
       if (logoRef.current) {
         gsap.fromTo(
           logoRef.current,
           { opacity: 0, y: -20 },
-          { opacity: 1, y: 0, duration: 1, ease: 'power2.out', delay: 0.2 }
+          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 0.1 }
         );
       }
 
-      // Nav items stagger in
-      if (navZoneRef.current) {
+      // Nav items stagger
+      if (navItemsRef.current.length > 0) {
         gsap.fromTo(
-          navZoneRef.current.children,
-          { opacity: 0, y: -20 },
+          navItemsRef.current,
+          { opacity: 0, y: -15 },
           { 
             opacity: 1, 
             y: 0, 
-            duration: 0.8, 
+            duration: 0.6, 
             stagger: 0.08, 
-            ease: 'power2.out', 
-            delay: 0.4 
+            ease: 'power3.out', 
+            delay: 0.3 
           }
         );
       }
 
-      // Utility zone fade in
-      if (utilityZoneRef.current) {
+      // CTA animation
+      if (ctaRef.current) {
         gsap.fromTo(
-          utilityZoneRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.6 }
-        );
-      }
-
-      // CTA slide in from edge
-      if (ctaZoneRef.current) {
-        const slideDistance = isRTL ? -20 : 20;
-        gsap.fromTo(
-          ctaZoneRef.current,
-          { opacity: 0, x: slideDistance },
-          { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out', delay: 0.8 }
+          ctaRef.current,
+          { opacity: 0, x: 20 },
+          { opacity: 1, x: 0, duration: 0.8, ease: 'power3.out', delay: 0.5 }
         );
       }
     }, headerRef);
@@ -74,268 +110,373 @@ const Header = () => {
     return () => ctx.revert();
   }, []);
 
-  // Refined scroll behavior
+  // Mobile menu animation
   useEffect(() => {
-    const handleScroll = () => {
-      const scrolled = window.scrollY > 100;
-      setIsScrolled(scrolled);
+    if (mobileMenuOpen && mobileMenuRef.current) {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(
+          mobileMenuRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.3, ease: 'power2.out' }
+        );
 
-      // Smooth background transition with GSAP
-      if (bgRef.current) {
-        const bgColor = isDark 
-          ? scrolled ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0)'
-          : scrolled ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0)';
-        
-        gsap.to(bgRef.current, {
-          backgroundColor: bgColor,
-          backdropFilter: scrolled ? 'blur(12px)' : 'blur(0px)',
-          duration: 0.6,
-          ease: 'power2.out',
-        });
-      }
+        const menuItems = mobileMenuRef.current.querySelectorAll('.menu-item');
+        gsap.fromTo(
+          menuItems,
+          { opacity: 0, y: 20 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.5, 
+            stagger: 0.05, 
+            ease: 'power3.out',
+            delay: 0.1
+          }
+        );
+      }, mobileMenuRef);
 
-      // Subtle scale on logo when scrolled
-      if (logoRef.current) {
-        gsap.to(logoRef.current, {
-          scale: scrolled ? 0.96 : 1,
-          duration: 0.5,
-          ease: 'power2.out',
-        });
-      }
+      return () => ctx.revert();
+    }
+  }, [mobileMenuOpen]);
 
-      // Subtle fade on nav items
-      if (navZoneRef.current) {
-        gsap.to(navZoneRef.current.children, {
-          opacity: scrolled ? 0.9 : 1,
-          duration: 0.5,
-          ease: 'power2.out',
-        });
-      }
+  // Theme colors
+  const colors = {
+    text: isDark ? 'text-white' : 'text-gray-900',
+    textMuted: isDark ? 'text-white/70' : 'text-gray-600',
+    textHover: isDark ? 'text-white' : 'text-gray-900',
+    border: isDark ? 'border-white/10' : 'border-gray-200',
+    borderHover: isDark ? 'border-white/30' : 'border-gray-400',
+    bg: isDark ? 'bg-black' : 'bg-white',
+    bgHover: isDark ? 'bg-white/5' : 'bg-gray-50',
+    mobileMenuBg: isDark ? 'bg-black/98' : 'bg-white/98',
+    divider: isDark ? 'bg-white/5' : 'bg-gray-100',
+  };
 
-      // CTA maintains full opacity (always prominent)
-      if (ctaZoneRef.current) {
-        gsap.to(ctaZoneRef.current, {
-          opacity: 1,
-          duration: 0.3,
-        });
-      }
-    };
+  // Navigation items
+  const navItems = [
+    { label: t('landing.nav.work', 'Work'), href: '#work' }
+  ];
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isDark]);
-
-  // Force re-render on language change to update translations
-  useEffect(() => {
-    // This ensures the component re-renders when language changes
-    // so translations update properly
-  }, [language, i18n.language]);
-
-  const textColor = isDark ? 'text-white' : 'text-gray-900';
-  const textColorMuted = isDark ? 'text-white/60' : 'text-gray-600';
-  const textColorHover = isDark ? 'text-white' : 'text-gray-900';
-  const bgColor = isDark ? 'bg-black' : 'bg-white';
-  const borderColor = isDark ? 'border-white/20' : 'border-gray-200';
-  const borderColorHover = isDark ? 'border-white/40' : 'border-gray-400';
-
-  // WhatsApp support link
-  const whatsappNumber = '201090385390';
-  const whatsappMessage = encodeURIComponent(
-    t('landing.whatsapp.message', 'Hello, I need help with YANSY')
-  );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <header
-      ref={headerRef}
-      className={`fixed top-0 left-0 right-0 z-50 ${bgColor} transition-colors duration-300`}
-      dir="ltr"
-    >
-      {/* Background with smooth transition */}
-      <div
-        ref={bgRef}
-        className={`absolute inset-0 ${isDark ? 'bg-black' : 'bg-white'} opacity-0 pointer-events-none`}
-        style={{ backdropFilter: 'blur(12px)' }}
-      />
-      
-      <nav className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-        <div 
-          className="flex items-center justify-between h-20"
-          style={{ direction: 'ltr' }}
-        >
-          {/* PRIMARY ZONE: Brand Identity */}
-          <div 
-            ref={brandZoneRef}
-            className="flex items-center"
-          >
+    <>
+      <header
+        ref={headerRef}
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-300`}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="flex items-center justify-between h-20">
+            
+            {/* Logo */}
             <Link
               ref={logoRef}
               to="/"
-              className="relative group flex items-center"
+              className="relative z-10 flex-shrink-0"
               onMouseEnter={(e) => {
-                gsap.to(e.currentTarget, {
-                  opacity: 0.7,
-                  duration: 0.4,
-                  ease: 'power2.out',
+                gsap.to(e.currentTarget.querySelector('img'), {
+                  scale: 1.05,
+                  duration: 0.3,
+                  ease: 'power2.out'
                 });
               }}
               onMouseLeave={(e) => {
-                gsap.to(e.currentTarget, {
-                  opacity: 1,
-                  duration: 0.4,
-                  ease: 'power2.out',
+                gsap.to(e.currentTarget.querySelector('img'), {
+                  scale: 1,
+                  duration: 0.3,
+                  ease: 'power2.out'
                 });
               }}
             >
               <img
                 src="/assets/image/logo/logo.png"
                 alt="YANSY"
-                className="h-8 md:h-9 lg:h-10 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                className="h-9 lg:h-10 w-auto object-contain"
               />
             </Link>
-          </div>
 
-          {/* CENTER SECTION: Nav + Utility */}
-          <div className="flex items-center gap-8 md:gap-12">
-            {/* SECONDARY ZONE: Navigation */}
-            <div ref={navZoneRef} className="flex items-center">
-              <a
-                href="#work"
-                className={`text-xs font-light ${textColorMuted} tracking-wide uppercase relative group transition-colors duration-300 hover:${textColorHover}`}
-                onMouseEnter={(e) => {
-                  gsap.to(e.currentTarget, {
-                    opacity: 1,
-                    duration: 0.3,
-                    ease: 'power2.out',
-                  });
-                }}
-                onMouseLeave={(e) => {
-                  gsap.to(e.currentTarget, {
-                    opacity: 0.6,
-                    duration: 0.3,
-                    ease: 'power2.out',
-                  });
-                }}
-              >
-                {t('landing.nav.work', 'Work')}
-              </a>
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-12">
+              
+              {/* Nav Links */}
+              <nav className="flex items-center gap-8">
+                {navItems.map((item, index) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    ref={(el) => navItemsRef.current[index] = el}
+                    className={`text-xs font-light ${colors.textMuted} hover:${colors.textHover} tracking-wider uppercase transition-colors duration-300`}
+                    onMouseEnter={(e) => {
+                      gsap.to(e.currentTarget, {
+                        y: -2,
+                        duration: 0.2,
+                        ease: 'power2.out'
+                      });
+                    }}
+                    onMouseLeave={(e) => {
+                      gsap.to(e.currentTarget, {
+                        y: 0,
+                        duration: 0.2,
+                        ease: 'power2.out'
+                      });
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+
+              {/* Utility Section */}
+              <div className="flex items-center gap-4">
+                
+                {/* Language Selector */}
+                <div ref={(el) => navItemsRef.current[navItems.length] = el}>
+                  <LanguageSelector />
+                </div>
+
+                {/* WhatsApp Support */}
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  ref={(el) => navItemsRef.current[navItems.length + 1] = el}
+                  className={`flex items-center gap-2 px-4 py-2 text-xs font-light tracking-wider uppercase border ${colors.border} hover:${colors.borderHover} ${colors.textMuted} hover:${colors.textHover} hover:${colors.bgHover} rounded transition-all duration-300`}
+                  onMouseEnter={(e) => {
+                    gsap.to(e.currentTarget, {
+                      scale: 1.02,
+                      duration: 0.2,
+                      ease: 'power2.out'
+                    });
+                  }}
+                  onMouseLeave={(e) => {
+                    gsap.to(e.currentTarget, {
+                      scale: 1,
+                      duration: 0.2,
+                      ease: 'power2.out'
+                    });
+                  }}
+                >
+                  <MessageCircle className="w-4 h-5" />
+                  <span>{t('landing.nav.support', 'Support')}</span>
+                </a>
+              </div>
+
+              {/* Auth/CTA Section */}
+              <div ref={ctaRef} className="flex items-center gap-3">
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/app/dashboard"
+                      className={`text-xs font-light ${colors.textMuted} hover:${colors.textHover} px-4 py-2 tracking-wider uppercase transition-colors duration-300`}
+                    >
+                      {t('dashboard.title', 'Dashboard')}
+                    </Link>
+                    {user?.role === 'ADMIN' && (
+                      <Link
+                        to="/app/admin"
+                        className={`text-xs font-light ${colors.textMuted} hover:${colors.textHover} px-4 py-2 tracking-wider uppercase transition-colors duration-300`}
+                      >
+                        {t('common.admin', 'Admin')}
+                      </Link>
+                    )}
+                    <Link
+                      to="/app/dashboard"
+                      className={`px-6 py-2.5 text-xs font-light ${colors.text} border ${colors.border} hover:bg-[#d4af37] hover:text-black hover:border-[#d4af37] tracking-wider uppercase transition-all duration-300 rounded`}
+                      onMouseEnter={(e) => {
+                        gsap.to(e.currentTarget, {
+                          y: -2,
+                          duration: 0.2,
+                          ease: 'power2.out'
+                        });
+                      }}
+                      onMouseLeave={(e) => {
+                        gsap.to(e.currentTarget, {
+                          y: 0,
+                          duration: 0.2,
+                          ease: 'power2.out'
+                        });
+                      }}
+                    >
+                      {t('common.goToApp', 'Go to App')}
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className={`text-xs font-light ${colors.textMuted} hover:${colors.textHover} px-4 py-2 tracking-wider uppercase transition-colors duration-300`}
+                    >
+                      {t('common.login', 'Login')}
+                    </Link>
+                    <Link
+                      to="/register"
+                      className={`px-6 py-2.5 text-xs font-light ${colors.text} border ${colors.border} hover:bg-[#d4af37] hover:text-black hover:border-[#d4af37] tracking-wider uppercase transition-all duration-300 rounded`}
+                      onMouseEnter={(e) => {
+                        gsap.to(e.currentTarget, {
+                          y: -2,
+                          duration: 0.2,
+                          ease: 'power2.out'
+                        });
+                      }}
+                      onMouseLeave={(e) => {
+                        gsap.to(e.currentTarget, {
+                          y: 0,
+                          duration: 0.2,
+                          ease: 'power2.out'
+                        });
+                      }}
+                    >
+                      {t('landing.hero.cta', 'Get Started')}
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* UTILITY ZONE: Language & Support */}
-            <div 
-              ref={utilityZoneRef}
-              className="flex items-center gap-6"
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`lg:hidden p-2 ${colors.textMuted} hover:${colors.textHover} transition-colors duration-300 relative z-[70]`}
+              aria-label="Toggle menu"
             >
-              {/* Language Selector */}
-              <LanguageSelector />
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
 
-              {/* Support Button - Secondary Action */}
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          ref={mobileMenuRef}
+          className={`fixed inset-0 z-[60] lg:hidden ${colors.mobileMenuBg} backdrop-blur-xl`}
+          onClick={handleMobileMenuClose}
+        >
+          {/* Mobile Menu Content */}
+          <div 
+            className="flex flex-col h-full pt-24 pb-8 px-6 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            
+            {/* Mobile Nav Links */}
+            <nav className="flex flex-col gap-1 mb-8">
+              {navItems.map((item, index) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`menu-item flex items-center justify-between px-4 py-4 text-base font-light ${colors.text} hover:${colors.bgHover} tracking-wide uppercase transition-all duration-300 rounded-lg group`}
+                  onClick={handleMobileMenuClose}
+                >
+                  <span>{item.label}</span>
+                  <ChevronRight className={`w-5 h-5 ${colors.textMuted} group-hover:translate-x-1 transition-transform duration-300`} />
+                </a>
+              ))}
+            </nav>
+
+            {/* Divider */}
+            <div className={`menu-item h-px ${colors.divider} mb-8`} />
+
+            {/* Mobile Utility Section */}
+            <div className="flex flex-col gap-3 mb-8">
+              
+              {/* Language Selector */}
+              <div className="menu-item" onClick={(e) => e.stopPropagation()}>
+                <div className={`px-4 py-3 ${colors.bgHover} rounded-lg `}>
+                  <div className={`text-xs ${colors.textMuted} mb-2 uppercase tracking-wider`}>
+                    {t('common.language', 'Language')}
+                  </div>
+                  <LanguageSelector />
+                </div>
+              </div>
+
+              {/* WhatsApp Support */}
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-2 px-4 py-2 text-xs font-light tracking-wide uppercase border ${borderColor} rounded-sm transition-all duration-300 group ${
-                  isDark 
-                    ? 'text-white/80 border-white/20 hover:border-white/40 hover:bg-white/5 hover:text-white' 
-                    : 'text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-                onMouseEnter={(e) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1.02,
-                    duration: 0.2,
-                    ease: 'power2.out'
-                  });
-                }}
-                onMouseLeave={(e) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1,
-                    duration: 0.2,
-                    ease: 'power2.out'
-                  });
-                }}
+                className={`menu-item flex items-center justify-between px-4 py-4 text-sm font-light tracking-wide uppercase border ${colors.border} ${colors.text} hover:${colors.bgHover} rounded-lg transition-all duration-300 group`}
+                onClick={handleMobileMenuClose}
               >
-                <MessageCircle className="w-4 h-4" />
-                <span key={language}>{t('landing.nav.support', 'ايلبا')}</span>
+                <div className="flex items-center gap-3 ">
+                  <MessageCircle className="w-5 h-5" />
+                  <span>{t('landing.nav.support', 'Support')}</span>
+                </div>
+                <ChevronRight className={`w-5 h-5 ${colors.textMuted} group-hover:translate-x-1 transition-transform duration-300`} />
               </a>
             </div>
-          </div>
 
-          {/* CTA ZONE: Primary Action */}
-          <div 
-            ref={ctaZoneRef}
-            className="flex items-center gap-4"
-          >
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/app/dashboard"
-                  className={`text-xs font-light ${textColorMuted} hover:${textColorHover} px-4 py-2 tracking-wide uppercase transition-colors duration-300`}
-                >
-                  {t('dashboard.title', 'Dashboard')}
-                </Link>
-                {user?.role === 'ADMIN' && (
+            {/* Divider */}
+            <div className={`menu-item h-px ${colors.divider} mb-8`} />
+
+            {/* Mobile Auth/CTA Section */}
+            <div className="flex flex-col gap-3 mt-auto">
+              {isAuthenticated ? (
+                <>
                   <Link
-                    to="/app/admin"
-                    className={`text-xs font-light ${textColorMuted} hover:${textColorHover} px-4 py-2 tracking-wide uppercase transition-colors duration-300`}
+                    to="/app/dashboard"
+                    className={`menu-item flex items-center justify-between px-6 py-4 text-sm font-light ${colors.text} hover:${colors.bgHover} tracking-wide uppercase transition-all duration-300 rounded-lg group`}
+                    onClick={handleMobileMenuClose}
                   >
-                    {t('common.admin', 'Admin')}
+                    <span>{t('dashboard.title', 'Dashboard')}</span>
+                    <ChevronRight className={`w-5 h-5 ${colors.textMuted} group-hover:translate-x-1 transition-transform duration-300`} />
                   </Link>
-                )}
-                <Link
-                  to="/app/dashboard"
-                  className={`text-xs font-light ${textColor} border ${borderColor} px-6 py-2 tracking-wide uppercase relative overflow-hidden group transition-all duration-300 hover:bg-[#d4af37] hover:text-black hover:border-[#d4af37]`}
-                  onMouseEnter={(e) => {
-                    gsap.to(e.currentTarget, {
-                      y: -2,
-                      duration: 0.3,
-                      ease: 'power2.out'
-                    });
-                  }}
-                  onMouseLeave={(e) => {
-                    gsap.to(e.currentTarget, {
-                      y: 0,
-                      duration: 0.3,
-                      ease: 'power2.out'
-                    });
-                  }}
-                >
-                  {t('common.goToApp', 'Go to App')}
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className={`text-xs font-light ${textColorMuted} hover:${textColorHover} px-4 py-2 tracking-wide uppercase transition-colors duration-300`}
-                >
-                  {t('auth.loginTitle', 'Login')}
-                </Link>
-                <Link
-                  to="/register"
-                  className={`text-xs font-light ${textColor} border ${borderColor} px-6 py-2 tracking-wide uppercase relative overflow-hidden group transition-all duration-300 hover:bg-[#d4af37] hover:text-black hover:border-[#d4af37]`}
-                  onMouseEnter={(e) => {
-                    gsap.to(e.currentTarget, {
-                      y: -2,
-                      duration: 0.3,
-                      ease: 'power2.out'
-                    });
-                  }}
-                  onMouseLeave={(e) => {
-                    gsap.to(e.currentTarget, {
-                      y: 0,
-                      duration: 0.3,
-                      ease: 'power2.out'
-                    });
-                  }}
-                >
-                  {t('landing.hero.cta', 'Start Project')}
-                </Link>
-              </>
-            )}
+                  
+                  {user?.role === 'ADMIN' && (
+                    <Link
+                      to="/app/admin"
+                      className={`menu-item flex items-center justify-between px-6 py-4 text-sm font-light ${colors.text} hover:${colors.bgHover} tracking-wide uppercase transition-all duration-300 rounded-lg group`}
+                      onClick={handleMobileMenuClose}
+                    >
+                      <span>{t('common.admin', 'Admin')}</span>
+                      <ChevronRight className={`w-5 h-5 ${colors.textMuted} group-hover:translate-x-1 transition-transform duration-300`} />
+                    </Link>
+                  )}
+                  
+                  <Link
+                    to="/app/dashboard"
+                    className={`menu-item w-full text-center px-6 py-4 text-sm font-medium bg-[#d4af37] text-black border-2 border-[#d4af37] tracking-wide uppercase transition-all duration-300 rounded-lg hover:bg-[#c4a030] hover:border-[#c4a030] active:scale-95`}
+                    onClick={handleMobileMenuClose}
+                  >
+                    {t('common.goToApp', 'Go to App')}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className={`menu-item w-full text-center px-6 py-4 text-sm font-light ${colors.text} border ${colors.border} hover:${colors.bgHover} tracking-wide uppercase transition-all duration-300 rounded-lg active:scale-95`}
+                    onClick={handleMobileMenuClose}
+                  >
+                    {t('common.login', 'Login')}
+                  </Link>
+                  
+                  <Link
+                    to="/register"
+                    className={`menu-item w-full text-center px-6 py-4 text-sm font-medium bg-[#d4af37] text-black border-2 border-[#d4af37] tracking-wide uppercase transition-all duration-300 rounded-lg hover:bg-[#c4a030] hover:border-[#c4a030] active:scale-95`}
+                    onClick={handleMobileMenuClose}
+                  >
+                    {t('landing.hero.cta', 'Get Started')}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Version or Footer Info (Optional) */}
+            <div className={`menu-item text-center mt-8 pt-6 border-t ${colors.border}`}>
+              <p className={`text-xs ${colors.textMuted} tracking-wider`}>
+                © 2024 YANSY. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
-      </nav>
-    </header>
+      )}
+    </>
   );
 };
 

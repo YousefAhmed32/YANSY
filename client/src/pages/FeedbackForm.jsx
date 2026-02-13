@@ -86,17 +86,17 @@ const FeedbackForm = () => {
     const { ratings, feedbackType, projectId } = formData;
     
     if (Object.values(ratings).some(r => r === 0)) {
-      toast.error('Please rate all categories');
+      toast.error(t('feedback.allRatingsRequired'));
       return;
     }
 
     if (feedbackType === 'project' && !projectId) {
-      toast.error('Please select a project');
+      toast.error(t('feedback.selectProjectRequired'));
       return;
     }
 
     if (!isAuthenticated && !formData.isAnonymous && !formData.name.trim()) {
-      toast.error('Please enter your name or select anonymous');
+      toast.error(t('feedback.nameRequired'));
       return;
     }
 
@@ -111,7 +111,7 @@ const FeedbackForm = () => {
 
       const response = await api.post('/feedback', payload);
       
-      toast.success('Thank you for your feedback!');
+      toast.success(t('feedback.thankYou'));
       
       // Reset form
       setFormData({
@@ -132,12 +132,12 @@ const FeedbackForm = () => {
       // Show alert if low satisfaction
       if (response.data.alert) {
         setTimeout(() => {
-          toast.error('We appreciate your honest feedback and will work to improve.');
+          toast.error(t('feedback.lowSatisfactionAlert'));
         }, 2000);
       }
     } catch (error) {
       console.error('Failed to submit feedback:', error);
-      toast.error(error.response?.data?.error || 'Failed to submit feedback. Please try again.');
+      toast.error(error.response?.data?.error || t('feedback.submitFailed'));
     } finally {
       setLoading(false);
     }
@@ -155,198 +155,198 @@ const FeedbackForm = () => {
           className="inline-flex items-center gap-2 text-white/60 hover:text-[#d4af37] transition-colors duration-300 mb-8 group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-          <span className="text-sm font-light tracking-wide uppercase">Back to Home</span>
+          <span className="text-sm font-light tracking-wide uppercase">{t('feedback.backToHome')}</span>
         </Link>
 
         {/* Header */}
         <div className="mb-12">
-        <h1 
-          ref={titleRef}
-          className="text-5xl md:text-6xl font-light tracking-tight mb-4 text-white/90"
-        >
-          Share Your Experience
-        </h1>
-        <p className="text-lg font-light text-white/50">
-          Your feedback helps us improve our services
-        </p>
-      </div>
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Feedback Type */}
-        <div className="bg-white/5 border border-white/10 p-8">
-          <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
-            Feedback Type
-          </label>
-          <div className="flex gap-6">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="radio"
-                name="feedbackType"
-                value="general"
-                checked={formData.feedbackType === 'general'}
-                onChange={(e) => setFormData(prev => ({ ...prev, feedbackType: e.target.value, projectId: '' }))}
-                className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2"
-              />
-              <span className="text-white/70 group-hover:text-white transition-colors">General Service Feedback</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="radio"
-                name="feedbackType"
-                value="project"
-                checked={formData.feedbackType === 'project'}
-                onChange={(e) => setFormData(prev => ({ ...prev, feedbackType: e.target.value }))}
-                disabled={!isAuthenticated || projects.length === 0}
-                className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2 disabled:opacity-50"
-              />
-              <span className={`${!isAuthenticated || projects.length === 0 ? 'text-white/30' : 'text-white/70'} group-hover:text-white transition-colors`}>
-                About a Specific Project
-              </span>
-            </label>
-          </div>
-          {formData.feedbackType === 'project' && (!isAuthenticated || projects.length === 0) && (
-            <p className="mt-3 text-sm text-white/40 font-light">
-              {!isAuthenticated ? 'Please log in to provide project-specific feedback' : 'No active projects available'}
-            </p>
-          )}
+          <h1 
+            ref={titleRef}
+            className="text-5xl md:text-6xl font-light tracking-tight mb-4 text-white/90"
+          >
+            {t('feedback.title')}
+          </h1>
+          <p className="text-lg font-light text-white/50">
+            {t('feedback.subtitle')}
+          </p>
         </div>
 
-        {/* Project Selection */}
-        {formData.feedbackType === 'project' && isAuthenticated && projects.length > 0 && (
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Feedback Type */}
           <div className="bg-white/5 border border-white/10 p-8">
             <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
-              Select Project
+              {t('feedback.feedbackType')}
             </label>
-            <select
-              value={formData.projectId}
-              onChange={(e) => setFormData(prev => ({ ...prev, projectId: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
-            >
-              <option value="">Select a project...</option>
-              {projects.map(project => (
-                <option key={project._id} value={project._id}>
-                  {project.title}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* User Info (for guests) */}
-        {!isAuthenticated && (
-          <div className="bg-white/5 border border-white/10 p-8 space-y-6">
-            <div>
-              <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
-                Your Name (Optional)
-              </label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+            <div className="flex gap-6">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  disabled={formData.isAnonymous}
-                  placeholder="Enter your name"
-                  className="w-full pl-12 pr-4 py-3 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50"
+                  type="radio"
+                  name="feedbackType"
+                  value="general"
+                  checked={formData.feedbackType === 'general'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, feedbackType: e.target.value, projectId: '' }))}
+                  className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2"
                 />
-              </div>
+                <span className="text-white/70 group-hover:text-white transition-colors">{t('feedback.generalFeedback')}</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="feedbackType"
+                  value="project"
+                  checked={formData.feedbackType === 'project'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, feedbackType: e.target.value }))}
+                  disabled={!isAuthenticated || projects.length === 0}
+                  className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2 disabled:opacity-50"
+                />
+                <span className={`${!isAuthenticated || projects.length === 0 ? 'text-white/30' : 'text-white/70'} group-hover:text-white transition-colors`}>
+                  {t('feedback.projectFeedback')}
+                </span>
+              </label>
             </div>
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={formData.isAnonymous}
-                onChange={(e) => setFormData(prev => ({ ...prev, isAnonymous: e.target.checked, name: '' }))}
-                className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2"
-              />
-              <span className="text-white/70 group-hover:text-white transition-colors">
-                Submit as Anonymous
-              </span>
-            </label>
+            {formData.feedbackType === 'project' && (!isAuthenticated || projects.length === 0) && (
+              <p className="mt-3 text-sm text-white/40 font-light">
+                {!isAuthenticated ? t('feedback.loginRequired') : t('feedback.noProjects')}
+              </p>
+            )}
           </div>
-        )}
 
-        {/* Ratings */}
-        <div className="bg-white/5 border border-white/10 p-8 space-y-8">
-          <h2 className="text-xl font-light tracking-wide uppercase text-white/90 mb-6">
-            Rate Your Experience
-          </h2>
-          
-          <StarRating
-            label="Quality of Work"
-            value={formData.ratings.quality}
-            onChange={(value) => handleRatingChange('quality', value)}
-          />
-          
-          <StarRating
-            label="Delivery Speed"
-            value={formData.ratings.speed}
-            onChange={(value) => handleRatingChange('speed', value)}
-          />
-          
-          <StarRating
-            label="Communication"
-            value={formData.ratings.communication}
-            onChange={(value) => handleRatingChange('communication', value)}
-          />
-          
-          <StarRating
-            label="Professionalism"
-            value={formData.ratings.professionalism}
-            onChange={(value) => handleRatingChange('professionalism', value)}
-          />
-          
-          <StarRating
-            label="Overall Satisfaction"
-            value={formData.ratings.overall}
-            onChange={(value) => handleRatingChange('overall', value)}
-            size="lg"
-          />
-        </div>
+          {/* Project Selection */}
+          {formData.feedbackType === 'project' && isAuthenticated && projects.length > 0 && (
+            <div className="bg-white/5 border border-white/10 p-8">
+              <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
+                {t('feedback.selectProject')}
+              </label>
+              <select
+                value={formData.projectId}
+                onChange={(e) => setFormData(prev => ({ ...prev, projectId: e.target.value }))}
+                className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
+              >
+                <option value="">{t('feedback.selectProjectPlaceholder')}</option>
+                {projects.map(project => (
+                  <option key={project._id} value={project._id}>
+                    {project.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-        {/* Written Review */}
-        <div className="bg-white/5 border border-white/10 p-8">
-          <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
-            Tell us about your experience... (Optional)
-          </label>
-          <div className="relative">
-            <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-white/40" />
-            <textarea
-              value={formData.reviewText}
-              onChange={(e) => setFormData(prev => ({ ...prev, reviewText: e.target.value }))}
-              rows={6}
-              placeholder="Share your thoughts, suggestions, or any specific details about your experience..."
-              className="w-full pl-12 pr-4 py-4 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500 resize-none"
+          {/* User Info (for guests) */}
+          {!isAuthenticated && (
+            <div className="bg-white/5 border border-white/10 p-8 space-y-6">
+              <div>
+                <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
+                  {t('feedback.yourName')}
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    disabled={formData.isAnonymous}
+                    placeholder={t('feedback.namePlaceholder')}
+                    className="w-full pl-12 pr-4 py-3 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50"
+                  />
+                </div>
+              </div>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={formData.isAnonymous}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isAnonymous: e.target.checked, name: '' }))}
+                  className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2"
+                />
+                <span className="text-white/70 group-hover:text-white transition-colors">
+                  {t('feedback.anonymous')}
+                </span>
+              </label>
+            </div>
+          )}
+
+          {/* Ratings */}
+          <div className="bg-white/5 border border-white/10 p-8 space-y-8">
+            <h2 className="text-xl font-light tracking-wide uppercase text-white/90 mb-6">
+              {t('feedback.rateExperience')}
+            </h2>
+            
+            <StarRating
+              label={t('feedback.qualityOfWork')}
+              value={formData.ratings.quality}
+              onChange={(value) => handleRatingChange('quality', value)}
+            />
+            
+            <StarRating
+              label={t('feedback.deliverySpeed')}
+              value={formData.ratings.speed}
+              onChange={(value) => handleRatingChange('speed', value)}
+            />
+            
+            <StarRating
+              label={t('feedback.communication')}
+              value={formData.ratings.communication}
+              onChange={(value) => handleRatingChange('communication', value)}
+            />
+            
+            <StarRating
+              label={t('feedback.professionalism')}
+              value={formData.ratings.professionalism}
+              onChange={(value) => handleRatingChange('professionalism', value)}
+            />
+            
+            <StarRating
+              label={t('feedback.overallSatisfaction')}
+              value={formData.ratings.overall}
+              onChange={(value) => handleRatingChange('overall', value)}
+              size="lg"
             />
           </div>
-        </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading || !allRatingsComplete}
-            className={`
-              px-8 py-4 border border-[#d4af37] text-[#d4af37] text-sm font-light tracking-widest uppercase
-              hover:bg-[#d4af37] hover:text-black transition-all duration-500
-              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#d4af37]
-              flex items-center gap-3
-            `}
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin"></div>
-                Submitting...
-              </>
-            ) : (
-              <>
-                <Send className="w-5 h-5" />
-                Submit Feedback
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Written Review */}
+          <div className="bg-white/5 border border-white/10 p-8">
+            <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-4">
+              {t('feedback.tellUsExperience')}
+            </label>
+            <div className="relative">
+              <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-white/40" />
+              <textarea
+                value={formData.reviewText}
+                onChange={(e) => setFormData(prev => ({ ...prev, reviewText: e.target.value }))}
+                rows={6}
+                placeholder={t('feedback.reviewPlaceholder')}
+                className="w-full pl-12 pr-4 py-4 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500 resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={loading || !allRatingsComplete}
+              className={`
+                px-8 py-4 border border-[#d4af37] text-[#d4af37] text-sm font-light tracking-widest uppercase
+                hover:bg-[#d4af37] hover:text-black transition-all duration-500
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#d4af37]
+                flex items-center gap-3
+              `}
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin"></div>
+                  {t('feedback.submitting')}
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  {t('feedback.submitFeedback')}
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
       <Footer />
     </div>
@@ -354,4 +354,3 @@ const FeedbackForm = () => {
 };
 
 export default FeedbackForm;
-
