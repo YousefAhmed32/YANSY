@@ -122,11 +122,11 @@ const Footer = () => {
             </ul>
             <div className="space-y-3">
               <a
-                href={`mailto:support@yansy.com`}
+                href={`mailto:yansytech@gmail.com`}
                 className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'} ${textMuted} ${hoverText} transition-colors text-sm`}
               >
                 <Mail className="h-4 w-4" />
-                <span>support@yansy.com</span>
+                <span>yansytech@gmail.com</span>
               </a>
               {/* Enhanced WhatsApp Support Link */}
               <a

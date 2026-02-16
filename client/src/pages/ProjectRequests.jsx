@@ -266,76 +266,82 @@ const ProjectRequests = () => {
 
       {/* Filters */}
       <div className={`${surfaceClass} border ${borderClass} p-8 transition-colors duration-300`}>
-        <div className={`flex items-center gap-4 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Filter className={`w-5 h-5 ${textMuted}`} />
-          <h2 className={`text-sm font-light ${textMuted} tracking-widest uppercase`}>
-            {t('projectRequests.filters', 'Filters')}
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div>
-            <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
-              {t('projectRequests.status', 'Status')}
-            </label>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
-            >
-              <option value="">{t('projectRequests.allStatuses', 'All Statuses')}</option>
-              <option value="new">{t('projectRequests.new', 'New')}</option>
-              <option value="in-progress">{t('projectRequests.inProgress', 'In Progress')}</option>
-              <option value="completed">{t('projectRequests.completed', 'Completed')}</option>
-            </select>
-          </div>
+  <div className={`flex items-center gap-4 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <Filter className={`w-5 h-5 ${textMuted}`} />
+    <h2 className={`text-sm font-light ${textMuted} tracking-widest uppercase`}>
+      {t('projectRequests.filters', 'Filters')}
+    </h2>
+  </div>
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
-          <div>
-            <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
-              {t('projectRequests.clientType', 'Client Type')}
-            </label>
-            <select
-              value={filters.clientType}
-              onChange={(e) => handleFilterChange('clientType', e.target.value)}
-              className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
-            >
-              <option value="">{t('projectRequests.allTypes', 'All Types')}</option>
-              <option value="individual">{t('projectRequests.individual', 'Individual')}</option>
-              <option value="company">{t('projectRequests.company', 'Company')}</option>
-            </select>
-          </div>
+    {/* Status Filter */}
+    <div>
+      <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
+        {t('projectRequests.status', 'Status')}
+      </label>
+      <select
+        value={filters.status}
+        onChange={(e) => handleFilterChange('status', e.target.value)}
+        className={`w-full px-4 py-3 rounded-md ${isDark ? 'bg-black text-white hover:bg-white/5' : 'bg-white text-gray-900 hover:bg-gray-50'} border-b ${borderLight} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
+      >
+        <option value="">{t('projectRequests.allStatuses', 'All Statuses')}</option>
+        <option value="new">{t('projectRequests.new', 'New')}</option>
+        <option value="in-progress">{t('projectRequests.inProgress', 'In Progress')}</option>
+        <option value="completed">{t('projectRequests.completed', 'Completed')}</option>
+      </select>
+    </div>
 
-          <div>
-            <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
-              {t('projectRequests.budgetRange', 'Budget Range')}
-            </label>
-            <select
-              value={filters.budgetRange}
-              onChange={(e) => handleFilterChange('budgetRange', e.target.value)}
-              className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
-            >
-              <option value="">{t('projectRequests.allBudgets', 'All Budgets')}</option>
-              {Object.entries(budgetLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </div>
+    {/* Client Type Filter */}
+    <div>
+      <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
+        {t('projectRequests.clientType', 'Client Type')}
+      </label>
+      <select
+        value={filters.clientType}
+        onChange={(e) => handleFilterChange('clientType', e.target.value)}
+        className={`w-full px-4 py-3 rounded-md ${isDark ? 'bg-black text-white hover:bg-white/5' : 'bg-white text-gray-900 hover:bg-gray-50'} border-b ${borderLight} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
+      >
+        <option value="">{t('projectRequests.allTypes', 'All Types')}</option>
+        <option value="individual">{t('projectRequests.individual', 'Individual')}</option>
+        <option value="company">{t('projectRequests.company', 'Company')}</option>
+      </select>
+    </div>
 
-          <div>
-            <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
-              {t('projectRequests.sortBy', 'Sort By')}
-            </label>
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
-            >
-              <option value="createdAt">{t('projectRequests.date', 'Date')}</option>
-              <option value="budgetRange">{t('projectRequests.budget', 'Budget')}</option>
-              <option value="status">{t('projects.status', 'Status')}</option>
-            </select>
-          </div>
-        </div>
-      </div>
+    {/* Budget Range Filter */}
+    <div>
+      <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
+        {t('projectRequests.budgetRange', 'Budget Range')}
+      </label>
+      <select
+        value={filters.budgetRange}
+        onChange={(e) => handleFilterChange('budgetRange', e.target.value)}
+        className={`w-full px-4 py-3 rounded-md ${isDark ? 'bg-black text-white hover:bg-white/5' : 'bg-white text-gray-900 hover:bg-gray-50'} border-b ${borderLight} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
+      >
+        <option value="">{t('projectRequests.allBudgets', 'All Budgets')}</option>
+        {Object.entries(budgetLabels).map(([value, label]) => (
+          <option key={value} value={value}>{label}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Sort By Filter */}
+    <div>
+      <label className={`block text-sm font-light ${textMuted} tracking-wide uppercase mb-3`}>
+        {t('projectRequests.sortBy', 'Sort By')}
+      </label>
+      <select
+        value={filters.sortBy}
+        onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+        className={`w-full px-4 py-3 rounded-md ${isDark ? 'bg-black text-white hover:bg-white/5' : 'bg-white text-gray-900 hover:bg-gray-50'} border-b ${borderLight} font-light focus:outline-none focus:border-gold transition-colors duration-500`}
+      >
+        <option value="createdAt">{t('projectRequests.date', 'Date')}</option>
+        <option value="budgetRange">{t('projectRequests.budget', 'Budget')}</option>
+        <option value="status">{t('projects.status', 'Status')}</option>
+      </select>
+    </div>
+
+  </div>
+</div>
 
       {/* Requests List */}
       <div className={`${surfaceClass} border ${borderClass} transition-colors duration-300`}>
