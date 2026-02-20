@@ -31,6 +31,9 @@ const CursorGlow = () => {
   );
 };
 
+
+
+
 // ── Noise Overlay ────────────────────────────────────────────────────────────
 const NoiseOverlay = () => (
   <div
@@ -99,8 +102,15 @@ const Home = () => {
   const processRef    = useRef([]);
   const containerRef  = useRef(null);
 
+  
+
   const [isFormOpen,    setIsFormOpen]    = useState(false);
   const [activeProcess, setActiveProcess] = useState(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+const slideContainerRef = useRef(null);
+const isScrollingRef = useRef(false);
+const touchStartXRef = useRef(0);
+const touchStartYRef = useRef(0);
 
   // ── Process Steps ──────────────────────────────────────────────────────────
   const processSteps = isRTL
@@ -142,6 +152,8 @@ const Home = () => {
         const heroSubtitle    = textsRef.current[1];
         const heroValueProp   = textsRef.current[1.5];
         const heroCTAs        = textsRef.current[1.6];
+
+        
 
         if (heroSection && heroImage && heroTitle) {
           const heroTl = gsap.timeline({
@@ -242,16 +254,16 @@ const Home = () => {
         }
 
         // HORIZONTAL SCROLL
-        const horizontalSection   = sectionsRef.current[6];
-        const horizontalContainer = horizontalRef.current;
-        if (horizontalSection && horizontalContainer) {
-          const totalWidth = horizontalContainer.children.length * 70;
-          const scrollX    = isRTL ? `${totalWidth - 100}%` : `-${totalWidth - 100}%`;
-          gsap.to(horizontalContainer, {
-            x: scrollX, ease: 'none',
-            scrollTrigger: { trigger: horizontalSection, start: 'top top', end: '+=100%', scrub: 1, pin: true, anticipatePin: 1 },
-          });
-        }
+        // const horizontalSection   = sectionsRef.current[6];
+        // const horizontalContainer = horizontalRef.current;
+        // if (horizontalSection && horizontalContainer) {
+        //   const totalWidth = horizontalContainer.children.length * 70;
+        //   const scrollX    = isRTL ? `${totalWidth - 100}%` : `-${totalWidth - 100}%`;
+        //   gsap.to(horizontalContainer, {
+        //     x: scrollX, ease: 'none',
+        //     scrollTrigger: { trigger: horizontalSection, start: 'top top', end: '+=100%', scrub: 1, pin: true, anticipatePin: 1 },
+        //   });
+        // }
 
         // TECH
         const clientsSection = sectionsRef.current[7];
@@ -302,6 +314,139 @@ const Home = () => {
     };
   }, [language, isRTL]);
 
+
+  // ── Services Slider: Drag + Wheel + AutoPlay ──────────────────────────
+useEffect(() => {
+  const section = sectionsRef.current[6];
+  if (!section) return;
+
+  // ── State محلي داخل الـ effect ──
+  let current    = 0;           // mirror for activeSlide
+  let isDragging = false;
+  let startX     = 0;
+  let dragDelta  = 0;
+  let velX       = 0;
+  let lastX      = 0;
+  let lastT      = 0;
+  let locked     = false;       // wheel lock
+  let paused     = false;       // autoplay pause
+  let timer      = null;
+
+  // sync local current مع الـ React state
+  const goTo = (idx) => {
+    const next = Math.max(0, Math.min(3, idx));
+    current = next;
+    setActiveSlide(next);
+    if (slideContainerRef.current) {
+      slideContainerRef.current.style.transition = 'transform 0.9s cubic-bezier(0.77, 0, 0.175, 1)';
+      slideContainerRef.current.style.transform  = `translateX(-${next * 25}%)`;
+    }
+  };
+
+  const resetAutoPlay = () => {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (!paused) goTo(current >= 3 ? 0 : current + 1);
+    }, 4000);
+  };
+
+  resetAutoPlay();
+
+  // ── Wheel ──────────────────────────────────────────────────────────
+  const onWheel = (e) => {
+    const rect = section.getBoundingClientRect();
+    if (rect.top > 2 || rect.bottom < window.innerHeight - 2) return;
+    e.preventDefault();
+    if (locked) return;
+    locked = true;
+    const d = e.deltaY || e.deltaX;
+    if (Math.abs(d) > 15) {
+      goTo(d > 0 ? current + 1 : current - 1);
+      resetAutoPlay();
+    }
+    setTimeout(() => { locked = false; }, 950);
+  };
+
+  // ── Mouse Drag ────────────────────────────────────────────────────
+  const onMouseDown = (e) => {
+    if (e.target.closest('button')) return;
+    isDragging = true;
+    startX = e.clientX;
+    lastX  = e.clientX;
+    lastT  = Date.now();
+    velX   = 0;
+    dragDelta = 0;
+    paused = true;
+    section.style.cursor = 'grabbing';
+  };
+
+  const onMouseMove = (e) => {
+    if (!isDragging) return;
+    const now = Date.now();
+    const dt  = Math.max(now - lastT, 1);
+    velX      = (e.clientX - lastX) / dt;
+    lastX     = e.clientX;
+    lastT     = now;
+    dragDelta = e.clientX - startX;
+
+    // Live nudge feedback
+    if (slideContainerRef.current) {
+      const base  = -(current * 25);
+      const nudge = dragDelta * 0.06; // خفيف جداً — بس عشان اليوزر يحس إنه بيسحب
+      slideContainerRef.current.style.transition = 'none';
+      slideContainerRef.current.style.transform  = `translateX(calc(${base}% + ${nudge}px))`;
+    }
+  };
+
+  const onMouseUp = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    paused     = false;
+    section.style.cursor = 'grab';
+
+    const boost = velX * 100; // momentum
+    const total = dragDelta + boost;
+
+    if      (total < -55 && current < 3) goTo(current + 1);
+    else if (total >  55 && current > 0) goTo(current - 1);
+    else goTo(current); // snap back
+
+    resetAutoPlay();
+  };
+
+  // ── Touch ─────────────────────────────────────────────────────────
+  let touchX = 0;
+  const onTouchStart = (e) => {
+    touchX = e.touches[0].clientX;
+    paused = true;
+  };
+  const onTouchEnd = (e) => {
+    paused = false;
+    const dx = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 40) goTo(dx > 0 ? current + 1 : current - 1);
+    else goTo(current);
+    resetAutoPlay();
+  };
+
+  // ── Bind ──────────────────────────────────────────────────────────
+  section.style.cursor = 'grab';
+  section.addEventListener('wheel',      onWheel,      { passive: false });
+  section.addEventListener('mousedown',  onMouseDown);
+  section.addEventListener('touchstart', onTouchStart, { passive: true });
+  section.addEventListener('touchend',   onTouchEnd);
+  window.addEventListener('mousemove',   onMouseMove);
+  window.addEventListener('mouseup',     onMouseUp);
+
+  return () => {
+    clearInterval(timer);
+    section.removeEventListener('wheel',      onWheel);
+    section.removeEventListener('mousedown',  onMouseDown);
+    section.removeEventListener('touchstart', onTouchStart);
+    section.removeEventListener('touchend',   onTouchEnd);
+    window.removeEventListener('mousemove',   onMouseMove);
+    window.removeEventListener('mouseup',     onMouseUp);
+  };
+}, []); // [] عشان يشتغل مرة واحدة بس
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
     <div ref={containerRef} key={`home-${language}`} className="bg-black text-white overflow-x-hidden" dir={dir}>
@@ -587,9 +732,9 @@ const Home = () => {
           </div>
 
           {[
-            { ref: 0, imgSrc: '/assets/image/pro/e-commerce2.png', catKey: 'works.work1.category', catDef: 'E-commerce Infrastructure', titleKey: 'works.work1.title', titleDef: 'Nexus Commerce', descKey: 'works.work1.description', descDef: 'A growing e-commerce brand needed a platform...', imgLeft: false },
-            { ref: 1, imgSrc: '/assets/image/pro/vault.png',        catKey: 'works.work2.category', catDef: 'SaaS & Analytics',          titleKey: 'works.work2.title', titleDef: 'Vault Analytics', descKey: 'works.work2.description', descDef: 'A B2B SaaS company required a data platform...', imgLeft: true  },
-            { ref: 2, imgSrc: 'assets/image/pro/AirStudios.png',    catKey: 'works.work3.category', catDef: 'Digital Products',          titleKey: 'works.work3.title', titleDef: 'Aria Studio',     descKey: 'works.work3.description', descDef: 'A creative agency needed a digital workspace...', imgLeft: false },
+            { ref: 0, imgSrc: '/assets/image/GoImage/Ecommrce.png', catKey: 'works.work1.category', catDef: 'E-commerce Infrastructure', titleKey: 'works.work1.title', titleDef: 'Nexus Commerce', descKey: 'works.work1.description', descDef: 'A growing e-commerce brand needed a platform...', imgLeft: false },
+            { ref: 1, imgSrc: '/assets/image/GoImage/SaaS.png',        catKey: 'works.work2.category', catDef: 'SaaS & Analytics',          titleKey: 'works.work2.title', titleDef: 'Vault Analytics', descKey: 'works.work2.description', descDef: 'A B2B SaaS company required a data platform...', imgLeft: true  },
+            { ref: 2, imgSrc: 'assets/image/GoImage/stadio-1-2.png',    catKey: 'works.work3.category', catDef: 'Digital Products',          titleKey: 'works.work3.title', titleDef: 'Aria Studio',     descKey: 'works.work3.description', descDef: 'A creative agency needed a digital workspace...', imgLeft: false },
           ].map((w, wi) => (
             <div key={wi} ref={(el) => (worksRef.current[w.ref] = el)} className={`${wi < 2 ? 'mb-24 sm:mb-48' : ''} group`}>
               <div className={`grid grid-cols-1 lg:grid-cols-5 gap-8 sm:gap-16 items-center ${isRTL ? 'rtl' : ''}`}>
@@ -624,7 +769,7 @@ const Home = () => {
       {/* ══ 06 PINNED NARRATIVE (SAAS) ═══════════════════════════════════════ */}
       <section ref={(el) => (sectionsRef.current[5] = el)} className="relative min-h-screen h-screen overflow-hidden">
         <div className="absolute inset-0">
-          <img ref={(el) => (imagesRef.current[2] = el)} src="assets/image/pro/Saas.png" alt={homeT('saas.imageAlt', 'SaaS')} className="absolute inset-0 w-full h-full object-cover" style={{ willChange: 'transform' }} />
+          <img ref={(el) => (imagesRef.current[2] = el)} src="assets/image/GoImage/Strategy (1).png"  alt={homeT('saas.imageAlt', 'SaaS')} className="absolute inset-0 w-full h-full object-cover" style={{ willChange: 'transform' }} />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70" />
         <div className="relative z-20 h-full flex items-center justify-center px-4 sm:px-8">
@@ -639,15 +784,463 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ══ 07 HORIZONTAL SCROLL (SERVICES) ═════════════════════════════════ */}
-      <section ref={(el) => (sectionsRef.current[6] = el)} className="relative min-h-screen h-screen overflow-hidden bg-black">
+     {/* ══ 07 HORIZONTAL SCROLL (SERVICES) ═════════════════════════════════ */}
+
+{/* ══ 07 HORIZONTAL SCROLL (SERVICES) ═════════════════════════════════ */}
+<section
+  ref={(el) => (sectionsRef.current[6] = el)}
+  dir="ltr"
+  className="relative min-h-screen h-screen overflow-hidden bg-black select-none"
+>
+  <style>{`
+    @keyframes ring-fill {
+      from { stroke-dashoffset: 44; }
+      to   { stroke-dashoffset: 0; }
+    }
+    @keyframes srv-nudge {
+      0%, 100% { transform: translateX(0); }
+      50%       { transform: translateX(5px); }
+    }
+    @keyframes srv-icon-float {
+      0%,100% { transform: translateY(0px); }
+      50%      { transform: translateY(-7px); }
+    }
+    @keyframes srv-line-grow {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    .srv-line-grow { animation: srv-line-grow 4s linear forwards; transform-origin: left; }
+    .srv-icon-anim { animation: srv-icon-float 5s ease-in-out infinite; }
+  `}</style>
+
+  {/* ── Top progress bar ── */}
+  <div className="absolute top-0 left-0 right-0 h-px z-30 bg-white/5">
+    <div
+      key={`srv-bar-${activeSlide}`}
+      className="srv-line-grow h-full"
+      style={{ background: `linear-gradient(to right, #d4af37, #a07c18)` }}
+    />
+  </div>
+
+  {/* ── Slide counter ── */}
+  <div className={`absolute top-7 z-30 flex items-baseline gap-1 ${isRTL ? 'left-8' : 'right-8'}`}>
+    <span className="text-3xl font-light text-[#d4af37]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+      0{activeSlide + 1}
+    </span>
+    <span className="text-white/20 text-sm mx-1">/</span>
+    <span className="text-white/30 text-sm">04</span>
+  </div>
+
+  {/* ── Arrow prev ── */}
+  <button
+    onClick={() => setActiveSlide(p => Math.max(0, p - 1))}
+    disabled={activeSlide === 0}
+    className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 border border-white/15
+               flex items-center justify-center text-white/40
+               hover:border-[#d4af37]/60 hover:text-[#d4af37] hover:bg-[#d4af37]/5
+               transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none"
+  >
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+    </svg>
+  </button>
+
+  {/* ── Arrow next ── */}
+  <button
+    onClick={() => setActiveSlide(p => Math.min(3, p + 1))}
+    disabled={activeSlide === 3}
+    className="absolute z-30 w-11 h-11 border border-white/15
+               flex items-center justify-center text-white/40
+               hover:border-[#d4af37]/60 hover:text-[#d4af37] hover:bg-[#d4af37]/5
+               transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none
+               top-1/2 -translate-y-1/2"
+    style={{ right: isRTL ? 'auto' : '96px', left: isRTL ? '96px' : 'auto' }}
+  >
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
+
+  {/* ── Thumbnail strip ── */}
+  <div
+    className="absolute top-1/2 -translate-y-1/2 z-30 flex flex-col gap-3"
+    style={{ right: isRTL ? 'auto' : '20px', left: isRTL ? '20px' : 'auto' }}
+  >
+    {[
+      { bg: '/assets/image/GoImage/strategy-2.png', num: '01', color: '#d4af37' },
+      { bg: '/assets/image/GoImage/Design-3.png',   num: '02', color: '#c9a227' },
+      { bg: '/assets/image/GoImage/ENG.png',         num: '03', color: '#b8911f' },
+      { bg: '/assets/image/GoImage/grow-w-1.png',   num: '04', color: '#a07c18' },
+    ].map((sl, i) => (
+      <button
+        key={i}
+        onClick={() => setActiveSlide(i)}
+        className="relative overflow-hidden transition-all duration-500"
+        style={{
+          width:      activeSlide === i ? '48px' : '32px',
+          height:     activeSlide === i ? '64px' : '32px',
+          border:     `1px solid ${activeSlide === i ? sl.color + '70' : 'rgba(255,255,255,0.1)'}`,
+          background: 'transparent',
+          cursor:     'pointer',
+          padding:    0,
+          outline:    'none',
+        }}
+        aria-label={`Service ${sl.num}`}
+      >
+        <div style={{
+          position:           'absolute',
+          inset:              0,
+          backgroundImage:    `url(${sl.bg})`,
+          backgroundSize:     'cover',
+          backgroundPosition: 'center',
+          filter:             activeSlide === i ? 'brightness(0.6)' : 'brightness(0.3)',
+          transition:         'filter 0.5s',
+        }}/>
+        <span style={{
+          position:      'absolute',
+          bottom:        '3px',
+          left:          '50%',
+          transform:     'translateX(-50%)',
+          fontFamily:    "'Cormorant Garamond', serif",
+          fontSize:      '8px',
+          color:         activeSlide === i ? sl.color : 'rgba(255,255,255,0.25)',
+          letterSpacing: '0.08em',
+          transition:    'color 0.3s',
+        }}>
+          {sl.num}
+        </span>
+      </button>
+    ))}
+  </div>
+
+  {/* ── Bottom dots ── */}
+  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-5">
+    {[0,1,2,3].map(i => {
+      const dotColors = ['#d4af37','#c9a227','#b8911f','#a07c18'];
+      return (
+        <button
+          key={i}
+          onClick={() => setActiveSlide(i)}
+          className="relative w-5 h-5 flex items-center justify-center"
+          style={{ background:'none', border:'none', cursor:'pointer', padding:0 }}
+          aria-label={`Slide ${i+1}`}
+        >
+          {activeSlide === i && (
+            <svg className="absolute inset-0 w-5 h-5" style={{ transform:'rotate(-90deg)' }} viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="7" fill="none" stroke={dotColors[i]} strokeWidth="1" strokeOpacity="0.25"/>
+              <circle
+                key={`ring-${activeSlide}`}
+                cx="10" cy="10" r="7"
+                fill="none" stroke={dotColors[i]} strokeWidth="1.5"
+                strokeDasharray="44" strokeDashoffset="44"
+                style={{ animation:'ring-fill 4s linear forwards' }}
+              />
+            </svg>
+          )}
+          <span style={{
+            display:         'block',
+            width:           activeSlide === i ? '5px' : '3px',
+            height:          activeSlide === i ? '5px' : '3px',
+            borderRadius:    '50%',
+            backgroundColor: activeSlide === i ? dotColors[i] : 'rgba(255,255,255,0.28)',
+            transition:      'all 0.4s',
+          }}/>
+        </button>
+      );
+    })}
+  </div>
+
+  {/* ── Drag hint ── */}
+  <div
+    className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none transition-opacity duration-500"
+    style={{ opacity: activeSlide === 0 ? 0.35 : 0 }}
+  >
+    <svg className="w-3 h-3 text-white/40" style={{ animation:'srv-nudge 2s ease-in-out infinite' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+    </svg>
+    <span className="text-[9px] tracking-[0.3em] uppercase text-white/25">
+      {isRTL ? 'اسحب' : 'drag'}
+    </span>
+  </div>
+
+  {/* ── Slides track ── */}
+  <div
+    ref={slideContainerRef}
+    className="flex h-full"
+    dir="ltr"
+    style={{
+      width:      '400%',
+      transform:  `translateX(-${activeSlide * 25}%)`,
+      transition: 'transform 0.9s cubic-bezier(0.77, 0, 0.175, 1)',
+      willChange: 'transform',
+    }}
+  >
+    {[
+      {
+        bg:   '/assets/image/GoImage/strategy-2.png',
+        tKey: 'services.strategy',     tDef: 'Strategy',
+        dKey: 'services.strategyDesc', dDef: 'Research. Discovery. Architecture.',
+        num: '01', color: '#d4af37',
+        tags: isRTL ? ['بحث المستخدم','هندسة المعلومات','خارطة الطريق'] : ['User Research','Information Architecture','Roadmapping'],
+        icon: (
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1">
+            <circle cx="22" cy="22" r="16" strokeOpacity="0.35"/>
+            <circle cx="22" cy="22" r="9"/>
+            <line x1="22" y1="6"  x2="22" y2="13"/>
+            <line x1="22" y1="31" x2="22" y2="38"/>
+            <line x1="6"  y1="22" x2="13" y2="22"/>
+            <line x1="31" y1="22" x2="38" y2="22"/>
+            <circle cx="22" cy="22" r="2.5" fill="currentColor"/>
+          </svg>
+        ),
+      },
+      {
+        bg:   '/assets/image/GoImage/Design-3.png',
+        tKey: 'services.design',      tDef: 'Design',
+        dKey: 'services.designDesc',  dDef: 'User experience. Interface. Motion.',
+        num: '02', color: '#c9a227',
+        tags: isRTL ? ['تجربة المستخدم','واجهة المستخدم','حركة'] : ['UX/UI','Design Systems','Motion'],
+        icon: (
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1">
+            <path d="M9 35 L22 9 L35 35 Z" strokeOpacity="0.35"/>
+            <line x1="14" y1="27" x2="30" y2="27"/>
+            <circle cx="22" cy="22" r="3" fill="currentColor" fillOpacity="0.55"/>
+          </svg>
+        ),
+      },
+      {
+        bg:   '/assets/image/GoImage/ENG.png',
+        tKey: 'services.engineering',     tDef: 'Engineering',
+        dKey: 'services.engineeringDesc', dDef: 'Development. Integration. Deployment.',
+        num: '03', color: '#b8911f',
+        tags: isRTL ? ['تطوير','تكامل','نشر'] : ['Development','Integration','Deployment'],
+        icon: (
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1">
+            <rect x="9" y="9" width="26" height="26" rx="2" strokeOpacity="0.35"/>
+            <path d="M15 20 L20 25 L15 30" strokeLinecap="round" strokeLinejoin="round"/>
+            <line x1="22" y1="30" x2="29" y2="30" strokeLinecap="round"/>
+          </svg>
+        ),
+      },
+      {
+        bg:   '/assets/image/GoImage/grow-w-1.png',
+        tKey: 'services.growth',      tDef: 'Growth',
+        dKey: 'services.growthDesc',  dDef: 'Optimization. Analytics. Scale.',
+        num: '04', color: '#a07c18',
+        tags: isRTL ? ['تحسين','تحليلات','توسع'] : ['Optimization','Analytics','Scale'],
+        icon: (
+          <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1">
+            <polyline points="9,33 18,22 25,27 35,11" strokeOpacity="0.35"/>
+            <polyline points="9,33 18,22 25,27 35,11"/>
+            <circle cx="35" cy="11" r="3" fill="currentColor" fillOpacity="0.55"/>
+          </svg>
+        ),
+      },
+    ].map((s, si) => (
+      <div
+        key={s.tDef}
+        className="relative h-full overflow-hidden"
+        style={{ width:'25%', flexShrink:0 }}
+      >
+        {/* ── BG image — واضحة بدون overlays ── */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:    `url(${s.bg})`,
+            backgroundSize:     'cover',
+            backgroundPosition: 'center',
+            transform:          activeSlide === si ? 'scale(1.05)' : 'scale(1)',
+            transition:         'transform 12s ease-out',
+          }}
+        />
+
+        {/* Vertical accent stripe */}
+        <div
+          className="absolute top-[18%] bottom-[18%]"
+          style={{
+            [isRTL ? 'right' : 'left']: 0,
+            width:           '2px',
+            background:      `linear-gradient(to bottom, transparent, ${s.color}, transparent)`,
+            opacity:         activeSlide === si ? 0.75 : 0,
+            transform:       activeSlide === si ? 'scaleY(1)' : 'scaleY(0)',
+            transition:      'all 0.7s 0.25s',
+            transformOrigin: 'center',
+          }}
+        />
+
+        {/* Ghost number */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            fontFamily:  "'Cormorant Garamond', serif",
+            fontWeight:  300,
+            fontSize:    'clamp(9rem, 18vw, 18rem)',
+            lineHeight:  1,
+            color:       `${s.color}15`,
+            bottom:      '4%',
+            right:       isRTL ? 'auto' : '2%',
+            left:        isRTL ? '2%'   : 'auto',
+            opacity:     activeSlide === si ? 1 : 0,
+            transform:   activeSlide === si ? 'translateY(0)' : 'translateY(50px)',
+            transition:  'all 1s 0.1s',
+          }}
+        >
+          {s.num}
+        </div>
+
+        {/* ── Content ── */}
+        <div className={`absolute inset-0 flex items-center ${isRTL ? 'justify-end' : 'justify-start'}`}>
+          <div
+            className="w-full max-w-xl"
+            style={{ padding: isRTL ? '0 5rem 0 2rem' : '0 2rem 0 5rem' }}
+          >
+
+            {/* Floating icon */}
+            <div
+              className="srv-icon-anim mb-7"
+              style={{
+                width:       46,
+                height:      46,
+                color:       s.color,
+                opacity:     activeSlide === si ? 1 : 0,
+                transform:   activeSlide === si ? 'translateY(0)' : 'translateY(12px)',
+                transition:  'opacity 0.5s 0.2s, transform 0.5s 0.2s',
+                marginLeft:  isRTL ? 'auto' : 0,
+                marginRight: isRTL ? 0 : 'auto',
+              }}
+            >
+              {s.icon}
+            </div>
+
+            {/* Label */}
+            <p
+              style={{
+                fontFamily:    "'Montserrat', sans-serif",
+                fontSize:      '10px',
+                letterSpacing: '0.45em',
+                textTransform: 'uppercase',
+                color:         s.color,
+                opacity:       activeSlide === si ? 0.9 : 0,
+                transform:     activeSlide === si ? 'translateY(0)' : 'translateY(10px)',
+                transition:    'all 0.5s 0.3s',
+                marginBottom:  '14px',
+              }}
+            >
+              {isRTL ? 'خدماتنا' : 'Our Services'}
+            </p>
+
+            {/* Title */}
+            <h3
+              style={{
+                fontFamily:   "'Cormorant Garamond', serif",
+                fontSize:     'clamp(3.5rem, 7vw, 8rem)',
+                fontWeight:   300,
+                lineHeight:   0.92,
+                color:        '#ffffff',
+                marginBottom: '18px',
+                opacity:      activeSlide === si ? 1 : 0,
+                transform:    activeSlide === si ? 'translateY(0)' : 'translateY(22px)',
+                transition:   'all 0.6s 0.38s',
+                textShadow:   '0 2px 20px rgba(0,0,0,0.8)',
+              }}
+            >
+              {homeT(s.tKey, s.tDef)}
+            </h3>
+
+            {/* Divider */}
+            <div style={{
+              height:       '1px',
+              width:        activeSlide === si ? '55px' : '0px',
+              background:   `linear-gradient(to ${isRTL ? 'left' : 'right'}, ${s.color}, transparent)`,
+              marginBottom: '18px',
+              marginLeft:   isRTL ? 'auto' : 0,
+              transition:   'width 0.55s 0.52s',
+            }}/>
+
+            {/* Description */}
+            <p
+              style={{
+                fontFamily:   "'Montserrat', sans-serif",
+                fontSize:     'clamp(0.9rem, 1.5vw, 1.2rem)',
+                fontWeight:   300,
+                color:        'rgba(255,255,255,0.85)',
+                lineHeight:   1.75,
+                marginBottom: '24px',
+                opacity:      activeSlide === si ? 1 : 0,
+                transform:    activeSlide === si ? 'translateY(0)' : 'translateY(15px)',
+                transition:   'all 0.5s 0.58s',
+                textShadow:   '0 1px 10px rgba(0,0,0,0.9)',
+              }}
+            >
+              {homeT(s.dKey, s.dDef)}
+            </p>
+
+            {/* Tags */}
+            <div
+              style={{
+                display:       'flex',
+                flexWrap:      'wrap',
+                gap:           '8px',
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                opacity:       activeSlide === si ? 1 : 0,
+                transform:     activeSlide === si ? 'translateY(0)' : 'translateY(10px)',
+                transition:    'all 0.5s 0.68s',
+              }}
+            >
+              {s.tags.map(tag => (
+                <span
+                  key={tag}
+                  style={{
+                    padding:        '6px 13px',
+                    fontSize:       '10px',
+                    fontFamily:     "'Montserrat', sans-serif",
+                    letterSpacing:  '0.22em',
+                    textTransform:  'uppercase',
+                    color:          s.color,
+                    border:         `1px solid ${s.color}60`,
+                    background:     'rgba(0,0,0,0.45)',
+                    backdropFilter: 'blur(6px)',
+                    transition:     'all 0.3s',
+                    cursor:         'default',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = s.color;
+                    e.currentTarget.style.background  = `${s.color}20`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = `${s.color}60`;
+                    e.currentTarget.style.background  = 'rgba(0,0,0,0.45)';
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+          </div>
+        </div>
+
+        {/* Bottom progress line */}
+        <div className="absolute bottom-0 left-0 right-0 h-px" style={{ backgroundColor:`${s.color}20` }}>
+          <div style={{
+            height:          '100%',
+            backgroundColor: s.color,
+            width:           activeSlide === si ? '100%' : '0%',
+            transition:      activeSlide === si ? 'width 4s linear' : 'width 0s',
+          }}/>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+      {/* <section ref={(el) => (sectionsRef.current[6] = el)} className="relative min-h-screen h-screen overflow-hidden bg-black">
         <div className="h-full flex items-center">
           <div ref={horizontalRef} className="flex gap-0" style={{ width: '400%' }}>
             {[
-              { bg: '/assets/image/Designer30.png', tKey: 'services.strategy',    tDef: 'Strategy',    dKey: 'services.strategyDesc',    dDef: 'Research. Discovery. Architecture.' },
-              { bg: '/assets/image/Designer20.png', tKey: 'services.design',      tDef: 'Design',      dKey: 'services.designDesc',      dDef: 'User experience. Interface. Motion.' },
-              { bg: '/assets/image/Designer25.png', tKey: 'services.engineering', tDef: 'Engineering', dKey: 'services.engineeringDesc', dDef: 'Development. Integration. Deployment.' },
-              { bg: '/assets/image/Designer27.png', tKey: 'services.growth',      tDef: 'Growth',      dKey: 'services.growthDesc',      dDef: 'Optimization. Analytics. Scale.' },
+              { bg: '/assets/image/GoImage/strategy-2.png', tKey: 'services.strategy',    tDef: 'Strategy',    dKey: 'services.strategyDesc',    dDef: 'Research. Discovery. Architecture.' },
+              { bg: '/assets/image/GoImage/Design-3.png', tKey: 'services.design',      tDef: 'Design',      dKey: 'services.designDesc',      dDef: 'User experience. Interface. Motion.' },
+              { bg: '/assets/image/GoImage/ENG.png', tKey: 'services.engineering', tDef: 'Engineering', dKey: 'services.engineeringDesc', dDef: 'Development. Integration. Deployment.' },
+              { bg: '/assets/image/GoImage/grow-w-1.png', tKey: 'services.growth',      tDef: 'Growth',      dKey: 'services.growthDesc',      dDef: 'Optimization. Analytics. Scale.' },
             ].map((s) => (
               <div key={s.tDef} className="relative w-screen h-screen flex items-center justify-center text-white" style={{ backgroundImage: `url(${s.bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="absolute inset-0 bg-black/70" />
@@ -659,7 +1252,7 @@ const Home = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ══ 08 TECHNOLOGIES ══════════════════════════════════════════════════ */}
       <section ref={(el) => (sectionsRef.current[7] = el)} className="min-h-screen flex items-center px-4 sm:px-6 md:px-8 py-20 sm:py-32 bg-black relative overflow-hidden">

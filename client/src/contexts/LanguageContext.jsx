@@ -15,60 +15,51 @@ export const useLanguage = () => {
 export const LanguageProvider = ({ children }) => {
   const { i18n } = useTranslation();
   
-  // Initialize language from localStorage (single source of truth)
+  // Initialize language — localStorage أولاً، بعدين المتصفح، بعدين 'en'
   const [language, setLanguage] = useState(() => {
+    // 1. لو المستخدم اختار قبل كده — احترم اختياره
     const saved = localStorage.getItem('language');
     if (saved && ['en', 'ar'].includes(saved)) {
       return saved;
     }
-    // Fallback to i18n's current language (only on initial mount)
-    const currentLang = i18n.language?.split('-')[0] || 'en';
-    return ['en', 'ar'].includes(currentLang) ? currentLang : 'en';
+
+    // 2. أول مرة — شيل من المتصفح مباشرة
+    const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+    const detected = browserLang.startsWith('ar') ? 'ar' : 'en';
+    return detected;
   });
 
-  // Ref to prevent sync loop - tracks if we're updating i18n internally
+  // Ref to prevent sync loop
   const isUpdatingI18nRef = useRef(false);
   
   // Initialize: Sync i18n and DOM on mount (only once)
   useEffect(() => {
-    // Update i18n to match our state
     if (i18n.language !== language) {
       isUpdatingI18nRef.current = true;
       i18n.changeLanguage(language).catch(console.error);
       isUpdatingI18nRef.current = false;
     }
-    
-    // Apply RTL/LTR direction
     applyLanguageDirection(language);
-    
-    // Ensure localStorage is set
     localStorage.setItem('language', language);
-  }, []); // Empty deps - ONLY run on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Effect: Apply language changes to i18n and DOM
-  // This runs when language state changes (user action)
   useEffect(() => {
-    // Update i18n (skip if already updating to prevent loop)
     if (!isUpdatingI18nRef.current && i18n.language !== language) {
       isUpdatingI18nRef.current = true;
       i18n.changeLanguage(language).catch((err) => {
         console.error('Failed to change language:', err);
         isUpdatingI18nRef.current = false;
       });
-      // Reset flag after a microtask to allow i18n to update
       Promise.resolve().then(() => {
         isUpdatingI18nRef.current = false;
       });
     }
-    
-    // Update DOM direction (always apply)
     applyLanguageDirection(language);
-    
-    // Save to localStorage (always save)
     localStorage.setItem('language', language);
-  }, [language]); // Only depend on language state - NOT i18n object
+  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Stable toggle function using functional update
+  // Stable toggle function
   const toggleLanguage = useCallback(() => {
     setLanguage(prev => prev === 'en' ? 'ar' : 'en');
   }, []);
@@ -82,13 +73,11 @@ export const LanguageProvider = ({ children }) => {
     setLanguage(newLang);
   }, []);
 
-  // Derived values (computed from language, not separate state)
+  // Derived values
   const isRTL = language === 'ar';
   const isLTR = language === 'en';
-  const dir = isRTL ? 'rtl' : 'ltr';
+  const dir   = isRTL ? 'rtl' : 'ltr';
 
-  // Memoize context value to prevent unnecessary re-renders
-  // Only recreate when language actually changes
   const value = useMemo(() => ({
     language,
     changeLanguage,
@@ -96,7 +85,11 @@ export const LanguageProvider = ({ children }) => {
     isRTL,
     isLTR,
     dir,
-  }), [language, changeLanguage, toggleLanguage]);
+  }), [language, changeLanguage, toggleLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+  return (
+    <LanguageContext.Provider value={value}>
+      {children}
+    </LanguageContext.Provider>
+  );
 };

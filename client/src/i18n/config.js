@@ -23,10 +23,16 @@ i18n
       escapeValue: false,
     },
     detection: {
+      // الترتيب: localStorage الأول — لو محفوظ خد منه
+      // navigator تاني  — أول مرة خد من المتصفح
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      // بنحول ar-SA / ar-EG وغيره لـ ar
+      convertDetectedLanguage: (lng) => {
+        if (lng.startsWith('ar')) return 'ar';
+        return 'en';
+      },
     },
   });
 
 export default i18n;
-
