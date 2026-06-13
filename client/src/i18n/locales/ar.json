@@ -1,0 +1,888 @@
+{
+  "common": {
+    "welcome": "أهلاً وسهلاً",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "register": "ابدأ الآن",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "name": "الاسم",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "save": "حفظ التغييرات",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ ما",
+    "success": "تم بنجاح!",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "upload": "رفع ملف",
+    "uploading": "جارٍ الرفع...",
+    "clickToUpload": "اضغط لرفع الملف",
+    "by": "بواسطة",
+    "actions": "إجراءات",
+    "page": "صفحة",
+    "of": "من",
+    "confirmDelete": "هل أنت متأكد؟ لا يمكن التراجع عن هذا.",
+    "client": "العميل",
+    "targetDate": "الموعد المستهدف",
+    "toggleTheme": "تغيير المظهر",
+    "toggleLanguage": "تغيير اللغة",
+    "toggleMenu": "القائمة",
+    "user": "مستخدم",
+    "admin": "المدير",
+    "goToApp": "الذهاب للوحة التحكم",
+    "projectRequests": "طلبات المشاريع"
+  },
+  "auth": {
+    "loginTitle": "أهلاً بعودتك",
+    "registerTitle": "ابدأ رحلتك مع YANSY",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة، حاول مجدداً.",
+    "loginSuccess": "أهلاً بعودتك! سعداء برؤيتك.",
+    "registerSuccess": "تم إنشاء حسابك! مرحباً في YANSY.",
+    "welcomeBack": "أهلاً بعودتك",
+    "signInContinue": "سجّل دخولك للمتابعة",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "emailPlaceholder": "بريدك@الإلكتروني.com",
+    "passwordPlaceholder": "••••••••",
+    "signingIn": "جارٍ تسجيل الدخول...",
+    "signIn": "دخول",
+    "createAccount": "إنشاء حساب",
+    "fillAllFields": "يرجى تعبئة جميع الحقول للمتابعة",
+    "loginFailed": "تعذّر تسجيل الدخول، يرجى المحاولة مجدداً."
+  },
+  "register": {
+    "subtitle": "انضم إلى YANSY — حيث تُولد المنتجات الرقمية الناجحة",
+    "personalInfo": "معلوماتك الشخصية",
+    "businessInfo": "معلومات عملك",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "اسمك الكامل",
+    "phoneNumber": "رقم الهاتف",
+    "phoneNumberPlaceholder": "+966 50 123 4567",
+    "passwordPlaceholder": "6 أحرف على الأقل",
+    "brandName": "اسم العلامة التجارية",
+    "brandNamePlaceholder": "اسم علامتك التجارية",
+    "companyName": "اسم الشركة",
+    "companyNamePlaceholder": "اسم شركتك",
+    "brandOrCompanyHint": "أدخل اسم علامتك التجارية أو شركتك",
+    "brandOrCompanyRequired": "يرجى إدخال اسم العلامة التجارية أو الشركة",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
+    "registrationFailed": "تعذّر إنشاء الحساب، يرجى المحاولة مجدداً.",
+    "createAccount": "إنشاء حسابي",
+    "creatingAccount": "جارٍ إعداد حسابك...",
+    "privacyNote": "معلوماتك في أمان تام. نحن لا نشارك بياناتك مع أي طرف."
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "overview": "نظرة عامة",
+    "projects": "المشاريع",
+    "messages": "الرسائل",
+    "analytics": "التحليلات",
+    "settings": "الإعدادات",
+    "welcome": "أهلاً",
+    "welcomeUser": "أهلاً {{name}}، سعداء بوجودك",
+    "subtitle": "كل ما تحتاجه لتقديم عمل استثنائي — في مكان واحد.",
+    "viewProjects": "تابع مشاريعك وأدِرها باحترافية",
+    "communicate": "ابقَ على تواصل مع فريقك",
+    "viewInsights": "راقب أداءك وتحليلاتك",
+    "needHelp": "تحتاج مساعدة للبدء؟",
+    "startFirstProject": "أطلق مشروعك الأول",
+    "loading": "جارٍ تحميل مساحة عملك...",
+    "workspace": "مساحة عمل {{name}}",
+    "greetingMorning": "صباح الخير",
+    "greetingAfternoon": "مساء الخير",
+    "greetingEvening": "مساء النور",
+    "happeningNow": "إليك ما يجري في مشاريعك",
+    "totalProjects": "إجمالي المشاريع",
+    "inProgress": "قيد التنفيذ",
+    "completed": "مكتملة",
+    "recentProjects": "المشاريع الأخيرة",
+    "quickActions": "إجراءات سريعة",
+    "platformStatus": "حالة المنصة",
+    "recentMessages": "الرسائل الأخيرة",
+    "aiInsight": "تحليل ذكي",
+    "accountOverview": "نظرة على حسابك"
+  },
+  "profile": {
+    "title": "ملفك الشخصي",
+    "personalInfo": "المعلومات الشخصية",
+    "businessInfo": "معلومات العمل",
+    "changePassword": "تغيير كلمة المرور",
+    "saveProfile": "حفظ الملف الشخصي",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم تحديث الملف",
+    "saveFailed": "فشل الحفظ",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "updatePassword": "تحديث كلمة المرور",
+    "updating": "جارٍ التحديث…",
+    "passwordUpdated": "تم تحديث كلمة المرور بنجاح",
+    "passwordMismatch": "كلمتا المرور الجديدتان غير متطابقتين",
+    "passwordTooShort": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    "passwordFailed": "فشل تحديث كلمة المرور",
+    "backToDashboard": "العودة للوحة التحكم"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "خصّص تفضيلات مساحة عملك",
+    "appearance": "المظهر",
+    "language": "اللغة والمنطقة",
+    "notifications": "الإشعارات",
+    "security": "الأمان",
+    "darkMode": "الوضع الداكن",
+    "theme": "السمة",
+    "projectUpdates": "تحديثات المشاريع",
+    "newMessages": "رسائل جديدة",
+    "platformUpdates": "تحديثات المنصة",
+    "weeklySummary": "ملخص أسبوعي",
+    "savePreferences": "حفظ التفضيلات",
+    "preferencesSaved": "تم حفظ التفضيلات",
+    "twoFactor": "التحقق الثنائي",
+    "twoFactorComingSoon": "قريباً",
+    "activeSessions": "الجلسات النشطة",
+    "backToDashboard": "العودة للوحة التحكم"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "تعيين الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات بعد",
+    "unreadCount": "{{count}} جديد"
+  },
+  "projects": {
+    "title": "المشاريع",
+    "myProjects": "مشاريعي",
+    "allProjects": "جميع المشاريع",
+    "createProject": "مشروع جديد",
+    "addNewProject": "إضافة مشروع جديد",
+    "addShort": "إضافة",
+    "projectDetails": "تفاصيل المشروع",
+    "progress": "نسبة الإنجاز",
+    "phase": "المرحلة الحالية",
+    "status": "الحالة",
+    "updates": "التحديثات",
+    "files": "الملفات",
+    "noProjects": "لا توجد مشاريع بعد — أطلق مشروعك الأول الآن",
+    "noUpdates": "لا توجد تحديثات حتى الآن",
+    "noDescription": "لا يوجد وصف",
+    "client": "العميل",
+    "targetDate": "موعد التسليم المتوقع",
+    "viewDetails": "عرض التفاصيل",
+    "updatedOn": "آخر تحديث",
+    "projectSingular": "مشروع",
+    "projectPlural": "مشاريع",
+    "updateSingular": "تحديث",
+    "updatePlural": "تحديثات",
+    "statusPending": "في الانتظار",
+    "statusInProgress": "قيد التنفيذ",
+    "statusNearCompletion": "على وشك الاكتمال",
+    "statusDelivered": "تم التسليم ✓",
+    "statusCancelled": "ملغي"
+  },
+  "projectRequests": {
+    "title": "الطلبات الواردة",
+    "subtitle": "راجع وأدِر طلبات المشاريع الجديدة",
+    "totalRequests": "إجمالي الطلبات",
+    "new": "جديد",
+    "inProgress": "قيد المعالجة",
+    "completed": "مكتمل",
+    "filters": "تصفية",
+    "status": "الحالة",
+    "allStatuses": "الكل",
+    "clientType": "نوع العميل",
+    "allTypes": "الكل",
+    "individual": "فرد",
+    "company": "شركة",
+    "budgetRange": "الميزانية",
+    "allBudgets": "أي ميزانية",
+    "sortBy": "ترتيب حسب",
+    "date": "التاريخ",
+    "budget": "الميزانية",
+    "requests": "الطلبات",
+    "noRequests": "لا توجد طلبات بعد",
+    "projectDescription": "وصف المشروع",
+    "adminNotes": "ملاحظات داخلية",
+    "updateStatus": "تحديث الحالة",
+    "updateRequestStatus": "تحديث هذا الطلب",
+    "cancel": "إلغاء",
+    "update": "حفظ التغييرات",
+    "addNotes": "أضف ملاحظاتك حول هذا الطلب...",
+    "updateFailed": "فشل التحديث، يرجى المحاولة مجدداً.",
+    "lessThan500": "أقل من 500$",
+    "500to1000": "500$ – 1,000$",
+    "1000to3000": "1,000$ – 3,000$",
+    "3000to10000": "3,000$ – 10,000$",
+    "10000plus": "أكثر من 10,000$"
+  },
+  "messages": {
+    "title": "الدعم",
+    "inbox": "صندوق الدعم",
+    "compose": "تواصل مع الدعم",
+    "send": "إرسال",
+    "noMessages": "لا رسائل بعد",
+    "newMessage": "محادثة جديدة",
+    "reply": "رد",
+    "typeMessage": "اكتب رسالتك…",
+    "selectThread": "اختر محادثة",
+    "createThread": "تواصل مع الدعم",
+    "emptyTitle": "مركز الدعم",
+    "emptyBody": "هل تحتاج مساعدة؟ فريقنا هنا لك. ابدأ محادثة وسنرد في أقرب وقت.",
+    "contactSupport": "تواصل مع الدعم",
+    "teamResponse": "فريقنا يرد خلال ساعتين عادةً",
+    "categories": {
+      "support": "الدعم التقني",
+      "sales": "استفسار مبيعات",
+      "billing": "سؤال فواتير",
+      "project": "نقاش مشروع",
+      "technical": "تقرير خطأ",
+      "general": "عام"
+    },
+    "statuses": {
+      "open": "مفتوح",
+      "waiting_for_admin": "ننتظر ردنا",
+      "waiting_for_customer": "ينتظر ردك",
+      "resolved": "محلول",
+      "closed": "مغلق"
+    },
+    "priorities": {
+      "low": "منخفض",
+      "medium": "متوسط",
+      "high": "مرتفع",
+      "urgent": "عاجل"
+    }
+  },
+  "analytics": {
+    "title": "التحليلات",
+    "totalSessions": "إجمالي الجلسات",
+    "activeSessions": "النشطون الآن",
+    "avgDuration": "متوسط المدة",
+    "pageViews": "مشاهدات الصفحات",
+    "topPages": "الصفحات الأكثر زيارة",
+    "topSections": "الأقسام الأكثر تفاعلاً",
+    "sessionMetrics": "مقاييس الأداء",
+    "views": "مشاهدة",
+    "noData": "لا توجد بيانات متاحة بعد"
+  },
+  "users": {
+    "title": "الفريق",
+    "allUsers": "جميع المستخدمين",
+    "createUser": "إضافة مستخدم",
+    "role": "الصلاحية",
+    "lastLogin": "آخر نشاط",
+    "status": "الحالة"
+  },
+  "landing": {
+    "nav": {
+      "platform": "المنصة",
+      "solutions": "الحلول",
+      "features": "المميزات",
+      "contact": "تواصل معنا",
+      "getStarted": "ابدأ مشروعك",
+      "work": "أعمالنا",
+      "support": "الدعم"
+    },
+    "hero": {
+      "badge": "استوديو تطوير منتجات رقمية — منذ 2020",
+      "title1": "نبني منتجات رقمية",
+      "title2": "تحقق نتائج حقيقية",
+      "description": "YANSY تحوّل أفكارك الطموحة إلى منتجات رقمية عالية الأداء. استراتيجية، تصميم، وهندسة — بدقة واحترافية.",
+      "cta": "ابدأ مشروعك الآن",
+      "learnMore": "شاهد أعمالنا",
+      "credentials": "50+ مشروع منجز • موثوق منذ 2020",
+      "title": "YANSY",
+      "subtitle": "شريكك في بناء منتجات رقمية تنمو مع أعمالك",
+      "descriptionFull": "نبني منتجات رقمية تصنع أثراً حقيقياً في أعمالك — من خلال تفكير استراتيجي، هندسة مؤسسية، وتصميم يضع مستخدمك في المركز.",
+      "startProject": "ابدأ مشروعك",
+      "viewWork": "شاهد أعمالنا",
+      "imageAlt": "YANSY — استوديو المنتجات الرقمية"
+    },
+    "why": {
+      "title": "لماذا YANSY؟",
+      "subtitle": "رأينا هذه التحديات تعيق الشركات مراراً. إليك كيف نحلّها.",
+      "problems": {
+        "title": "هل تعاني من هذا؟",
+        "time": "ساعات مهدرة في أدوات متفرقة وتحديثات يدوية",
+        "organization": "مشاريع تفقد المتابعة وتفوّت المواعيد",
+        "communication": "سوء تواصل يكلّف وقتاً ومالاً",
+        "visibility": "لا تعرف بالضبط أين يقف مشروعك الآن"
+      },
+      "solutions": {
+        "title": "الطريقة الـ YANSY",
+        "efficiency": "سير عمل مبسّط — فريقك يتحرك أسرع",
+        "collaboration": "منصة واحدة تجمع الجميع في نفس الصفحة",
+        "realtime": "تواصل فوري وتحديثات لحظية، صفر ارتباك",
+        "insights": "تحليلات واضحة تعرّفك دائماً ما الذي يشتغل"
+      }
+    },
+    "features": {
+      "title": "مبني للنتائج",
+      "subtitle": "كل ميزة صُمِّمت لمساعدتك على التسليم بشكل أفضل وأسرع",
+      "projectManagement": {
+        "title": "إدارة مشاريع ذكية",
+        "description": "مراحل منظمة، معالم واضحة، تقدم لحظي. كل ما يحتاجه فريقك للتسليم في الوقت المحدد."
+      },
+      "clientCommunication": {
+        "title": "بوابة العملاء",
+        "description": "أعطِ عملاءك مساحة خاصة لمتابعة التقدم ومراجعة التحديثات — بدون بريد إلكتروني لا نهاية له."
+      },
+      "realTimeMessaging": {
+        "title": "رسائل فورية",
+        "description": "محادثات منظمة تبقي فريقك وعملاءك على تزامن تام."
+      },
+      "analytics": {
+        "title": "تحليلات الأداء",
+        "description": "اعرف بالضبط كيف تسير مشاريعك. تابع إنتاجية الفريق، تفاعل العملاء، ومؤشرات التسليم."
+      },
+      "security": {
+        "title": "أمان مؤسسي",
+        "description": "تشفير من طرف لطرف، مصادقة آمنة، وصلاحيات دقيقة — حماية على كل طبقة من بياناتك."
+      },
+      "multilanguage": {
+        "title": "عربي وإنجليزي",
+        "description": "دعم كامل للغة العربية مع واجهة RTL أصيلة. لأن البرمجيات الجيدة تتكلم لغتك."
+      }
+    },
+    "trust": {
+      "title": "مبني ليُوثَق به",
+      "subtitle": "الأمان والموثوقية والقابلية للتوسع — ليست ميزات، بل أسس",
+      "security": {
+        "title": "الأمان أولاً",
+        "description": "بياناتك محمية بأعلى معايير التشفير والأمان المؤسسي."
+      },
+      "enterprise": {
+        "title": "جاهز للمؤسسات",
+        "description": "مبني ليتحمّل تعقيدات الفرق الكبيرة وبيئات المشاريع المتعددة."
+      },
+      "reliable": {
+        "title": "متاح دائماً",
+        "description": "بنية تحتية موثوقة تنمو مع أعمالك — بدون انقطاع، بدون مفاجآت."
+      }
+    },
+    "cta": {
+      "title": "هل أنت مستعد لبناء شيء عظيم؟",
+      "description": "انضم إلى أكثر من 50 شركة تثق في YANSY لتنفيذ أهم مشاريعها الرقمية.",
+      "button": "ابدأ مشروعك اليوم"
+    },
+    "login": {
+      "backToHome": "العودة للرئيسية",
+      "secure": "دخول آمن",
+      "trusted": "موثوق من 50+ شركة"
+    },
+    "whatsapp": {
+      "title": "عندك سؤال؟",
+      "description": "تحدث معنا مباشرة على واتساب — عادةً نرد في غضون ساعة.",
+      "message": "مرحباً، أريد معرفة المزيد عن YANSY",
+      "openChat": "تحدث معنا على واتساب"
+    },
+    "home": {
+      "floatingCTA": "ابدأ مشروعك الآن",
+      "about": {
+        "title": "نحقق نتائج أعمال",
+        "titleHighlight": "قابلة للقياس.",
+        "description": "استراتيجية، هندسة، وتصميم تعمل معاً — حتى منتجك الرقمي لا يُطلَق فحسب، بل ينمو. سلّمنا 50+ منتجاً لشركات احتاجت أكثر من مورّد. احتاجت شريكاً.",
+        "services": "استراتيجية المنتج  |  التطوير المؤسسي  |  تصميم UX/UI  |  تحسين النمو"
+      },
+      "team": {
+        "title": "فريق من المتخصصين",
+        "subtitle": "فريق مركّز من كبار الخبراء — ليس وكالة كبيرة بموظفين جدد. نقبل مشاريع أقل لنُنجز كل واحدة بشكل استثنائي.",
+        "member1": {
+          "name": "سارة أحمد",
+          "role": "المديرة الإبداعية التنفيذية"
+        },
+        "member2": {
+          "name": "يوسف أحمد",
+          "role": "المهندس البرمجي الرئيسي"
+        },
+        "member3": {
+          "name": "محمود علي",
+          "role": "رئيس استراتيجية المنتج"
+        }
+      },
+      "ecommerce": {
+        "title": "متاجر إلكترونية تبيع فعلاً",
+        "description": "نبني متاجر عالية الأداء لا تبدو جيدة فحسب — بل تبيع. كل نقطة تماس، من اكتشاف المنتج حتى الدفع، مهندَسة للتحويل.",
+        "features": "بنية Headless.  تكاملات سلسة.  أقل من ثانية تحميل.",
+        "imageAlt": "تطوير متجر إلكتروني — YANSY"
+      },
+      "works": {
+        "title": "أعمال مختارة",
+        "subtitle": "منتجات رقمية",
+        "subtitle2": "تحقق نتائج حقيقية",
+        "work1": {
+          "category": "بنية تحتية للتجارة الإلكترونية",
+          "title": "Nexus Commerce",
+          "description": "علامة تجارية في طور النمو السريع احتاجت منصة تنمو معها دون أن تنكسر. بنينا معمارية تجارة headless مع خدمات مصغّرة، مخزون لحظي، وتكامل سلس مع ERP. النتيجة: أوقات تحميل أقل من ثانية حتى في ذروة الحركة، وأساس مبني لمضاعفة النمو 10 أضعاف."
+        },
+        "work2": {
+          "category": "SaaS والتحليلات",
+          "title": "Vault Analytics",
+          "description": "فريق SaaS احتاج تحليلات معقدة متاحة لمستخدمين غير تقنيين. بنينا منصة تحليلات لحظية بمرئيات مخصصة وصلاحيات مفصّلة. الفرق الآن تتخذ قرارات أسرع — مدعومة بالبيانات، وآمنة على المستوى المؤسسي من اليوم الأول."
+        },
+        "work3": {
+          "category": "المنتجات الرقمية",
+          "title": "Aria Studio",
+          "description": "وكالة إبداعية موزعة احتاجت مساحة عمل ترقى لمستوى ما تنتجه. بنينا منصة تعاون موحدة بتحرير مشترك لحظي، إدارة مشاريع منظمة، وتبادل ملفات آمن. احتكاك أقل، إنتاجية أعلى، عمل أفضل."
+        },
+        "cta": "ابدأ مشروعك معنا ←"
+      },
+      "saas": {
+        "title": "SaaS كما يجب أن يكون",
+        "subtitle": "أنظمة معقدة. تجارب تبدو بسيطة.",
+        "imageAlt": "تطوير منصة SaaS — YANSY"
+      },
+      "services": {
+        "strategy": "الاستراتيجية",
+        "strategyDesc": "بحث. اكتشاف. تخطيط.",
+        "design": "التصميم",
+        "designDesc": "تجربة. واجهة. حركة.",
+        "engineering": "التطوير",
+        "engineeringDesc": "بناء. تكامل. إطلاق.",
+        "growth": "النمو",
+        "growthDesc": "تحسين. قياس. توسع."
+      },
+      "technologies": {
+        "title": "مبني بـ"
+      },
+      "split": {
+        "fast": {
+          "title": "سريع",
+          "description": "السرعة ليست خياراً. نهندس الأداء من اليوم الأول — لأن كل ثانية تحميل تكلّفك عملاء."
+        },
+        "secure": {
+          "title": "آمن",
+          "description": "الأمان ليس لاحقة. مدمج في كل طبقة من البنية التحتية إلى الواجهة. بدون اختصارات."
+        }
+      },
+      "whatWeBuild": {
+        "title": "ما الذي نبنيه",
+        "subtitle": "من مواقع بسيطة إلى أنظمة مؤسسية معقدة — إن كان رقمياً، نبنيه بشكل أفضل.",
+        "websites": {
+          "title": "مواقع إلكترونية",
+          "description": "تجارب تجعل الناس يتذكرونك."
+        },
+        "ecommerce": {
+          "title": "متاجر إلكترونية",
+          "description": "متاجر تنمو وتبيع."
+        },
+        "saas": {
+          "title": "منصات SaaS",
+          "description": "أنظمة معقدة، مُبسَّطة."
+        },
+        "educationalPlatforms": {
+          "title": "منصات تعليمية",
+          "description": "تعلّم تفاعلي مع إدارة دورات وطلاب وشهادات."
+        },
+        "medicalWebsites": {
+          "title": "مواقع طبية",
+          "description": "حضور رقمي احترافي للعيادات والمستشفيات."
+        },
+        "medicalBooking": {
+          "title": "أنظمة الحجز",
+          "description": "جدولة ذكية مع تذكيرات تلقائية وإدارة توفر متطورة."
+        },
+        "dashboards": {
+          "title": "لوحات تحكم",
+          "description": "أدوات إدارة قوية للبيانات والتقارير والعمليات."
+        },
+        "deliveryApps": {
+          "title": "منصات التوصيل",
+          "description": "أنظمة توصيل متكاملة بتتبع لحظي ومدفوعات آمنة."
+        },
+        "customSolutions": {
+          "title": "فكرة مختلفة؟",
+          "description": "عندك فكرة خارج الصندوق؟ هذي هي مشاريعنا المفضلة."
+        }
+      },
+      "contact": {
+        "title": "لنتحدث.",
+        "subtitle": "أخبرنا ما الذي تبنيه.",
+        "description": "احجز مكالمة مجانية 30 دقيقة. بدون عروض ترويجية، بدون ضغط — فقط حديث صريح عن مشروعك.",
+        "startProject": "ابدأ مشروعك",
+        "scheduleCall": "احجز مكالمة مجانية",
+        "whatsapp": "تحدث على واتساب",
+        "trust1": "✓ استشارة مجانية",
+        "trust2": "✓ بدون التزام",
+        "trust3": "✓ رد خلال 24 ساعة"
+      }
+    },
+    "footer": {
+      "description": "YANSY استوديو منتجات رقمية. نبني برمجيات تنمو الأعمال — باستراتيجية ودقة واهتمام حقيقي.",
+      "trusted": "موثوق من أكثر من 50 شركة حول العالم",
+      "followUs": "تابعنا",
+      "platform": "المنصة",
+      "dashboard": "لوحة التحكم",
+      "projects": "المشاريع",
+      "messages": "الرسائل",
+      "analytics": "التحليلات",
+      "solutions": "حلولنا",
+      "clientPortal": "بوابة العملاء",
+      "teamManagement": "إدارة الفريق",
+      "realTime": "الرسائل الفورية",
+      "security": "الأمان والخصوصية",
+      "company": "الشركة",
+      "about": "من نحن",
+      "privacy": "سياسة الخصوصية",
+      "terms": "شروط الاستخدام",
+      "support": "الدعم",
+      "whatsapp": "واتساب",
+      "copyright": "© 2025 YANSY. جميع الحقوق محفوظة.",
+      "secure": "آمن ومشفّر"
+    }
+  },
+  "feedback": {
+    "title": "كيف كانت تجربتك معنا؟",
+    "subtitle": "ملاحظاتك الصريحة تساعدنا على بناء منتجات أفضل وخدمتك أحسن.",
+    "feedbackType": "نوع التقييم",
+    "generalFeedback": "تجربة عامة",
+    "projectFeedback": "عن مشروع محدد",
+    "selectProject": "اختر المشروع",
+    "selectProjectPlaceholder": "اختر مشروعاً...",
+    "yourName": "اسمك (اختياري)",
+    "namePlaceholder": "أدخل اسمك",
+    "anonymous": "إرسال بشكل مجهول",
+    "rateExperience": "قيّم تجربتك",
+    "qualityOfWork": "جودة العمل",
+    "deliverySpeed": "الالتزام بالمواعيد",
+    "communication": "التواصل",
+    "professionalism": "الاحترافية",
+    "overallSatisfaction": "الرضا العام",
+    "tellUsExperience": "أخبرنا أكثر (اختياري)",
+    "reviewPlaceholder": "ما الذي أعجبك؟ ما الذي يمكن تحسينه؟ أي تفصيل يساعدنا نتطور.",
+    "submitFeedback": "إرسال التقييم",
+    "submitting": "جارٍ الإرسال...",
+    "thankYou": "شكراً — تقييمك يعني لنا الكثير حقاً.",
+    "lowSatisfactionAlert": "نأسف لسماع ذلك. سنراجعه بعناية ونعمل على التحسين.",
+    "submitFailed": "فشل الإرسال، يرجى المحاولة مجدداً.",
+    "backToHome": "العودة للرئيسية",
+    "noProjects": "لا توجد مشاريع نشطة",
+    "loginRequired": "سجّل دخولك لتقييم مشروع محدد",
+    "allRatingsRequired": "يرجى تقييم جميع الفئات قبل الإرسال",
+    "selectProjectRequired": "يرجى اختيار مشروع",
+    "nameRequired": "أدخل اسمك أو اختر الإرسال المجهول",
+    "admin": {
+      "title": "لوحة التقييمات",
+      "subtitle": "تابع رضا العملاء وحدّد مجالات التحسين",
+      "overallAverage": "المعدل العام",
+      "totalFeedback": "إجمالي التقييمات",
+      "fiveStarReviews": "تقييمات 5 نجوم",
+      "lowSatisfaction": "تحتاج اهتماماً",
+      "averageRatings": "المعدلات حسب الفئة",
+      "ratingDistribution": "توزيع التقييمات",
+      "allFeedback": "جميع التقييمات",
+      "filters": "تصفية",
+      "reviewedStatus": "حالة المراجعة",
+      "all": "الكل",
+      "reviewed": "تمت المراجعة",
+      "notReviewed": "لم تُراجَع",
+      "flagged": "مُعلَّم",
+      "notFlagged": "غير مُعلَّم",
+      "minimumRating": "أدنى تقييم",
+      "allRatings": "جميع التقييمات",
+      "sortBy": "ترتيب حسب",
+      "date": "التاريخ",
+      "rating": "التقييم",
+      "markReviewed": "تمييز كمُراجَع",
+      "flag": "تعليم",
+      "unflag": "إزالة التعليم",
+      "highlight": "إبراز",
+      "unhighlight": "إزالة الإبراز",
+      "delete": "حذف",
+      "confirmAction": "تأكيد",
+      "confirmDelete": "حذف هذا التقييم؟ لا يمكن التراجع.",
+      "confirmFlag": "تعليم هذا التقييم للمراجعة؟",
+      "confirmUnflag": "إزالة التعليم عن هذا التقييم؟",
+      "confirmHighlight": "إبراز هذا التقييم للعرض العام؟",
+      "confirmUnhighlight": "إزالة هذا التقييم من المُبرَزة؟",
+      "confirmReview": "تمييز كمُراجَع؟",
+      "updated": "تم التحديث بنجاح",
+      "noFeedback": "لا توجد تقييمات بعد"
+    },
+    "testimonials": {
+      "title": "ماذا يقول عملاؤنا",
+      "subtitle": "تقييمات حقيقية من مشاريع حقيقية"
+    }
+  },
+  "projectForm": {
+    "startProject": {
+      "title": "لنبني شيئاً عظيماً",
+      "welcome": "أهلاً {{name}} — أخبرنا عن مشروعك وسنتولى الأمر من هنا.",
+      "welcomeNoName": "أخبرنا عن مشروعك وسنتولى الأمر من هنا.",
+      "projectCreated": "تم إنشاء مشروعك!",
+      "projectCreatedDesc": "أنت جاهز. توجّه لصفحة مشاريعك لمتابعة التقدم.",
+      "submitRequest": "أرسل طلبي",
+      "submitting": "جارٍ الإرسال..."
+    },
+    "addProject": {
+      "title": "مشروع جديد",
+      "subtitle": "أدخل التفاصيل أدناه للبدء",
+      "projectCreated": "تم إنشاء المشروع!",
+      "projectCreatedDesc": "مشروعك جاهز. جارٍ توجيهك الآن...",
+      "createProject": "إنشاء المشروع",
+      "creating": "جارٍ الإنشاء..."
+    },
+    "projectRequest": {
+      "title": "ابدأ مشروعك",
+      "stepOf": "الخطوة {{current}} من {{total}}",
+      "requestSubmitted": "وصل طلبك!",
+      "requestSubmittedDesc": "استلمنا طلبك وسنتواصل معك خلال 24 ساعة. نتحدث قريباً.",
+      "close": "إغلاق",
+      "receivedLabel": "تم استلام الطلب",
+      "notifiedLabel": "تم إشعار الفريق"
+    },
+    "steps": {
+      "step": "الخطوة {{step}} من {{total}}",
+      "projectType": {
+        "title": "ما نوع مشروعك؟",
+        "error": "اختر نوع المشروع للمتابعة",
+        "options": {
+          "restaurant": "مطعم",
+          "clinic": "عيادة",
+          "pharmacy": "صيدلية",
+          "ecommerce": "متجر إلكتروني",
+          "saas": "SaaS / منصة",
+          "realestate": "عقارات",
+          "education": "تعليم",
+          "delivery": "توصيل",
+          "other": "فكرة أخرى"
+        }
+      },
+      "clientType": {
+        "title": "لمن تبني هذا المشروع؟",
+        "individual": "لنفسي",
+        "individualDesc": "مشروع شخصي أو عمل مستقل",
+        "company": "لشركتي",
+        "companyDesc": "شركة أو مؤسسة",
+        "error": "يرجى الاختيار للمتابعة"
+      },
+      "projectDescription": {
+        "title": "أخبرنا عن مشروعك",
+        "placeholder": "ما الذي تبنيه؟ ما المشكلة التي يحلّها؟ كلما زادت التفاصيل، كلما قدرنا على مساعدتك أفضل...",
+        "error": "يرجى إضافة وصف مختصر على الأقل (10+ أحرف)"
+      },
+      "reference": {
+        "title": "فيه موقع بيعجبك أو تريد الاستلهام منه؟",
+        "optional": "اختياري",
+        "placeholder": "https://example.com",
+        "hint": "رابط مرجعي يساعدنا نفهم رؤيتك أسرع من أي وصف."
+      },
+      "tags": {
+        "title": "ما المميزات التي تحتاجها؟",
+        "optional": "اختياري",
+        "selected": "مختار",
+        "selectedLabel": "اختياراتك",
+        "categories": {
+          "auth": "تسجيل الدخول والمستخدمون",
+          "dashboard": "لوحة التحكم والتحليلات",
+          "ecommerce": "التجارة الإلكترونية والمبيعات",
+          "content": "المحتوى وتحسين محركات البحث",
+          "communication": "التواصل والإشعارات",
+          "advanced": "مميزات متقدمة"
+        },
+        "options": {
+          "authBasic": "تسجيل دخول / إنشاء حساب",
+          "authGoogle": "تسجيل الدخول بـ Google",
+          "authSocial": "تسجيل الدخول بـ Discord أو GitHub",
+          "authOTP": "رمز OTP / التحقق بالهاتف",
+          "authRoles": "صلاحيات وأدوار المستخدمين",
+          "authTwoFactor": "المصادقة الثنائية (2FA)",
+          "adminPanel": "لوحة تحكم الأدمن",
+          "analytics": "إحصاءات وتحليلات",
+          "charts": "رسوم بيانية وتمثيل البيانات",
+          "reports": "تقارير قابلة للتصدير",
+          "multiTenant": "دعم متعدد المستأجرين",
+          "notifications": "إشعارات داخل التطبيق",
+          "productCatalog": "كتالوج المنتجات",
+          "cart": "سلة التسوق",
+          "payments": "بوابة الدفع الإلكتروني",
+          "invoices": "الفواتير والحسابات",
+          "inventory": "إدارة المخزون",
+          "discounts": "الخصومات والكوبونات",
+          "blog": "مدونة / قسم الأخبار",
+          "cms": "إدارة المحتوى (CMS)",
+          "seo": "تحسين محركات البحث المتقدم",
+          "multiLang": "دعم متعدد اللغات",
+          "fileUpload": "رفع الملفات",
+          "mediaGallery": "معرض الوسائط",
+          "liveChat": "دردشة مباشرة",
+          "emailNotif": "إشعارات البريد الإلكتروني",
+          "smsNotif": "إشعارات SMS",
+          "pushNotif": "إشعارات Push",
+          "whatsappInteg": "تكامل واتساب",
+          "videoCall": "مكالمات فيديو",
+          "api": "API (REST / GraphQL)",
+          "mobileApp": "تطبيق جوال (iOS / Android)",
+          "aiFeatures": "مميزات الذكاء الاصطناعي",
+          "maps": "الخرائط والمواقع الجغرافية",
+          "booking": "نظام الحجز والمواعيد",
+          "subscription": "خطط الاشتراك"
+        }
+      },
+      "budget": {
+        "title": "ما هو نطاق ميزانيتك؟",
+        "select": "اختر نطاقاً",
+        "error": "يرجى اختيار نطاق ميزانية للمتابعة"
+      },
+      "timeline": {
+        "title": "إمتى محتاج المشروع يخلص؟",
+        "error": "يرجى اختيار الجدول الزمني للمتابعة",
+        "options": {
+          "asap": "في أقرب وقت ممكن",
+          "1month": "خلال شهر",
+          "2to3months": "2 – 3 أشهر",
+          "flexible": "مرن — بدون تاريخ محدد"
+        }
+      },
+      "contact": {
+        "title": "كيف نتواصل معك؟",
+        "fullName": "اسمك",
+        "fullNamePlaceholder": "اسمك الكامل",
+        "fullNameError": "سنحتاج اسمك للتواصل معك",
+        "phoneNumber": "الهاتف / واتساب",
+        "phoneNumberPlaceholder": "+966 50 123 4567",
+        "phoneNumberError": "يرجى إدخال رقم هاتف صحيح",
+        "phoneNumberEditable": "(يمكنك تعديله)",
+        "email": "البريد الإلكتروني",
+        "emailPlaceholder": "بريدك@الإلكتروني.com",
+        "emailOptional": "اختياري",
+        "emailError": "يرجى مراجعة صيغة البريد الإلكتروني",
+        "companyName": "اسم الشركة",
+        "companyNamePlaceholder": "اسم شركتك",
+        "companyNameError": "يرجى إدخال اسم شركتك",
+        "companySize": "حجم الفريق",
+        "companySizeSelect": "اختر حجم الفريق",
+        "companySizeError": "يرجى اختيار حجم فريقك",
+        "accountInfo": "حسابك",
+        "name": "الاسم",
+        "emailLabel": "البريد الإلكتروني"
+      }
+    },
+    "budgetOptions": {
+      "lessThan500": "أقل من 500$",
+      "500to1000": "500$ – 1,000$",
+      "1000to3000": "1,000$ – 3,000$",
+      "3000to10000": "3,000$ – 10,000$",
+      "10000plus": "أكثر من 10,000$"
+    },
+    "companySizeOptions": {
+      "lessThan10": "أقل من 10 أشخاص",
+      "10to50": "10–50 شخصاً",
+      "50plus": "أكثر من 50 شخصاً"
+    },
+    "navigation": {
+      "back": "رجوع",
+      "next": "متابعة",
+      "submit": "أرسل طلبي",
+      "create": "إنشاء المشروع"
+    },
+    "errors": {
+      "submitFailed": "حدث خطأ ما، يرجى المحاولة مجدداً.",
+      "createFailed": "تعذّر إنشاء المشروع، يرجى المحاولة مجدداً."
+    }
+  },
+  "onboarding": {
+    "badge": "إعداد الحساب",
+    "progress": {
+      "step": "الخطوة {{current}} من {{total}}",
+      "percent": "{{value}}% مكتمل"
+    },
+    "steps": {
+      "welcome": {
+        "title": "مرحباً بك في YANSY",
+        "subtitle": "لنُعد حسابك في دقيقتين"
+      },
+      "contact": {
+        "title": "بيانات التواصل",
+        "subtitle": "حتى نتمكن من الوصول إليك عند الحاجة"
+      },
+      "business": {
+        "title": "معلومات نشاطك التجاري",
+        "subtitle": "ساعدنا على فهم عالمك"
+      },
+      "goals": {
+        "title": "هدفك الأساسي",
+        "subtitle": "ما الذي أتى بك إلى YANSY؟"
+      },
+      "source": {
+        "title": "شيء أخير",
+        "subtitle": "كيف وجدتنا؟"
+      }
+    },
+    "welcome": {
+      "greeting": "مرحباً، {{name}}!",
+      "body": "قبل الوصول إلى لوحة التحكم، نحتاج بعض المعلومات",
+      "bodyAccent": " لتخصيص تجربتك",
+      "bodyEnd": " وضمان تواصل فريقنا معك بفعالية.",
+      "benefits": {
+        "contact": "تواصل مباشر عند تحديث مشروعك",
+        "goals": "خدمات مُصمَّمة لأهدافك",
+        "speed": "ردود أسرع من فريقنا"
+      }
+    },
+    "fields": {
+      "phone": "رقم الهاتف",
+      "country": "الدولة",
+      "city": "المدينة",
+      "company": "اسم الشركة",
+      "role": "وظيفتك",
+      "businessType": "نوع النشاط التجاري",
+      "website": "الموقع الإلكتروني (اختياري)",
+      "goal": "اختر الشيء الرئيسي الذي تريد تحقيقه مع YANSY.",
+      "source": "يساعدنا هذا على فهم مصادر عملائنا."
+    },
+    "placeholders": {
+      "phone": "+966 5X XXX XXXX",
+      "country": "المملكة العربية السعودية",
+      "city": "الرياض",
+      "company": "شركة الأحلام",
+      "role": "رئيس تنفيذي، مدير تقني…",
+      "website": "https://موقعك.com"
+    },
+    "businessTypes": {
+      "startup": "ناشئة",
+      "agency": "وكالة",
+      "enterprise": "مؤسسة كبرى",
+      "freelancer": "مستقل",
+      "ecommerce": "تجارة إلكترونية",
+      "saas": "SaaS",
+      "other": "أخرى"
+    },
+    "goals": {
+      "website": "موقع / صفحة هبوط",
+      "app": "تطبيق جوال أو ويب",
+      "branding": "هوية بصرية",
+      "marketing": "تسويق رقمي",
+      "saas": "منتج SaaS",
+      "ecommerce": "متجر إلكتروني",
+      "consulting": "استراتيجية واستشارات",
+      "other": "شيء آخر"
+    },
+    "howFound": {
+      "google": "بحث Google",
+      "social_media": "وسائل التواصل الاجتماعي",
+      "referral": "توصية",
+      "advertisement": "إعلان",
+      "blog": "مدونة / مقال",
+      "other": "أخرى"
+    },
+    "nav": {
+      "back": "رجوع",
+      "continue": "متابعة",
+      "complete": "إتمام الإعداد",
+      "skip": "تخطّ هذه الخطوة",
+      "saving": "جارٍ الحفظ…"
+    },
+    "errors": {
+      "phone": "رقم الهاتف مطلوب.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  }
+}

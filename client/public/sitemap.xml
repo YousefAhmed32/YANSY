@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ═══ CORE PAGES ═══ -->
+
+  <url>
+    <loc>https://yansytech.com/</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yansytech.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yansytech.com/services"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/portfolio</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yansytech.com/portfolio"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/portfolio"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/pricing</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/pricing"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yansytech.com/pricing"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/pricing"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/register</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/register"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yansytech.com/register"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/register"/>
+  </url>
+
+  <!-- ═══ SERVICE DETAIL PAGES ═══ -->
+
+  <url>
+    <loc>https://yansytech.com/services/web-development</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.88</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/web-development"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/web-development"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services/saas-development</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.88</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/saas-development"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/saas-development"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services/ecommerce-development</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.88</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/ecommerce-development"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/ecommerce-development"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services/mobile-app-development</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.88</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/mobile-app-development"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/mobile-app-development"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services/ui-ux-design</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/ui-ux-design"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/ui-ux-design"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services/enterprise-software</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/enterprise-software"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/enterprise-software"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/services/product-strategy</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.82</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/services/product-strategy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/services/product-strategy"/>
+  </url>
+
+  <!-- ═══ CASE STUDIES ═══ -->
+
+  <url>
+    <loc>https://yansytech.com/case-studies</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/case-studies"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/case-studies"/>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/case-studies/nexusrealty</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/case-studies/vaultanalytics</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/case-studies/sprintstore</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/case-studies/bookease</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/case-studies/opsflow</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yansytech.com/case-studies/moveit</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- ═══ BLOG ═══ -->
+
+  <url>
+    <loc>https://yansytech.com/blog</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/blog"/>
+  </url>
+
+  <!-- Blog: Web Development -->
+  <url><loc>https://yansytech.com/blog/how-we-build-high-performance-react-applications</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/nextjs-vs-react</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/web-performance-optimization</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/true-cost-of-a-website-2025</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/how-to-choose-web-development-agency</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/progressive-web-apps-vs-native</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+
+  <!-- Blog: SaaS -->
+  <url><loc>https://yansytech.com/blog/building-saas-mvp-guide-2025</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://yansytech.com/blog/saas-architecture-multi-tenancy</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/saas-pricing-guide</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/authentication-systems-for-saas</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/saas-metrics-that-matter</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/from-idea-to-product-market-fit</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+
+  <!-- Blog: Product Design -->
+  <url><loc>https://yansytech.com/blog/design-systems-why-every-product-needs-one</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/ux-research-methods</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/mobile-first-design</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/conversion-rate-optimization-ux</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/how-we-approach-design-at-yansy</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.65</priority></url>
+
+  <!-- Blog: E-Commerce -->
+  <url><loc>https://yansytech.com/blog/ecommerce-seo-technical-guide</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://yansytech.com/blog/headless-commerce-vs-traditional</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/cart-abandonment-strategies</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/how-to-build-ecommerce-that-converts</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/multi-currency-ecommerce</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.65</priority></url>
+
+  <!-- Blog: Startup Growth -->
+  <url><loc>https://yansytech.com/blog/digital-transformation-for-smes</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/how-to-build-tech-team</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/hidden-costs-of-bad-software</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/agile-development-for-non-technical</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.65</priority></url>
+
+  <!-- Blog: Business Automation -->
+  <url><loc>https://yansytech.com/blog/business-process-automation-framework</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yansytech.com/blog/booking-systems-build-vs-buy</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/crm-development-when-custom-makes-sense</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.68</priority></url>
+  <url><loc>https://yansytech.com/blog/api-integration-guide</loc><lastmod>2026-05-30</lastmod><changefreq>yearly</changefreq><priority>0.65</priority></url>
+
+</urlset>

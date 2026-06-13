@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+
+# Logs (PM2, etc.)
+logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS / Editor
+.DS_Store
+.idea
+*.local

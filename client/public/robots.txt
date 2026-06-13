@@ -1,0 +1,63 @@
+User-agent: *
+Allow: /
+Allow: /services
+Allow: /portfolio
+Allow: /portfolio/
+Allow: /pricing
+Allow: /feedback
+Allow: /register
+
+# Private app routes — no indexing
+Disallow: /app/
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+
+# Block aggressive SEO crawlers (reduce server load)
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+# ── AI Search Crawlers — explicitly allowed for AI discoverability ──
+# These bots power ChatGPT, Perplexity, Claude, Gemini AI search results.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /app/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /app/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /app/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /app/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /app/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /app/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /app/
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /app/
+
+# Sitemap
+Sitemap: https://yansytech.com/sitemap.xml

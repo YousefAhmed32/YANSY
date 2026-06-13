@@ -1,0 +1,114 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
+
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+
+const errorHandler = require('./middleware/errorHandler');
+const { trackEvent, trackSession } = require('./middleware/analytics');
+
+// Routes
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const projectRoutes = require('./routes/projects');
+const projectRequestRoutes = require('./routes/projectRequests');
+const messageRoutes = require('./routes/messages');
+const analyticsRoutes = require('./routes/analytics');
+const fileRoutes = require('./routes/files');
+const feedbackRoutes = require('./routes/feedback');
+
+const app = express();
+const httpServer = createServer(app);
+
+/* ================== FIX 1 — ENV NAMES ==================
+أنت في .env كاتب:
+MONGODB_URI=
+لكن هنا كنت مستخدم MONGO_URI
+*/
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/yansy';
+
+/* ================== FIX 2 — CLIENT URL غلط عندك ==================
+كان عندك:
+CLIENT_URL=http:https://yansy.com   ❌
+ده بيكسر CORS و Socket
+*/
+const CLIENT_URL = "https://yansytech.com";
+
+/* ================== SOCKET ================== */
+const io = new Server(httpServer, {
+  cors: {
+    origin: CLIENT_URL,
+    credentials: true
+  }
+});
+
+/* ================== DB ================== */
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB error:', err.message));
+
+app.set('trust proxy', 1);
+
+/* ================== MIDDLEWARE ================== */
+app.use(cors({
+  origin: CLIENT_URL,
+  credentials: true
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use(trackEvent);
+app.use(trackSession);
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+/* ================== ROUTES ================== */
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/project-requests', projectRequestRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/files', fileRoutes);
+app.use('/api/feedback', feedbackRoutes);
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+/* ================== SOCKET AUTH ================== */
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+  if (!token) return next(new Error('Auth error'));
+
+  try {
+    const jwt = require('jsonwebtoken');
+    const User = require('./models/User');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) return next(new Error('Invalid user'));
+    socket.user = user;
+    next();
+  } catch {
+    next(new Error('Invalid token'));
+  }
+});
+
+/* ================== ERROR ================== */
+app.use(errorHandler);
+app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
+
+/* ================== SERVER ================== */
+const PORT = process.env.PORT || 5001;
+
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Server running on ${PORT}`);
+});

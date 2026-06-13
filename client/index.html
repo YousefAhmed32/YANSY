@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="Vbesj7FFuDZK1EUK5BSQyrDGq1IpvLtF4S-fBfXjx5A" />
+
+    <!-- ── Browser / PWA hints ──────────────────────────────────── -->
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="application-name" content="YANSY TECH" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- ── Performance hints ─────────────────────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://wa.me" />
+
+    <!-- ── Google Fonts — Inter + IBM Plex Sans Arabic + Alexandria ── -->
+    <!-- size-adjust @font-face in index.css reduces CLS during swap   -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@300;400;500;600;700&display=swap"
+    />
+
+    <!-- ── Hero image preload — eliminates LCP delay ─────────── -->
+    <link
+      rel="preload"
+      as="image"
+      href="/assets/image/GoImage/saas3.png"
+      fetchpriority="high"
+    />
+
+    <!-- ── Favicon ────────────────────────────────────────────── -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/image/logo/logoweb9.png" />
+    <link rel="apple-touch-icon" href="/assets/image/logo/logoweb9.png" />
+
+    <!-- ── Canonical & hreflang ──────────────────────────────── -->
+    <link rel="canonical" href="https://yansytech.com/" />
+    <link rel="alternate" hreflang="en" href="https://yansytech.com/" />
+    <link rel="alternate" hreflang="ar" href="https://yansytech.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://yansytech.com/" />
+
+    <!-- ── SEO: Title & Description ──────────────────────────── -->
+    <title>YANSYTECH | Premium Digital Product Studio — Websites, E-commerce &amp; SaaS</title>
+    <meta name="description" content="YANSY TECH is a premium digital product studio. We build enterprise-grade websites, e-commerce platforms, SaaS products, booking systems, and custom software. 50+ projects delivered. Free consultation within 24 hours." />
+    <meta name="keywords" content="web development agency, SaaS development company, e-commerce development, enterprise software development, React development, Node.js, digital product studio, software agency Egypt, custom software development, UI UX design agency" />
+    <meta name="author" content="YANSY TECH" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="revisit-after" content="7 days" />
+
+    <!-- ── Open Graph ─────────────────────────────────────────── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://yansytech.com/" />
+    <meta property="og:site_name"   content="YANSY TECH" />
+    <meta property="og:title"       content="YANSYTECH | Premium Digital Product Studio" />
+    <meta property="og:description" content="We build enterprise-grade digital products — websites, e-commerce platforms, SaaS tools, booking systems, and custom enterprise software. 50+ delivered. Free consultation." />
+    <meta property="og:image"       content="https://yansytech.com/assets/image/logo/logoweb9.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"   content="YANSY TECH — Premium Digital Product Studio" />
+    <meta property="og:locale"      content="en_US" />
+    <meta property="og:locale:alternate" content="ar_SA" />
+
+    <!-- ── Twitter Card ──────────────────────────────────────── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@yansytech" />
+    <meta name="twitter:creator"     content="@yansytech" />
+    <meta name="twitter:title"       content="YANSYTECH | Premium Digital Product Studio" />
+    <meta name="twitter:description" content="Enterprise-grade websites, e-commerce, SaaS, and custom software. 50+ delivered. Free consultation." />
+    <meta name="twitter:image"       content="https://yansytech.com/assets/image/logo/logoweb9.png" />
+    <meta name="twitter:image:alt"   content="YANSY TECH" />
+
+    <!-- ════════════════════════════════════════════════════════
+         STRUCTURED DATA — Entity Definitions for AI & Search
+         ════════════════════════════════════════════════════════ -->
+
+    <!-- ── Schema 1: WebSite ──────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://yansytech.com/#website",
+      "name": "YANSY TECH",
+      "alternateName": ["YANSYTECH", "Yansy Tech", "Yansy"],
+      "url": "https://yansytech.com/",
+      "inLanguage": ["en", "ar"],
+      "publisher": {
+        "@id": "https://yansytech.com/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://yansytech.com/portfolio?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- ── Schema 2: Organization + ProfessionalService ─────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": ["Organization", "ProfessionalService"],
+      "@id": "https://yansytech.com/#organization",
+      "name": "YANSY TECH",
+      "legalName": "YANSY TECH",
+      "alternateName": ["YANSYTECH", "Yansy Tech", "Yansy"],
+      "url": "https://yansytech.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "@id": "https://yansytech.com/#logo",
+        "url": "https://yansytech.com/assets/image/logo/logoweb9.png",
+        "width": 200,
+        "height": 60,
+        "caption": "YANSY TECH"
+      },
+      "image": "https://yansytech.com/assets/image/logo/logoweb9.png",
+      "description": "YANSY TECH is a premium digital product studio and technology agency. We specialize in SaaS platform development, e-commerce solutions, enterprise web applications, mobile apps, and UI/UX design. Founded in 2021, we have delivered 50+ projects for clients across Egypt, the Gulf region, and globally. Our team transforms complex business requirements into scalable, high-performance digital products.",
+      "foundingDate": "2021",
+      "numberOfEmployees": {
+        "@type": "QuantitativeValue",
+        "minValue": 5,
+        "maxValue": 20
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "EG",
+        "addressRegion": "Cairo",
+        "addressLocality": "Cairo"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "sales",
+          "availableLanguage": ["English", "Arabic"],
+          "url": "https://wa.me/201090385390",
+          "hoursAvailable": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Sunday"],
+            "opens": "09:00",
+            "closes": "20:00"
+          }
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "availableLanguage": ["English", "Arabic"],
+          "url": "https://wa.me/201090385390"
+        }
+      ],
+      "knowsAbout": [
+        "Web Development",
+        "E-commerce Development",
+        "SaaS Platform Development",
+        "Software as a Service (SaaS)",
+        "React.js",
+        "Next.js",
+        "Node.js",
+        "MongoDB",
+        "PostgreSQL",
+        "Mobile Application Development",
+        "React Native",
+        "UI/UX Design",
+        "Enterprise Software Development",
+        "Digital Product Strategy",
+        "Full Stack Web Development",
+        "Booking System Development",
+        "CRM Development",
+        "ERP Development",
+        "API Development",
+        "Cloud Architecture",
+        "Microservices"
+      ],
+      "areaServed": [
+        { "@type": "Country", "name": "Egypt" },
+        { "@type": "Country", "name": "Saudi Arabia" },
+        { "@type": "Country", "name": "United Arab Emirates" },
+        { "@type": "Country", "name": "Kuwait" },
+        { "@type": "Country", "name": "Qatar" },
+        { "@type": "GeoShape", "name": "Worldwide" }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "YANSY TECH — Digital Product Development Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Website Development",
+              "description": "High-converting, SEO-optimized websites built for speed, trust, and measurable business results."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "E-commerce Platform Development",
+              "description": "Full-featured online stores with multi-currency support, inventory management, and seamless checkout experiences."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "SaaS Platform Development",
+              "description": "End-to-end SaaS development from MVP to scalable multi-tenant platform — authentication, billing, and team management included."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Mobile Application Development",
+              "description": "Cross-platform iOS and Android applications with native-level performance and modern UX."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Booking & Reservation Systems",
+              "description": "Intelligent booking platforms for clinics, restaurants, salons, and service businesses."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Enterprise Software Development",
+              "description": "Bespoke CRMs, ERPs, internal tools, and automation systems for complex business operations."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "UI/UX Design",
+              "description": "Premium digital product design focused on conversion, accessibility, and brand experience."
+            }
+          }
+        ]
+      },
+      "sameAs": [
+        "https://wa.me/201090385390"
+      ],
+      "priceRange": "$$",
+      "currenciesAccepted": "USD, EGP, SAR, AED",
+      "paymentAccepted": "Credit Card, Bank Transfer, PayPal"
+    }
+    </script>
+
+    <!-- ── Schema 3: WebPage + Speakable (AI readability) ─────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://yansytech.com/#webpage",
+      "url": "https://yansytech.com/",
+      "name": "YANSY TECH | Premium Digital Product Studio",
+      "description": "YANSY TECH builds premium websites, e-commerce platforms, SaaS products, and enterprise systems. 50+ delivered projects. Free consultation within 24 hours.",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@id": "https://yansytech.com/#website"
+      },
+      "about": {
+        "@id": "https://yansytech.com/#organization"
+      },
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["h1", "h2", "[data-speakable]"]
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://yansytech.com/"
+          }
+        ]
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://yansytech.com/assets/image/logo/logoweb9.png"
+      }
+    }
+    </script>
+
+    <!-- ── Schema 4: Service ItemList ────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "YANSY TECH Services",
+      "description": "Digital product development services by YANSY TECH — a premium technology studio serving global clients",
+      "url": "https://yansytech.com/services",
+      "numberOfItems": 6,
+      "itemListElement": [
+        {
+          "@type": "Service",
+          "position": 1,
+          "name": "Websites & Landing Pages",
+          "description": "High-converting, SEO-optimized websites built for speed, trust, and measurable results. From corporate sites to high-performance landing pages.",
+          "url": "https://yansytech.com/services#websites",
+          "provider": { "@id": "https://yansytech.com/#organization" }
+        },
+        {
+          "@type": "Service",
+          "position": 2,
+          "name": "E-commerce Stores",
+          "description": "Full-featured online stores with multi-currency, inventory management, payment integration, and seamless checkout flows.",
+          "url": "https://yansytech.com/services#ecommerce",
+          "provider": { "@id": "https://yansytech.com/#organization" }
+        },
+        {
+          "@type": "Service",
+          "position": 3,
+          "name": "SaaS Platforms",
+          "description": "End-to-end SaaS development from MVP to scalable platform — authentication, subscription billing, multi-tenancy, and admin dashboards.",
+          "url": "https://yansytech.com/services#saas",
+          "provider": { "@id": "https://yansytech.com/#organization" }
+        },
+        {
+          "@type": "Service",
+          "position": 4,
+          "name": "Mobile Applications",
+          "description": "Cross-platform iOS and Android apps with native-level performance, modern UI, and seamless backend integration.",
+          "url": "https://yansytech.com/services#mobile",
+          "provider": { "@id": "https://yansytech.com/#organization" }
+        },
+        {
+          "@type": "Service",
+          "position": 5,
+          "name": "Booking & Reservation Systems",
+          "description": "Intelligent booking platforms for clinics, restaurants, salons, and service businesses — with calendar integration and automated reminders.",
+          "url": "https://yansytech.com/services#booking",
+          "provider": { "@id": "https://yansytech.com/#organization" }
+        },
+        {
+          "@type": "Service",
+          "position": 6,
+          "name": "Custom Enterprise Systems",
+          "description": "Bespoke CRMs, ERPs, internal tools, and business automation systems built for complex operational requirements.",
+          "url": "https://yansytech.com/services#enterprise",
+          "provider": { "@id": "https://yansytech.com/#organization" }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Schema 5: FAQPage — rich results + AI citations ─────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How long does a project take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Project timelines depend on scope and complexity. A standard website takes 2–3 weeks. E-commerce or SaaS platforms typically run 4–8 weeks. Enterprise systems range from 8–16 weeks. We provide a precise timeline and milestone plan after the free initial consultation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I pay the full amount upfront?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. YANSY TECH splits payments into milestones: 30% to start, 40% at mid-delivery, and 30% on final delivery. You only pay when you see tangible progress. No upfront full payment is ever required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I own the code after delivery?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "100% yes. After final payment, all source code, assets, databases, and intellectual property transfer fully to you. No recurring licensing fees, no lock-in contracts, no ongoing dependency on YANSY TECH."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the consultation really free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, completely free with no obligation. The initial consultation is a 30-minute call where we understand your project goals and give you an honest scope estimate, technology recommendation, and timeline — at no cost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What technologies does YANSY TECH use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "YANSY TECH primarily builds with React, Next.js, Node.js, and PostgreSQL or MongoDB depending on project needs. For enterprise systems we architect microservices. For mobile apps we use React Native. We select the right technology stack based on your specific performance, scalability, and budget requirements."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens after the project is delivered?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We provide 30 days of free technical support post-launch — covering bug fixes, performance monitoring, and minor adjustments. After that period, we offer affordable monthly maintenance and growth packages tailored to your needs."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can YANSY TECH handle projects for clients outside Egypt?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. YANSY TECH serves clients globally. We work with businesses in Saudi Arabia, UAE, Kuwait, Qatar, Europe, and North America. All project communication, contracts, and deliveries are handled remotely with clear documentation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes YANSY TECH different from other development agencies?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "YANSY TECH operates as a premium digital product studio — not a commodity agency. We focus on measurable business outcomes, enterprise-grade code quality, and long-term product thinking. We build products that scale. Our milestone-based payment model, full code ownership, and bilingual support (English and Arabic) make us a trusted partner for ambitious projects."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Google Analytics 4 ────────────────────────────────── -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EBKWH60W27"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-EBKWH60W27', { send_page_view: false });
+    </script>
+
+    <!-- ── Microsoft Clarity ─────────────────────────────────── -->
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "x58kfxz02f");
+    </script>
+
+    <!-- ── Styles ───────────────────────────────────────────────── -->
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body class="bg-black text-white antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

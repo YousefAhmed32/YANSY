@@ -1,0 +1,54 @@
+/* App.css — Global premium overrides */
+
+/* Remove Vite default constraints from root */
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* ── Premium text rendering ──────────────────────────────────── */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Selection color ──────────────────────────────────────────── */
+::selection {
+  background: rgba(212, 175, 55, 0.25);
+  color: #fff;
+}
+
+/* ── Focus rings ──────────────────────────────────────────────── */
+:focus-visible {
+  outline: 1.5px solid rgba(212, 175, 55, 0.6);
+  outline-offset: 3px;
+}
+
+/* ── Smooth scroll ────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Premium scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.25);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.45);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.2) transparent;
+}

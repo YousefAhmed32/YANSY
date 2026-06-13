@@ -1,0 +1,47 @@
+/*
+  HeroDemo — Gen-12  NEXUS · Cinematic Edition
+  Full-bleed canvas. All visuals rendered via Canvas 2D API.
+*/
+
+.root {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 560 / 460;
+  /* Slight overflow allow for bloom/glow that bleeds past the canvas edge */
+  overflow: visible;
+}
+
+/* Mobile: constrain height so it doesn't eat the full screen */
+@media (max-width: 767px) {
+  .root {
+    aspect-ratio: unset;
+    height: clamp(220px, 54vw, 300px);
+    max-height: clamp(220px, 54vw, 300px);
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .root {
+    aspect-ratio: 560 / 460;
+  }
+}
+
+/* Large desktop: allow the canvas to breathe a bit taller */
+@media (min-width: 1440px) {
+  .root {
+    aspect-ratio: 560 / 480;
+  }
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root { opacity: 0.88; }
+}

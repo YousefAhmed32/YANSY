@@ -1,0 +1,888 @@
+{
+  "common": {
+    "welcome": "Welcome back",
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "register": "Get Started",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Done!",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "upload": "Upload File",
+    "uploading": "Uploading...",
+    "clickToUpload": "Click to upload",
+    "by": "By",
+    "actions": "Actions",
+    "page": "Page",
+    "of": "of",
+    "confirmDelete": "Are you sure? This can't be undone.",
+    "client": "Client",
+    "targetDate": "Target Date",
+    "toggleTheme": "Toggle Theme",
+    "toggleLanguage": "Switch Language",
+    "toggleMenu": "Menu",
+    "user": "User",
+    "admin": "Admin",
+    "goToApp": "Go to Dashboard",
+    "projectRequests": "Project Requests"
+  },
+  "auth": {
+    "loginTitle": "Welcome Back",
+    "registerTitle": "Start Building Today",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "New here?",
+    "hasAccount": "Already have an account?",
+    "invalidCredentials": "Incorrect email or password. Please try again.",
+    "loginSuccess": "Welcome back! Great to see you.",
+    "registerSuccess": "You're in! Welcome to YANSY.",
+    "welcomeBack": "Welcome back",
+    "signInContinue": "Sign in to continue",
+    "email": "Email Address",
+    "password": "Password",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "••••••••",
+    "signingIn": "Signing you in...",
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "fillAllFields": "Please fill in all fields to continue",
+    "loginFailed": "We couldn't sign you in. Please try again."
+  },
+  "register": {
+    "subtitle": "Join YANSY — where great digital products are built",
+    "personalInfo": "About You",
+    "businessInfo": "Your Business",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Your full name",
+    "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "+1 (555) 123-4567",
+    "passwordPlaceholder": "At least 6 characters",
+    "brandName": "Brand Name",
+    "brandNamePlaceholder": "Your brand name",
+    "companyName": "Company Name",
+    "companyNamePlaceholder": "Your company name",
+    "brandOrCompanyHint": "Provide your brand or company name",
+    "brandOrCompanyRequired": "Please enter your brand or company name",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "nameMinLength": "Name must be at least 2 characters",
+    "registrationFailed": "Account creation failed. Please try again.",
+    "createAccount": "Create My Account",
+    "creatingAccount": "Setting things up...",
+    "privacyNote": "Your information is safe with us. Always."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "projects": "Projects",
+    "messages": "Messages",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "welcome": "Welcome",
+    "welcomeUser": "Good to see you, {{name}}",
+    "subtitle": "Everything you need to deliver exceptional work — all in one place.",
+    "viewProjects": "Track and manage all your projects",
+    "communicate": "Stay connected with your team",
+    "viewInsights": "Monitor your performance",
+    "needHelp": "Need help getting started?",
+    "startFirstProject": "Launch Your First Project",
+    "loading": "Loading your workspace...",
+    "workspace": "{{name}}'s workspace",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "happeningNow": "Here's what's happening across your projects",
+    "totalProjects": "Total Projects",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "recentProjects": "Recent Projects",
+    "quickActions": "Quick Actions",
+    "platformStatus": "Platform Status",
+    "recentMessages": "Recent Messages",
+    "aiInsight": "AI Insight",
+    "accountOverview": "Account Overview"
+  },
+  "profile": {
+    "title": "Your Profile",
+    "personalInfo": "Personal Information",
+    "businessInfo": "Business Information",
+    "changePassword": "Change Password",
+    "saveProfile": "Save Profile",
+    "saving": "Saving…",
+    "saved": "Profile updated",
+    "saveFailed": "Failed to save",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "updatePassword": "Update Password",
+    "updating": "Updating…",
+    "passwordUpdated": "Password updated successfully",
+    "passwordMismatch": "New passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordFailed": "Failed to update password",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize your workspace preferences",
+    "appearance": "Appearance",
+    "language": "Language & Region",
+    "notifications": "Notifications",
+    "security": "Security",
+    "darkMode": "Dark Mode",
+    "theme": "Theme",
+    "projectUpdates": "Project Updates",
+    "newMessages": "New Messages",
+    "platformUpdates": "Platform Updates",
+    "weeklySummary": "Weekly Summary",
+    "savePreferences": "Save Preferences",
+    "preferencesSaved": "Preferences Saved",
+    "twoFactor": "Two-Factor Authentication",
+    "twoFactorComingSoon": "Coming Soon",
+    "activeSessions": "Active Sessions",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications yet",
+    "unreadCount": "{{count}} new"
+  },
+  "projects": {
+    "title": "Projects",
+    "myProjects": "My Projects",
+    "allProjects": "All Projects",
+    "createProject": "New Project",
+    "addNewProject": "Add New Project",
+    "addShort": "Add",
+    "projectDetails": "Project Details",
+    "progress": "Progress",
+    "phase": "Current Phase",
+    "status": "Status",
+    "updates": "Updates",
+    "files": "Files",
+    "noProjects": "No projects yet — start your first one",
+    "noUpdates": "No updates yet",
+    "noDescription": "No description provided",
+    "client": "Client",
+    "targetDate": "Target Date",
+    "viewDetails": "View Details",
+    "updatedOn": "Updated",
+    "projectSingular": "project",
+    "projectPlural": "projects",
+    "updateSingular": "update",
+    "updatePlural": "updates",
+    "statusPending": "Pending",
+    "statusInProgress": "In Progress",
+    "statusNearCompletion": "Almost Done",
+    "statusDelivered": "Delivered",
+    "statusCancelled": "Cancelled"
+  },
+  "projectRequests": {
+    "title": "Incoming Requests",
+    "subtitle": "Review and manage new project inquiries",
+    "totalRequests": "Total",
+    "new": "New",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "filters": "Filter",
+    "status": "Status",
+    "allStatuses": "All",
+    "clientType": "Client Type",
+    "allTypes": "All",
+    "individual": "Individual",
+    "company": "Company",
+    "budgetRange": "Budget",
+    "allBudgets": "Any Budget",
+    "sortBy": "Sort By",
+    "date": "Date",
+    "budget": "Budget",
+    "requests": "Requests",
+    "noRequests": "No requests yet",
+    "projectDescription": "Project Brief",
+    "adminNotes": "Internal Notes",
+    "updateStatus": "Update Status",
+    "updateRequestStatus": "Update This Request",
+    "cancel": "Cancel",
+    "update": "Save Changes",
+    "addNotes": "Add notes about this request...",
+    "updateFailed": "Update failed. Please try again.",
+    "lessThan500": "Under $500",
+    "500to1000": "$500 – $1,000",
+    "1000to3000": "$1,000 – $3,000",
+    "3000to10000": "$3,000 – $10,000",
+    "10000plus": "$10,000+"
+  },
+  "messages": {
+    "title": "Support",
+    "inbox": "Support Inbox",
+    "compose": "Contact Support",
+    "send": "Send",
+    "noMessages": "No messages yet",
+    "newMessage": "New Conversation",
+    "reply": "Reply",
+    "typeMessage": "Type your message…",
+    "selectThread": "Select a conversation",
+    "createThread": "Contact Support",
+    "emptyTitle": "Welcome to Support",
+    "emptyBody": "Need help? Our team is here for you. Start a conversation and we'll respond as soon as possible.",
+    "contactSupport": "Contact Support",
+    "teamResponse": "Our team typically responds within 2 hours",
+    "categories": {
+      "support": "Technical Support",
+      "sales": "Sales Inquiry",
+      "billing": "Billing Question",
+      "project": "Project Discussion",
+      "technical": "Bug Report",
+      "general": "General"
+    },
+    "statuses": {
+      "open": "Open",
+      "waiting_for_admin": "Waiting for Us",
+      "waiting_for_customer": "Awaiting Reply",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "totalSessions": "Total Sessions",
+    "activeSessions": "Active Now",
+    "avgDuration": "Avg. Duration",
+    "pageViews": "Page Views",
+    "topPages": "Top Pages",
+    "topSections": "Top Sections",
+    "sessionMetrics": "Performance",
+    "views": "views",
+    "noData": "No data available yet"
+  },
+  "users": {
+    "title": "Team",
+    "allUsers": "All Users",
+    "createUser": "Add User",
+    "role": "Role",
+    "lastLogin": "Last Active",
+    "status": "Status"
+  },
+  "landing": {
+    "nav": {
+      "platform": "Platform",
+      "solutions": "Solutions",
+      "features": "Features",
+      "contact": "Contact",
+      "getStarted": "Start a Project",
+      "work": "Our Work",
+      "support": "Support"
+    },
+    "hero": {
+      "badge": "Digital Product Studio — Since 2020",
+      "title1": "We Build Digital",
+      "title2": "Products That Scale",
+      "description": "YANSY turns ambitious ideas into high-performance digital products. Strategy, design, and engineering — delivered with precision.",
+      "cta": "Start Your Project",
+      "learnMore": "See Our Work",
+      "credentials": "50+ products delivered • Trusted since 2020",
+      "title": "YANSY",
+      "subtitle": "Full-stack product development for companies ready to grow",
+      "descriptionFull": "We build digital products that create real business impact — through strategic thinking, enterprise engineering, and design that puts your users first.",
+      "startProject": "Start Your Project",
+      "viewWork": "View Our Work",
+      "imageAlt": "YANSY — Digital Product Studio"
+    },
+    "why": {
+      "title": "Why YANSY?",
+      "subtitle": "We've seen the same challenges hold companies back. Here's how we solve them.",
+      "problems": {
+        "title": "Sound Familiar?",
+        "time": "Wasted hours on disconnected tools and manual updates",
+        "organization": "Projects slipping through the cracks",
+        "communication": "Miscommunications that cost time and money",
+        "visibility": "No clear picture of where things actually stand"
+      },
+      "solutions": {
+        "title": "The YANSY Way",
+        "efficiency": "Streamlined workflows — so your team moves faster",
+        "collaboration": "One platform where everyone stays aligned",
+        "realtime": "Instant messaging, real-time updates, zero confusion",
+        "insights": "Clear analytics so you always know what's working"
+      }
+    },
+    "features": {
+      "title": "Built for Results",
+      "subtitle": "Every feature designed to help you deliver better, faster",
+      "projectManagement": {
+        "title": "Smart Project Management",
+        "description": "Structured phases, clear milestones, real-time progress. Everything your team needs to deliver on time."
+      },
+      "clientCommunication": {
+        "title": "Client Portal",
+        "description": "Give clients a dedicated space to track progress, review updates, and stay informed — without the back-and-forth emails."
+      },
+      "realTimeMessaging": {
+        "title": "Real-time Messaging",
+        "description": "Threaded conversations that keep your team and clients perfectly in sync."
+      },
+      "analytics": {
+        "title": "Performance Analytics",
+        "description": "Know exactly how your projects are performing. Track team output, client engagement, and delivery metrics."
+      },
+      "security": {
+        "title": "Enterprise Security",
+        "description": "End-to-end encryption, secure authentication, and granular access controls — protecting every layer of your data."
+      },
+      "multilanguage": {
+        "title": "Arabic & English",
+        "description": "Full RTL support and native Arabic experience. Because great software should work for everyone."
+      }
+    },
+    "trust": {
+      "title": "Built to Be Trusted",
+      "subtitle": "Security, reliability, and scalability — not features, but foundations",
+      "security": {
+        "title": "Security First",
+        "description": "Your data is protected with enterprise-grade encryption and security protocols."
+      },
+      "enterprise": {
+        "title": "Enterprise Ready",
+        "description": "Built to handle the complexity of large teams and multi-project environments."
+      },
+      "reliable": {
+        "title": "Always On",
+        "description": "Reliable infrastructure that scales with your business — no downtime, no surprises."
+      }
+    },
+    "cta": {
+      "title": "Ready to Build Something Great?",
+      "description": "Join 50+ companies that trust YANSY to deliver their most important digital work.",
+      "button": "Start Your Project Today"
+    },
+    "login": {
+      "backToHome": "Back to Home",
+      "secure": "Secure Login",
+      "trusted": "Trusted by 50+ Companies"
+    },
+    "whatsapp": {
+      "title": "Have a Question?",
+      "description": "Chat with us directly on WhatsApp — we usually respond within the hour.",
+      "message": "Hello, I'd like to learn more about YANSY",
+      "openChat": "Chat on WhatsApp"
+    },
+    "home": {
+      "floatingCTA": "Start Your Project",
+      "about": {
+        "title": "We deliver measurable",
+        "titleHighlight": "business outcomes.",
+        "description": "Strategy, engineering, and design that work together — so your digital product doesn't just launch, it grows. We've delivered 50+ products for companies that needed more than a vendor. They needed a partner.",
+        "services": "Product Strategy  |  Enterprise Engineering  |  UX/UI Design  |  Growth Optimization"
+      },
+      "team": {
+        "title": "Built by specialists",
+        "subtitle": "A focused team of senior experts — not a large agency with junior staff. We take on fewer projects so we can do each one exceptionally well.",
+        "member1": {
+          "name": "Sara Ahmed",
+          "role": "Chief Creative Officer"
+        },
+        "member2": {
+          "name": "Yousef Ahmed",
+          "role": "Lead Software Engineer"
+        },
+        "member3": {
+          "name": "Mahmoud Ali",
+          "role": "Head of Product Strategy"
+        }
+      },
+      "ecommerce": {
+        "title": "E-commerce built to convert",
+        "description": "We build high-performance stores that don't just look good — they sell. Every touchpoint, from product discovery to checkout, is engineered for conversion.",
+        "features": "Headless architecture.  Seamless integrations.  Sub-second load times.",
+        "imageAlt": "E-commerce platform — YANSY"
+      },
+      "works": {
+        "title": "Selected work",
+        "subtitle": "Products that",
+        "subtitle2": "drive real results",
+        "work1": {
+          "category": "E-commerce Infrastructure",
+          "title": "Nexus Commerce",
+          "description": "A fast-scaling brand needed a platform that could grow without breaking. We built a headless commerce architecture with microservices, real-time inventory, and seamless ERP integration. The result: sub-second load times even at peak traffic, and a foundation built to support the next 10x of growth."
+        },
+        "work2": {
+          "category": "SaaS & Analytics",
+          "title": "Vault Analytics",
+          "description": "A B2B SaaS team needed to make complex data accessible to non-technical users without compromising depth. We architected a real-time analytics platform with custom visualizations and role-based access. Teams now make faster decisions — backed by data, secured at the enterprise level from day one."
+        },
+        "work3": {
+          "category": "Digital Products",
+          "title": "Aria Studio",
+          "description": "A distributed creative agency needed a workspace that matched the quality of their output. We built a unified collaboration platform with real-time co-editing, structured project management, and secure file workflows. Less friction, higher output, better work."
+        },
+        "cta": "Start Your Project →"
+      },
+      "saas": {
+        "title": "SaaS, done right",
+        "subtitle": "Complex systems. Experiences that feel simple.",
+        "imageAlt": "SaaS platform development — YANSY"
+      },
+      "services": {
+        "strategy": "Strategy",
+        "strategyDesc": "Research. Discovery. Architecture.",
+        "design": "Design",
+        "designDesc": "Experience. Interface. Motion.",
+        "engineering": "Engineering",
+        "engineeringDesc": "Build. Integrate. Ship.",
+        "growth": "Growth",
+        "growthDesc": "Optimize. Measure. Scale."
+      },
+      "technologies": {
+        "title": "Built with"
+      },
+      "split": {
+        "fast": {
+          "title": "Fast",
+          "description": "Speed is non-negotiable. We engineer for performance from day one — because every second of load time costs you."
+        },
+        "secure": {
+          "title": "Secure",
+          "description": "Security isn't an afterthought. It's built into every layer, from infrastructure to frontend. No shortcuts."
+        }
+      },
+      "whatWeBuild": {
+        "title": "What we build",
+        "subtitle": "From simple websites to complex enterprise systems — if it's digital, we can build it better.",
+        "websites": {
+          "title": "Websites",
+          "description": "Brand experiences that make people remember you."
+        },
+        "ecommerce": {
+          "title": "E-commerce",
+          "description": "Stores that scale and convert."
+        },
+        "saas": {
+          "title": "SaaS Platforms",
+          "description": "Complex systems, made simple."
+        },
+        "educationalPlatforms": {
+          "title": "EdTech Platforms",
+          "description": "Interactive learning with course, student, and certificate management."
+        },
+        "medicalWebsites": {
+          "title": "Medical Websites",
+          "description": "Professional digital presence for clinics and hospitals."
+        },
+        "medicalBooking": {
+          "title": "Booking Systems",
+          "description": "Smart scheduling with automated reminders and smart availability."
+        },
+        "dashboards": {
+          "title": "Admin Dashboards",
+          "description": "Powerful management tools for data, reporting, and operations."
+        },
+        "deliveryApps": {
+          "title": "Delivery Platforms",
+          "description": "End-to-end delivery systems with live tracking and secure payments."
+        },
+        "customSolutions": {
+          "title": "Something Else?",
+          "description": "Got an idea that doesn't fit a box? Those are our favorite projects."
+        }
+      },
+      "contact": {
+        "title": "Let's talk.",
+        "subtitle": "Tell us what you're building.",
+        "description": "Book a free 30-minute call. No pitch, no pressure — just an honest conversation about your project.",
+        "startProject": "Start Your Project",
+        "scheduleCall": "Book a Free Call",
+        "whatsapp": "Chat on WhatsApp",
+        "trust1": "✓ Free consultation",
+        "trust2": "✓ No commitment",
+        "trust3": "✓ Response within 24h"
+      }
+    },
+    "footer": {
+      "description": "YANSY is a digital product studio. We build software that grows businesses — with strategy, precision, and care.",
+      "trusted": "Trusted by 50+ companies worldwide",
+      "followUs": "Follow Us",
+      "platform": "Platform",
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "messages": "Messages",
+      "analytics": "Analytics",
+      "solutions": "Solutions",
+      "clientPortal": "Client Portal",
+      "teamManagement": "Team Management",
+      "realTime": "Real-time Messaging",
+      "security": "Security & Privacy",
+      "company": "Company",
+      "about": "About Us",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "support": "Support",
+      "whatsapp": "WhatsApp Support",
+      "copyright": "© 2025 YANSY. All rights reserved.",
+      "secure": "Secure & Encrypted"
+    }
+  },
+  "feedback": {
+    "title": "How did we do?",
+    "subtitle": "Your honest feedback helps us build better products and serve you better.",
+    "feedbackType": "Feedback Type",
+    "generalFeedback": "General Experience",
+    "projectFeedback": "About a Specific Project",
+    "selectProject": "Select Project",
+    "selectProjectPlaceholder": "Choose a project...",
+    "yourName": "Your Name (optional)",
+    "namePlaceholder": "Enter your name",
+    "anonymous": "Submit Anonymously",
+    "rateExperience": "Rate Your Experience",
+    "qualityOfWork": "Quality of Work",
+    "deliverySpeed": "On-Time Delivery",
+    "communication": "Communication",
+    "professionalism": "Professionalism",
+    "overallSatisfaction": "Overall Satisfaction",
+    "tellUsExperience": "Tell us more (optional)",
+    "reviewPlaceholder": "What went well? What could we improve? Any details help us get better.",
+    "submitFeedback": "Submit Feedback",
+    "submitting": "Submitting...",
+    "thankYou": "Thank you — we genuinely value your feedback.",
+    "lowSatisfactionAlert": "We're sorry to hear this. We'll review it carefully and work to improve.",
+    "submitFailed": "Submission failed. Please try again.",
+    "backToHome": "Back to Home",
+    "noProjects": "No active projects found",
+    "loginRequired": "Please sign in to leave project-specific feedback",
+    "allRatingsRequired": "Please rate all categories before submitting",
+    "selectProjectRequired": "Please select a project",
+    "nameRequired": "Please enter your name or choose anonymous",
+    "admin": {
+      "title": "Feedback Dashboard",
+      "subtitle": "Track satisfaction and identify areas for improvement",
+      "overallAverage": "Overall Score",
+      "totalFeedback": "Total Reviews",
+      "fiveStarReviews": "5-Star Reviews",
+      "lowSatisfaction": "Needs Attention",
+      "averageRatings": "Scores by Category",
+      "ratingDistribution": "Score Distribution",
+      "allFeedback": "All Feedback",
+      "filters": "Filters",
+      "reviewedStatus": "Review Status",
+      "all": "All",
+      "reviewed": "Reviewed",
+      "notReviewed": "Unreviewed",
+      "flagged": "Flagged",
+      "notFlagged": "Not Flagged",
+      "minimumRating": "Minimum Score",
+      "allRatings": "All Scores",
+      "sortBy": "Sort By",
+      "date": "Date",
+      "rating": "Score",
+      "markReviewed": "Mark as Reviewed",
+      "flag": "Flag",
+      "unflag": "Unflag",
+      "highlight": "Feature",
+      "unhighlight": "Unfeature",
+      "delete": "Delete",
+      "confirmAction": "Confirm",
+      "confirmDelete": "Delete this feedback? This can't be undone.",
+      "confirmFlag": "Flag this for review?",
+      "confirmUnflag": "Remove flag from this feedback?",
+      "confirmHighlight": "Feature this review publicly?",
+      "confirmUnhighlight": "Remove this review from featured?",
+      "confirmReview": "Mark as reviewed?",
+      "updated": "Updated successfully",
+      "noFeedback": "No feedback yet"
+    },
+    "testimonials": {
+      "title": "What Our Clients Say",
+      "subtitle": "Real reviews from real projects"
+    }
+  },
+  "projectForm": {
+    "startProject": {
+      "title": "Let's Build Something Great",
+      "welcome": "Hey {{name}} — tell us about your project and we'll take it from here.",
+      "welcomeNoName": "Tell us about your project and we'll take it from here.",
+      "projectCreated": "Project Created!",
+      "projectCreatedDesc": "You're all set. Head to your projects page to track progress.",
+      "submitRequest": "Send My Request",
+      "submitting": "Sending..."
+    },
+    "addProject": {
+      "title": "New Project",
+      "subtitle": "Fill in the details below to get started",
+      "projectCreated": "Project Created!",
+      "projectCreatedDesc": "Your project is live. Taking you there now...",
+      "createProject": "Create Project",
+      "creating": "Creating..."
+    },
+    "projectRequest": {
+      "title": "Start Your Project",
+      "stepOf": "Step {{current}} of {{total}}",
+      "requestSubmitted": "Request Received!",
+      "requestSubmittedDesc": "We've got your request and will be in touch within 24 hours. Talk soon.",
+      "close": "Close",
+      "receivedLabel": "Request Received",
+      "notifiedLabel": "Team Notified"
+    },
+    "steps": {
+      "step": "Step {{step}} of {{total}}",
+      "projectType": {
+        "title": "What kind of project is this?",
+        "error": "Please select a project type to continue",
+        "options": {
+          "restaurant": "Restaurant",
+          "clinic": "Clinic",
+          "pharmacy": "Pharmacy",
+          "ecommerce": "E-commerce",
+          "saas": "SaaS / Platform",
+          "realestate": "Real Estate",
+          "education": "Education",
+          "delivery": "Delivery",
+          "other": "Other Idea"
+        }
+      },
+      "clientType": {
+        "title": "Who are you building for?",
+        "individual": "Myself",
+        "individualDesc": "Personal project or freelance work",
+        "company": "My Company",
+        "companyDesc": "Business or organization",
+        "error": "Please make a selection to continue"
+      },
+      "projectDescription": {
+        "title": "Tell us about your project",
+        "placeholder": "What are you building? What problem does it solve? The more detail, the better we can help...",
+        "error": "Please add at least a brief description (10+ characters)"
+      },
+      "reference": {
+        "title": "Any website you like or want to be inspired by?",
+        "optional": "optional",
+        "placeholder": "https://example.com",
+        "hint": "A reference site helps us understand your vision faster than words."
+      },
+      "tags": {
+        "title": "What features do you need?",
+        "optional": "optional",
+        "selected": "selected",
+        "selectedLabel": "Your selection",
+        "categories": {
+          "auth": "Authentication & Users",
+          "dashboard": "Dashboard & Analytics",
+          "ecommerce": "E-commerce & Sales",
+          "content": "Content & SEO",
+          "communication": "Communication",
+          "advanced": "Advanced Features"
+        },
+        "options": {
+          "authBasic": "Basic Login / Register",
+          "authGoogle": "Google Sign-In",
+          "authSocial": "Social Login (Discord, GitHub…)",
+          "authOTP": "OTP / Phone Verification",
+          "authRoles": "Roles & Permissions",
+          "authTwoFactor": "Two-Factor Auth (2FA)",
+          "adminPanel": "Admin Control Panel",
+          "analytics": "Analytics & Stats",
+          "charts": "Charts & Data Visualisation",
+          "reports": "Exportable Reports",
+          "multiTenant": "Multi-Tenant Support",
+          "notifications": "In-App Notifications",
+          "productCatalog": "Product Catalogue",
+          "cart": "Shopping Cart",
+          "payments": "Payment Integration",
+          "invoices": "Invoices & Billing",
+          "inventory": "Inventory Management",
+          "discounts": "Discounts & Coupons",
+          "blog": "Blog / News Section",
+          "cms": "Content Management (CMS)",
+          "seo": "Advanced SEO",
+          "multiLang": "Multi-Language Support",
+          "fileUpload": "File Upload",
+          "mediaGallery": "Media Gallery",
+          "liveChat": "Live Chat",
+          "emailNotif": "Email Notifications",
+          "smsNotif": "SMS Notifications",
+          "pushNotif": "Push Notifications",
+          "whatsappInteg": "WhatsApp Integration",
+          "videoCall": "Video Calls",
+          "api": "REST / GraphQL API",
+          "mobileApp": "Mobile App (iOS / Android)",
+          "aiFeatures": "AI / Smart Features",
+          "maps": "Maps & Location",
+          "booking": "Booking / Scheduling",
+          "subscription": "Subscription Plans"
+        }
+      },
+      "budget": {
+        "title": "What's your budget range?",
+        "select": "Select a range",
+        "error": "Please select a budget range to continue"
+      },
+      "timeline": {
+        "title": "When do you need it?",
+        "error": "Please select a timeline to continue",
+        "options": {
+          "asap": "As soon as possible",
+          "1month": "Within 1 month",
+          "2to3months": "2 – 3 months",
+          "flexible": "I'm flexible"
+        }
+      },
+      "contact": {
+        "title": "How can we reach you?",
+        "fullName": "Your Name",
+        "fullNamePlaceholder": "Full name",
+        "fullNameError": "We'll need your name to get in touch",
+        "phoneNumber": "Phone / WhatsApp",
+        "phoneNumberPlaceholder": "+1 (555) 123-4567",
+        "phoneNumberError": "Please enter a valid phone number",
+        "phoneNumberEditable": "(you can edit this)",
+        "email": "Email",
+        "emailPlaceholder": "you@example.com",
+        "emailOptional": "optional",
+        "emailError": "Please check your email format",
+        "companyName": "Company Name",
+        "companyNamePlaceholder": "Your company",
+        "companyNameError": "Please enter your company name",
+        "companySize": "Team Size",
+        "companySizeSelect": "Select team size",
+        "companySizeError": "Please select your team size",
+        "accountInfo": "Your Account",
+        "name": "Name",
+        "emailLabel": "Email"
+      }
+    },
+    "budgetOptions": {
+      "lessThan500": "Under $500",
+      "500to1000": "$500 – $1,000",
+      "1000to3000": "$1,000 – $3,000",
+      "3000to10000": "$3,000 – $10,000",
+      "10000plus": "$10,000+"
+    },
+    "companySizeOptions": {
+      "lessThan10": "Under 10 people",
+      "10to50": "10–50 people",
+      "50plus": "50+ people"
+    },
+    "navigation": {
+      "back": "Back",
+      "next": "Continue",
+      "submit": "Send My Request",
+      "create": "Create Project"
+    },
+    "errors": {
+      "submitFailed": "Something went wrong. Please try again.",
+      "createFailed": "Couldn't create the project. Please try again."
+    }
+  },
+  "onboarding": {
+    "badge": "Profile Setup",
+    "progress": {
+      "step": "Step {{current}} of {{total}}",
+      "percent": "{{value}}% complete"
+    },
+    "steps": {
+      "welcome": {
+        "title": "Welcome to YANSY",
+        "subtitle": "Let's set up your account in 2 minutes"
+      },
+      "contact": {
+        "title": "Your Contact Info",
+        "subtitle": "So we can reach you when it matters"
+      },
+      "business": {
+        "title": "Your Business",
+        "subtitle": "Help us understand your world"
+      },
+      "goals": {
+        "title": "Your Primary Goal",
+        "subtitle": "What brings you to YANSY?"
+      },
+      "source": {
+        "title": "One Last Thing",
+        "subtitle": "How did you find us?"
+      }
+    },
+    "welcome": {
+      "greeting": "Welcome, {{name}}!",
+      "body": "Before you access your dashboard, we need a few details to",
+      "bodyAccent": " personalize your experience",
+      "bodyEnd": " and ensure our team can communicate with you effectively.",
+      "benefits": {
+        "contact": "Direct contact when your project updates",
+        "goals": "Tailored services for your goals",
+        "speed": "Faster responses from our team"
+      }
+    },
+    "fields": {
+      "phone": "Phone Number",
+      "country": "Country",
+      "city": "City",
+      "company": "Company Name",
+      "role": "Your Role",
+      "businessType": "Business Type",
+      "website": "Website (optional)",
+      "goal": "Select the main thing you want to achieve with YANSY.",
+      "source": "This helps us understand where our clients come from."
+    },
+    "placeholders": {
+      "phone": "+1 (555) 000-0000",
+      "country": "United States",
+      "city": "New York",
+      "company": "Acme Corp",
+      "role": "CEO, CTO…",
+      "website": "https://yoursite.com"
+    },
+    "businessTypes": {
+      "startup": "Startup",
+      "agency": "Agency",
+      "enterprise": "Enterprise",
+      "freelancer": "Freelancer",
+      "ecommerce": "E-Commerce",
+      "saas": "SaaS",
+      "other": "Other"
+    },
+    "goals": {
+      "website": "Website / Landing Page",
+      "app": "Mobile / Web App",
+      "branding": "Brand Identity",
+      "marketing": "Digital Marketing",
+      "saas": "SaaS Product",
+      "ecommerce": "E-Commerce Store",
+      "consulting": "Strategy & Consulting",
+      "other": "Something Else"
+    },
+    "howFound": {
+      "google": "Google Search",
+      "social_media": "Social Media",
+      "referral": "Referral",
+      "advertisement": "Advertisement",
+      "blog": "Blog / Article",
+      "other": "Other"
+    },
+    "nav": {
+      "back": "Back",
+      "continue": "Continue",
+      "complete": "Complete Setup",
+      "skip": "Skip this step",
+      "saving": "Saving…"
+    },
+    "errors": {
+      "phone": "Phone number is required.",
+      "generic": "Something went wrong. Please try again."
+    }
+  }
+}
