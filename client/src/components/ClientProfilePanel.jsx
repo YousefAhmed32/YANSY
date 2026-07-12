@@ -40,7 +40,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'delivered':
-        return <CheckCircle2 className="h-4 w-4 text-[#d4af37]" />;
+        return <CheckCircle2 className="h-4 w-4 text-[#2563EB]" />;
       case 'in-progress':
       case 'near-completion':
         return <Clock className="h-4 w-4 text-blue-400" />;
@@ -62,7 +62,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -74,7 +74,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
           <p className="text-white/70 mb-4">{error || 'Client not found'}</p>
           <button
             onClick={onClose}
-            className="px-6 py-3 border border-[#d4af37] text-[#d4af37] hover:bg-[#d4af37] hover:text-black transition-all duration-300 text-sm font-light tracking-wide uppercase"
+            className="px-6 py-3 border border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-black transition-all duration-300 text-sm font-light tracking-wide uppercase"
           >
             Close
           </button>
@@ -98,7 +98,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
               </div>
               <button
                 onClick={onClose}
-                className="p-2 text-white/60 hover:text-[#d4af37] transition-colors"
+                className="p-2 text-white/60 hover:text-[#2563EB] transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -108,7 +108,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-white/5 border border-white/10">
-                  <User className="h-6 w-6 text-[#d4af37]" />
+                  <User className="h-6 w-6 text-[#2563EB]" />
                 </div>
                 <div>
                   <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Full Name</p>
@@ -118,7 +118,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
 
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-white/5 border border-white/10">
-                  <Mail className="h-6 w-6 text-[#d4af37]" />
+                  <Mail className="h-6 w-6 text-[#2563EB]" />
                 </div>
                 <div>
                   <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Email</p>
@@ -128,7 +128,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
 
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-white/5 border border-white/10">
-                  <Phone className="h-6 w-6 text-[#d4af37]" />
+                  <Phone className="h-6 w-6 text-[#2563EB]" />
                 </div>
                 <div>
                   <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Phone Number</p>
@@ -138,7 +138,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
 
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-white/5 border border-white/10">
-                  <Building className="h-6 w-6 text-[#d4af37]" />
+                  <Building className="h-6 w-6 text-[#2563EB]" />
                 </div>
                 <div>
                   <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Client Type</p>
@@ -149,7 +149,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
               {client.companyName && (
                 <div className="flex items-start gap-4">
                   <div className="p-3 bg-white/5 border border-white/10">
-                    <Building className="h-6 w-6 text-[#d4af37]" />
+                    <Building className="h-6 w-6 text-[#2563EB]" />
                   </div>
                   <div>
                     <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Company Name</p>
@@ -161,7 +161,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
               {client.companySize && (
                 <div className="flex items-start gap-4">
                   <div className="p-3 bg-white/5 border border-white/10">
-                    <Users className="h-6 w-6 text-[#d4af37]" />
+                    <Users className="h-6 w-6 text-[#2563EB]" />
                   </div>
                   <div>
                     <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Company Size</p>
@@ -176,7 +176,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/10">
               <div>
-                <p className="text-3xl font-light text-[#d4af37] mb-1">{client.totalProjects || 0}</p>
+                <p className="text-3xl font-light text-[#2563EB] mb-1">{client.totalProjects || 0}</p>
                 <p className="text-xs font-light text-white/50 uppercase tracking-wide">Total Projects</p>
               </div>
               <div>
@@ -188,7 +188,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
                 <p className="text-xs font-light text-white/50 uppercase tracking-wide">Near Completion</p>
               </div>
               <div>
-                <p className="text-3xl font-light text-[#d4af37] mb-1">{client.projectsByStatus?.delivered || 0}</p>
+                <p className="text-3xl font-light text-[#2563EB] mb-1">{client.projectsByStatus?.delivered || 0}</p>
                 <p className="text-xs font-light text-white/50 uppercase tracking-wide">Delivered</p>
               </div>
             </div>
@@ -220,7 +220,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
                 {projects.map((project) => (
                   <div
                     key={project._id}
-                    className="p-6 bg-white/5 border border-white/10 hover:border-[#d4af37]/50 transition-all duration-300"
+                    className="p-6 bg-white/5 border border-white/10 hover:border-[#2563EB]/50 transition-all duration-300"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
@@ -237,7 +237,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
                         project.status === 'cancelled'
                           ? 'text- bg-[#e67e22]/20 border-[#e67e22]/30'
                           : project.progress === 100
-                          ? 'text-[#d4af37] bg-[#d4af37]/20 border-[#d4af37]/30'
+                          ? 'text-[#2563EB] bg-[#2563EB]/20 border-[#2563EB]/30'
                           : project.progress >= 80
                           ? 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
                           : project.progress > 0
@@ -256,7 +256,7 @@ const ClientProfilePanel = ({ clientId, onClose }) => {
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
                             project.progress === 100
-                              ? 'bg-gradient-to-r from-[#d4af37] to-[#f4d03f]'
+                              ? 'bg-gradient-to-r from-[#2563EB] to-[#f4d03f]'
                               : project.progress >= 80
                               ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
                               : 'bg-gradient-to-r from-blue-500 to-blue-400'

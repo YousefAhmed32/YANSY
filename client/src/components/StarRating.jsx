@@ -68,7 +68,7 @@ const StarRating = ({
   const getStarColor = (index) => {
     const activeValue = hoveredStar || value;
     if (index <= activeValue) {
-      return 'text-[#d4af37] fill-[#d4af37]';
+      return 'text-[#2563EB] fill-[#2563EB]';
     }
     return 'text-white/20 fill-white/10';
   };
@@ -97,7 +97,7 @@ const StarRating = ({
               ${getStarColor(star)}
               transition-all duration-300
               ${!disabled ? 'hover:scale-110 cursor-pointer' : 'cursor-default'}
-              ${star <= (hoveredStar || value) ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}
+              ${star <= (hoveredStar || value) ? 'drop-shadow-[0_0_8px_rgba(37,99,235,0.5)]' : ''}
             `}
           >
             <Star className="w-full h-full" />

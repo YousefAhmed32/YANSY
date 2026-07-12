@@ -5,21 +5,20 @@ import {
   Wifi, Map, Chrome, Activity, Zap, Target, AlertCircle,
 } from 'lucide-react';
 import api from '../utils/api';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const useTokens = (isDark) => ({
-  bg:          isDark ? '#080806'                 : '#f4f4f2',
-  surface:     isDark ? 'rgba(255,255,255,0.04)'  : 'rgba(0,0,0,0.03)',
-  surfaceHov:  isDark ? 'rgba(255,255,255,0.07)'  : 'rgba(0,0,0,0.05)',
-  border:      isDark ? 'rgba(255,255,255,0.08)'  : 'rgba(0,0,0,0.08)',
-  borderHov:   isDark ? 'rgba(212,175,55,0.2)'    : 'rgba(212,175,55,0.25)',
-  text:        isDark ? '#f0f0eb'                 : '#0a0a0a',
-  textSub:     isDark ? 'rgba(255,255,255,0.55)'  : 'rgba(0,0,0,0.5)',
-  textMuted:   isDark ? 'rgba(255,255,255,0.3)'   : 'rgba(0,0,0,0.3)',
-  gold:        '#d4af37',
-  goldDim:     'rgba(212,175,55,0.12)',
+// ── Design tokens (light-only) ─────────────────────────────────────────────────
+const TK = {
+  bg:          '#F6F7F9',
+  surface:     '#FFFFFF',
+  surfaceHov:  'rgba(0,0,0,0.025)',
+  border:      '#E8EBF0',
+  borderHov:   'rgba(37,99,235,0.25)',
+  text:        '#0D1117',
+  textSub:     '#6B7280',
+  textMuted:   '#9CA3AF',
+  gold:        '#2563EB',
+  goldDim:     'rgba(37,99,235,0.12)',
   blue:        '#60a5fa',
   blueDim:     'rgba(96,165,250,0.12)',
   green:       '#34d399',
@@ -28,14 +27,12 @@ const useTokens = (isDark) => ({
   redDim:      'rgba(248,113,113,0.12)',
   purple:      '#a78bfa',
   purpleDim:   'rgba(167,139,250,0.12)',
-  shadow:      isDark
-    ? '0 0 0 1px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5)'
-    : '0 0 0 1px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)',
-});
+  shadow:      '0 0 0 1px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)',
+};
 
 // ── Inline SVG Charts ─────────────────────────────────────────────────────────
 
-const SparkLine = ({ data = [], color = '#d4af37', height = 40 }) => {
+const SparkLine = ({ data = [], color = '#2563EB', height = 40 }) => {
   if (!data.length) return null;
   const vals = data.map(d => d.views || d.sessions || d.conversions || d.events || 0);
   const max = Math.max(...vals, 1);
@@ -65,7 +62,7 @@ const SparkLine = ({ data = [], color = '#d4af37', height = 40 }) => {
   );
 };
 
-const HBarChart = ({ data = [], labelKey, valueKey, color = '#d4af37', tk }) => {
+const HBarChart = ({ data = [], labelKey, valueKey, color = '#2563EB', tk }) => {
   if (!data.length) return <EmptyState small tk={tk} />;
   const max = Math.max(...data.map(d => d[valueKey] || 0), 1);
   return (
@@ -93,7 +90,7 @@ const HBarChart = ({ data = [], labelKey, valueKey, color = '#d4af37', tk }) => 
 const DonutChart = ({ data = [], colorMap = {}, tk }) => {
   if (!data.length) return <EmptyState small tk={tk} />;
   const total = data.reduce((s, d) => s + (d.count || 0), 0) || 1;
-  const defaultColors = ['#d4af37', '#60a5fa', '#34d399', '#f87171', '#a78bfa'];
+  const defaultColors = ['#2563EB', '#60a5fa', '#34d399', '#f87171', '#a78bfa'];
   let cumulativePct = 0;
 
   const segments = data.map((item, i) => {
@@ -462,9 +459,8 @@ const ConversionsTab = ({ data, loading, tk }) => {
 const TABS = ['Overview', 'Real-time', 'Geography', 'Sources', 'Devices', 'Pages', 'Conversions'];
 
 export default function AdminAnalytics() {
-  const { isDark } = useTheme();
   const { isRTL } = useLanguage();
-  const tk = useTokens(isDark);
+  const tk = TK;
 
   const [tab, setTab]         = useState('Overview');
   const [range, setRange]     = useState('30d');

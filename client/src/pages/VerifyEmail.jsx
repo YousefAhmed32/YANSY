@@ -6,61 +6,78 @@ import api from '../utils/api';
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [status, setStatus] = useState('loading'); // loading | success | error | no-token
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
-    if (!token) {
-      setStatus('no-token');
-      return;
-    }
+    if (!token) { setStatus('no-token'); return; }
     api.get(`/auth/verify-email/${token}`)
       .then(() => setStatus('success'))
       .catch(() => setStatus('error'));
   }, [token]);
 
-  const gold = '#d4af37';
-
   const states = {
     loading: {
-      icon: <Loader2 style={{ width: 48, height: 48, color: gold, animation: 'spin 1s linear infinite' }} />,
+      icon: <Loader2 style={{ width: 44, height: 44, color: '#2563EB', animation: 'spin 1s linear infinite' }} />,
       title: 'Verifying your email…',
       message: 'Please wait while we verify your email address.',
       action: null,
     },
     success: {
-      icon: <CheckCircle style={{ width: 48, height: 48, color: '#34d399' }} />,
-      title: 'Email Verified!',
+      icon: <CheckCircle style={{ width: 44, height: 44, color: '#10B981' }} />,
+      title: 'Email verified!',
       message: 'Your email address has been successfully verified. Your account is now fully active.',
-      action: <Link to="/app/dashboard" style={{
-        display: 'inline-block', padding: '12px 28px',
-        background: gold, color: '#000',
-        fontSize: '12px', fontWeight: 600, letterSpacing: '0.12em',
-        textTransform: 'uppercase', textDecoration: 'none', borderRadius: '6px',
-      }}>Go to Dashboard</Link>,
+      action: (
+        <Link to="/app/dashboard" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '7px',
+          padding: '11px 24px',
+          background: '#0D1117', borderRadius: '9px',
+          color: '#FFFFFF', fontSize: '13px', fontWeight: 600,
+          textDecoration: 'none', transition: 'background 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#1a2230'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#0D1117'; }}
+        >
+          Go to Dashboard
+        </Link>
+      ),
     },
     error: {
-      icon: <XCircle style={{ width: 48, height: 48, color: '#f87171' }} />,
-      title: 'Verification Failed',
+      icon: <XCircle style={{ width: 44, height: 44, color: '#EF4444' }} />,
+      title: 'Verification failed',
       message: 'This verification link is invalid or has expired. Please request a new one from your dashboard.',
-      action: <Link to="/app/dashboard" style={{
-        display: 'inline-block', padding: '12px 28px',
-        background: 'rgba(212,175,55,0.1)', color: gold,
-        border: '1px solid rgba(212,175,55,0.3)',
-        fontSize: '12px', fontWeight: 600, letterSpacing: '0.12em',
-        textTransform: 'uppercase', textDecoration: 'none', borderRadius: '6px',
-      }}>Back to Dashboard</Link>,
+      action: (
+        <Link to="/app/dashboard" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '7px',
+          padding: '11px 24px',
+          background: 'transparent', border: '1px solid #E8EBF0', borderRadius: '9px',
+          color: '#6B7280', fontSize: '13px', fontWeight: 500,
+          textDecoration: 'none', transition: 'all 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#2563EB'; e.currentTarget.style.color = '#2563EB'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8EBF0'; e.currentTarget.style.color = '#6B7280'; }}
+        >
+          Back to Dashboard
+        </Link>
+      ),
     },
     'no-token': {
-      icon: <Mail style={{ width: 48, height: 48, color: 'rgba(255,255,255,0.4)' }} />,
-      title: 'No Token Found',
+      icon: <Mail style={{ width: 44, height: 44, color: '#9CA3AF' }} />,
+      title: 'No token found',
       message: 'Please use the verification link from your email. If you need a new link, go to your dashboard.',
-      action: <Link to="/app/dashboard" style={{
-        display: 'inline-block', padding: '12px 28px',
-        background: 'rgba(212,175,55,0.1)', color: gold,
-        border: '1px solid rgba(212,175,55,0.3)',
-        fontSize: '12px', fontWeight: 600, letterSpacing: '0.12em',
-        textTransform: 'uppercase', textDecoration: 'none', borderRadius: '6px',
-      }}>Go to Dashboard</Link>,
+      action: (
+        <Link to="/app/dashboard" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '7px',
+          padding: '11px 24px',
+          background: 'transparent', border: '1px solid #E8EBF0', borderRadius: '9px',
+          color: '#6B7280', fontSize: '13px', fontWeight: 500,
+          textDecoration: 'none', transition: 'all 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#2563EB'; e.currentTarget.style.color = '#2563EB'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8EBF0'; e.currentTarget.style.color = '#6B7280'; }}
+        >
+          Go to Dashboard
+        </Link>
+      ),
     },
   };
 
@@ -68,50 +85,35 @@ const VerifyEmail = () => {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#080806',
+      minHeight: '100vh', background: '#F6F7F9',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '32px 16px',
     }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{
-        maxWidth: 480, width: '100%',
-        background: '#0d0d0b',
-        border: '1px solid rgba(212,175,55,0.15)',
-        borderRadius: '12px',
-        padding: '48px 40px',
+        maxWidth: 440, width: '100%',
+        background: '#FFFFFF', border: '1px solid #E8EBF0',
+        borderRadius: '16px', padding: '48px 40px',
         textAlign: 'center',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
       }}>
-        {/* Logo */}
-        <div style={{
-          fontSize: 13, letterSpacing: '0.4em', textTransform: 'uppercase',
-          color: gold, fontFamily: 'Georgia, serif', marginBottom: 32,
-        }}>
-          YANSY
-        </div>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <div style={{ fontSize: '15px', fontWeight: 700, letterSpacing: '0.08em', color: '#0D1117', marginBottom: '2px' }}>YANSY</div>
+          <div style={{ fontSize: '9px', letterSpacing: '0.2em', color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '32px' }}>TECH</div>
+        </Link>
 
-        {/* Icon */}
-        <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ marginBottom: '22px', display: 'flex', justifyContent: 'center' }}>
           {current.icon}
         </div>
 
-        {/* Title */}
-        <h1 style={{
-          fontSize: 24, fontWeight: 300, color: '#f5f5f0',
-          letterSpacing: '-0.01em', margin: '0 0 12px',
-          fontFamily: "'Inter',system-ui,sans-serif",
-        }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#0D1117', letterSpacing: '-0.02em', margin: '0 0 10px' }}>
           {current.title}
         </h1>
 
-        {/* Message */}
-        <p style={{
-          fontSize: 14, color: 'rgba(255,255,255,0.5)',
-          lineHeight: 1.7, margin: '0 0 32px', fontWeight: 300,
-        }}>
+        <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.65, margin: '0 0 28px', fontWeight: 400 }}>
           {current.message}
         </p>
 
-        {/* Action */}
         {current.action}
       </div>
     </div>

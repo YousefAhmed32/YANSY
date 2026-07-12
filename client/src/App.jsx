@@ -48,6 +48,9 @@ const AdminAuditLog   = lazy(() => import('./pages/AdminAuditLog'));
 const NotFound        = lazy(() => import('./pages/NotFound'));
 const Pricing         = lazy(() => import('./pages/Pricing'));
 const BillingPage     = lazy(() => import('./pages/BillingPage'));
+const Support         = lazy(() => import('./pages/Support'));
+const Payments        = lazy(() => import('./pages/Payments'));
+const Account         = lazy(() => import('./pages/Account'));
 const AdminAI             = lazy(() => import('./pages/AdminAI'));
 const AdminSettings       = lazy(() => import('./pages/AdminSettings'));
 const AdminHealth         = lazy(() => import('./pages/AdminHealth'));
@@ -57,39 +60,41 @@ const AdminNotifications  = lazy(() => import('./pages/AdminNotifications'));
 const AdminReports        = lazy(() => import('./pages/AdminReports'));
 const AdminCRM            = lazy(() => import('./pages/AdminCRM'));
 const AdminSupportAI      = lazy(() => import('./pages/AdminSupportAI'));
+const AdminMessages       = lazy(() => import('./pages/AdminMessages'));
 const AdminAnalytics      = lazy(() => import('./pages/AdminAnalytics'));
 const VerifyEmail         = lazy(() => import('./pages/VerifyEmail'));
 const OnboardingWizard    = lazy(() => import('./pages/OnboardingWizard'));
+const Meetings            = lazy(() => import('./pages/Meetings'));
+const ActivityTimeline    = lazy(() => import('./pages/ActivityTimeline'));
 
 /* ── Branded page loader ──────────────────────────────────────────────────── */
 const PageLoader = () => (
   <div
-    className="bg-black min-h-screen flex items-center justify-center"
+    style={{ background: '#FFFFFF', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     aria-label="Loading"
     role="status"
   >
-    {/* Brand wordmark + spinner */}
-    <div className="flex flex-col items-center gap-6">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
       <div
         aria-hidden
         style={{
-          width: 36,
-          height: 36,
+          width: 32,
+          height: 32,
           borderRadius: '50%',
-          border: '1.5px solid rgba(212,175,55,0.12)',
-          borderTopColor: '#d4af37',
-          animation: 'ys-spin 0.85s linear infinite',
+          border: '2px solid #E7EAF0',
+          borderTopColor: '#2563EB',
+          animation: 'ys-spin 0.75s linear infinite',
         }}
       />
       <span
         aria-hidden
         style={{
-          fontFamily    : "'Inter',system-ui,sans-serif",
-          fontSize      : 10,
-          letterSpacing : '0.12em',
-          textTransform : 'uppercase',
-          color         : 'rgba(212,175,55,0.4)',
-          fontWeight    : 500,
+          fontFamily: "'Inter',system-ui,sans-serif",
+          fontSize: 10,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: '#9CA3AF',
+          fontWeight: 600,
         }}
       >
         YANSY
@@ -149,14 +154,22 @@ const AnimatedRoutes = () => {
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="onboarding" element={<OnboardingWizard />} />
             <Route path="dashboard"  element={<Dashboard />} />
-            <Route path="profile"    element={<Profile />} />
-            <Route path="settings"   element={<Settings />} />
             <Route path="projects"   element={<Projects />} />
             <Route path="projects/new" element={<AddProject />} />
             <Route path="projects/:id" element={<ProjectDetails />} />
             <Route path="messages"   element={<Messages />} />
             <Route path="invoices"   element={<Invoices />} />
             <Route path="billing"    element={<BillingPage />} />
+            {/* New merged pages */}
+            <Route path="payments"   element={<Payments />} />
+            <Route path="account"    element={<Account />} />
+            <Route path="support"    element={<Support />} />
+            {/* New pages */}
+            <Route path="meetings"  element={<Meetings />} />
+            <Route path="activity"  element={<ActivityTimeline />} />
+            {/* Legacy redirects — keep old links working */}
+            <Route path="profile"    element={<Navigate to="/app/account" replace />} />
+            <Route path="settings"   element={<Navigate to="/app/account" replace />} />
 
             {/* Admin */}
             <Route
@@ -218,6 +231,10 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/support"
               element={<ProtectedRoute requireAdmin><AdminSupportAI /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/messages"
+              element={<ProtectedRoute requireAdmin><AdminMessages /></ProtectedRoute>}
             />
             <Route
               path="admin/analytics"

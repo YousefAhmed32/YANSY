@@ -350,7 +350,7 @@ exports.chat = async (req, res) => {
 
   if (!message?.trim()) return res.status(400).json({ error: 'Message is required.' });
 
-  res.setHeader('Content-Type',     'text/event-stream');
+  res.setHeader('Content-Type',     'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control',    'no-cache');
   res.setHeader('Connection',       'keep-alive');
   res.setHeader('X-Accel-Buffering','no');

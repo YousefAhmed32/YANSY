@@ -27,7 +27,7 @@ const P_CLR = {
 const STATUS_CLR = {
   new:           { bg: 'rgba(110,175,255,.1)',  tx: '#6eafff' },
   contacted:     { bg: 'rgba(160,145,235,.1)',  tx: '#a091eb' },
-  proposal_sent: { bg: 'rgba(212,175,55,.1)',   tx: '#d4af37' },
+  proposal_sent: { bg: 'rgba(37,99,235,.1)',   tx: '#2563EB' },
   won:           { bg: 'rgba(34,197,94,.1)',    tx: '#22c55e' },
   lost:          { bg: 'rgba(239,68,68,.1)',    tx: '#ef4444' },
   open:          { bg: 'rgba(110,175,255,.1)',  tx: '#6eafff' },
@@ -45,7 +45,7 @@ const Badge = ({ children, bg, tx, bd }) => (
   <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: bg || 'rgba(255,255,255,.06)', color: tx || 'rgba(255,255,255,.6)', border: `1px solid ${bd || 'rgba(255,255,255,.1)'}` }}>{children}</span>
 );
 
-const StatCard = ({ icon, label, value, sub, color = '#d4af37', alert, onClick }) => (
+const StatCard = ({ icon, label, value, sub, color = '#2563EB', alert, onClick }) => (
   <div onClick={onClick} style={{ background: alert ? 'rgba(220,38,38,.07)' : 'rgba(255,255,255,.03)', border: `1px solid ${alert ? 'rgba(220,38,38,.2)' : 'rgba(255,255,255,.06)'}`, borderRadius: 14, padding: '18px 20px', flex: '1 1 150px', minWidth: 140, cursor: onClick ? 'pointer' : 'default', transition: 'border-color .2s' }}>
     <div style={{ fontSize: 20, marginBottom: 8 }}>{icon}</div>
     <div style={{ fontSize: 28, fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value ?? '—'}</div>
@@ -56,7 +56,7 @@ const StatCard = ({ icon, label, value, sub, color = '#d4af37', alert, onClick }
 
 const Spinner = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
-    <div style={{ width: 30, height: 30, borderRadius: '50%', border: '2px solid rgba(212,175,55,.1)', borderTopColor: '#d4af37', animation: 'spin .7s linear infinite' }} />
+    <div style={{ width: 30, height: 30, borderRadius: '50%', border: '2px solid rgba(37,99,235,.1)', borderTopColor: '#2563EB', animation: 'spin .7s linear infinite' }} />
   </div>
 );
 
@@ -80,7 +80,7 @@ const PBtn = ({ disabled, onClick, label }) => (
 );
 
 const ScoreBar = ({ score, size = 64 }) => {
-  const color = score >= 70 ? '#22c55e' : score >= 40 ? '#d4af37' : 'rgba(255,255,255,.3)';
+  const color = score >= 70 ? '#22c55e' : score >= 40 ? '#2563EB' : 'rgba(255,255,255,.3)';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <div style={{ width: size, height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
@@ -129,7 +129,7 @@ const ConvPanel = memo(({ conv, token, onClose, onUpdate }) => {
     <Modal onClose={onClose} maxWidth={680}>
       <ModalHeader title={conv.lead?.name || 'Anonymous Visitor'} sub={fmt(conv.createdAt)} onClose={onClose}>
         <Badge bg={STATUS_CLR[conv.primaryIntent]?.bg} tx={INT_CLR[conv.primaryIntent]}>{conv.primaryIntent}</Badge>
-        {conv.leadScore > 0 && <Badge bg="rgba(212,175,55,.1)" tx="#d4af37" bd="rgba(212,175,55,.2)">Score {conv.leadScore}</Badge>}
+        {conv.leadScore > 0 && <Badge bg="rgba(37,99,235,.1)" tx="#2563EB" bd="rgba(37,99,235,.2)">Score {conv.leadScore}</Badge>}
         {conv.userType === 'registered' && <Badge bg="rgba(160,145,235,.12)" tx="#a091eb">Registered</Badge>}
       </ModalHeader>
 
@@ -159,8 +159,8 @@ const ConvPanel = memo(({ conv, token, onClose, onUpdate }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 340, overflowY: 'auto', paddingRight: 4 }}>
           {(conv.messages || []).map((m, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-              <div style={{ maxWidth: '82%', padding: '9px 12px', fontSize: 12.5, lineHeight: 1.6, borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? 'linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.08))' : 'rgba(255,255,255,.04)', border: m.role === 'user' ? '1px solid rgba(212,175,55,.2)' : '1px solid rgba(255,255,255,.05)', color: 'rgba(255,255,255,.85)' }}>
-                <span style={{ fontSize: 9.5, color: m.role === 'user' ? 'rgba(212,175,55,.6)' : 'rgba(255,255,255,.3)', display: 'block', marginBottom: 3 }}>{m.role === 'user' ? 'Visitor' : 'YANSY AI'} · {m.timestamp ? fmt(m.timestamp) : ''}</span>
+              <div style={{ maxWidth: '82%', padding: '9px 12px', fontSize: 12.5, lineHeight: 1.6, borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? 'linear-gradient(135deg,rgba(37,99,235,.15),rgba(37,99,235,.08))' : 'rgba(255,255,255,.04)', border: m.role === 'user' ? '1px solid rgba(37,99,235,.2)' : '1px solid rgba(255,255,255,.05)', color: 'rgba(255,255,255,.85)' }}>
+                <span style={{ fontSize: 9.5, color: m.role === 'user' ? 'rgba(37,99,235,.6)' : 'rgba(255,255,255,.3)', display: 'block', marginBottom: 3 }}>{m.role === 'user' ? 'Visitor' : 'YANSY AI'} · {m.timestamp ? fmt(m.timestamp) : ''}</span>
                 {m.content}
               </div>
             </div>
@@ -202,7 +202,7 @@ const RequestPanel = memo(({ req, conv, token, onClose, onUpdate }) => {
       <ModalHeader title={req.name} sub={`${req.requestCode} · ${fmtDate(req.createdAt)}`} onClose={onClose}>
         <Badge bg={sc.bg} tx={sc.tx}>{status?.replace('_', ' ').toUpperCase()}</Badge>
         <Badge bg={pc.bg} tx={pc.tx} bd={pc.bd}>{priority?.toUpperCase()}</Badge>
-        {req.leadScore > 0 && <Badge bg="rgba(212,175,55,.1)" tx="#d4af37">Score {req.leadScore}</Badge>}
+        {req.leadScore > 0 && <Badge bg="rgba(37,99,235,.1)" tx="#2563EB">Score {req.leadScore}</Badge>}
       </ModalHeader>
 
       {/* Contact + Project */}
@@ -229,7 +229,7 @@ const RequestPanel = memo(({ req, conv, token, onClose, onUpdate }) => {
 
       {req.aiRecommendation && (
         <Section label="AI Recommendation">
-          <div style={{ background: 'rgba(212,175,55,.05)', border: '1px solid rgba(212,175,55,.15)', borderRadius: 10, padding: '12px 16px', display: 'flex', gap: 10 }}>
+          <div style={{ background: 'rgba(37,99,235,.05)', border: '1px solid rgba(37,99,235,.15)', borderRadius: 10, padding: '12px 16px', display: 'flex', gap: 10 }}>
             <span style={{ fontSize: 18, flexShrink: 0 }}>🤖</span>
             <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.6 }}>{req.aiRecommendation}</p>
           </div>
@@ -241,7 +241,7 @@ const RequestPanel = memo(({ req, conv, token, onClose, onUpdate }) => {
           <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '11px 15px' }}>
             {conv.conversationSummary && <p style={{ margin: '0 0 8px', fontSize: 12.5, color: 'rgba(255,255,255,.65)', lineHeight: 1.6 }}>{conv.conversationSummary}</p>}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {conv.leadScore > 0 && <span style={{ fontSize: 11, color: '#d4af37' }}>Lead Score: <strong>{conv.leadScore}/100</strong></span>}
+              {conv.leadScore > 0 && <span style={{ fontSize: 11, color: '#2563EB' }}>Lead Score: <strong>{conv.leadScore}/100</strong></span>}
               {conv.sentiment   && <span style={{ fontSize: 11, color: SENT_CLR[conv.sentiment] }}>{SENT_ICO[conv.sentiment]} {conv.sentiment}</span>}
             </div>
           </div>
@@ -314,10 +314,10 @@ const TicketPanel = memo(({ ticket, conv, token, onClose, onUpdate }) => {
 
       {conv?.conversationSummary && (
         <Section label="AI Insights">
-          <div style={{ background: 'rgba(212,175,55,.04)', border: '1px solid rgba(212,175,55,.1)', borderRadius: 10, padding: '11px 15px' }}>
+          <div style={{ background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, padding: '11px 15px' }}>
             <p style={{ margin: '0 0 6px', fontSize: 12.5, color: 'rgba(255,255,255,.7)', lineHeight: 1.6 }}>{conv.conversationSummary}</p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {conv.leadScore > 0 && <span style={{ fontSize: 11, color: '#d4af37' }}>Score: <strong>{conv.leadScore}</strong></span>}
+              {conv.leadScore > 0 && <span style={{ fontSize: 11, color: '#2563EB' }}>Score: <strong>{conv.leadScore}</strong></span>}
               {conv.sentiment  && <span style={{ fontSize: 11, color: SENT_CLR[conv.sentiment] }}>{SENT_ICO[conv.sentiment]} {conv.sentiment}</span>}
             </div>
           </div>
@@ -329,7 +329,7 @@ const TicketPanel = memo(({ ticket, conv, token, onClose, onUpdate }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 240, overflowY: 'auto' }}>
             {ticket.conversationSnapshot.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                <div style={{ maxWidth: '80%', padding: '8px 12px', fontSize: 12, borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? 'rgba(212,175,55,.12)' : 'rgba(255,255,255,.04)', color: 'rgba(255,255,255,.8)' }}>{m.content}</div>
+                <div style={{ maxWidth: '80%', padding: '8px 12px', fontSize: 12, borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? 'rgba(37,99,235,.12)' : 'rgba(255,255,255,.04)', color: 'rgba(255,255,255,.8)' }}>{m.content}</div>
               </div>
             ))}
           </div>
@@ -372,7 +372,7 @@ TicketPanel.displayName = 'TicketPanel';
 // ── Modal shell ───────────────────────────────────────────────────────────────
 const Modal = ({ children, onClose, maxWidth = 640 }) => (
   <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,.74)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
-    <div style={{ background: '#06060b', border: '1px solid rgba(212,175,55,.12)', borderRadius: 18, width: '100%', maxWidth, maxHeight: '92vh', overflowY: 'auto', padding: 28 }} onClick={e => e.stopPropagation()}>
+    <div style={{ background: '#06060b', border: '1px solid rgba(37,99,235,.12)', borderRadius: 18, width: '100%', maxWidth, maxHeight: '92vh', overflowY: 'auto', padding: 28 }} onClick={e => e.stopPropagation()}>
       {children}
     </div>
   </div>
@@ -399,7 +399,7 @@ const Section = ({ label, children }) => (
 );
 
 const SaveBtn = ({ onClick, saving, label = 'Save' }) => (
-  <button onClick={onClick} disabled={saving} style={{ width: '100%', padding: '11px', background: saving ? 'rgba(212,175,55,.3)' : '#d4af37', border: 'none', borderRadius: 10, color: '#000', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', transition: 'all .2s' }}>
+  <button onClick={onClick} disabled={saving} style={{ width: '100%', padding: '11px', background: saving ? 'rgba(37,99,235,.3)' : '#2563EB', border: 'none', borderRadius: 10, color: '#000', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', transition: 'all .2s' }}>
     {saving ? 'Saving...' : label}
   </button>
 );
@@ -563,16 +563,16 @@ const AdminSupportAI = () => {
 
   const tabSty = (a) => ({
     padding: '8px 16px', fontSize: 12.5, fontWeight: a ? 600 : 400,
-    background: a ? 'rgba(212,175,55,.1)' : 'transparent',
-    border: a ? '1px solid rgba(212,175,55,.22)' : '1px solid transparent',
-    borderRadius: 9, color: a ? '#d4af37' : 'rgba(255,255,255,.5)',
+    background: a ? 'rgba(37,99,235,.1)' : 'transparent',
+    border: a ? '1px solid rgba(37,99,235,.22)' : '1px solid transparent',
+    borderRadius: 9, color: a ? '#2563EB' : 'rgba(255,255,255,.5)',
     cursor: 'pointer', transition: 'all .2s', whiteSpace: 'nowrap',
   });
 
   // ── Row components ─────────────────────────────────────────────────────────
   const ConvRow = ({ c }) => (
-    <div onClick={() => openConv(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,.02)', border: `1px solid ${c.isRead ? 'rgba(255,255,255,.05)' : 'rgba(212,175,55,.15)'}`, borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.isRead ? 'transparent' : '#d4af37', flexShrink: 0, border: c.isRead ? '1px solid rgba(255,255,255,.1)' : 'none' }} />
+    <div onClick={() => openConv(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,.02)', border: `1px solid ${c.isRead ? 'rgba(255,255,255,.05)' : 'rgba(37,99,235,.15)'}`, borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
+      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.isRead ? 'transparent' : '#2563EB', flexShrink: 0, border: c.isRead ? '1px solid rgba(255,255,255,.1)' : 'none' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lead?.name || 'Anonymous Visitor'}</span>
@@ -597,14 +597,14 @@ const AdminSupportAI = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ fontSize: 13.5, fontWeight: 600, color: '#fff' }}>{l.lead?.name || 'Unknown'}</span>
             {l.userType === 'registered' && <Badge bg="rgba(160,145,235,.12)" tx="#a091eb">Registered</Badge>}
-            {l.requestId && <Badge bg="rgba(212,175,55,.08)" tx="rgba(212,175,55,.7)">Request</Badge>}
+            {l.requestId && <Badge bg="rgba(37,99,235,.08)" tx="rgba(37,99,235,.7)">Request</Badge>}
           </div>
           <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,.4)' }}>{l.lead?.phone || l.lead?.email || 'No contact info'}</p>
         </div>
         <ScoreBar score={l.leadScore || 0} />
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {l.lead?.projectType && <Badge bg="rgba(212,175,55,.07)" tx="rgba(212,175,55,.8)">{l.lead.projectType}</Badge>}
+        {l.lead?.projectType && <Badge bg="rgba(37,99,235,.07)" tx="rgba(37,99,235,.8)">{l.lead.projectType}</Badge>}
         {l.lead?.timeline    && <Badge bg="rgba(255,255,255,.04)" tx="rgba(255,255,255,.5)">⏱ {l.lead.timeline}</Badge>}
         {l.sentiment         && <span style={{ fontSize: 11, color: SENT_CLR[l.sentiment] }}>{SENT_ICO[l.sentiment]} {l.sentiment}</span>}
         <span style={{ fontSize: 10, color: 'rgba(255,255,255,.3)' }}>{fmtDate(l.createdAt)}</span>
@@ -619,14 +619,14 @@ const AdminSupportAI = () => {
     const sc = STATUS_CLR[r.status] || STATUS_CLR.new;
     const pc = P_CLR[r.priority]    || P_CLR.medium;
     return (
-      <div onClick={() => openReq(r)} style={{ padding: '13px 14px', background: 'rgba(255,255,255,.02)', border: `1px solid ${r.isRead ? 'rgba(255,255,255,.06)' : 'rgba(212,175,55,.18)'}`, borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
+      <div onClick={() => openReq(r)} style={{ padding: '13px 14px', background: 'rgba(255,255,255,.02)', border: `1px solid ${r.isRead ? 'rgba(255,255,255,.06)' : 'rgba(37,99,235,.18)'}`, borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-              <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: '#d4af37', fontWeight: 600 }}>{r.requestCode}</span>
+              <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: '#2563EB', fontWeight: 600 }}>{r.requestCode}</span>
               <Badge bg={sc.bg} tx={sc.tx}>{r.status?.replace('_',' ').toUpperCase()}</Badge>
               <Badge bg={pc.bg} tx={pc.tx} bd={pc.bd}>{r.priority?.toUpperCase()}</Badge>
-              {!r.isRead && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d4af37', display: 'inline-block' }} />}
+              {!r.isRead && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563EB', display: 'inline-block' }} />}
             </div>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{r.name}</span>
           </div>
@@ -637,12 +637,12 @@ const AdminSupportAI = () => {
           {r.email && <span style={{ fontSize: 11, color: 'rgba(255,255,255,.55)' }}>✉ {r.email}</span>}
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {r.projectType && <Badge bg="rgba(212,175,55,.07)" tx="rgba(212,175,55,.8)">{r.projectType}</Badge>}
+          {r.projectType && <Badge bg="rgba(37,99,235,.07)" tx="rgba(37,99,235,.8)">{r.projectType}</Badge>}
           {r.timeline    && <Badge bg="rgba(255,255,255,.04)" tx="rgba(255,255,255,.5)">⏱ {r.timeline}</Badge>}
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginLeft: 'auto' }}>{fmtDate(r.createdAt)}</span>
         </div>
         {r.aiRecommendation && (
-          <p style={{ margin: '7px 0 0', fontSize: 11, color: 'rgba(212,175,55,.6)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🤖 {r.aiRecommendation}</p>
+          <p style={{ margin: '7px 0 0', fontSize: 11, color: 'rgba(37,99,235,.6)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🤖 {r.aiRecommendation}</p>
         )}
       </div>
     );
@@ -673,13 +673,13 @@ const AdminSupportAI = () => {
         @keyframes spin { to { transform:rotate(360deg) } }
         select option { background:#0a0a12; }
         * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: rgba(212,175,55,.2); border-radius:2px; }
+        ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: rgba(37,99,235,.2); border-radius:2px; }
       `}</style>
 
       {/* Page Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(212,175,55,.1)', border: '1px solid rgba(212,175,55,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>✦</div>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(37,99,235,.1)', border: '1px solid rgba(37,99,235,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>✦</div>
           <div>
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: '-.02em' }}>AI Center</h1>
             <p style={{ margin: 0, fontSize: 11.5, color: 'rgba(255,255,255,.4)' }}>Conversations · Leads · Requests · Tickets · Analytics</p>
@@ -693,11 +693,11 @@ const AdminSupportAI = () => {
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
           <StatCard icon="💬" label="Total Chats"      value={analytics.totalConversations} sub={`${analytics.convToday ?? 0} today · ${analytics.convWeek ?? 0} this week`} />
           <StatCard icon="🎯" label="Leads Captured"   value={analytics.leadsTotal}         sub={`${analytics.leadsWeek ?? 0} this week · avg score ${analytics.avgLeadScore ?? 0}`} color="#22c55e"  onClick={() => setTab('leads')} />
-          <StatCard icon="⚡" label="AI Requests"      value={reqTotal || '0'}              sub="auto-qualified"                  color="#d4af37"   onClick={() => setTab('requests')} />
+          <StatCard icon="⚡" label="AI Requests"      value={reqTotal || '0'}              sub="auto-qualified"                  color="#2563EB"   onClick={() => setTab('requests')} />
           <StatCard icon="🎫" label="Open Tickets"     value={analytics.ticketsOpen}        sub={`${analytics.ticketsTotal} total`} color="#6eafff" onClick={() => setTab('tickets')} />
           <StatCard icon="📈" label="Conversion Rate"  value={`${analytics.conversionRate ?? 0}%`} sub="visitors → leads" color="#a091eb" />
           {analytics.escalationsTotal > 0 && <StatCard icon="🚨" label="Escalations"  value={analytics.escalationsTotal} sub="needs attention" color="#ef4444" alert onClick={() => setTab('escalations')} />}
-          {analytics.unreadCount > 0      && <StatCard icon="📬" label="Unread"        value={analytics.unreadCount}       sub="conversations"  color="#d4af37" onClick={() => setTab('conversations')} />}
+          {analytics.unreadCount > 0      && <StatCard icon="📬" label="Unread"        value={analytics.unreadCount}       sub="conversations"  color="#2563EB" onClick={() => setTab('conversations')} />}
         </div>
       )}
 
@@ -781,7 +781,7 @@ const AdminSupportAI = () => {
           </div>
 
           {/* Recent requests preview */}
-          <div style={{ background: 'rgba(212,175,55,.03)', border: '1px solid rgba(212,175,55,.1)', borderRadius: 14, padding: '18px 20px', gridColumn: 'span 1' }}>
+          <div style={{ background: 'rgba(37,99,235,.03)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 14, padding: '18px 20px', gridColumn: 'span 1' }}>
             <p style={{ margin: '0 0 14px', fontSize: 11, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.07em' }}>AI Request Pipeline</p>
             {analytics ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -791,7 +791,7 @@ const AdminSupportAI = () => {
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>—</span>
                   </div>
                 ))}
-                <button onClick={() => { setTab('requests'); fetchRequests(1, {}); }} style={{ marginTop: 6, padding: '8px 13px', background: 'rgba(212,175,55,.08)', border: '1px solid rgba(212,175,55,.18)', borderRadius: 8, color: '#d4af37', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                <button onClick={() => { setTab('requests'); fetchRequests(1, {}); }} style={{ marginTop: 6, padding: '8px 13px', background: 'rgba(37,99,235,.08)', border: '1px solid rgba(37,99,235,.18)', borderRadius: 8, color: '#2563EB', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                   View All Requests →
                 </button>
               </div>
@@ -831,7 +831,7 @@ const AdminSupportAI = () => {
       {/* ══════ REQUESTS ══════ */}
       {tab === 'requests' && (
         <div>
-          <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(212,175,55,.04)', border: '1px solid rgba(212,175,55,.1)', borderRadius: 10, fontSize: 12, color: 'rgba(212,175,55,.8)' }}>
+          <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, fontSize: 12, color: 'rgba(37,99,235,.8)' }}>
             ⚡ AI Requests are automatically created when the AI qualifies a lead (name + contact + project type collected). Click any request to manage it.
           </div>
           <FilterBar>
@@ -887,12 +887,12 @@ const AdminSupportAI = () => {
             { label: 'Total Leads',           value: analytics?.leadsTotal        ?? 0,  icon: '🎯', color: '#22c55e' },
             { label: 'Leads This Month',      value: analytics?.leadsMonth        ?? 0,  icon: '📊', color: '#22c55e' },
             { label: 'Leads This Week',       value: analytics?.leadsWeek         ?? 0,  icon: '📈', color: '#22c55e' },
-            { label: 'Avg Lead Score',        value: analytics?.avgLeadScore      ?? 0,  icon: '⭐', color: '#d4af37' },
-            { label: 'Conversion Rate',       value: `${analytics?.conversionRate ?? 0}%`, icon: '📉', color: '#d4af37' },
+            { label: 'Avg Lead Score',        value: analytics?.avgLeadScore      ?? 0,  icon: '⭐', color: '#2563EB' },
+            { label: 'Conversion Rate',       value: `${analytics?.conversionRate ?? 0}%`, icon: '📉', color: '#2563EB' },
             { label: 'Open Tickets',          value: analytics?.ticketsOpen       ?? 0,  icon: '🎫', color: '#6eafff' },
             { label: 'Total Tickets',         value: analytics?.ticketsTotal      ?? 0,  icon: '🎫', color: '#6eafff' },
             { label: 'Escalations',           value: analytics?.escalationsTotal  ?? 0,  icon: '🚨', color: '#ef4444' },
-            { label: 'Unread',                value: analytics?.unreadCount       ?? 0,  icon: '📬', color: '#d4af37' },
+            { label: 'Unread',                value: analytics?.unreadCount       ?? 0,  icon: '📬', color: '#2563EB' },
           ].map(({ label, value, icon, color }) => (
             <div key={label} style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, padding: '16px 18px' }}>
               <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>

@@ -18,7 +18,7 @@ import { useSEO } from '../hooks/useSEO';
 /* ─── Service SVG Icons ──────────────────────────────────────────────────── */
 const ServiceIcon = ({ num, color, hovered }) => {
   const style = {
-    color: hovered ? color : 'rgba(255,255,255,0.28)',
+    color: hovered ? color : 'rgba(0,0,0,0.35)',
     transition: 'color 0.45s ease',
   };
   const icons = {
@@ -73,7 +73,7 @@ const ServiceIcon = ({ num, color, hovered }) => {
 /* ─── Services data ──────────────────────────────────────────────────────── */
 const SERVICES = [
   {
-    num: '01', color: '#d4af37', popular: false,
+    num: '01', color: '#2563EB', popular: false,
     en: {
       title: 'Websites That Convert', tag: 'Revenue Generation',
       outcome: '+35% more inbound leads',
@@ -365,7 +365,7 @@ const INDUSTRIES = [
     ),
   },
   {
-    color: '#d4af37',
+    color: '#2563EB',
     en: { label: 'Real Estate',             desc: 'Close deals faster. Property portals, agent CRMs, and listing platforms that give buyers the experience to decide without a showing.' },
     ar: { label: 'العقارات',                 desc: 'أغلق صفقات أسرع. بوابات عقارية وCRM للوكلاء تمنح المشترين التجربة للقرار دون زيارة.' },
     icon: (
@@ -392,10 +392,10 @@ const INDUSTRIES = [
 const SectionEyebrow = ({ label, isRTL }) => (
   <div className={`flex items-center gap-4 mb-5 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
     <span
-      className={`block w-10 h-px flex-shrink-0 ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-transparent`}
+      className={`block w-10 h-px flex-shrink-0 ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#2563EB] to-transparent`}
       aria-hidden="true"
     />
-    <p className="text-[10px] tracking-[0.38em] text-[#d4af37]/55 uppercase font-light whitespace-nowrap">
+    <p className="text-[10px] tracking-[0.38em] text-[#2563EB]/55 uppercase font-light whitespace-nowrap">
       {label}
     </p>
   </div>
@@ -410,8 +410,8 @@ const ServiceCard = ({ s, isRTL, onStartProject }) => {
     <div
       className="relative flex flex-col transition-all duration-500 overflow-hidden group"
       style={{
-        borderTop: `1.5px solid ${hovered ? s.color : 'rgba(255,255,255,0.07)'}`,
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        borderTop: `1.5px solid ${hovered ? s.color : 'rgba(0,0,0,0.07)'}`,
+        borderBottom: '1px solid rgba(0,0,0,0.03)',
         background: hovered ? `linear-gradient(145deg, ${s.color}06 0%, transparent 60%)` : 'transparent',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -464,7 +464,7 @@ const ServiceCard = ({ s, isRTL, onStartProject }) => {
               className={`text-xl sm:text-[1.375rem] font-semibold leading-tight ${isRTL ? 'text-right' : 'text-left'}`}
               style={{
                 letterSpacing: isRTL ? '0' : '-0.015em',
-                color: hovered ? s.color : 'rgba(255,255,255,0.92)',
+                color: hovered ? s.color : 'rgba(0,0,0,0.85)',
                 transition: 'color 0.4s ease',
               }}
             >
@@ -475,8 +475,8 @@ const ServiceCard = ({ s, isRTL, onStartProject }) => {
           <div
             className="flex-shrink-0 mt-1 w-10 h-10 flex items-center justify-center transition-all duration-500"
             style={{
-              background: hovered ? `${s.color}12` : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${hovered ? `${s.color}35` : 'rgba(255,255,255,0.07)'}`,
+              background: hovered ? `${s.color}12` : 'rgba(0,0,0,0.03)',
+              border: `1px solid ${hovered ? `${s.color}35` : 'rgba(0,0,0,0.07)'}`,
             }}
           >
             <ServiceIcon num={s.num} color={s.color} hovered={hovered} />
@@ -502,7 +502,7 @@ const ServiceCard = ({ s, isRTL, onStartProject }) => {
         {/* Description */}
         <p
           className={`text-sm font-normal leading-relaxed mb-7 ${isRTL ? 'text-right' : 'text-left'}`}
-          style={{ color: 'rgba(255,255,255,0.65)' }}
+          style={{ color: 'rgba(0,0,0,0.6)' }}
         >
           {content.desc}
         </p>
@@ -513,7 +513,7 @@ const ServiceCard = ({ s, isRTL, onStartProject }) => {
           style={{
             background: hovered
               ? `linear-gradient(${isRTL ? 'to left' : 'to right'}, ${s.color}30, transparent)`
-              : 'rgba(255,255,255,0.06)',
+              : 'rgba(0,0,0,0.04)',
           }}
         />
 
@@ -523,7 +523,7 @@ const ServiceCard = ({ s, isRTL, onStartProject }) => {
             <li
               key={i}
               className={`flex items-start gap-3 text-xs font-normal ${isRTL ? 'flex-row-reverse' : ''}`}
-              style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.55 }}
+              style={{ color: 'rgba(0,0,0,0.6)', lineHeight: 1.55 }}
             >
               <svg
                 className="flex-shrink-0 mt-0.5"
@@ -574,8 +574,8 @@ const IndustryCard = ({ ind, isRTL }) => {
     <div
       className={`group relative flex items-start gap-4 p-5 sm:p-6 transition-all duration-400 cursor-default ${isRTL ? 'flex-row-reverse text-right' : ''}`}
       style={{
-        border: `1px solid ${hovered ? `${ind.color}30` : 'rgba(255,255,255,0.06)'}`,
-        background: hovered ? `${ind.color}05` : 'rgba(255,255,255,0.015)',
+        border: `1px solid ${hovered ? `${ind.color}30` : 'rgba(0,0,0,0.04)'}`,
+        background: hovered ? `${ind.color}05` : 'rgba(0,0,0,0.02)',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -583,9 +583,9 @@ const IndustryCard = ({ ind, isRTL }) => {
       <div
         className="flex-shrink-0 w-9 h-9 flex items-center justify-center mt-0.5 transition-all duration-400"
         style={{
-          background: hovered ? `${ind.color}15` : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${hovered ? `${ind.color}35` : 'rgba(255,255,255,0.08)'}`,
-          color: hovered ? ind.color : 'rgba(255,255,255,0.3)',
+          background: hovered ? `${ind.color}15` : 'rgba(0,0,0,0.03)',
+          border: `1px solid ${hovered ? `${ind.color}35` : 'rgba(0,0,0,0.05)'}`,
+          color: hovered ? ind.color : 'rgba(0,0,0,0.3)',
         }}
       >
         {ind.icon}
@@ -593,11 +593,11 @@ const IndustryCard = ({ ind, isRTL }) => {
       <div className="flex-1 min-w-0">
         <h3
           className="text-sm font-semibold mb-1.5 transition-colors duration-300"
-          style={{ letterSpacing: '-0.01em', color: hovered ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.82)' }}
+          style={{ letterSpacing: '-0.01em', color: hovered ? 'rgba(0,0,0,0.88)' : 'rgba(0,0,0,0.75)' }}
         >
           {content.label}
         </h3>
-        <p className="text-xs font-normal leading-relaxed" style={{ color: 'rgba(255,255,255,0.48)' }}>
+        <p className="text-xs font-normal leading-relaxed" style={{ color: 'rgba(0,0,0,0.45)' }}>
           {content.desc}
         </p>
       </div>
@@ -649,7 +649,7 @@ const Services = () => {
   const close = () => setIsFormOpen(false);
 
   return (
-    <div className="bg-black text-white min-h-screen overflow-x-hidden" dir={dir}>
+    <div className="bg-white text-[#0D1117] min-h-screen overflow-x-hidden" dir={dir}>
       <Header onStartProject={open} />
 
       {/* ══════════════════════════════════════════════════════════════
@@ -664,7 +664,7 @@ const Services = () => {
           aria-hidden="true"
           style={{
             position: 'absolute', inset: 0, opacity: 0.016, pointerEvents: 'none',
-            backgroundImage: 'linear-gradient(rgba(212,175,55,0.8) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,0.8) 1px,transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(37,99,235,0.8) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,0.8) 1px,transparent 1px)',
             backgroundSize: '72px 72px',
           }}
         />
@@ -675,7 +675,7 @@ const Services = () => {
             position: 'absolute', top: '30%', left: '50%',
             transform: 'translate(-50%, -50%)',
             width: 800, height: 500, borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(212,175,55,0.07) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse, rgba(37,99,235,0.07) 0%, transparent 65%)',
             pointerEvents: 'none', filter: 'blur(40px)',
           }}
         />
@@ -700,10 +700,10 @@ const Services = () => {
               {/* Eyebrow */}
               <div className={`flex items-center gap-4 mb-7 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
                 <span
-                  className={`block w-10 h-px flex-shrink-0 ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-transparent`}
+                  className={`block w-10 h-px flex-shrink-0 ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#2563EB] to-transparent`}
                   aria-hidden="true"
                 />
-                <p className="text-[10px] tracking-[0.12em] text-[#d4af37]/65 uppercase font-medium">
+                <p className="text-[10px] tracking-[0.12em] text-[#2563EB]/65 uppercase font-medium">
                   {isRTL ? 'نتائج قابلة للقياس' : 'Measurable outcomes'}
                 </p>
               </div>
@@ -721,7 +721,7 @@ const Services = () => {
                   <>
                     توقف عن بناء التقنية.
                     <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-l from-[#d4af37] to-white/80">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-l from-[#2563EB] to-white/80">
                       ابدأ ببناء الإيرادات.
                     </span>
                   </>
@@ -729,7 +729,7 @@ const Services = () => {
                   <>
                     Stop building technology.
                     <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-white/80">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-white/80">
                       Start building revenue.
                     </span>
                   </>
@@ -749,7 +749,7 @@ const Services = () => {
               <div className={`flex flex-wrap items-center gap-4 mb-12 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
                 <button
                   onClick={open}
-                  className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#d4af37] text-black text-xs font-semibold tracking-[0.08em] uppercase hover:bg-white transition-all duration-400 overflow-hidden active:scale-[0.98]"
+                  className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#2563EB] text-black text-xs font-semibold tracking-[0.08em] uppercase hover:bg-white transition-all duration-400 overflow-hidden active:scale-[0.98]"
                 >
                   <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
                   <span className="relative">{isRTL ? 'احجز استشارة مجانية' : 'Get Free Strategy Call'}</span>
@@ -762,7 +762,7 @@ const Services = () => {
                 </button>
                 <Link
                   to="/portfolio"
-                  className={`group inline-flex items-center gap-3 px-8 py-4 border border-white/12 text-white/55 text-xs font-medium tracking-[0.08em] uppercase hover:border-[#d4af37]/40 hover:text-[#d4af37] transition-all duration-400 ${isRTL ? 'flex-row-reverse' : ''}`}
+                  className={`group inline-flex items-center gap-3 px-8 py-4 border border-white/12 text-white/55 text-xs font-medium tracking-[0.08em] uppercase hover:border-[#2563EB]/40 hover:text-[#2563EB] transition-all duration-400 ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
                   {isRTL ? 'شاهد نتائجنا' : 'See proven results'}
                   <svg
@@ -780,7 +780,7 @@ const Services = () => {
                   <div key={i} className={`flex items-center gap-2.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <span
                       className="font-bold tabular-nums"
-                      style={{ fontSize: 'clamp(1.125rem, 1.8vw, 1.375rem)', color: '#d4af37', letterSpacing: '-0.025em' }}
+                      style={{ fontSize: 'clamp(1.125rem, 1.8vw, 1.375rem)', color: '#2563EB', letterSpacing: '-0.025em' }}
                     >
                       {stat.num}
                     </span>
@@ -823,7 +823,7 @@ const Services = () => {
             >
               {isRTL ? 'ستة حلول.' : 'Six solutions.'}
               <br />
-              <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-white/70`}>
+              <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#2563EB] to-white/70`}>
                 {isRTL ? 'كل واحد يحل مشكلة حقيقية.' : 'Each one solves a real problem.'}
               </span>
             </h2>
@@ -838,7 +838,7 @@ const Services = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-white/[0.045]">
             {SERVICES.map((s) => (
-              <div key={s.num} className="bg-black">
+              <div key={s.num} className="bg-[#F6F7F9]">
                 <ServiceCard s={s} isRTL={isRTL} onStartProject={open} />
               </div>
             ))}
@@ -874,14 +874,14 @@ const Services = () => {
           aria-hidden="true"
           className="absolute inset-0 opacity-[0.022]"
           style={{
-            backgroundImage: 'linear-gradient(rgba(212,175,55,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,0.6) 1px,transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(37,99,235,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,0.6) 1px,transparent 1px)',
             backgroundSize: '60px 60px',
           }}
         />
         <div
           aria-hidden="true"
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[40vw] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(212,175,55,0.04) 0%, transparent 70%)', filter: 'blur(80px)' }}
+          style={{ background: 'radial-gradient(ellipse, rgba(37,99,235,0.04) 0%, transparent 70%)', filter: 'blur(80px)' }}
         />
 
         <div className="max-w-7xl mx-auto relative z-10">
@@ -894,7 +894,7 @@ const Services = () => {
             >
               {isRTL ? 'الفرق الذي يهم.' : 'The difference that matters.'}
               <br />
-              <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-white/70`}>
+              <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#2563EB] to-white/70`}>
                 {isRTL ? 'قبل أن تدفع أي شيء.' : 'Before you pay a dollar.'}
               </span>
             </h2>
@@ -908,16 +908,16 @@ const Services = () => {
           {/* Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.04]">
             {WHY.map((w, i) => (
-              <div key={i} className="bg-black group/why">
+              <div key={i} className="bg-[#F6F7F9] group/why">
                 <div
                   className={`relative p-7 sm:p-8 h-full flex flex-col transition-all duration-500 overflow-hidden ${isRTL ? 'text-right' : ''}`}
-                  style={{ borderTop: '1.5px solid rgba(255,255,255,0.07)' }}
+                  style={{ borderTop: '1.5px solid rgba(0,0,0,0.07)' }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.borderTopColor = 'rgba(212,175,55,0.5)';
-                    e.currentTarget.style.background = 'rgba(212,175,55,0.025)';
+                    e.currentTarget.style.borderTopColor = 'rgba(37,99,235,0.5)';
+                    e.currentTarget.style.background = 'rgba(37,99,235,0.025)';
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.borderTopColor = 'rgba(255,255,255,0.07)';
+                    e.currentTarget.style.borderTopColor = 'rgba(0,0,0,0.07)';
                     e.currentTarget.style.background = 'transparent';
                   }}
                 >
@@ -925,9 +925,9 @@ const Services = () => {
                   <div
                     className={`flex items-center justify-center w-9 h-9 mb-5 transition-all duration-400 ${isRTL ? 'self-end' : 'self-start'}`}
                     style={{
-                      background: 'rgba(212,175,55,0.08)',
-                      border: '1px solid rgba(212,175,55,0.18)',
-                      color: 'rgba(212,175,55,0.7)',
+                      background: 'rgba(37,99,235,0.08)',
+                      border: '1px solid rgba(37,99,235,0.18)',
+                      color: 'rgba(37,99,235,0.7)',
                     }}
                   >
                     {w.icon}
@@ -940,7 +940,7 @@ const Services = () => {
                   </h3>
                   <p
                     className={`text-sm font-normal leading-relaxed ${isRTL ? 'text-right' : 'text-left'}`}
-                    style={{ color: 'rgba(255,255,255,0.55)' }}
+                    style={{ color: 'rgba(0,0,0,0.5)' }}
                   >
                     {isRTL ? w.ar.desc : w.en.desc}
                   </p>
@@ -955,7 +955,7 @@ const Services = () => {
           INDUSTRIES WE SERVE
       ══════════════════════════════════════════════════════════════ */}
       <section
-        className="relative px-4 sm:px-8 py-20 sm:py-32 overflow-hidden bg-black"
+        className="relative px-4 sm:px-8 py-20 sm:py-32 overflow-hidden bg-white"
         aria-label={isRTL ? 'القطاعات التي نخدمها' : 'Industries we serve'}
       >
         <div className="max-w-7xl mx-auto">
@@ -970,7 +970,7 @@ const Services = () => {
               >
                 {isRTL ? 'نفهم مشاكل' : 'We know your'}
                 <br />
-                <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-white/70`}>
+                <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#2563EB] to-white/70`}>
                   {isRTL ? 'قطاعك بدقة.' : "industry's problems."}
                 </span>
               </h2>
@@ -984,7 +984,7 @@ const Services = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/[0.04]">
             {INDUSTRIES.map((ind, i) => (
-              <div key={i} className="bg-black">
+              <div key={i} className="bg-[#F6F7F9]">
                 <IndustryCard ind={ind} isRTL={isRTL} />
               </div>
             ))}
@@ -1028,7 +1028,7 @@ const Services = () => {
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
             width: 700, height: 300, borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(212,175,55,0.07) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(37,99,235,0.07) 0%, transparent 70%)',
             pointerEvents: 'none', filter: 'blur(60px)',
           }}
         />
@@ -1044,7 +1044,7 @@ const Services = () => {
 
         <div className={`max-w-4xl mx-auto relative z-10 ${isRTL ? 'text-right' : 'text-center'}`}>
           {/* Eyebrow */}
-          <p className={`text-[10px] tracking-[0.12em] text-[#d4af37]/65 uppercase mb-7 font-medium ${isRTL ? 'text-right' : 'text-center'}`}>
+          <p className={`text-[10px] tracking-[0.12em] text-[#2563EB]/65 uppercase mb-7 font-medium ${isRTL ? 'text-right' : 'text-center'}`}>
             {isRTL ? 'الخطوة الأولى مجانية' : 'The first step costs nothing'}
           </p>
 
@@ -1058,9 +1058,9 @@ const Services = () => {
             }}
           >
             {isRTL ? (
-              <>جاهز لبناء شيء<br /><span className="text-[#d4af37]">يُحقق نتائج حقيقية؟</span></>
+              <>جاهز لبناء شيء<br /><span className="text-[#2563EB]">يُحقق نتائج حقيقية؟</span></>
             ) : (
-              <>Ready to build something<br /><span className="text-[#d4af37]">that actually works?</span></>
+              <>Ready to build something<br /><span className="text-[#2563EB]">that actually works?</span></>
             )}
           </h2>
 
@@ -1080,8 +1080,8 @@ const Services = () => {
             ].map((item, i) => (
               <div key={i} className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-                  <circle cx="6" cy="6" r="5" stroke="rgba(212,175,55,0.4)" />
-                  <path d="M3.5 6l1.75 1.75L8.5 4.25" stroke="#d4af37" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="6" cy="6" r="5" stroke="rgba(37,99,235,0.4)" />
+                  <path d="M3.5 6l1.75 1.75L8.5 4.25" stroke="#2563EB" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span className="text-xs font-normal text-white/45">{isRTL ? item.ar : item.en}</span>
               </div>
@@ -1093,7 +1093,7 @@ const Services = () => {
             {/* Primary */}
             <button
               onClick={open}
-              className="group relative inline-flex items-center gap-3 px-10 py-4 bg-[#d4af37] text-black text-xs font-semibold tracking-[0.08em] uppercase hover:bg-white transition-all duration-400 overflow-hidden active:scale-[0.98] w-full sm:w-auto justify-center"
+              className="group relative inline-flex items-center gap-3 px-10 py-4 bg-[#2563EB] text-black text-xs font-semibold tracking-[0.08em] uppercase hover:bg-white transition-all duration-400 overflow-hidden active:scale-[0.98] w-full sm:w-auto justify-center"
             >
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
               <span className="relative">{isRTL ? 'احجز مكالمة الاستراتيجية' : 'Book Your Free Strategy Call'}</span>

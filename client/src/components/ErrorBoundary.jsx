@@ -12,7 +12,7 @@ const ErrorFallback = ({ onReset }) => (
       style={{
         width: 1,
         height: 80,
-        background: 'linear-gradient(to bottom, transparent, rgba(212,175,55,0.5), transparent)',
+        background: 'linear-gradient(to bottom, transparent, rgba(37,99,235,0.5), transparent)',
         marginBottom: 40,
       }}
     />
@@ -23,7 +23,7 @@ const ErrorFallback = ({ onReset }) => (
         fontSize: 10,
         letterSpacing: '0.35em',
         textTransform: 'uppercase',
-        color: 'rgba(212,175,55,0.55)',
+        color: 'rgba(37,99,235,0.55)',
         marginBottom: 16,
         fontWeight: 300,
       }}
@@ -66,7 +66,7 @@ const ErrorFallback = ({ onReset }) => (
         onClick={onReset}
         style={{
           padding: '12px 32px',
-          background: '#d4af37',
+          background: '#2563EB',
           color: '#000',
           fontSize: 11,
           fontWeight: 400,
@@ -103,7 +103,7 @@ const ErrorFallback = ({ onReset }) => (
         marginTop: 64,
         width: 1,
         height: 80,
-        background: 'linear-gradient(to bottom, rgba(212,175,55,0.5), transparent)',
+        background: 'linear-gradient(to bottom, rgba(37,99,235,0.5), transparent)',
       }}
     />
   </div>

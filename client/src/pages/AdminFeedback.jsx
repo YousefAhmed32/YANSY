@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import api from '../utils/api';
 import { format } from 'date-fns';
-import { gsap } from 'gsap';
 import toast from 'react-hot-toast';
 
 const AdminFeedback = () => {
@@ -37,22 +36,6 @@ const AdminFeedback = () => {
     fetchStats();
   }, [filters]);
 
-  useEffect(() => {
-    if (containerRef.current && titleRef.current) {
-      gsap.fromTo(
-        titleRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.1 }
-      );
-      if (statsRef.current && stats) {
-        gsap.fromTo(
-          statsRef.current.children,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.3 }
-        );
-      }
-    }
-  }, [stats]);
 
   const fetchFeedback = async () => {
     try {
@@ -132,10 +115,10 @@ const AdminFeedback = () => {
     const hasHalfStar = rating % 1 >= 0.5;
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} className="w-4 h-4 text-[#d4af37] fill-[#d4af37]" />);
+      stars.push(<Star key={i} className="w-4 h-4 text-[#2563EB] fill-[#2563EB]" />);
     }
     if (hasHalfStar && fullStars < 5) {
-      stars.push(<StarHalf key="half" className="w-4 h-4 text-[#d4af37] fill-[#d4af37]" />);
+      stars.push(<StarHalf key="half" className="w-4 h-4 text-[#2563EB] fill-[#2563EB]" />);
     }
     for (let i = stars.length; i < 5; i++) {
       stars.push(<Star key={i} className="w-4 h-4 text-white/20 fill-white/10" />);
@@ -144,7 +127,7 @@ const AdminFeedback = () => {
   };
 
   const getRatingColor = (rating) => {
-    if (rating >= 4) return 'text-[#d4af37]';
+    if (rating >= 4) return 'text-[#2563EB]';
     if (rating >= 3) return 'text-yellow-400';
     if (rating >= 2) return 'text-orange-400';
     return 'text-red-400';
@@ -153,7 +136,7 @@ const AdminFeedback = () => {
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -178,8 +161,8 @@ const AdminFeedback = () => {
         <div ref={statsRef} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="p-6 bg-white/5 border border-white/10">
             <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 bg-[#d4af37]/20 border border-[#d4af37]/30">
-                <Star className="h-6 w-6 text-[#d4af37]" />
+              <div className="flex-shrink-0 p-3 bg-[#2563EB]/20 border border-[#2563EB]/30">
+                <Star className="h-6 w-6 text-[#2563EB]" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -214,8 +197,8 @@ const AdminFeedback = () => {
 
           <div className="p-6 bg-white/5 border border-white/10">
             <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 bg-[#d4af37]/20 border border-[#d4af37]/30">
-                <TrendingUp className="h-6 w-6 text-[#d4af37]" />
+              <div className="flex-shrink-0 p-3 bg-[#2563EB]/20 border border-[#2563EB]/30">
+                <TrendingUp className="h-6 w-6 text-[#2563EB]" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -290,12 +273,12 @@ const AdminFeedback = () => {
                 <div key={star} className="flex items-center gap-4">
                   <div className="flex items-center gap-1 w-20">
                     <span className="text-sm font-light text-white/60 w-4">{star}</span>
-                    <Star className="w-4 h-4 text-[#d4af37]" />
+                    <Star className="w-4 h-4 text-[#2563EB]" />
                   </div>
                   <div className="flex-1 bg-white/5 h-6 border border-white/10 relative overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
-                        star >= 4 ? 'bg-[#d4af37]' : 
+                        star >= 4 ? 'bg-[#2563EB]' : 
                         star >= 3 ? 'bg-yellow-500' : 
                         star >= 2 ? 'bg-orange-500' : 
                         'bg-red-500'
@@ -327,7 +310,7 @@ const AdminFeedback = () => {
             <select
               value={filters.isReviewed}
               onChange={(e) => setFilters(prev => ({ ...prev, isReviewed: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
+              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
             >
               <option value="">All</option>
               <option value="true">Reviewed</option>
@@ -342,7 +325,7 @@ const AdminFeedback = () => {
             <select
               value={filters.isFlagged}
               onChange={(e) => setFilters(prev => ({ ...prev, isFlagged: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
+              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
             >
               <option value="">All</option>
               <option value="true">Flagged</option>
@@ -357,7 +340,7 @@ const AdminFeedback = () => {
             <select
               value={filters.minRating}
               onChange={(e) => setFilters(prev => ({ ...prev, minRating: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
+              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
             >
               <option value="">All Ratings</option>
               <option value="5">5 Stars</option>
@@ -374,7 +357,7 @@ const AdminFeedback = () => {
             <select
               value={filters.sortBy}
               onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
+              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
             >
               <option value="createdAt">Date</option>
               <option value="ratings.overall">Rating</option>
@@ -393,7 +376,7 @@ const AdminFeedback = () => {
 
         {loading ? (
           <div className="p-12 text-center">
-            <div className="w-12 h-12 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin mx-auto"></div>
+            <div className="w-12 h-12 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin mx-auto"></div>
           </div>
         ) : feedback.length === 0 ? (
           <div className="p-12 text-center">
@@ -438,7 +421,7 @@ const AdminFeedback = () => {
                           {format(new Date(fb.createdAt), 'MMM d, yyyy')}
                         </span>
                         {fb.isHighlighted && (
-                          <span className="px-2 py-1 text-xs font-light text-[#d4af37] bg-[#d4af37]/20 border border-[#d4af37]/30">
+                          <span className="px-2 py-1 text-xs font-light text-[#2563EB] bg-[#2563EB]/20 border border-[#2563EB]/30">
                             Highlighted
                           </span>
                         )}
@@ -485,7 +468,7 @@ const AdminFeedback = () => {
                       <button
                         onClick={() => openActionModal(fb.isHighlighted ? 'unhighlight' : 'highlight', fb)}
                         className={`p-2 transition-colors ${
-                          fb.isHighlighted ? 'text-[#d4af37]' : 'text-white/60 hover:text-[#d4af37]'
+                          fb.isHighlighted ? 'text-[#2563EB]' : 'text-white/60 hover:text-[#2563EB]'
                         }`}
                         title={fb.isHighlighted ? 'Unhighlight' : 'Highlight'}
                       >
@@ -550,7 +533,7 @@ const AdminFeedback = () => {
                 className={`flex-1 px-6 py-3 border text-sm font-light tracking-widest uppercase transition-all duration-500 ${
                   modalAction === 'delete' 
                     ? 'border-red-500 text-red-500 hover:bg-red-500 hover:text-black'
-                    : 'border-[#d4af37] text-[#d4af37] hover:bg-[#d4af37] hover:text-black'
+                    : 'border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-black'
                 }`}
               >
                 Confirm

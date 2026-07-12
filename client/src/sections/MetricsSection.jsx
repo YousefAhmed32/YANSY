@@ -1,7 +1,7 @@
-// sections/MetricsSection.jsx
 import { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { ArrowUpRight } from 'lucide-react';
 
-/* ── Animated counter hook ── */
 const useCountUp = (end, duration = 1800, start = false) => {
   const [value, setValue] = useState(0);
   useEffect(() => {
@@ -10,7 +10,7 @@ const useCountUp = (end, duration = 1800, start = false) => {
     if (isNaN(raw)) { setValue(end); return; }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setValue(raw); return; }
     let t0 = null;
-    const frame = (ts) => {
+    const frame = ts => {
       if (!t0) t0 = ts;
       const p = Math.min((ts - t0) / duration, 1);
       setValue(Math.round((1 - Math.pow(1 - p, 3)) * raw));
@@ -21,233 +21,270 @@ const useCountUp = (end, duration = 1800, start = false) => {
   return value;
 };
 
-/* ── Metric card ── */
-const MetricCard = ({ metric, isRTL, index, animate }) => {
-  const num = useCountUp(metric.rawNum, 1600 + index * 100, animate);
-  const ref = useRef(null);
+const METRICS = [
+  {
+    rawNum: 50, prefix: '', suffix: '+',
+    labelEN: 'Projects\nDelivered',   labelAR: 'مشروع\nمُسلَّم',
+    subEN:   'Across 6+ industries worldwide',
+    subAR:   'في أكثر من 6 قطاعات حول العالم',
+    noteEN:  'Since 2020',
+    noteAR:  'منذ 2020',
+  },
+  {
+    rawNum: 98, prefix: '', suffix: '%',
+    labelEN: 'Client\nSatisfaction',  labelAR: 'رضا\nالعملاء',
+    subEN:   'Clients who return for a second project',
+    subAR:   'العملاء الذين يعودون لمشروع ثانٍ',
+    noteEN:  'Retention rate',
+    noteAR:  'معدل الاحتفاظ',
+  },
+  {
+    rawNum: 40, prefix: '+', suffix: '%',
+    labelEN: 'Conversion\nUplift',    labelAR: 'زيادة\nالتحويل',
+    subEN:   'Measured 90 days post-launch',
+    subAR:   'مقاساً خلال 90 يوماً بعد الإطلاق',
+    noteEN:  'Average across clients',
+    noteAR:  'متوسط عبر العملاء',
+  },
+  {
+    rawNum: 30, prefix: '', suffix: 'd',
+    labelEN: 'Average\nLaunch',       labelAR: 'متوسط\nالإطلاق',
+    subEN:   'From agreement to live deployment',
+    subAR:   'من الاتفاق حتى النشر على الإنتاج',
+    noteEN:  'Most projects',
+    noteAR:  'في معظم المشاريع',
+  },
+];
 
-  useEffect(() => {
-    if (!ref.current) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const el = ref.current;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        el.style.transition = `opacity .6s ${index * 0.08}s ease, transform .6s ${index * 0.08}s ease`;
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-        io.disconnect();
-      }
-    }, { threshold: 0.1 });
-    /* Apply hidden state only after IO is registered — safe, non-blocking */
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    io.observe(el);
-    return () => io.disconnect();
-  }, [index]);
+const MetricCell = ({ metric, rtl, animate, index, visible }) => {
+  const num = useCountUp(metric.rawNum, 1600 + index * 100, animate);
 
   return (
     <div
-      ref={ref}
-      className="group relative flex flex-col p-6 sm:p-8 border border-white/[0.06] hover:border-[#d4af37]/25 transition-all duration-500 overflow-hidden cursor-default"
+      className="metric-cell"
       style={{
-        background: 'rgba(255,255,255,.018)',
-        textAlign: isRTL ? 'right' : 'left',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(20px)',
+        transition: `opacity 0.65s ${index * 0.1}s cubic-bezier(0.16,1,0.3,1), transform 0.65s ${index * 0.1}s cubic-bezier(0.16,1,0.3,1)`,
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,175,55,.022)'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.018)'; }}
     >
-      <div
-        aria-hidden
-        className="absolute top-0 inset-x-0 h-px transition-all duration-500 group-hover:opacity-100 opacity-0"
-        style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,.5), transparent)' }}
-      />
-      <p className="text-[9px] tracking-[.3em] uppercase mb-4 font-light" style={{ color: 'rgba(212,175,55,.55)' }}>
-        {isRTL ? metric.categoryAR : metric.categoryEN}
-      </p>
-      <div
-        className="mb-2 tabular-nums leading-none"
-        style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 700, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}
-      >
-        <span style={{ color: '#d4af37' }}>
-          {metric.prefix || ''}{animate ? num : metric.rawNum}{metric.suffix || ''}
-        </span>
+      <div className="metric-num">
+        {metric.prefix}{animate ? num : 0}{metric.suffix}
       </div>
-      <h3 className="text-base sm:text-lg font-medium mb-2 leading-snug" style={{ color: 'rgba(255,255,255,.85)', letterSpacing: 0 }}>
-        {isRTL ? metric.labelAR : metric.labelEN}
-      </h3>
-      <p
-        className="text-sm font-normal leading-relaxed mt-auto pt-4"
-        style={{ color: 'rgba(255,255,255,.45)', borderTop: '1px solid rgba(255,255,255,.05)' }}
-      >
-        {isRTL ? metric.descAR : metric.descEN}
-      </p>
+      <div className="metric-label">
+        {rtl ? metric.labelAR : metric.labelEN}
+      </div>
+      <div className="metric-sub">
+        {rtl ? metric.subAR : metric.subEN}
+      </div>
+      <div className="metric-note">
+        <span className="metric-note-dot" aria-hidden />
+        {rtl ? metric.noteAR : metric.noteEN}
+      </div>
     </div>
   );
 };
 
-/* ── Main section ── */
 const MetricsSection = ({ isRTL, onStartProject }) => {
-  const gridRef  = useRef(null);
-  const titleRef = useRef(null);
-  const [fired, setFired] = useState(false);
+  const { isRTL: ctxRTL } = useLanguage();
+  const rtl = isRTL ?? ctxRTL;
+  const [animate, setAnimate] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   useEffect(() => {
-    if (!gridRef.current) return;
+    const el = sectionRef.current;
+    if (!el) return;
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setFired(true); io.disconnect(); }
+      if (e.isIntersecting) { setAnimate(true); setVisible(true); io.disconnect(); }
     }, { threshold: 0.15 });
-    io.observe(gridRef.current);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!titleRef.current) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const el = titleRef.current;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        el.style.transition = 'opacity .8s ease, transform .8s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-        io.disconnect();
-      }
-    }, { threshold: 0.15 });
-    /* Apply hidden state only after IO is set up */
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
-  const metrics = [
-    {
-      rawNum: 40, suffix: '%',
-      categoryEN: 'E-commerce',  categoryAR: 'التجارة الإلكترونية',
-      labelEN: 'Average conversion uplift', labelAR: 'متوسط رفع معدل التحويل',
-      descEN: 'Across our headless e-commerce builds, clients see a 40% average increase in checkout conversions within 90 days.',
-      descAR: 'عبر منصاتنا headless، يشهد العملاء زيادة 40٪ في معدلات الإتمام خلال 90 يوماً.',
-    },
-    {
-      rawNum: 60, suffix: '%',
-      categoryEN: 'Operations',  categoryAR: 'العمليات',
-      labelEN: 'Admin time reduction', labelAR: 'تقليل وقت الإدارة',
-      descEN: 'Medical and enterprise clients report 60% less time on administrative work after deploying our management systems.',
-      descAR: 'يُفيد عملاء الأنظمة الطبية والمؤسسية بتقليل 60٪ في وقت العمل الإداري.',
-    },
-    {
-      rawNum: 3, suffix: 'x',
-      categoryEN: 'SaaS Growth', categoryAR: 'نمو SaaS',
-      labelEN: 'Faster user onboarding', labelAR: 'تسريع تجربة التهيئة',
-      descEN: 'SaaS clients with our custom dashboards see user activation 3x faster compared to generic solutions.',
-      descAR: 'يرى عملاء SaaS تفعيل المستخدمين أسرع 3 أضعاف مقارنة بالحلول الجاهزة.',
-    },
-    {
-      rawNum: 30, suffix: 'd',
-      categoryEN: 'Delivery',    categoryAR: 'التسليم',
-      labelEN: 'Average project launch', labelAR: 'متوسط إطلاق المشروع',
-      descEN: 'From signed contract to live deployment, our average turnaround is 30 days for standard platforms.',
-      descAR: 'من توقيع العقد حتى الإطلاق الفعلي، متوسطنا 30 يوماً للمنصات القياسية.',
-    },
-  ];
-
-  const textAlign   = isRTL ? 'right'       : 'left';
-  const flexDir     = isRTL ? 'row-reverse' : 'row';
-  const gradientCls = isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r';
-
   return (
     <section
-      id="metrics"
-      className="relative py-24 sm:py-40 px-4 sm:px-8 overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #000 0%, #050402 50%, #000 100%)' }}
+      ref={sectionRef}
+      id="results"
+      dir={rtl ? 'rtl' : 'ltr'}
+      style={{
+        background: '#FAFAFA',
+        paddingTop:    'clamp(5rem, 10vw, 8rem)',
+        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
+        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
+        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
+        borderTop: '1px solid #E8EBF0',
+      }}
     >
-      {/* Ambient glow */}
-      <div
-        aria-hidden
-        className={`absolute top-0 w-[45vw] h-[45vw] rounded-full pointer-events-none ${isRTL ? 'left-0' : 'right-0'}`}
-        style={{ background: 'radial-gradient(circle, #d4af37 0%, transparent 65%)', opacity: 0.018, filter: 'blur(100px)', transform: 'translateY(-30%)' }}
-      />
+      <style>{`
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 0;
+          border-top: 1px solid #E8EBF0;
+          border-bottom: 1px solid #E8EBF0;
+          margin-bottom: clamp(4rem, 8vw, 6rem);
+        }
+        @media (max-width: 860px) {
+          .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+          .metrics-grid { grid-template-columns: 1fr; }
+        }
+        .metric-cell {
+          padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem);
+          border-inline-end: 1px solid #E8EBF0;
+          text-align: ${rtl ? 'right' : 'left'};
+          transition: background 0.25s;
+        }
+        .metric-cell:last-child { border-inline-end: none; }
+        @media (max-width: 860px) {
+          .metric-cell:nth-child(2n) { border-inline-end: none; }
+          .metric-cell:nth-child(-n+2) { border-bottom: 1px solid #E8EBF0; }
+        }
+        @media (max-width: 480px) {
+          .metric-cell { border-inline-end: none; border-bottom: 1px solid #E8EBF0; }
+          .metric-cell:last-child { border-bottom: none; }
+        }
+        .metric-cell:hover { background: #FFFFFF; }
+        .metric-cell:hover .metric-num { color: #2563EB; }
+        .metric-num {
+          font-size: clamp(3.5rem, 6vw, 5.5rem);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          color: #0D1117;
+          line-height: 0.95;
+          margin-bottom: clamp(16px, 2vw, 24px);
+          font-variant-numeric: tabular-nums;
+        }
+        [dir="rtl"] .metric-num { letter-spacing: 0; }
+        .metric-label {
+          font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+          font-weight: 700;
+          color: #0D1117;
+          line-height: 1.3;
+          letter-spacing: -0.01em;
+          margin-bottom: 8px;
+          white-space: pre-line;
+        }
+        [dir="rtl"] .metric-label { letter-spacing: 0; }
+        .metric-sub {
+          font-size: clamp(11px, 0.85vw, 12.5px);
+          color: #9BA3AE;
+          line-height: 1.5;
+          margin-bottom: 10px;
+        }
+        .metric-note {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #5C6370;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+        }
+        [dir="rtl"] .metric-note { letter-spacing: 0; text-transform: none; }
+        .metric-note-dot {
+          width: 4px; height: 4px; border-radius: 50%;
+          background: #2563EB; flex-shrink: 0;
+        }
+      `}</style>
 
-      {/* ── Content wrapper ── */}
-      <div
-        className="max-w-7xl mx-auto relative z-10 w-full"
-        style={{ textAlign: textAlign }}
-      >
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
-        {/* ── Header ── */}
-        <div
-          ref={titleRef}
-          style={{ marginBottom: 'clamp(48px,8vw,80px)' }}
-        >
-
-          {/* ① السطر الذهبي + "النتائج تتحدث" — محاذي لنفس جهة العنوان */}
-          <div
-            className="flex items-center gap-4 mb-6 w-full"
-            style={{ flexDirection: flexDir, justifyContent: isRTL ? 'flex-end' : 'flex-start' }}
-          >
-            <span
-              className={`block w-10 h-px flex-shrink-0 ${gradientCls} from-[#d4af37] to-transparent`}
-              aria-hidden
-            />
-            <p className="text-[10px] tracking-[.1em] text-[#d4af37]/65 uppercase font-medium">
-              {isRTL ? 'أرقام من مشاريع حقيقية' : 'Numbers from real projects'}
-            </p>
-          </div>
-
-          {/* ② العنوان الكبير — يملأ العرض ومحاذاته صح */}
-          <h2
-            className={`text-3xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] mb-6 ${isRTL ? '' : 'tracking-tight'}`}
-            style={{ letterSpacing: isRTL ? '0' : '-0.025em', textAlign: textAlign }}
-          >
-            {isRTL ? 'هذا ما تحصل عليه.' : 'This is what you get.'}
-            <br />
-            <span className={`text-transparent bg-clip-text ${gradientCls} from-[#d4af37] to-white/70`}>
-              {isRTL ? 'لا وعود — أرقام موثّقة.' : 'Not promises — documented results.'}
+        {/* Section header */}
+        <div style={{
+          display: 'flex',
+          flexDirection: rtl ? 'column' : 'row',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 'clamp(1.5rem, 3vw, 2rem)',
+          marginBottom: 'clamp(3rem, 6vw, 5rem)',
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
+            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
+              {rtl ? 'النتائج' : 'Results'}
             </span>
-          </h2>
-
-          {/* ③ الوصف — تحت العنوان مباشرة، محاذاته صح */}
-    <p
-  className="text-base font-normal text-white/60 leading-relaxed"
-  style={{ textAlign: textAlign, maxWidth: '32rem' }}
->
-  {isRTL
-    ? 'كل رقم مستخرج من مشروع حقيقي سلّمناه. اختر النتيجة التي تريدها ونتحدث عن كيفية الوصول إليها.'
-    : "Every number comes from a real project we shipped. Pick the outcome you want and let's talk about how to get there."}
-</p>
-
+            <h2 style={{
+              fontSize: 'var(--text-5xl)',
+              fontWeight: 800,
+              lineHeight: 1.0,
+              letterSpacing: rtl ? 0 : '-0.035em',
+              color: '#0D1117',
+              margin: 0,
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+              whiteSpace: 'pre-line',
+            }}>
+              {rtl ? 'أرقام لا تكذب.' : 'Numbers that\ndon\'t lie.'}
+            </h2>
+          </div>
+          <p style={{
+            fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+            color: '#5C6370',
+            lineHeight: 1.75,
+            maxWidth: 400,
+            margin: 0,
+            textAlign: rtl ? 'right' : 'left',
+            fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+          }}>
+            {rtl
+              ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
+              : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
+          </p>
         </div>
 
-        {/* ── Metrics grid ── */}
-        <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {metrics.map((m, i) => (
-            <MetricCard key={i} metric={m} isRTL={isRTL} index={i} animate={fired} />
+        {/* Metrics grid */}
+        <div className="metrics-grid">
+          {METRICS.map((m, i) => (
+            <MetricCell
+              key={i}
+              metric={m}
+              rtl={rtl}
+              animate={animate}
+              index={i}
+              visible={visible}
+            />
           ))}
         </div>
 
-        {/* ── CTA row ── */}
-        <div
-          className="mt-14 sm:mt-20 flex flex-col sm:flex-row items-center gap-4 sm:gap-6"
-          style={{ flexDirection: flexDir }}
-        >
+        {/* CTA row */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'clamp(1.5rem, 3vw, 2rem)',
+        }}>
+          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
+            <p style={{
+              fontSize: 'clamp(1.125rem, 1.5vw, 1.375rem)',
+              fontWeight: 700,
+              color: '#0D1117',
+              margin: '0 0 6px',
+              letterSpacing: rtl ? 0 : '-0.02em',
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {rtl ? 'جاهز لنتائج مشابهة؟' : 'Ready for results like these?'}
+            </p>
+            <p style={{
+              fontSize: 13.5,
+              color: '#9BA3AE',
+              margin: 0,
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {rtl ? 'استشارة مجانية — لا بطاقة ائتمان.' : 'Free consultation — no credit card required.'}
+            </p>
+          </div>
           <button
             onClick={onStartProject}
-            className="group relative inline-flex items-center gap-3 px-10 py-4 bg-[#d4af37] text-black text-xs font-medium tracking-widest uppercase hover:bg-[#c9a22a] transition-all duration-400 active:scale-95 overflow-hidden flex-shrink-0"
+            className="btn-primary"
+            style={{ fontSize: '13.5px', padding: '13px 26px' }}
           >
-            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-            <span className="relative">{isRTL ? 'احصل على هذه النتائج' : 'Get My Free Strategy Call'}</span>
-            <svg
-              className={`relative w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 ${isRTL ? 'rotate-180' : ''}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            {rtl ? 'ابدأ مشروعك' : 'Start Your Project'}
+            <ArrowUpRight style={{ width: 15, height: 15, transform: rtl ? 'scaleX(-1)' : 'none' }} aria-hidden />
           </button>
-
-          <p className="text-xs font-normal text-white/40" style={{ textAlign: textAlign }}>
-            {isRTL
-              ? '✓ 30 دقيقة تكشف ما يحتاجه مشروعك · ✓ بدون التزام · ✓ رد خلال 24 ساعة'
-              : '✓ 30 minutes to clarify your project · ✓ No commitment · ✓ Reply within 24h'}
-          </p>
         </div>
 
       </div>

@@ -30,7 +30,7 @@ const PremiumButton = ({ isRTL }) => {
                    px-8 sm:px-14 py-4 sm:py-6
                    text-xs sm:text-sm tracking-widest uppercase
                    flex items-center justify-center gap-3
-                   border border-[#d4af37]/50 text-[#d4af37]"
+                   border border-[#2563EB]/50 text-[#2563EB]"
       >
         {/* Text */}
         <span className="relative z-10 transition duration-500 group-hover:text-black">

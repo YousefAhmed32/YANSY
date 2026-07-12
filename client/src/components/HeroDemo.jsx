@@ -432,7 +432,7 @@ const HeroDemo = memo(function HeroDemo() {
         const xT = lerp(cx - hw, cx + hw, f);
         const xB = lerp(xT, cx, conv);
         const a  = Math.max(0, 0.018 * (1 - Math.abs(f - 0.5) * 1.85));
-        ctx.strokeStyle = `rgba(212,175,55,${a})`; ctx.lineWidth = 0.24;
+        ctx.strokeStyle = `rgba(37,99,235,${a})`; ctx.lineWidth = 0.24;
         ctx.beginPath(); ctx.moveTo(xT, top); ctx.lineTo(xB, bot); ctx.stroke();
       }
       for (let i = 0; i <= ROWS; i++) {
@@ -440,7 +440,7 @@ const HeroDemo = memo(function HeroDemo() {
         const y    = lerp(top, bot, f2);
         const hw2  = hw * (1 - f2 * 0.67);
         const a    = 0.018 * (1 - f2 * 0.82);
-        ctx.strokeStyle = `rgba(212,175,55,${a})`; ctx.lineWidth = 0.24;
+        ctx.strokeStyle = `rgba(37,99,235,${a})`; ctx.lineWidth = 0.24;
         ctx.beginPath(); ctx.moveTo(cx - hw2, y); ctx.lineTo(cx + hw2, y); ctx.stroke();
       }
 
@@ -450,11 +450,11 @@ const HeroDemo = memo(function HeroDemo() {
         const scanY     = lerp(top, bot, scanPhase);
         const scanW     = hw * (1 - scanPhase * 0.67);
         const scanG     = ctx.createLinearGradient(cx - scanW, scanY, cx + scanW, scanY);
-        scanG.addColorStop(0,    'rgba(212,175,55,0)');
-        scanG.addColorStop(0.35, 'rgba(212,175,55,0.007)');
-        scanG.addColorStop(0.5,  'rgba(212,175,55,0.013)');
-        scanG.addColorStop(0.65, 'rgba(212,175,55,0.007)');
-        scanG.addColorStop(1,    'rgba(212,175,55,0)');
+        scanG.addColorStop(0,    'rgba(37,99,235,0)');
+        scanG.addColorStop(0.35, 'rgba(37,99,235,0.007)');
+        scanG.addColorStop(0.5,  'rgba(37,99,235,0.013)');
+        scanG.addColorStop(0.65, 'rgba(37,99,235,0.007)');
+        scanG.addColorStop(1,    'rgba(37,99,235,0)');
         ctx.fillStyle = scanG;
         ctx.fillRect(cx - scanW, scanY - 1.5, scanW * 2, 3);
       }
@@ -470,7 +470,7 @@ const HeroDemo = memo(function HeroDemo() {
       const ry  = sx(ORY_BASE * os) * sphereScale * (1 + S.tX * 0.08);
       const spd = 1 + hT * 1.5;
 
-      ctx.strokeStyle = `rgba(212,175,55,${lerp(0.10, 0.06, hT)})`; ctx.lineWidth = 0.36;
+      ctx.strokeStyle = `rgba(37,99,235,${lerp(0.10, 0.06, hT)})`; ctx.lineWidth = 0.36;
       ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
 
       const sEdge = sx(SR) * sphereScale * 0.92;
@@ -480,15 +480,15 @@ const HeroDemo = memo(function HeroDemo() {
         if (Math.hypot(px - cx, py - cy) < sEdge && Math.sin(ang) < 0.10) continue;
         const ts2 = ang - 0.044 * Math.PI * 2;
         const gr  = ctx.createLinearGradient(cx + rx * Math.cos(ts2), cy + ry * Math.sin(ts2), px, py);
-        gr.addColorStop(0, 'rgba(212,175,55,0)');
-        gr.addColorStop(1, `rgba(212,175,55,${0.30 + hT * 0.10})`);
+        gr.addColorStop(0, 'rgba(37,99,235,0)');
+        gr.addColorStop(1, `rgba(37,99,235,${0.30 + hT * 0.10})`);
         ctx.strokeStyle = gr; ctx.lineWidth = 0.60 + hT * 0.18;
         ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, ts2, ang); ctx.stroke();
         const gR  = sx(5.0 + hT * 2.0);
         const pg  = ctx.createRadialGradient(px, py, 0, px, py, gR);
-        pg.addColorStop(0,   `rgba(212,175,55,${0.52 + hT * 0.14})`);
-        pg.addColorStop(0.5, 'rgba(212,175,55,0.06)');
-        pg.addColorStop(1,   'rgba(212,175,55,0)');
+        pg.addColorStop(0,   `rgba(37,99,235,${0.52 + hT * 0.14})`);
+        pg.addColorStop(0.5, 'rgba(37,99,235,0.06)');
+        pg.addColorStop(1,   'rgba(37,99,235,0)');
         ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(px, py, gR, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,0.95)';
         ctx.beginPath(); ctx.arc(px, py, sx(1.0), 0, Math.PI * 2); ctx.fill();
@@ -515,7 +515,7 @@ const HeroDemo = memo(function HeroDemo() {
       thg.addColorStop(0.75, 'rgba(255,255,255,0.34)');
       thg.addColorStop(1,    'rgba(255,255,255,0)');
       ctx.fillStyle = thg; ctx.beginPath(); ctx.roundRect(x, y, w, sx(1.0), [rad, rad, 0, 0]); ctx.fill();
-      ctx.strokeStyle = 'rgba(212,175,55,0.12)'; ctx.lineWidth = 0.45;
+      ctx.strokeStyle = 'rgba(37,99,235,0.12)'; ctx.lineWidth = 0.45;
       ctx.beginPath(); ctx.roundRect(x + 0.5, y + 0.5, w - 1, h - 1, rad); ctx.stroke();
     };
 
@@ -692,7 +692,7 @@ const HeroDemo = memo(function HeroDemo() {
         ? [lerp(212, tintRgb[0], cct * 0.44), lerp(175, tintRgb[1], cct * 0.44), lerp(55, tintRgb[2], cct * 0.44)]
         : [212, 175, 55];
       g = ctx.createRadialGradient(cx, cy, r * 0.78, cx, cy, r * 1.042);
-      g.addColorStop(0,    'rgba(212,175,55,0)');
+      g.addColorStop(0,    'rgba(37,99,235,0)');
       g.addColorStop(0.55, `rgba(${fr|0},${fgc|0},${fb|0},${0.056 + pulse * 0.020 + hT * 0.036})`);
       g.addColorStop(0.86, `rgba(${fr|0},${fgc|0},${fb|0},${0.105 + pulse * 0.034 + hT * 0.062})`);
       g.addColorStop(1,    `rgba(${fr|0},${fgc|0},${fb|0},0)`);

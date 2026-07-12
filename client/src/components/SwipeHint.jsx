@@ -52,14 +52,14 @@ const SwipeHint = () => {
         {/* خط فوق */}
         <div style={{
           width: "1px", height: "22px",
-          background: "linear-gradient(to top, rgba(212,175,55,0.5), transparent)",
+          background: "linear-gradient(to top, rgba(37,99,235,0.5), transparent)",
         }} />
 
         {/* الـ pill */}
         <div style={{
           position: "relative",
           padding: "8px 14px 8px 10px",
-          border: "1px solid rgba(212,175,55,0.22)",
+          border: "1px solid rgba(37,99,235,0.22)",
           background: "rgba(0,0,0,0.72)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
@@ -73,7 +73,7 @@ const SwipeHint = () => {
           <div style={{
             position: "absolute",
             left: 0, right: 0, height: "1px",
-            background: "linear-gradient(to right, transparent, rgba(212,175,55,0.4), transparent)",
+            background: "linear-gradient(to right, transparent, rgba(37,99,235,0.4), transparent)",
             animation: "scanMove 2.5s ease-in-out 1.4s infinite",
           }} />
 
@@ -83,10 +83,10 @@ const SwipeHint = () => {
             fill="none" xmlns="http://www.w3.org/2000/svg"
             style={{ flexShrink: 0, animation: "fingerBounce 1.6s ease-in-out 1.4s infinite" }}
           >
-            <path d="M10 14V8" stroke="#d4af37" strokeWidth="1.2" strokeLinecap="round"/>
-            <path d="M7.5 10.5L10 8L12.5 10.5" stroke="#d4af37" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <rect x="5" y="11" width="10" height="7" rx="2" stroke="rgba(212,175,55,0.35)" strokeWidth="1"/>
-            <circle cx="10" cy="14.5" r="1" fill="rgba(212,175,55,0.4)"/>
+            <path d="M10 14V8" stroke="#2563EB" strokeWidth="1.2" strokeLinecap="round"/>
+            <path d="M7.5 10.5L10 8L12.5 10.5" stroke="#2563EB" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <rect x="5" y="11" width="10" height="7" rx="2" stroke="rgba(37,99,235,0.35)" strokeWidth="1"/>
+            <circle cx="10" cy="14.5" r="1" fill="rgba(37,99,235,0.4)"/>
           </svg>
 
           {/* النصوص */}
@@ -94,7 +94,7 @@ const SwipeHint = () => {
             <span style={{
               fontFamily: "'Montserrat', sans-serif", fontWeight: 200,
               fontSize: "8px", letterSpacing: "0.32em",
-              textTransform: "uppercase", color: "rgba(212,175,55,0.55)",
+              textTransform: "uppercase", color: "rgba(37,99,235,0.55)",
               whiteSpace: "nowrap",
             }}>scroll up</span>
             <span style={{
@@ -108,7 +108,7 @@ const SwipeHint = () => {
         {/* خط تحت */}
         <div style={{
           width: "1px", height: "10px",
-          background: "linear-gradient(to bottom, rgba(212,175,55,0.3), transparent)",
+          background: "linear-gradient(to bottom, rgba(37,99,235,0.3), transparent)",
         }} />
       </div>
     </>

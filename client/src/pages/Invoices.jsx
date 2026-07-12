@@ -7,11 +7,11 @@ import { useSelector } from 'react-redux';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const STATUS_CFG = {
-  draft:         { label: 'Draft',          color: 'rgba(255,255,255,0.4)',  bg: 'rgba(255,255,255,0.06)',  icon: FileText },
+  draft:         { label: 'Draft',          color: 'rgba(255,255,255,0.4)',  bg: 'rgba(0,0,0,0.04)',  icon: FileText },
   sent:          { label: 'Awaiting Payment', color: '#f59e0b',              bg: 'rgba(245,158,11,0.1)',    icon: Clock },
   paid:          { label: 'Paid',            color: '#34d399',               bg: 'rgba(52,211,153,0.1)',    icon: CheckCircle2 },
   overdue:       { label: 'Overdue',         color: '#f87171',               bg: 'rgba(248,113,113,0.1)',   icon: AlertCircle },
-  cancelled:     { label: 'Cancelled',       color: 'rgba(255,255,255,0.3)', bg: 'rgba(255,255,255,0.04)', icon: FileText },
+  cancelled:     { label: 'Cancelled',       color: 'rgba(255,255,255,0.3)', bg: 'rgba(0,0,0,0.03)', icon: FileText },
   partially_paid:{ label: 'Partially Paid',  color: '#60a5fa',               bg: 'rgba(96,165,250,0.1)',   icon: Clock },
 };
 
@@ -27,7 +27,7 @@ const Invoices = () => {
   const [loading,  setLoading]  = useState(true);
   const [stats,    setStats]    = useState(null);
 
-  const gold      = '#d4af37';
+  const gold      = '#2563EB';
   const bg        = isDark ? '#080806' : '#fafaf9';
   const surface   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
   const border    = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
@@ -71,14 +71,14 @@ const Invoices = () => {
         {isAdmin && (
           <button style={{
             display: 'flex', alignItems: 'center', gap: '7px',
-            padding: '9px 16px', background: 'rgba(212,175,55,0.1)',
-            border: '1px solid rgba(212,175,55,0.35)', borderRadius: '8px',
+            padding: '9px 16px', background: 'rgba(37,99,235,0.1)',
+            border: '1px solid rgba(37,99,235,0.35)', borderRadius: '8px',
             color: gold, fontSize: '11px', fontWeight: 400,
             letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
             transition: 'all 0.2s',
           }}
             onMouseEnter={e => { e.currentTarget.style.background = gold; e.currentTarget.style.color = '#000'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.1)'; e.currentTarget.style.color = gold; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.1)'; e.currentTarget.style.color = gold; }}
           >
             <Plus style={{ width: '13px', height: '13px' }} />
             New Invoice
@@ -90,7 +90,7 @@ const Invoices = () => {
       {isAdmin && stats && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           {[
-            { label: 'Total Revenue', value: formatAmount(stats.totalRevenue, 'USD'), icon: DollarSign, color: '#d4af37' },
+            { label: 'Total Revenue', value: formatAmount(stats.totalRevenue, 'USD'), icon: DollarSign, color: '#2563EB' },
             { label: 'Total Invoices', value: stats.total,   icon: FileText, color: '#a78bfa' },
             { label: 'Paid',          value: stats.paid,    icon: CheckCircle2, color: '#34d399' },
             { label: 'Overdue',       value: stats.overdue, icon: AlertCircle, color: '#f87171' },
@@ -107,7 +107,7 @@ const Invoices = () => {
       {/* Invoice list */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid rgba(212,175,55,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
           <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
       ) : invoices.length === 0 ? (
@@ -153,7 +153,7 @@ const Invoices = () => {
                   borderRadius: '10px', transition: 'all 0.15s',
                   cursor: 'default',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.2)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = border; }}
               >
                 {/* Status icon */}

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, Eye, EyeOff, Star, StarOff, ExternalLink, X, Upload, Loader } from 'lucide-react';
 import api from '../utils/api';
-import { gsap } from 'gsap';
 const API_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
 
@@ -58,13 +57,6 @@ const AdminPortfolio = () => {
 
   useEffect(() => { fetchProjects(); }, []);
 
-  useEffect(() => {
-    if (!loading && listRef.current) {
-      gsap.fromTo(listRef.current.children,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.06, ease: 'power2.out' });
-    }
-  }, [loading]);
 
   // ── Toast ────────────────────────────────────────────────────────────────
   const showToast = (msg, type = 'success') => {
@@ -180,7 +172,7 @@ const AdminPortfolio = () => {
       {/* Toast */}
       {toast && (
         <div className={`fixed top-6 right-6 z-[999] px-6 py-3 text-sm font-light tracking-wide border transition-all
-          ${toast.type === 'error' ? 'bg-red-950 border-red-800 text-red-300' : 'bg-[#d4af37]/10 border-[#d4af37]/40 text-[#d4af37]'}`}>
+          ${toast.type === 'error' ? 'bg-red-950 border-red-800 text-red-300' : 'bg-[#2563EB]/10 border-[#2563EB]/40 text-[#2563EB]'}`}>
           {toast.msg}
         </div>
       )}
@@ -192,7 +184,7 @@ const AdminPortfolio = () => {
           <p className="text-white/40 font-light mt-1">{projects.length} projects</p>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 px-6 py-3 bg-[#d4af37] text-black text-xs font-light tracking-widest uppercase hover:bg-[#c4a030] transition-colors active:scale-95">
+          className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] text-black text-xs font-light tracking-widest uppercase hover:bg-[#c4a030] transition-colors active:scale-95">
           <Plus className="w-4 h-4" /> Add Project
         </button>
       </div>
@@ -200,12 +192,12 @@ const AdminPortfolio = () => {
       {/* Projects Table */}
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <div className="w-8 h-8 border border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin" />
+          <div className="w-8 h-8 border border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
         </div>
       ) : projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-60 border border-white/10 text-white/30">
           <p className="text-lg font-light mb-4">No portfolio projects yet</p>
-          <button onClick={openAdd} className="text-[#d4af37] text-sm underline underline-offset-4">Add your first project</button>
+          <button onClick={openAdd} className="text-[#2563EB] text-sm underline underline-offset-4">Add your first project</button>
         </div>
       ) : (
         <div ref={listRef} className="space-y-3">
@@ -231,8 +223,8 @@ const AdminPortfolio = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-white/90 font-light truncate">{p.title}</h3>
-                  <span className="text-[10px] px-2 py-0.5 border border-[#d4af37]/30 text-[#d4af37]/70 tracking-wide">{p.category}</span>
-                  {p.featured && <span className="text-[10px] px-2 py-0.5 bg-[#d4af37]/10 text-[#d4af37] tracking-wide">Featured</span>}
+                  <span className="text-[10px] px-2 py-0.5 border border-[#2563EB]/30 text-[#2563EB]/70 tracking-wide">{p.category}</span>
+                  {p.featured && <span className="text-[10px] px-2 py-0.5 bg-[#2563EB]/10 text-[#2563EB] tracking-wide">Featured</span>}
                   {!p.isPublished && <span className="text-[10px] px-2 py-0.5 bg-white/5 text-white/30 tracking-wide">Draft</span>}
                 </div>
                 <p className="text-white/30 text-xs mt-1 truncate">{p.description}</p>
@@ -243,8 +235,8 @@ const AdminPortfolio = () => {
                 {/* Featured toggle */}
                 <button onClick={() => toggleField(p._id, 'featured', p.featured)}
                   title={p.featured ? 'Unfeature' : 'Feature'}
-                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-[#d4af37] transition-colors">
-                  {p.featured ? <Star className="w-4 h-4 fill-[#d4af37] text-[#d4af37]" /> : <StarOff className="w-4 h-4" />}
+                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-[#2563EB] transition-colors">
+                  {p.featured ? <Star className="w-4 h-4 fill-[#2563EB] text-[#2563EB]" /> : <StarOff className="w-4 h-4" />}
                 </button>
 
                 {/* Published toggle */}
@@ -264,7 +256,7 @@ const AdminPortfolio = () => {
 
                 {/* Edit */}
                 <button onClick={() => openEdit(p)}
-                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-[#d4af37] transition-colors">
+                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-[#2563EB] transition-colors">
                   <Edit2 className="w-4 h-4" />
                 </button>
 
@@ -299,13 +291,13 @@ const AdminPortfolio = () => {
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Title (EN) *</label>
                   <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors placeholder-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
                     placeholder="Project name" />
                 </div>
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Title (AR)</label>
                   <input value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} dir="rtl"
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors placeholder-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
                     placeholder="اسم المشروع" />
                 </div>
               </div>
@@ -314,7 +306,7 @@ const AdminPortfolio = () => {
               <div>
                 <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Category *</label>
               <select required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-  className="w-full bg-[#0a0a0a] border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors">
+  className="w-full bg-[#0a0a0a] border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors">
   {CATEGORIES.map((c) => (
     <option key={c} value={c} className="bg-[#0a0a0a] text-white/90">{c}</option>
   ))}
@@ -326,13 +318,13 @@ const AdminPortfolio = () => {
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Description (EN) *</label>
                   <textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors placeholder-white/20 resize-none"
+                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20 resize-none"
                     placeholder="Project description..." />
                 </div>
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Description (AR)</label>
                   <textarea rows={4} value={form.descriptionAr} onChange={(e) => setForm({ ...form, descriptionAr: e.target.value })} dir="rtl"
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors placeholder-white/20 resize-none"
+                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20 resize-none"
                     placeholder="وصف المشروع..." />
                 </div>
               </div>
@@ -342,13 +334,13 @@ const AdminPortfolio = () => {
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Live URL</label>
                   <input type="url" value={form.liveUrl} onChange={(e) => setForm({ ...form, liveUrl: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors placeholder-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
                     placeholder="https://..." />
                 </div>
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Tags (comma separated)</label>
                   <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors placeholder-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
                     placeholder="React, Node.js, MongoDB" />
                 </div>
               </div>
@@ -358,18 +350,18 @@ const AdminPortfolio = () => {
                 <div>
                   <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Display Order</label>
                   <input type="number" min={0} value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })}
-                    className="w-24 bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#d4af37]/50 focus:outline-none transition-colors" />
+                    className="w-24 bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors" />
                 </div>
                 <label className="flex items-center gap-3 cursor-pointer mt-4">
                   <div onClick={() => setForm({ ...form, featured: !form.featured })}
-                    className={`w-10 h-5 rounded-full transition-colors ${form.featured ? 'bg-[#d4af37]' : 'bg-white/10'}`}>
+                    className={`w-10 h-5 rounded-full transition-colors ${form.featured ? 'bg-[#2563EB]' : 'bg-white/10'}`}>
                     <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${form.featured ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </div>
                   <span className="text-xs text-white/50 uppercase tracking-widest">Featured (show in Home)</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer mt-4">
                   <div onClick={() => setForm({ ...form, isPublished: !form.isPublished })}
-                    className={`w-10 h-5 rounded-full transition-colors ${form.isPublished ? 'bg-[#d4af37]' : 'bg-white/10'}`}>
+                    className={`w-10 h-5 rounded-full transition-colors ${form.isPublished ? 'bg-[#2563EB]' : 'bg-white/10'}`}>
                     <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${form.isPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </div>
                   <span className="text-xs text-white/50 uppercase tracking-widest">Published</span>
@@ -381,7 +373,7 @@ const AdminPortfolio = () => {
                 <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Cover Image *</label>
                 <div className="grid grid-cols-2 gap-4">
                   <Thumb src={coverPreview} label="Cover" />
-                  <label className="flex flex-col items-center justify-center aspect-video border border-dashed border-white/20 hover:border-[#d4af37]/40 cursor-pointer transition-colors">
+                  <label className="flex flex-col items-center justify-center aspect-video border border-dashed border-white/20 hover:border-[#2563EB]/40 cursor-pointer transition-colors">
                     <Upload className="w-5 h-5 text-white/30 mb-2" />
                     <span className="text-xs text-white/30">Upload cover</span>
                     <input type="file" accept="image/*" onChange={handleCover} className="hidden" />
@@ -397,7 +389,7 @@ const AdminPortfolio = () => {
                     <Thumb key={i} src={imagePreviews[i]} label={`#${i + 1}`} />
                   ))}
                 </div>
-                <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-white/20 hover:border-[#d4af37]/40 cursor-pointer transition-colors text-xs text-white/40">
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-white/20 hover:border-[#2563EB]/40 cursor-pointer transition-colors text-xs text-white/40">
                   <Upload className="w-4 h-4" /> Select up to 5 images
                   <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
                 </label>
@@ -406,7 +398,7 @@ const AdminPortfolio = () => {
               {/* Submit */}
               <div className="flex gap-4 pt-4 border-t border-white/10">
                 <button type="submit" disabled={saving}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#d4af37] text-black text-xs font-light tracking-widest uppercase hover:bg-[#c4a030] transition-colors disabled:opacity-50 active:scale-95">
+                  className="flex items-center gap-2 px-8 py-3 bg-[#2563EB] text-black text-xs font-light tracking-widest uppercase hover:bg-[#c4a030] transition-colors disabled:opacity-50 active:scale-95">
                   {saving ? <><Loader className="w-4 h-4 animate-spin" /> Saving...</> : editId ? 'Update Project' : 'Create Project'}
                 </button>
                 <button type="button" onClick={() => setShowForm(false)}

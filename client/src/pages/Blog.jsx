@@ -57,20 +57,20 @@ const Blog = () => {
     return () => ctx.revert();
   }, [active]);
 
-  const categoryColor = (slug) => CATEGORIES.find(c => c.slug === slug)?.color || '#d4af37';
+  const categoryColor = (slug) => CATEGORIES.find(c => c.slug === slug)?.color || '#2563EB';
 
   return (
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-black text-white overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <main className="bg-white text-[#0D1117] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
         <section ref={heroRef} style={{ paddingTop: '128px', paddingBottom: '5rem' }}>
-          <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.25), transparent)' }} />
+          <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.25), transparent)' }} />
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
             <div data-hero-anim className="opacity-0 flex items-center gap-3 mb-6">
-              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, #d4af37, transparent)', display: 'inline-block' }} />
+              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, #2563EB, transparent)', display: 'inline-block' }} />
               <span className="eyebrow">Insights & Guides</span>
             </div>
             <h1 data-hero-anim className="opacity-0" style={{
@@ -79,13 +79,13 @@ const Blog = () => {
               fontWeight: 700,
               lineHeight: 1.04,
               letterSpacing: '-0.03em',
-              color: '#fff',
+              color: '#0D1117',
               maxWidth: '16ch',
               marginBottom: '1.5rem',
             }}>
               The{' '}
               <span style={{
-                backgroundImage: 'linear-gradient(135deg, #d4af37 0%, rgba(255,255,255,0.85) 55%)',
+                backgroundImage: 'linear-gradient(135deg, #2563EB 0%, rgba(0,0,0,0.8) 55%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -98,7 +98,7 @@ const Blog = () => {
               fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 'clamp(0.95rem,2vw,1.1rem)',
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(0,0,0,0.45)',
               lineHeight: 1.8,
               maxWidth: '52ch',
               marginBottom: '3rem',
@@ -112,9 +112,9 @@ const Blog = () => {
                 onClick={() => setActive('all')}
                 style={{
                   padding: '7px 18px',
-                  border: `1px solid ${active === 'all' ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                  background: active === 'all' ? 'rgba(212,175,55,0.08)' : 'transparent',
-                  color: active === 'all' ? '#d4af37' : 'rgba(255,255,255,0.45)',
+                  border: `1px solid ${active === 'all' ? 'rgba(37,99,235,0.5)' : 'rgba(0,0,0,0.08)'}`,
+                  background: active === 'all' ? 'rgba(37,99,235,0.08)' : 'transparent',
+                  color: active === 'all' ? '#2563EB' : 'rgba(0,0,0,0.42)',
                   fontFamily: "'Inter', sans-serif",
                   fontSize: 11, fontWeight: 400, letterSpacing: '0.12em', textTransform: 'uppercase',
                   cursor: 'pointer', transition: 'all 0.25s',
@@ -128,9 +128,9 @@ const Blog = () => {
                   onClick={() => setActive(cat.slug)}
                   style={{
                     padding: '7px 18px',
-                    border: `1px solid ${active === cat.slug ? `${cat.color}50` : 'rgba(255,255,255,0.1)'}`,
+                    border: `1px solid ${active === cat.slug ? `${cat.color}50` : 'rgba(0,0,0,0.08)'}`,
                     background: active === cat.slug ? `${cat.color}10` : 'transparent',
-                    color: active === cat.slug ? cat.color : 'rgba(255,255,255,0.45)',
+                    color: active === cat.slug ? cat.color : 'rgba(0,0,0,0.42)',
                     fontFamily: "'Inter', sans-serif",
                     fontSize: 11, fontWeight: 400, letterSpacing: '0.12em', textTransform: 'uppercase',
                     cursor: 'pointer', transition: 'all 0.25s',
@@ -149,11 +149,11 @@ const Blog = () => {
             <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
               <Link
                 to={`/blog/${posts[0].slug}`}
-                style={{ textDecoration: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', transition: 'border-color 0.35s, background 0.35s' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'; e.currentTarget.style.background = 'rgba(212,175,55,0.02)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                style={{ textDecoration: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', background: 'rgba(0,0,0,0.02)', border: '1px solid #E8EBF0', transition: 'border-color 0.35s, background 0.35s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.2)'; e.currentTarget.style.background = 'rgba(37,99,235,0.02)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.04)'; e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; }}
               >
-                <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#0a0a0a', minWidth: 0 }}>
+                <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#F6F7F9', minWidth: 0 }}>
                   <img src={posts[0].image} alt={posts[0].title} loading="lazy"
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55, transition: 'transform 0.5s, opacity 0.4s' }}
                     onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.opacity = '0.65'; }}
@@ -166,17 +166,17 @@ const Blog = () => {
                     <span style={{ padding: '4px 12px', border: `1px solid ${categoryColor(posts[0].category)}30`, background: `${categoryColor(posts[0].category)}10`, color: categoryColor(posts[0].category), fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                       {CATEGORIES.find(c => c.slug === posts[0].category)?.label || posts[0].category}
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(0,0,0,0.3)', letterSpacing: '0.1em' }}>
                       <Clock size={11} aria-hidden /> {posts[0].readTime} min read
                     </span>
                   </div>
-                  <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.375rem,2.5vw,2rem)', fontWeight: 600, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+                  <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.375rem,2.5vw,2rem)', fontWeight: 600, color: '#0D1117', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
                     {posts[0].title}
                   </h2>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 400, color: 'rgba(255,255,255,0.5)', lineHeight: 1.8, marginBottom: '1.5rem' }}>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 400, color: 'rgba(0,0,0,0.45)', lineHeight: 1.8, marginBottom: '1.5rem' }}>
                     {posts[0].excerpt}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#d4af37', fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2563EB', fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                     Read Article <ArrowUpRight size={13} aria-hidden />
                   </div>
                 </div>
@@ -188,17 +188,17 @@ const Blog = () => {
         {/* ── GRID ──────────────────────────────────────────────── */}
         <section ref={gridRef} style={{ paddingBottom: 'clamp(5rem,10vw,8rem)' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
               {posts.slice(1).map(post => (
                 <Link
                   key={post.slug}
                   to={`/blog/${post.slug}`}
                   data-card
-                  style={{ background: '#000', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#060504'; }}
+                  style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = '#000'; }}
                 >
-                  <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: '#0a0a0a' }}>
+                  <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: '#F6F7F9' }}>
                     <img src={post.image} alt={post.title} loading="lazy"
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, transition: 'transform 0.5s, opacity 0.3s' }}
                       onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.opacity = '0.6'; }}
@@ -211,17 +211,17 @@ const Blog = () => {
                       <span style={{ padding: '3px 10px', border: `1px solid ${categoryColor(post.category)}25`, background: `${categoryColor(post.category)}08`, color: categoryColor(post.category), fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                         {CATEGORIES.find(c => c.slug === post.category)?.label}
                       </span>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgba(0,0,0,0.25)', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 3 }}>
                         <Clock size={9} aria-hidden /> {post.readTime}m
                       </span>
                     </div>
-                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.1rem,2vw,1.35rem)', fontWeight: 400, color: '#fff', lineHeight: 1.25, marginBottom: '0.75rem', flex: 1 }}>
+                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.1rem,2vw,1.35rem)', fontWeight: 400, color: '#0D1117', lineHeight: 1.25, marginBottom: '0.75rem', flex: 1 }}>
                       {post.title}
                     </h3>
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: 'rgba(0,0,0,0.4)', lineHeight: 1.7, marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {post.excerpt}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(212,175,55,0.7)', fontFamily: "'Inter', sans-serif", fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(37,99,235,0.7)', fontFamily: "'Inter', sans-serif", fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                       Read <ArrowUpRight size={11} aria-hidden />
                     </div>
                   </div>

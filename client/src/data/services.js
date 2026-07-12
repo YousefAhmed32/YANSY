@@ -13,7 +13,7 @@ export const SERVICES = [
     metaTitle: 'Web Development Agency | YANSY TECH',
     metaDescription: 'YANSY TECH builds high-performance websites that convert visitors into customers. Custom React & Next.js development with SEO optimization, speed, and enterprise-grade quality.',
     keywords: 'web development agency Egypt, website development company, React web development, Next.js development, custom website development, professional web development',
-    color: '#d4af37',
+    color: '#2563EB',
     icon: '⬡',
     tagline: 'Strategy · Design · Engineering',
     hero: {

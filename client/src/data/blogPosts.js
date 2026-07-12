@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 export const CATEGORIES = [
-  { slug: 'web-development',    label: 'Web Development',    color: '#d4af37' },
+  { slug: 'web-development',    label: 'Web Development',    color: '#2563EB' },
   { slug: 'saas',               label: 'SaaS',               color: '#6366f1' },
   { slug: 'product-design',     label: 'Product Design',     color: '#ec4899' },
   { slug: 'ecommerce',          label: 'E-Commerce',         color: '#10b981' },
@@ -475,7 +475,7 @@ export const BLOG_POSTS = [
       },
       {
         heading: 'The Components of a Mature Design System',
-        body: 'Tokens: the primitive values. Primary color: #d4af37. Base spacing: 8px. Heading font: Cormorant Garamond. These are the raw values everything else references. Components: the building blocks. Button, Input, Card, Modal, Toast, Badge, Avatar, Dropdown. Each component documented with all states (default, hover, focus, disabled, error). Patterns: the combinations. How to build a form page, a data table, an empty state, a loading state.',
+        body: 'Tokens: the primitive values. Primary color: #2563EB. Base spacing: 8px. Heading font: Cormorant Garamond. These are the raw values everything else references. Components: the building blocks. Button, Input, Card, Modal, Toast, Badge, Avatar, Dropdown. Each component documented with all states (default, hover, focus, disabled, error). Patterns: the combinations. How to build a form page, a data table, an empty state, a loading state.',
       },
       {
         heading: 'Building vs Adopting an Existing System',

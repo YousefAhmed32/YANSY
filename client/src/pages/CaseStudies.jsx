@@ -64,17 +64,17 @@ const CaseStudies = () => {
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-black text-white overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <main className="bg-white text-[#0D1117] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
         <section ref={heroRef} style={{ paddingTop: '128px', paddingBottom: '5rem' }}>
           <div
             aria-hidden
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.25), transparent)' }}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.25), transparent)' }}
           />
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
             <div data-hero-anim className="opacity-0 flex items-center gap-3 mb-6">
-              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, #d4af37, transparent)', display: 'inline-block' }} />
+              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, #2563EB, transparent)', display: 'inline-block' }} />
               <span className="eyebrow">Our Work</span>
             </div>
             <h1 data-hero-anim className="opacity-0" style={{
@@ -83,13 +83,13 @@ const CaseStudies = () => {
               fontWeight: 700,
               lineHeight: 1.04,
               letterSpacing: '-0.03em',
-              color: '#fff',
+              color: '#0D1117',
               maxWidth: '16ch',
               marginBottom: '1.5rem',
             }}>
               Products We've{' '}
               <span style={{
-                backgroundImage: 'linear-gradient(135deg, #d4af37 0%, rgba(255,255,255,0.85) 55%)',
+                backgroundImage: 'linear-gradient(135deg, #2563EB 0%, rgba(0,0,0,0.8) 55%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -101,7 +101,7 @@ const CaseStudies = () => {
               fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 'clamp(0.95rem,2vw,1.1rem)',
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(0,0,0,0.45)',
               lineHeight: 1.8,
               maxWidth: '56ch',
               marginBottom: '3rem',
@@ -117,9 +117,9 @@ const CaseStudies = () => {
                   onClick={() => setActive(ind)}
                   style={{
                     padding: '7px 18px',
-                    border: `1px solid ${active === ind ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                    background: active === ind ? 'rgba(212,175,55,0.08)' : 'transparent',
-                    color: active === ind ? '#d4af37' : 'rgba(255,255,255,0.45)',
+                    border: `1px solid ${active === ind ? 'rgba(37,99,235,0.5)' : 'rgba(0,0,0,0.08)'}`,
+                    background: active === ind ? 'rgba(37,99,235,0.08)' : 'transparent',
+                    color: active === ind ? '#2563EB' : 'rgba(0,0,0,0.42)',
                     fontFamily: "'Inter', sans-serif",
                     fontSize: 11,
                     fontWeight: 400,
@@ -139,18 +139,18 @@ const CaseStudies = () => {
         {/* ── GRID ──────────────────────────────────────────────── */}
         <section ref={gridRef} style={{ paddingBottom: 'clamp(5rem,10vw,8rem)' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-px" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
               {filtered.map((cs) => (
                 <Link
                   key={cs.slug}
                   to={`/case-studies/${cs.slug}`}
                   data-card
-                  style={{ background: '#000', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#060504'; }}
+                  style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = '#000'; }}
                 >
                   {/* Image */}
-                  <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#0a0a0a' }}>
+                  <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#F6F7F9' }}>
                     <img
                       src={cs.heroImage}
                       alt={`${cs.title} case study`}
@@ -184,21 +184,21 @@ const CaseStudies = () => {
                   {/* Content */}
                   <div style={{ padding: 'clamp(1.25rem, 3vw, 2rem)', flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>{cs.duration} · {cs.year}</span>
-                      <ArrowUpRight size={14} style={{ color: 'rgba(255,255,255,0.25)' }} aria-hidden />
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 400, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>{cs.duration} · {cs.year}</span>
+                      <ArrowUpRight size={14} style={{ color: 'rgba(0,0,0,0.25)' }} aria-hidden />
                     </div>
-                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.3rem, 2.5vw, 1.7rem)', fontWeight: 500, color: '#fff', lineHeight: 1.2, marginBottom: '0.75rem' }}>
+                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.3rem, 2.5vw, 1.7rem)', fontWeight: 500, color: '#0D1117', lineHeight: 1.2, marginBottom: '0.75rem' }}>
                       {cs.title}
                     </h3>
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', fontWeight: 400, color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, marginBottom: '1.5rem', flex: 1 }}>
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', fontWeight: 400, color: 'rgba(0,0,0,0.42)', lineHeight: 1.75, marginBottom: '1.5rem', flex: 1 }}>
                       {cs.tagline}
                     </p>
                     {/* Result pills */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {cs.results.slice(0, 2).map((r, i) => (
-                        <div key={i} style={{ padding: '5px 12px', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
-                          <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1rem', fontWeight: 700, color: '#d4af37', fontVariantNumeric: 'tabular-nums' }}>{r.metric}</span>
-                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.35)', marginLeft: 6, letterSpacing: '0.05em' }}>{r.label}</span>
+                        <div key={i} style={{ padding: '5px 12px', border: '1px solid rgba(0,0,0,0.06)', background: 'rgba(0,0,0,0.02)' }}>
+                          <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1rem', fontWeight: 700, color: '#2563EB', fontVariantNumeric: 'tabular-nums' }}>{r.metric}</span>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(0,0,0,0.35)', marginLeft: 6, letterSpacing: '0.05em' }}>{r.label}</span>
                         </div>
                       ))}
                     </div>
@@ -210,26 +210,26 @@ const CaseStudies = () => {
         </section>
 
         {/* ── BOTTOM CTA ────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(5rem,10vw,7rem) 0', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+        <section style={{ padding: 'clamp(5rem,10vw,7rem) 0', borderTop: '1px solid #E8EBF0', textAlign: 'center' }}>
           <div className="max-w-xl mx-auto px-5">
             <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Your Project Next</span>
-            <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 700, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 700, color: '#0D1117', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '1.5rem' }}>
               Ready to Become a Case Study?
             </h2>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', fontWeight: 400, color: 'rgba(255,255,255,0.5)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', fontWeight: 400, color: 'rgba(0,0,0,0.45)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
               Free consultation. Honest scope and timeline. No obligation.
             </p>
             <button
               onClick={() => setIsFormOpen(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                padding: '16px 40px', background: '#d4af37', border: '2px solid #d4af37',
+                padding: '16px 40px', background: '#2563EB', border: '2px solid #2563EB',
                 color: '#000', fontFamily: "'Inter', sans-serif",
                 fontSize: 10, fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase',
                 cursor: 'pointer', transition: 'background 0.3s',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = '#c4a030'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#d4af37'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; }}
             >
               Start a Project <ArrowUpRight size={14} aria-hidden />
             </button>

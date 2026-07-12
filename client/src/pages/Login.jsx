@@ -5,23 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useLanguage } from '../contexts/LanguageContext';
 import { login, googleLogin, clearError } from '../store/authSlice';
-import { gsap } from 'gsap';
-
-/* ─── Icons ───────────────────────────────────────────────────────────────── */
-const EyeOpen = () => (
-  <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-  </svg>
-);
-const EyeOff = () => (
-  <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-  </svg>
-);
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -29,120 +16,72 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const Spinner = ({ size = 14, color = 'currentColor' }) => (
+const Spinner = ({ size = 14 }) => (
   <span style={{
     width: size, height: size, borderRadius: '50%',
-    border: `1.5px solid rgba(0,0,0,0.15)`,
-    borderTopColor: color,
+    border: '1.5px solid rgba(255,255,255,0.3)',
+    borderTopColor: '#ffffff',
     animation: 'spin .65s linear infinite',
     display: 'inline-block', flexShrink: 0,
   }} />
 );
 
-/* ─── Brand panel ─────────────────────────────────────────────────────────── */
 const BrandPanel = ({ isRTL }) => (
-  <div className="hidden lg:flex lg:w-[45%] relative flex-col justify-between p-12 xl:p-16 overflow-hidden bg-black">
-    {/* Ambient glows */}
-    <div style={{ position:'absolute', top:'-20%', left:'-10%', width:'60%', height:'60%', borderRadius:'50%', background:'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', filter:'blur(60px)', pointerEvents:'none' }} />
-    <div style={{ position:'absolute', bottom:'10%', right:'-10%', width:'50%', height:'50%', borderRadius:'50%', background:'radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 70%)', filter:'blur(80px)', pointerEvents:'none' }} />
-    {/* Grid texture */}
-    <div style={{ position:'absolute', inset:0, opacity:0.018, backgroundImage:'linear-gradient(#d4af37 1px,transparent 1px),linear-gradient(90deg,#d4af37 1px,transparent 1px)', backgroundSize:'64px 64px', pointerEvents:'none' }} />
-
-    <div className="relative z-10">
-      <Link to="/" className="inline-block group">
-        <span className="text-3xl xl:text-4xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>YANSY</span>
-        <span className="block text-xs tracking-[0.3em] text-[#d4af37]/50 uppercase mt-1">TECH</span>
+  <div style={{
+    display: 'none',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: '48px',
+    background: '#F6F7F9',
+    borderRight: '1px solid #E8EBF0',
+    position: 'relative',
+    overflow: 'hidden',
+  }} className="auth-brand-panel">
+    <div>
+      <Link to="/" style={{ textDecoration: 'none' }}>
+        <span style={{ fontSize: '16px', fontWeight: 700, letterSpacing: '0.08em', color: '#0D1117' }}>YANSY</span>
+        <span style={{ display: 'block', fontSize: '10px', letterSpacing: '0.2em', color: '#6B7280', textTransform: 'uppercase', marginTop: '2px' }}>TECH</span>
       </Link>
     </div>
 
-    <div className="relative z-10 space-y-6">
-      <h2 className="text-2xl xl:text-3xl font-semibold leading-[1.15] text-white" style={{ letterSpacing: '-0.02em' }}>
+    <div>
+      <h2 style={{
+        fontSize: 'clamp(22px,2.5vw,30px)', fontWeight: 700,
+        letterSpacing: '-0.025em', color: '#0D1117', margin: '0 0 16px',
+        lineHeight: 1.15,
+      }}>
         {isRTL
-          ? <> منصتك لإدارة<br /><span className="text-[#d4af37]">مشاريعك الرقمية</span></>
-          : <>Your portal to<br /><span className="text-[#d4af37]">premium digital work.</span></>}
+          ? <><span style={{ color: '#2563EB' }}>منصتك الرقمية</span><br />لإدارة مشاريعك</>
+          : <>Your portal to<br /><span style={{ color: '#2563EB' }}>premium digital work.</span></>
+        }
       </h2>
-      <p className="text-sm font-light text-white/40 leading-relaxed max-w-xs">
+      <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.7, margin: '0 0 32px', maxWidth: '300px' }}>
         {isRTL
           ? 'تابع مشاريعك، تواصل مع فريقنا، وتحقق من تقدم عملك في مكان واحد.'
           : 'Track your projects, communicate with our team, and monitor progress — all in one place.'}
       </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        {[
+          { num: '50+', label: isRTL ? 'مشروع مُسلَّم' : 'Projects delivered' },
+          { num: '98%', label: isRTL ? 'رضا العملاء'   : 'Client satisfaction' },
+          { num: '4+',  label: isRTL ? 'سنوات خبرة'    : 'Years of expertise'  },
+          { num: '24h', label: isRTL ? 'ضمان الرد'      : 'Response guarantee'  },
+        ].map((s) => (
+          <div key={s.num} style={{ padding: '16px', background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: '10px' }}>
+            <p style={{ fontSize: '22px', fontWeight: 700, color: '#2563EB', margin: '0 0 2px', letterSpacing: '-0.03em' }}>{s.num}</p>
+            <p style={{ fontSize: '11px', color: '#6B7280', margin: 0, letterSpacing: '0.01em' }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
     </div>
 
-    <div className="relative z-10 grid grid-cols-2 gap-6">
-      {[
-        { num: '50+', label: isRTL ? 'مشروع مُسلَّم' : 'Projects delivered' },
-        { num: '98%', label: isRTL ? 'رضا العملاء'   : 'Client satisfaction' },
-        { num: '4+',  label: isRTL ? 'سنوات خبرة'    : 'Years of expertise'  },
-        { num: '24h', label: isRTL ? 'دعم متواصل'     : 'Response guarantee'  },
-      ].map((s) => (
-        <div key={s.num}>
-          <p className="text-xl font-bold text-[#d4af37]" style={{ letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>{s.num}</p>
-          <p className="text-xs font-normal text-white/50 mt-0.5">{s.label}</p>
-        </div>
-      ))}
-    </div>
-
-    {/* Right border gradient */}
-    <div style={{ position:'absolute', top:0, right:0, width:1, height:'100%', background:'linear-gradient(to bottom, transparent, rgba(212,175,55,0.15) 30%, rgba(212,175,55,0.15) 70%, transparent)' }} />
+    <p style={{ fontSize: '11px', color: '#9CA3AF', margin: 0 }}>
+      {isRTL ? 'موثوق به من 50+ شركة ورائد أعمال.' : 'Trusted by 50+ businesses and founders.'}
+    </p>
   </div>
 );
 
-/* ─── Divider ─────────────────────────────────────────────────────────────── */
-const OrDivider = ({ label = 'or' }) => (
-  <div className="flex items-center gap-3">
-    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-    <span className="text-[10px] tracking-[0.2em] uppercase font-medium" style={{ color: 'rgba(255,255,255,0.2)' }}>
-      {label}
-    </span>
-    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-  </div>
-);
-
-/* ─── Google button ───────────────────────────────────────────────────────── */
-const GoogleButton = ({ onClick, loading, text, disabled }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled || loading}
-    style={{
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 10,
-      padding: '13px 20px',
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid rgba(255,255,255,0.1)',
-      color: 'rgba(255,255,255,0.8)',
-      fontSize: 13,
-      fontWeight: 400,
-      letterSpacing: '0.01em',
-      cursor: disabled || loading ? 'not-allowed' : 'pointer',
-      opacity: disabled || loading ? 0.45 : 1,
-      transition: 'background 0.2s, border-color 0.2s',
-      outline: 'none',
-    }}
-    onMouseEnter={(e) => {
-      if (!disabled && !loading) {
-        e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
-      }
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-    }}
-    aria-label="Sign in with Google"
-  >
-    {loading
-      ? <Spinner size={16} color="#d4af37" />
-      : <GoogleIcon />
-    }
-    <span>{text}</span>
-  </button>
-);
-
-/* ─── Main component ──────────────────────────────────────────────────────── */
 const Login = () => {
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
@@ -164,72 +103,45 @@ const Login = () => {
   useEffect(() => { dispatch(clearError()); }, [dispatch]);
   useEffect(() => { if (error) setLocalError(error); }, [error]);
 
-  /* Entrance animation */
-  useEffect(() => {
-    if (!formRef.current) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        formRef.current.children,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out', delay: 0.1 }
-      );
-    }, formRef);
-    return () => ctx.revert();
-  }, []);
-
-  /* Shake form on error */
   const shakeForm = useCallback(() => {
     if (!formRef.current) return;
-    gsap.to(formRef.current, {
-      keyframes: { x: [-8, 8, -6, 6, -3, 3, 0] },
-      duration: 0.45, ease: 'power2.out',
+    formRef.current.style.animation = 'none';
+    requestAnimationFrame(() => {
+      formRef.current.style.animation = 'shake 0.4s ease';
     });
   }, []);
 
-  /* ── Email / password submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitting.current || loading) return;
-
     setLocalError('');
-
-    if (!email.trim()) {
-      setLocalError(t('auth.emailRequired', 'Email address is required.'));
-      return;
-    }
-    if (!password) {
-      setLocalError(t('auth.passwordRequired', 'Password is required.'));
-      return;
-    }
+    if (!email.trim()) { setLocalError(t('auth.emailRequired', 'Email address is required.')); return; }
+    if (!password)     { setLocalError(t('auth.passwordRequired', 'Password is required.')); return; }
 
     submitting.current = true;
     const result = await dispatch(login({ email: email.trim(), password }));
     submitting.current = false;
 
     if (login.rejected.match(result)) {
-      const msg = result.payload || t('auth.loginFailed', 'Login failed. Please try again.');
-      setLocalError(msg);
+      setLocalError(result.payload || t('auth.loginFailed', 'Login failed. Please try again.'));
       shakeForm();
     }
   };
 
-  /* ── Google login ── */
   const handleGoogleSuccess = useCallback(async (codeResponse) => {
     setLocalError('');
     setGoogleLoading(true);
     const result = await dispatch(googleLogin({ code: codeResponse.code }));
     setGoogleLoading(false);
-
     if (googleLogin.rejected.match(result)) {
-      const msg = result.payload || t('auth.googleFailed', 'Google sign-in failed. Please try again.');
-      setLocalError(msg);
+      setLocalError(result.payload || t('auth.googleFailed', 'Google sign-in failed. Please try again.'));
       shakeForm();
     }
   }, [dispatch, t, shakeForm]);
 
   const handleGoogleError = useCallback(() => {
     setGoogleLoading(false);
-    setLocalError(t('auth.googleCancelled', 'Google sign-in was cancelled or failed. Please try again.'));
+    setLocalError(t('auth.googleCancelled', 'Google sign-in was cancelled or failed.'));
   }, [t]);
 
   const triggerGoogleLogin = useGoogleLogin({
@@ -240,162 +152,216 @@ const Login = () => {
 
   const isDisabled = loading || submitting.current || googleLoading;
 
-  const fieldClass = (name) => [
-    'w-full bg-transparent border-0 border-b text-white font-light text-base py-3.5',
-    'placeholder-white/20 focus:outline-none transition-colors duration-300',
-    focused === name ? 'border-[#d4af37]' : 'border-white/10',
-  ].join(' ');
-
-  const labelClass = (name) => [
-    'block text-[10px] tracking-[0.2em] uppercase font-medium transition-colors duration-300',
-    focused === name ? 'text-[#d4af37]' : 'text-white/35',
-  ].join(' ');
+  const inputStyle = (name) => ({
+    width: '100%',
+    padding: '11px 14px',
+    background: '#FFFFFF',
+    border: `1px solid ${focused === name ? '#2563EB' : '#E8EBF0'}`,
+    borderRadius: '8px',
+    color: '#0D1117',
+    fontSize: '14px',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+    boxSizing: 'border-box',
+    fontFamily: "'Inter',system-ui,sans-serif",
+  });
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex" dir={dir}>
+    <div className="auth-root" dir={dir} style={{ minHeight: '100vh', background: '#FFFFFF', display: 'flex' }}>
       <BrandPanel isRTL={isRTL} />
 
-      {/* ── Right: form panel ─────────────────────────────── */}
-      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 xl:px-24 py-16 relative">
-
-        {/* Mobile-only brand */}
-        <div className="lg:hidden mb-12">
-          <Link to="/" className="inline-flex items-center gap-3">
-            <span className="text-xl font-bold text-white" style={{ letterSpacing: '-0.025em' }}>YANSY</span>
-            <span className="text-[10px] tracking-[0.3em] text-[#d4af37]/60 uppercase">TECH</span>
+      {/* Form panel */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        justifyContent: 'center', alignItems: 'center',
+        padding: 'clamp(32px,6vw,64px)',
+        background: '#FFFFFF',
+      }}>
+        {/* Mobile brand */}
+        <div className="auth-mobile-brand" style={{ display: 'none', marginBottom: '40px', textAlign: 'center' }}>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '0.08em', color: '#0D1117' }}>YANSY</span>
+            <span style={{ display: 'block', fontSize: '9px', letterSpacing: '0.2em', color: '#6B7280', textTransform: 'uppercase', marginTop: '2px' }}>TECH</span>
           </Link>
         </div>
 
-        <div className="w-full max-w-md mx-auto lg:mx-0">
+        <div ref={formRef} style={{ width: '100%', maxWidth: '400px' }}>
           {/* Heading */}
-          <div className="mb-10">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-white mb-2" style={{ letterSpacing: '-0.02em' }}>
+          <div style={{ marginBottom: '28px' }}>
+            <h1 style={{ fontSize: 'clamp(22px,2.5vw,28px)', fontWeight: 700, color: '#0D1117', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
               {t('auth.welcomeBack', 'Welcome back')}
             </h1>
-            <p className="text-sm font-normal text-white/45">
+            <p style={{ fontSize: '14px', color: '#6B7280', margin: 0, lineHeight: 1.6 }}>
               {t('auth.signInContinue', 'Sign in to your client portal')}
             </p>
           </div>
 
-          <div ref={formRef} className="space-y-5">
+          {/* Error */}
+          {localError && (
+            <div role="alert" style={{
+              display: 'flex', alignItems: 'flex-start', gap: '10px',
+              padding: '12px 14px', marginBottom: '20px',
+              background: '#FEF2F2', border: '1px solid #FECACA',
+              borderRadius: '8px',
+            }}>
+              <svg style={{ width: '15px', height: '15px', color: '#EF4444', flexShrink: 0, marginTop: '1px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p style={{ fontSize: '13px', color: '#B91C1C', margin: 0, lineHeight: 1.5 }}>{localError}</p>
+            </div>
+          )}
 
-            {/* ── Error banner ── */}
-            {localError && (
-              <div
-                role="alert"
-                className="flex items-start gap-3 px-4 py-3.5 rounded-sm"
-                style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}
-              >
-                <svg className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm text-red-400/90 font-light leading-relaxed">{localError}</p>
-              </div>
-            )}
+          {/* Google */}
+          <button
+            type="button"
+            onClick={() => triggerGoogleLogin()}
+            disabled={isDisabled}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+              padding: '11px 20px', marginBottom: '20px',
+              background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: '8px',
+              color: '#0D1117', fontSize: '14px', fontWeight: 500,
+              cursor: isDisabled ? 'not-allowed' : 'pointer',
+              opacity: isDisabled ? 0.55 : 1,
+              transition: 'border-color 0.2s, background 0.2s',
+            }}
+            onMouseEnter={e => { if (!isDisabled) { e.currentTarget.style.borderColor = '#C9CDD6'; e.currentTarget.style.background = '#F6F7F9'; }}}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8EBF0'; e.currentTarget.style.background = '#FFFFFF'; }}
+            aria-label="Sign in with Google"
+          >
+            {googleLoading ? <Spinner size={17} /> : <GoogleIcon />}
+            <span>{t('auth.continueWithGoogle', 'Continue with Google')}</span>
+          </button>
 
-            {/* ── Google sign-in ── */}
-            <GoogleButton
-              onClick={() => triggerGoogleLogin()}
-              loading={googleLoading}
-              disabled={isDisabled && !googleLoading}
-              text={t('auth.continueWithGoogle', 'Continue with Google')}
-            />
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ flex: 1, height: '1px', background: '#E8EBF0' }} />
+            <span style={{ fontSize: '11px', color: '#9CA3AF', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>
+              {t('common.or', 'or')}
+            </span>
+            <div style={{ flex: 1, height: '1px', background: '#E8EBF0' }} />
+          </div>
 
-            {/* ── Divider ── */}
-            <OrDivider label={t('common.or', 'or')} />
+          {/* Form */}
+          <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label htmlFor="email" style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#374151', marginBottom: '6px', letterSpacing: '0.01em' }}>
+                {t('auth.email', 'Email address')}
+              </label>
+              <input
+                id="email" type="email" autoComplete="email" required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onFocus={() => setFocused('email')}
+                onBlur={() => setFocused(null)}
+                disabled={isDisabled}
+                placeholder="you@example.com"
+                style={inputStyle('email')}
+              />
+            </div>
 
-            {/* ── Email/password form ── */}
-            <form onSubmit={handleSubmit} noValidate className="space-y-7">
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className={labelClass('email')}>{t('auth.email', 'Email address')}</label>
-                <input
-                  id="email" type="email" autoComplete="email" required
-                  value={email} onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
-                  disabled={isDisabled}
-                  placeholder="you@example.com"
-                  className={fieldClass('email')}
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label htmlFor="password" className={labelClass('password')}>{t('auth.password', 'Password')}</label>
-                <div className="relative">
-                  <input
-                    id="password" type={showPass ? 'text' : 'password'}
-                    autoComplete="current-password" required
-                    value={password} onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocused('password')} onBlur={() => setFocused(null)}
-                    disabled={isDisabled}
-                    placeholder="••••••••"
-                    className={`${fieldClass('password')} ${isRTL ? 'pl-10' : 'pr-10'}`}
-                  />
-                  <button
-                    type="button" onClick={() => setShowPass(!showPass)}
-                    className={`absolute ${isRTL ? 'left-0' : 'right-0'} bottom-3 text-white/25 hover:text-[#d4af37] transition-colors duration-200`}
-                    tabIndex={-1}
-                    aria-label={showPass ? 'Hide password' : 'Show password'}
-                  >
-                    {showPass ? <EyeOff /> : <EyeOpen />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Forgot password link */}
-              <div className="flex justify-end -mt-3">
-                <Link
-                  to="/forgot-password"
-                  className="text-xs transition-colors duration-200"
-                  style={{ color: 'rgba(212,175,55,0.55)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#d4af37'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(212,175,55,0.55)'}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                <label htmlFor="password" style={{ fontSize: '12px', fontWeight: 500, color: '#374151', letterSpacing: '0.01em' }}>
+                  {t('auth.password', 'Password')}
+                </label>
+                <Link to="/forgot-password" style={{ fontSize: '12px', color: '#2563EB', textDecoration: 'none', fontWeight: 500 }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#1D4ED8'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#2563EB'; }}
                 >
                   {t('auth.forgotPassword', 'Forgot password?')}
                 </Link>
               </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isDisabled}
-                className="w-full py-4 bg-[#d4af37] text-black text-xs font-medium tracking-[0.15em] uppercase transition-all duration-300 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden"
-                aria-busy={loading}
-              >
-                {loading && !googleLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Spinner size={13} color="#000" />
-                    {t('auth.signingIn', 'Signing in…')}
-                  </span>
-                ) : t('auth.signIn', 'Sign in')}
-              </button>
-            </form>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-1">
-              <p className="text-xs text-white/25">
-                {t('auth.noAccount', 'No account?')}{' '}
-                <Link to="/register" className="text-[#d4af37] hover:text-white transition-colors duration-200 underline underline-offset-4">
-                  {t('auth.createAccount', 'Register')}
-                </Link>
-              </p>
-              <Link to="/" className="text-xs text-white/20 hover:text-white/50 transition-colors duration-200">
-                ← {t('common.backHome', 'Home')}
-              </Link>
+              <div style={{ position: 'relative' }}>
+                <input
+                  id="password" type={showPass ? 'text' : 'password'}
+                  autoComplete="current-password" required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onFocus={() => setFocused('password')}
+                  onBlur={() => setFocused(null)}
+                  disabled={isDisabled}
+                  placeholder="••••••••"
+                  style={{ ...inputStyle('password'), paddingRight: isRTL ? '14px' : '42px', paddingLeft: isRTL ? '42px' : '14px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  tabIndex={-1}
+                  aria-label={showPass ? 'Hide password' : 'Show password'}
+                  style={{
+                    position: 'absolute', [isRTL ? 'left' : 'right']: '12px', top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#9CA3AF', padding: 0, display: 'flex', transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#6B7280'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#9CA3AF'; }}
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
+
+            <button
+              type="submit"
+              disabled={isDisabled}
+              style={{
+                width: '100%', padding: '12px 20px', marginTop: '4px',
+                background: isDisabled ? '#9CA3AF' : '#0D1117',
+                border: 'none', borderRadius: '8px',
+                color: '#FFFFFF', fontSize: '14px', fontWeight: 600,
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                transition: 'background 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+              onMouseEnter={e => { if (!isDisabled) e.currentTarget.style.background = '#1a2230'; }}
+              onMouseLeave={e => { if (!isDisabled) e.currentTarget.style.background = '#0D1117'; }}
+              aria-busy={loading}
+            >
+              {loading && !googleLoading ? (
+                <>
+                  <Spinner size={14} />
+                  {t('auth.signingIn', 'Signing in…')}
+                </>
+              ) : (
+                <>
+                  {t('auth.signIn', 'Sign in')}
+                  <ArrowRight size={15} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '24px', flexWrap: 'wrap', gap: '8px' }}>
+            <p style={{ fontSize: '13px', color: '#6B7280', margin: 0 }}>
+              {t('auth.noAccount', 'No account?')}{' '}
+              <Link to="/register" style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 500 }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#1D4ED8'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#2563EB'; }}
+              >
+                {t('auth.createAccount', 'Register')}
+              </Link>
+            </p>
+            <Link to="/" style={{ fontSize: '12px', color: '#9CA3AF', textDecoration: 'none' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#6B7280'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#9CA3AF'; }}
+            >
+              ← {t('common.backHome', 'Home')}
+            </Link>
           </div>
 
-          {/* Trust signals */}
-          <div className="mt-14 pt-7 border-t border-white/[0.05]">
-            <div className="flex items-center gap-5">
+          {/* Trust */}
+          <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #E8EBF0' }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               {[
                 { icon: '🔒', text: isRTL ? 'اتصال آمن' : 'Secure connection' },
                 { icon: '🛡️', text: isRTL ? 'بياناتك محمية' : 'Data protected' },
-              ].map((item) => (
-                <div key={item.text} className="flex items-center gap-1.5">
-                  <span style={{ fontSize: 11 }}>{item.icon}</span>
-                  <span className="text-[10px] text-white/18 tracking-wide">{item.text}</span>
+              ].map(item => (
+                <div key={item.text} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ fontSize: '11px' }}>{item.icon}</span>
+                  <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{item.text}</span>
                 </div>
               ))}
             </div>
@@ -403,7 +369,17 @@ const Login = () => {
         </div>
       </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin  { to { transform: rotate(360deg); } }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+        @media (min-width: 900px) {
+          .auth-brand-panel { display: flex !important; width: 45%; }
+          .auth-mobile-brand { display: none !important; }
+        }
+        @media (max-width: 899px) {
+          .auth-mobile-brand { display: block !important; }
+        }
+      `}</style>
     </div>
   );
 };

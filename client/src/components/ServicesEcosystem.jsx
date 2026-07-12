@@ -114,7 +114,7 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
         ctx.beginPath();
         ctx.arc(sx(p.x), sy(p.y), Math.max(0.4, sx(p.r)), 0, 6.283);
         ctx.fillStyle = p.gold
-          ? `rgba(212,175,55,${p.a})`
+          ? `rgba(37,99,235,${p.a})`
           : `rgba(147,197,253,${p.a * 0.45})`;
         ctx.fill();
       }
@@ -161,7 +161,7 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
           ctx.arc(px, py, pr, 0, 6.283);
           ctx.fillStyle = p.dir === 1
             ? `rgba(${r},${g},${b},${alpha})`
-            : `rgba(212,175,55,${alpha})`;
+            : `rgba(37,99,235,${alpha})`;
           ctx.fill();
         }
       }
@@ -177,9 +177,9 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
       ctx.globalCompositeOperation = 'lighter';
       const hR = sx(70) + pulse * sx(5.5);
       let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, hR);
-      g.addColorStop(0,    `rgba(212,175,55,${0.11 + pulse * 0.04})`);
-      g.addColorStop(0.38, `rgba(212,175,55,${0.032 + pulse * 0.008})`);
-      g.addColorStop(1,    'rgba(212,175,55,0)');
+      g.addColorStop(0,    `rgba(37,99,235,${0.11 + pulse * 0.04})`);
+      g.addColorStop(0.38, `rgba(37,99,235,${0.032 + pulse * 0.008})`);
+      g.addColorStop(1,    'rgba(37,99,235,0)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(cx, cy, hR, 0, 6.283); ctx.fill();
       ctx.restore();
@@ -195,7 +195,7 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
         ctx.translate(cx, cy);
         ctx.rotate(t * speed);
         ctx.setLineDash([sx(4.2), sx(5.4)]);
-        ctx.strokeStyle = `rgba(212,175,55,${a * (0.78 + pulse * 0.22)})`;
+        ctx.strokeStyle = `rgba(37,99,235,${a * (0.78 + pulse * 0.22)})`;
         ctx.lineWidth   = 0.5;
         ctx.beginPath(); ctx.arc(0, 0, rr + pulse * sx(1.8), 0, 6.283); ctx.stroke();
         ctx.restore();
@@ -208,7 +208,7 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
       g = ctx.createRadialGradient(hx, hy, 0, cx, cy, bR);
       g.addColorStop(0,    'rgba(255,255,255,0.98)');
       g.addColorStop(0.12, 'rgba(255,240,175,0.93)');
-      g.addColorStop(0.32, 'rgba(212,175,55,0.80)');
+      g.addColorStop(0.32, 'rgba(37,99,235,0.80)');
       g.addColorStop(0.62, 'rgba(160,122,30,0.50)');
       g.addColorStop(0.88, 'rgba(100,76,14,0.22)');
       g.addColorStop(1,    'rgba(80,60,10,0)');
@@ -216,8 +216,8 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
 
       // Fresnel rim
       g = ctx.createRadialGradient(cx, cy, bR * 0.60, cx, cy, bR * 1.09);
-      g.addColorStop(0,    'rgba(212,175,55,0)');
-      g.addColorStop(0.68, `rgba(212,175,55,${0.11 + pulse * 0.05})`);
+      g.addColorStop(0,    'rgba(37,99,235,0)');
+      g.addColorStop(0.68, `rgba(37,99,235,${0.11 + pulse * 0.05})`);
       g.addColorStop(1,    `rgba(255,220,100,${0.24 + pulse * 0.07})`);
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, bR * 1.09, 0, 6.283); ctx.fill();
 
@@ -231,10 +231,10 @@ const ServicesEcosystem = memo(function ServicesEcosystem() {
       const fs1 = Math.max(7, Math.round(sx(9.0)));
       const fs2 = Math.max(5, Math.round(sx(6.2)));
       ctx.font      = `700 ${fs1}px 'Inter',system-ui,sans-serif`;
-      ctx.fillStyle = `rgba(212,175,55,${0.80 + pulse * 0.12})`;
+      ctx.fillStyle = `rgba(37,99,235,${0.80 + pulse * 0.12})`;
       ctx.fillText('YANSY', cx, cy + bR + sx(6.5));
       ctx.font      = `400 ${fs2}px 'Inter',system-ui,sans-serif`;
-      ctx.fillStyle = `rgba(212,175,55,${0.42 + pulse * 0.08})`;
+      ctx.fillStyle = `rgba(37,99,235,${0.42 + pulse * 0.08})`;
       ctx.fillText('ENGINE', cx, cy + bR + fs1 + sx(7.5));
     };
 

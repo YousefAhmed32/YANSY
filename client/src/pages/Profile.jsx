@@ -15,7 +15,7 @@ import { gsap } from 'gsap';
 // ── Field Component ───────────────────────────────────────────────────────────
 const Field = ({ label, value, onChange, type = 'text', placeholder, required, icon: Icon, isDark, readOnly, hint }) => {
   const border    = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-  const focusBorder = 'rgba(212,175,55,0.5)';
+  const focusBorder = 'rgba(37,99,235,0.5)';
   const bg        = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
   const textMain  = isDark ? '#f5f5f0' : '#0a0a0a';
   const textMuted = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
@@ -31,7 +31,7 @@ const Field = ({ label, value, onChange, type = 'text', placeholder, required, i
       }}>
         {Icon && <Icon style={{ width: '11px', height: '11px' }} />}
         {label}
-        {required && <span style={{ color: '#d4af37' }}>*</span>}
+        {required && <span style={{ color: '#2563EB' }}>*</span>}
       </label>
       <input
         type={type}
@@ -69,7 +69,7 @@ const Section = ({ title, icon: Icon, children, isDark }) => {
   const surface  = isDark ? 'rgba(255,255,255,0.04)' : '#ffffff';
   const border   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
   const textMain = isDark ? '#f5f5f0' : '#0a0a0a';
-  const gold     = '#d4af37';
+  const gold     = '#2563EB';
 
   return (
     <div style={{
@@ -127,7 +127,7 @@ const Profile = () => {
   const border   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
   const textMain = isDark ? '#f5f5f0' : '#0a0a0a';
   const textMuted = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
-  const gold     = '#d4af37';
+  const gold     = '#2563EB';
 
   useEffect(() => {
     if (containerRef.current) {
@@ -212,8 +212,8 @@ const Profile = () => {
             {/* Avatar */}
             <div style={{
               width: '56px', height: '56px', borderRadius: '50%',
-              background: 'linear-gradient(135deg,rgba(212,175,55,0.3),rgba(212,175,55,0.06))',
-              border: '2px solid rgba(212,175,55,0.3)',
+              background: 'linear-gradient(135deg,rgba(37,99,235,0.3),rgba(37,99,235,0.06))',
+              border: '2px solid rgba(37,99,235,0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '22px', fontWeight: 600, color: gold,
               fontFamily: "'Inter',system-ui,sans-serif",
@@ -309,8 +309,8 @@ const Profile = () => {
             style={{
               display: 'flex', alignItems: 'center', gap: '8px',
               padding: '11px 22px',
-              background: saving ? 'rgba(212,175,55,0.08)' : 'rgba(212,175,55,0.1)',
-              border: '1px solid rgba(212,175,55,0.35)',
+              background: saving ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.1)',
+              border: '1px solid rgba(37,99,235,0.35)',
               borderRadius: '8px',
               color: gold, fontSize: '11px',
               fontWeight: 400, letterSpacing: '0.1em',
@@ -318,7 +318,7 @@ const Profile = () => {
               transition: 'all 0.2s', opacity: saving ? 0.7 : 1,
             }}
             onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = gold; e.currentTarget.style.color = '#000'; } }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.1)'; e.currentTarget.style.color = gold; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.1)'; e.currentTarget.style.color = gold; }}
           >
             <Save style={{ width: '14px', height: '14px' }} />
             {saving ? 'Saving…' : 'Save Profile'}
@@ -383,7 +383,7 @@ const Profile = () => {
                   textTransform: 'uppercase', cursor: savingPw ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s', opacity: savingPw ? 0.7 : 1,
                 }}
-                onMouseEnter={e => { if (!savingPw) { e.currentTarget.style.borderColor = 'rgba(212,175,55,0.4)'; e.currentTarget.style.color = gold; } }}
+                onMouseEnter={e => { if (!savingPw) { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; e.currentTarget.style.color = gold; } }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.color = textMuted; }}
               >
                 <Key style={{ width: '13px', height: '13px' }} />

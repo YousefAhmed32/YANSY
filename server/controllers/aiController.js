@@ -232,7 +232,7 @@ exports.generateProposal = async (req, res, next) => {
     }
 
     // Use streaming for proposals (they're long)
-    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 

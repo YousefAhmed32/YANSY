@@ -152,7 +152,7 @@ const FeedbackForm = () => {
         {/* Back Link */}
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-white/60 hover:text-[#d4af37] transition-colors duration-300 mb-8 group"
+          className="inline-flex items-center gap-2 text-white/60 hover:text-[#2563EB] transition-colors duration-300 mb-8 group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="text-sm font-light tracking-wide uppercase">{t('feedback.backToHome')}</span>
@@ -186,7 +186,7 @@ const FeedbackForm = () => {
                   value="general"
                   checked={formData.feedbackType === 'general'}
                   onChange={(e) => setFormData(prev => ({ ...prev, feedbackType: e.target.value, projectId: '' }))}
-                  className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2"
+                  className="w-4 h-4 text-[#2563EB] bg-white/5 border-white/20 focus:ring-[#2563EB] focus:ring-2"
                 />
                 <span className="text-white/70 group-hover:text-white transition-colors">{t('feedback.generalFeedback')}</span>
               </label>
@@ -198,7 +198,7 @@ const FeedbackForm = () => {
                   checked={formData.feedbackType === 'project'}
                   onChange={(e) => setFormData(prev => ({ ...prev, feedbackType: e.target.value }))}
                   disabled={!isAuthenticated || projects.length === 0}
-                  className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2 disabled:opacity-50"
+                  className="w-4 h-4 text-[#2563EB] bg-white/5 border-white/20 focus:ring-[#2563EB] focus:ring-2 disabled:opacity-50"
                 />
                 <span className={`${!isAuthenticated || projects.length === 0 ? 'text-white/30' : 'text-white/70'} group-hover:text-white transition-colors`}>
                   {t('feedback.projectFeedback')}
@@ -221,7 +221,7 @@ const FeedbackForm = () => {
               <select
                 value={formData.projectId}
                 onChange={(e) => setFormData(prev => ({ ...prev, projectId: e.target.value }))}
-                className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500"
+                className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
               >
                 <option value="">{t('feedback.selectProjectPlaceholder')}</option>
                 {projects.map(project => (
@@ -248,7 +248,7 @@ const FeedbackForm = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     disabled={formData.isAnonymous}
                     placeholder={t('feedback.namePlaceholder')}
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500 disabled:opacity-50"
+                    className="w-full pl-12 pr-4 py-3 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500 disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -257,7 +257,7 @@ const FeedbackForm = () => {
                   type="checkbox"
                   checked={formData.isAnonymous}
                   onChange={(e) => setFormData(prev => ({ ...prev, isAnonymous: e.target.checked, name: '' }))}
-                  className="w-4 h-4 text-[#d4af37] bg-white/5 border-white/20 focus:ring-[#d4af37] focus:ring-2"
+                  className="w-4 h-4 text-[#2563EB] bg-white/5 border-white/20 focus:ring-[#2563EB] focus:ring-2"
                 />
                 <span className="text-white/70 group-hover:text-white transition-colors">
                   {t('feedback.anonymous')}
@@ -316,7 +316,7 @@ const FeedbackForm = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, reviewText: e.target.value }))}
                 rows={6}
                 placeholder={t('feedback.reviewPlaceholder')}
-                className="w-full pl-12 pr-4 py-4 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#d4af37] transition-colors duration-500 resize-none"
+                className="w-full pl-12 pr-4 py-4 bg-white/5 border-b border-white/20 text-white placeholder-white/30 font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500 resize-none"
               />
             </div>
           </div>
@@ -327,15 +327,15 @@ const FeedbackForm = () => {
               type="submit"
               disabled={loading || !allRatingsComplete}
               className={`
-                px-8 py-4 border border-[#d4af37] text-[#d4af37] text-sm font-light tracking-widest uppercase
-                hover:bg-[#d4af37] hover:text-black transition-all duration-500
-                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#d4af37]
+                px-8 py-4 border border-[#2563EB] text-[#2563EB] text-sm font-light tracking-widest uppercase
+                hover:bg-[#2563EB] hover:text-black transition-all duration-500
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#2563EB]
                 flex items-center gap-3
               `}
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin"></div>
                   {t('feedback.submitting')}
                 </>
               ) : (

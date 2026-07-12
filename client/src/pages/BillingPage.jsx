@@ -16,11 +16,11 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const PLAN_ICONS  = { FREE: Star, PROFESSIONAL: Zap, ENTERPRISE: Crown };
 const STATUS_CFG  = {
-  trialing:   { label: 'Trial',      color: '#d4af37', bg: 'rgba(212,175,55,0.1)' },
+  trialing:   { label: 'Trial',      color: '#2563EB', bg: 'rgba(37,99,235,0.1)' },
   active:     { label: 'Active',     color: '#34d399', bg: 'rgba(52,211,153,0.1)' },
   past_due:   { label: 'Past Due',   color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
   cancelled:  { label: 'Cancelled',  color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
-  free:       { label: 'Free',       color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.06)' },
+  free:       { label: 'Free',       color: 'rgba(255,255,255,0.4)', bg: 'rgba(0,0,0,0.04)' },
   paused:     { label: 'Paused',     color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
   incomplete: { label: 'Incomplete', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
 };
@@ -45,7 +45,7 @@ const BillingPage = () => {
   const [cancelConfirm,  setCancelConfirm]  = useState(false);
   const [successMsg,     setSuccessMsg]     = useState('');
 
-  const gold      = '#d4af37';
+  const gold      = '#2563EB';
   const bg        = isDark ? '#080806' : '#fafaf9';
   const surface   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
   const border    = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
@@ -144,10 +144,10 @@ const BillingPage = () => {
       )}
 
       {/* Current plan card */}
-      <div style={{ padding: '24px', background: surface, border: `1px solid ${currentPlan !== 'FREE' ? 'rgba(212,175,55,0.2)' : border}`, borderRadius: '12px', marginBottom: '20px' }}>
+      <div style={{ padding: '24px', background: surface, border: `1px solid ${currentPlan !== 'FREE' ? 'rgba(37,99,235,0.2)' : border}`, borderRadius: '12px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Icon style={{ width: '22px', height: '22px', color: gold }} />
             </div>
             <div>
@@ -273,7 +273,7 @@ const BillingPage = () => {
               const isCurrentPlan = plan.name === currentPlan;
 
               return (
-                <div key={plan._id} style={{ padding: '20px', background: isPro ? 'rgba(212,175,55,0.06)' : isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isPro ? 'rgba(212,175,55,0.25)' : border}`, borderRadius: '10px' }}>
+                <div key={plan._id} style={{ padding: '20px', background: isPro ? 'rgba(37,99,235,0.06)' : isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isPro ? 'rgba(37,99,235,0.25)' : border}`, borderRadius: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                     <PIcon style={{ width: '16px', height: '16px', color: isPro ? gold : textMuted }} />
                     <span style={{ fontSize: '13px', fontWeight: 300, color: textMain }}>{plan.displayName}</span>
@@ -330,7 +330,7 @@ const BillingPage = () => {
 
         {historyLoading ? (
           <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid rgba(212,175,55,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
           </div>
         ) : history.invoices.length === 0 ? (
           <p style={{ fontSize: '12px', color: textMuted, textAlign: 'center', padding: '20px 0' }}>

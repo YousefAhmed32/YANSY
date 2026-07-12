@@ -41,7 +41,7 @@ const AddProject = () => {
     { value: '500-1000', label: t('projectForm.budgetOptions.500to1000'), icon: '🚀', color: 'from-purple-500/20 to-purple-600/5' },
     { value: '1000-3000', label: t('projectForm.budgetOptions.1000to3000'), icon: '⭐', color: 'from-yellow-500/20 to-yellow-600/5' },
     { value: '3000-10000', label: t('projectForm.budgetOptions.3000to10000'), icon: '💎', color: 'from-cyan-500/20 to-cyan-600/5' },
-    { value: '10000-plus', label: t('projectForm.budgetOptions.10000plus'), icon: '👑', color: 'from-[#d4af37]/20 to-[#f4d03f]/5' }
+    { value: '10000-plus', label: t('projectForm.budgetOptions.10000plus'), icon: '👑', color: 'from-[#2563EB]/20 to-[#f4d03f]/5' }
   ];
 
   const companySizeOptions = [
@@ -213,7 +213,7 @@ const AddProject = () => {
         dir={dir}
       >
         {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/10 via-transparent to-[#d4af37]/5 animate-gradient-shift" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/10 via-transparent to-[#2563EB]/5 animate-gradient-shift" />
         
         {/* Celebration particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -238,11 +238,11 @@ const AddProject = () => {
             {/* Success icon with multiple animations */}
             <div className="relative w-28 h-28 mx-auto mb-10">
               {/* Outer rings */}
-              <div className="absolute inset-0 rounded-full bg-[#d4af37]/20 animate-ping" />
-              <div className="absolute inset-0 rounded-full bg-[#d4af37]/10 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute inset-0 rounded-full bg-[#2563EB]/20 animate-ping" />
+              <div className="absolute inset-0 rounded-full bg-[#2563EB]/10 animate-pulse" style={{ animationDelay: '0.5s' }} />
               
               {/* Main icon */}
-              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#d4af37] via-[#f4d03f] to-[#d4af37] flex items-center justify-center shadow-2xl shadow-[#d4af37]/50 animate-scale-in">
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#2563EB] via-[#f4d03f] to-[#2563EB] flex items-center justify-center shadow-2xl shadow-[#2563EB]/50 animate-scale-in">
                 <Check className="w-14 h-14 text-black animate-check-draw" strokeWidth={3} />
               </div>
 
@@ -257,7 +257,7 @@ const AddProject = () => {
                     transform: `rotate(${i * 45}deg) translate(60px) rotate(-${i * 45}deg)`,
                   }}
                 >
-                  <Sparkles className="w-4 h-4 text-[#d4af37] animate-sparkle" style={{ animationDelay: `${i * 0.1}s` }} />
+                  <Sparkles className="w-4 h-4 text-[#2563EB] animate-sparkle" style={{ animationDelay: `${i * 0.1}s` }} />
                 </div>
               ))}
             </div>
@@ -274,12 +274,12 @@ const AddProject = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-white/60 mb-8 animate-fade-in-up-delay-2">
               <div className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full backdrop-blur-sm">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <Rocket className="w-5 h-5 text-[#d4af37]" />
+                <Rocket className="w-5 h-5 text-[#2563EB]" />
                 <span>Project Created</span>
               </div>
               <div className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full backdrop-blur-sm">
                 <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }} />
-                <Zap className="w-5 h-5 text-[#d4af37]" />
+                <Zap className="w-5 h-5 text-[#2563EB]" />
                 <span>Team Notified</span>
               </div>
             </div>
@@ -302,7 +302,7 @@ const AddProject = () => {
     >
       {/* Enhanced animated background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 via-transparent to-[#d4af37]/5 animate-gradient-slow" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/5 via-transparent to-[#2563EB]/5 animate-gradient-slow" />
         <div 
           className="absolute inset-0 opacity-[0.02]"
           style={{
@@ -313,7 +313,7 @@ const AddProject = () => {
         {[...Array(8)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-[#d4af37]/20 rounded-full animate-float-particles"
+            className="absolute w-1 h-1 bg-[#2563EB]/20 rounded-full animate-float-particles"
             style={{
               left: `${10 + i * 12}%`,
               top: `${5 + (i % 3) * 30}%`,
@@ -377,8 +377,8 @@ const AddProject = () => {
             {/* Icon with glow */}
             <div className="mb-8 flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-[#d4af37]/20 blur-2xl rounded-full animate-pulse" />
-                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#d4af37] to-[#f4d03f] flex items-center justify-center shadow-xl shadow-[#d4af37]/30 rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="absolute inset-0 bg-[#2563EB]/20 blur-2xl rounded-full animate-pulse" />
+                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#f4d03f] flex items-center justify-center shadow-xl shadow-[#2563EB]/30 rotate-3 hover:rotate-0 transition-transform duration-500">
                   <Plus className="w-10 h-10 text-black" strokeWidth={2.5} />
                 </div>
               </div>
@@ -400,7 +400,7 @@ const AddProject = () => {
           <div className="relative h-2 bg-white/5 rounded-full mb-8 overflow-hidden">
             <div 
               ref={progressBarRef}
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#d4af37] via-[#f4d03f] to-[#d4af37] rounded-full transition-all duration-500 shadow-lg shadow-[#d4af37]/50"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563EB] via-[#f4d03f] to-[#2563EB] rounded-full transition-all duration-500 shadow-lg shadow-[#2563EB]/50"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             >
               <div className="absolute inset-0 bg-white/30 animate-shimmer" />
@@ -415,7 +415,7 @@ const AddProject = () => {
                   ref={el => stepRefs.current[step - 1] = el}
                   className={`relative group w-14 h-14 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-500 ${
                     currentStep >= step
-                      ? 'bg-gradient-to-br from-[#d4af37] to-[#f4d03f] text-black scale-110 shadow-xl shadow-[#d4af37]/50'
+                      ? 'bg-gradient-to-br from-[#2563EB] to-[#f4d03f] text-black scale-110 shadow-xl shadow-[#2563EB]/50'
                       : 'bg-white/5 text-white/40 scale-100'
                   }`}
                 >
@@ -428,14 +428,14 @@ const AddProject = () => {
                   {/* Pulse for current step */}
                   {currentStep === step && (
                     <>
-                      <div className="absolute inset-0 rounded-full bg-[#d4af37]/30 animate-ping" />
-                      <div className="absolute inset-0 rounded-full bg-[#d4af37]/20 animate-pulse" />
+                      <div className="absolute inset-0 rounded-full bg-[#2563EB]/30 animate-ping" />
+                      <div className="absolute inset-0 rounded-full bg-[#2563EB]/20 animate-pulse" />
                     </>
                   )}
 
                   {/* Checkmark trail */}
                   {currentStep > step && (
-                    <div className="absolute inset-0 rounded-full border-2 border-[#d4af37] animate-expand-fade" />
+                    <div className="absolute inset-0 rounded-full border-2 border-[#2563EB] animate-expand-fade" />
                   )}
                 </div>
                 {step < 3 && (
@@ -458,15 +458,15 @@ const AddProject = () => {
           className="relative bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-10 lg:p-14 shadow-2xl overflow-hidden"
         >
           {/* Decorative corner elements */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 blur-3xl rounded-full" />
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#d4af37]/5 blur-3xl rounded-full" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/5 blur-3xl rounded-full" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#2563EB]/5 blur-3xl rounded-full" />
 
           {/* Floating particles inside form */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="absolute w-1.5 h-1.5 bg-[#d4af37]/20 rounded-full animate-float-slow"
+                className="absolute w-1.5 h-1.5 bg-[#2563EB]/20 rounded-full animate-float-slow"
                 style={{
                   left: `${15 + i * 15}%`,
                   top: `${10 + (i % 2) * 40}%`,
@@ -482,8 +482,8 @@ const AddProject = () => {
               <div className="space-y-6">
                 <div>
                   <label className="block text-lg font-light text-white/90 mb-8 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#d4af37]/10 flex items-center justify-center">
-                      <MessageCircle className="w-5 h-5 text-[#d4af37]" />
+                    <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center">
+                      <MessageCircle className="w-5 h-5 text-[#2563EB]" />
                     </div>
                     {t('projectForm.steps.clientType.title')}
                   </label>
@@ -510,20 +510,20 @@ const AddProject = () => {
                         onMouseLeave={() => setHoveredOption(null)}
                         className={`group relative p-8 border-2 rounded-2xl text-left transition-all duration-300 transform overflow-hidden ${
                           formData.clientType === option.type
-                            ? 'border-[#d4af37] bg-gradient-to-br from-[#d4af37]/20 to-[#d4af37]/5 scale-105 shadow-xl shadow-[#d4af37]/20'
+                            ? 'border-[#2563EB] bg-gradient-to-br from-[#2563EB]/20 to-[#2563EB]/5 scale-105 shadow-xl shadow-[#2563EB]/20'
                             : 'border-white/10 hover:border-white/30 hover:bg-white/5 hover:scale-102'
                         }`}
                       >
                         {/* Background glow */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${
                           formData.clientType === option.type 
-                            ? 'from-[#d4af37]/10 to-transparent opacity-100' 
+                            ? 'from-[#2563EB]/10 to-transparent opacity-100' 
                             : 'from-white/5 to-transparent opacity-0 group-hover:opacity-100'
                         } transition-opacity duration-300`} />
 
                         {/* Selection indicator */}
                         {formData.clientType === option.type && (
-                          <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#d4af37] rounded-full flex items-center justify-center shadow-lg animate-scale-in">
+                          <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#2563EB] rounded-full flex items-center justify-center shadow-lg animate-scale-in">
                             <Check className="w-5 h-5 text-black" strokeWidth={3} />
                           </div>
                         )}
@@ -563,8 +563,8 @@ const AddProject = () => {
                 <div>
                   <label htmlFor="projectDescription" className="block text-lg font-light text-white/90 mb-5 flex items-center justify-between">
                     <span className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#d4af37]/10 flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-[#d4af37]" />
+                      <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-[#2563EB]" />
                       </div>
                       {t('projectForm.steps.projectDescription.title')}
                     </span>
@@ -582,19 +582,19 @@ const AddProject = () => {
                       value={formData.projectDescription}
                       onChange={(e) => handleChange('projectDescription', e.target.value)}
                       rows={9}
-                      className="w-full px-6 py-5 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all resize-none group-hover:border-white/20"
+                      className="w-full px-6 py-5 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-white/30 focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all resize-none group-hover:border-white/20"
                       placeholder={t('projectForm.steps.projectDescription.placeholder')}
                     />
                     {/* Typing indicator */}
                     {formData.projectDescription && (
                       <div className="absolute bottom-5 right-5 flex gap-1.5 bg-black/50 px-3 py-2 rounded-full backdrop-blur-sm">
-                        <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                        <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                        <div className="w-2 h-2 bg-[#d4af37] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                        <div className="w-2 h-2 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                        <div className="w-2 h-2 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                        <div className="w-2 h-2 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
                       </div>
                     )}
                     {/* Focus glow */}
-                    <div className="absolute inset-0 rounded-2xl bg-[#d4af37]/5 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="absolute inset-0 rounded-2xl bg-[#2563EB]/5 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
                   </div>
                   {errors.projectDescription && (
                     <p className="mt-4 text-sm text-red-400 flex items-center gap-2 animate-shake">
@@ -606,7 +606,7 @@ const AddProject = () => {
 
                 <div>
                   <label htmlFor="budgetRange" className="block text-lg font-light text-white/90 mb-6 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#d4af37]/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#2563EB]/10 flex items-center justify-center">
                       <span className="text-2xl">💰</span>
                     </div>
                     {t('projectForm.steps.budget.title')}
@@ -619,7 +619,7 @@ const AddProject = () => {
                         onClick={() => handleChange('budgetRange', option.value)}
                         className={`group relative px-7 py-5 border-2 rounded-xl text-left transition-all duration-300 transform overflow-hidden ${
                           formData.budgetRange === option.value
-                            ? 'border-[#d4af37] bg-gradient-to-r from-[#d4af37]/20 to-[#d4af37]/5 scale-102 shadow-lg shadow-[#d4af37]/10'
+                            ? 'border-[#2563EB] bg-gradient-to-r from-[#2563EB]/20 to-[#2563EB]/5 scale-102 shadow-lg shadow-[#2563EB]/10'
                             : 'border-white/10 hover:border-white/30 hover:bg-white/5'
                         }`}
                       >
@@ -636,7 +636,7 @@ const AddProject = () => {
                             </span>
                           </div>
                           {formData.budgetRange === option.value && (
-                            <div className="w-6 h-6 bg-[#d4af37] rounded-full flex items-center justify-center animate-scale-in">
+                            <div className="w-6 h-6 bg-[#2563EB] rounded-full flex items-center justify-center animate-scale-in">
                               <Check className="w-4 h-4 text-black" strokeWidth={3} />
                             </div>
                           )}
@@ -659,10 +659,10 @@ const AddProject = () => {
               <div className="space-y-7">
                 {/* Pre-filled user info display */}
                 <div className="relative p-6 bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-2xl overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 blur-3xl" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/10 blur-3xl" />
                   <div className="relative">
                     <div className="text-xs font-light text-white/50 uppercase tracking-widest mb-5 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full" />
+                      <div className="w-1.5 h-1.5 bg-[#2563EB] rounded-full" />
                       {t('projectForm.steps.contact.accountInfo')}
                     </div>
                     <div className="space-y-4 text-sm md:text-base font-light text-white/80">
@@ -690,7 +690,7 @@ const AddProject = () => {
                     id="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                    className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all hover:border-white/20"
+                    className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all hover:border-white/20"
                     placeholder={t('projectForm.steps.contact.phoneNumberPlaceholder')}
                   />
                   {errors.phoneNumber && (
@@ -712,7 +712,7 @@ const AddProject = () => {
                         id="companyName"
                         value={formData.companyName}
                         onChange={(e) => handleChange('companyName', e.target.value)}
-                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all hover:border-white/20"
+                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all hover:border-white/20"
                         placeholder={t('projectForm.steps.contact.companyNamePlaceholder')}
                       />
                       {errors.companyName && (
@@ -731,7 +731,7 @@ const AddProject = () => {
                         id="companySize"
                         value={formData.companySize}
                         onChange={(e) => handleChange('companySize', e.target.value)}
-                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all cursor-pointer hover:border-white/20"
+                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all cursor-pointer hover:border-white/20"
                       >
                         <option value="" className="bg-black">{t('projectForm.steps.contact.companySizeSelect')}</option>
                         {companySizeOptions.map(option => (
@@ -777,7 +777,7 @@ const AddProject = () => {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#d4af37]/30 hover:shadow-xl hover:shadow-[#d4af37]/50 hover:scale-105"
+                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105"
                 >
                   <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   <span className="relative">{t('projectForm.navigation.next')}</span>
@@ -787,7 +787,7 @@ const AddProject = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#d4af37]/30 hover:shadow-xl hover:shadow-[#d4af37]/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {loading && (
                     <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />

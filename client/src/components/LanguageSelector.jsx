@@ -143,7 +143,7 @@ const LanguageSelector = () => {
     textMuted:   isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
     textMain:    isDark ? '#ffffff'               : '#0a0a0a',
     rowHover:    isDark ? 'rgba(255,255,255,0.05)': 'rgba(0,0,0,0.04)',
-    selectedBg:  isDark ? 'rgba(212,175,55,0.08)' : 'rgba(212,175,55,0.07)',
+    selectedBg:  isDark ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.07)',
     subText:     isDark ? 'rgba(255,255,255,0.35)': 'rgba(0,0,0,0.35)',
     triggerBorder: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
     sheetHandle: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
@@ -177,7 +177,7 @@ const LanguageSelector = () => {
           position: 'absolute',
           left: 0, top: 0, bottom: 0,
           width: '2px',
-          background: '#d4af37',
+          background: '#2563EB',
           opacity: selected ? 1 : 0,
           transition: 'opacity 0.2s',
         }} />
@@ -205,7 +205,7 @@ const LanguageSelector = () => {
           width: isMobile ? '22px' : '18px',
           height: isMobile ? '22px' : '18px',
           borderRadius: '50%',
-          background: selected ? '#d4af37' : 'transparent',
+          background: selected ? '#2563EB' : 'transparent',
           border: selected ? 'none' : `1px solid ${tk.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
@@ -230,16 +230,16 @@ const LanguageSelector = () => {
             gap: '6px',
             padding: '8px 12px',
             background: 'transparent',
-            border: `1px solid ${isOpen ? 'rgba(212,175,55,0.5)' : tk.triggerBorder}`,
+            border: `1px solid ${isOpen ? 'rgba(37,99,235,0.5)' : tk.triggerBorder}`,
             borderRadius: '6px',
             cursor: 'pointer',
-            color: isOpen ? '#d4af37' : tk.textMuted,
+            color: isOpen ? '#2563EB' : tk.textMuted,
             transition: 'all 0.25s',
             position: 'relative',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = '#d4af37';
-            e.currentTarget.style.borderColor = 'rgba(212,175,55,0.4)';
+            e.currentTarget.style.color = '#2563EB';
+            e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)';
           }}
           onMouseLeave={(e) => {
             if (!isOpen) {
@@ -261,7 +261,7 @@ const LanguageSelector = () => {
           {/* Gold underline */}
           <span style={{
             position: 'absolute', bottom: '-1px', left: '50%', transform: 'translateX(-50%)',
-            height: '1px', background: '#d4af37',
+            height: '1px', background: '#2563EB',
             width: isOpen ? '60%' : '0%',
             transition: 'width 0.3s ease',
           }} />
@@ -281,7 +281,7 @@ const LanguageSelector = () => {
               border: `1px solid ${tk.border}`,
               borderRadius: '8px',
               boxShadow: isDark
-                ? '0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,175,55,0.08)'
+                ? '0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(37,99,235,0.08)'
                 : '0 20px 60px rgba(0,0,0,0.15)',
               overflow: 'hidden',
               opacity: 0,
@@ -294,7 +294,7 @@ const LanguageSelector = () => {
               borderBottom: `1px solid ${tk.border}`,
               background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
             }}>
-              <p style={{ fontSize: '9px', letterSpacing: '0.25em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase' }}>
+              <p style={{ fontSize: '9px', letterSpacing: '0.25em', color: 'rgba(37,99,235,0.7)', textTransform: 'uppercase' }}>
                 {t('common.language', 'Language')}
               </p>
             </div>
@@ -346,7 +346,7 @@ const LanguageSelector = () => {
               borderRadius: '20px 20px 0 0',
               borderTop: `1px solid ${tk.border}`,
               boxShadow: isDark
-                ? '0 -20px 60px rgba(0,0,0,0.9), 0 -1px 0 rgba(212,175,55,0.15)'
+                ? '0 -20px 60px rgba(0,0,0,0.9), 0 -1px 0 rgba(37,99,235,0.15)'
                 : '0 -20px 60px rgba(0,0,0,0.15)',
               transform: 'translateY(100%)',
               overflow: 'hidden',
@@ -364,10 +364,10 @@ const LanguageSelector = () => {
               borderBottom: `1px solid ${tk.border}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Globe style={{ width: '16px', height: '16px', color: '#d4af37' }} />
+                <Globe style={{ width: '16px', height: '16px', color: '#2563EB' }} />
                 <span style={{
                   fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase',
-                  color: 'rgba(212,175,55,0.8)', fontWeight: 300,
+                  color: 'rgba(37,99,235,0.8)', fontWeight: 300,
                 }}>
                   {t('common.language', 'Language')}
                 </span>

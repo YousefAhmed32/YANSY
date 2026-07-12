@@ -2,8 +2,8 @@
 // Emoji replaced with clean step numbers, color system preserved
 
 const COLORS = [
-  '#d4af37', '#c9a227', '#b8911f', '#a07c18',
-  '#8a6810', '#d4af37', '#c9a227', '#b8911f',
+  '#2563EB', '#c9a227', '#b8911f', '#a07c18',
+  '#8a6810', '#2563EB', '#c9a227', '#b8911f',
 ];
 
 const BASE_STEPS = [

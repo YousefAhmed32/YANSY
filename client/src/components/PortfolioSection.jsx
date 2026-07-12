@@ -1,435 +1,327 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ArrowUpRight } from 'lucide-react';
 import api from '../utils/api';
 
-gsap.registerPlugin(ScrollTrigger);
-
-// ── Helper ───────────────────────────────────────────────────────────────────
 const API_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE || '';
-const getImageUrl = (id) => {
+const getImageUrl = id => {
   if (!id) return '';
   if (typeof id === 'string' && (id.startsWith('http') || id.startsWith('data:'))) return id;
   return `${API_URL_IMAGE}/api/portfolio/image/${id}`;
 };
 
-// ── Skeleton Card ─────────────────────────────────────────────────────────────
-const SkeletonCard = () => (
-  <div className="rounded-2xl overflow-hidden border border-white/5 bg-white/[0.02]">
-    <div className="aspect-[4/3] bg-white/[0.04] animate-pulse" />
-    <div className="p-5 space-y-3">
-      <div className="h-3 w-1/3 bg-white/[0.06] rounded animate-pulse" />
-      <div className="h-5 w-2/3 bg-white/[0.08] rounded animate-pulse" />
-      <div className="flex gap-2 mt-4">
-        {[1,2,3].map(i => (
-          <div key={i} className="h-5 w-14 bg-white/[0.05] rounded animate-pulse" />
-        ))}
+const SkeletonCard = ({ wide }) => (
+  <div style={{
+    borderRadius: 16, overflow: 'hidden',
+    background: '#FFFFFF', border: '1px solid #E8EBF0',
+    gridColumn: wide ? 'span 2' : 'span 1',
+  }}>
+    <div style={{ aspectRatio: wide ? '16/9' : '4/3', background: '#F0F2F5' }} className="skeleton" />
+    <div style={{ padding: 'clamp(18px, 2.5vw, 28px)' }}>
+      <div style={{ height: 8, width: '22%', background: '#E8EBF0', borderRadius: 4, marginBottom: 12 }} />
+      <div style={{ height: 18, width: '55%', background: '#E8EBF0', borderRadius: 6, marginBottom: 10 }} />
+      <div style={{ height: 13, width: '80%', background: '#F0F2F5', borderRadius: 4, marginBottom: 16 }} />
+      <div style={{ display: 'flex', gap: 8 }}>
+        {[1,2,3].map(i => <div key={i} style={{ height: 22, width: 52, background: '#F0F2F5', borderRadius: 100 }} />)}
       </div>
     </div>
   </div>
 );
 
-// ── Project Card ──────────────────────────────────────────────────────────────
-const ProjectCard = ({ project, index, isRTL, cardRef }) => {
+const ProjectCard = ({ project, isRTL, isFeatured }) => {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [hovered, setHovered] = useState(false);
-
-  // 🌍 language handling (احترافي)
-  const title =
-    isRTL
-      ? project.titleAr || project.title
-      : project.title || project.titleAr;
-
-  const description =
-    isRTL
-      ? project.descriptionAr || project.description
-      : project.description || project.descriptionAr;
-
-  // ✂️ قص الوصف بشكل آمن
-  const shortDescription = description?.slice(0, 100);
-
-  const isFeatured = index === 0;
+  const title       = isRTL ? (project.titleAr || project.title) : (project.title || project.titleAr);
+  const description = isRTL ? (project.descriptionAr || project.description) : (project.description || project.descriptionAr);
 
   return (
     <Link
       to={`/portfolio/${project._id}`}
-      ref={cardRef}
-      className={`group relative block rounded-2xl overflow-hidden border border-white/[0.07] bg-black
-        transition-all duration-700 ease-out
-        hover:border-[#d4af37]/40 hover:shadow-[0_0_60px_-10px_rgba(212,175,55,0.25)]
-        ${isFeatured ? 'sm:col-span-2 lg:col-span-2' : ''}
-      `}
+      style={{
+        display: 'block',
+        borderRadius: 16,
+        overflow: 'hidden',
+        background: '#FFFFFF',
+        border: `1px solid ${hovered ? '#C9CDD6' : '#E8EBF0'}`,
+        textDecoration: 'none',
+        gridColumn: isFeatured ? 'span 2' : 'span 1',
+        boxShadow: hovered ? '0 12px 40px rgba(0,0,0,0.09)' : '0 1px 3px rgba(0,0,0,0.04)',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        transition: 'box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1)',
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Image */}
-      <div className={`relative overflow-hidden bg-white/[0.03] ${isFeatured ? 'aspect-[16/9]' : 'aspect-[4/3]'}`}>
-
+      <div style={{
+        position: 'relative',
+        aspectRatio: isFeatured ? '21/9' : '4/3',
+        background: '#F6F7F9',
+        overflow: 'hidden',
+      }}>
         {!imgLoaded && (
-          <div className="absolute inset-0 bg-white/[0.04] animate-pulse" />
+          <div style={{ position: 'absolute', inset: 0, background: '#F0F2F5' }} className="skeleton" />
         )}
-
         <img
           src={getImageUrl(project.coverImage)}
           alt={title}
           loading="lazy"
           onLoad={() => setImgLoaded(true)}
-          className="w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.08]"
-          style={{ opacity: imgLoaded ? 1 : 0 }}
-        />
-
-        {/* Overlay */}
-        <div
-          className="absolute inset-0 transition-opacity duration-500"
           style={{
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
-            opacity: hovered ? 1 : 0.6,
+            width: '100%', height: '100%', objectFit: 'cover',
+            opacity: imgLoaded ? 1 : 0,
+            transform: hovered ? 'scale(1.04)' : 'scale(1)',
+            transition: 'opacity 0.35s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)',
+            display: 'block',
           }}
         />
 
-        {/* Category */}
-        <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'}`}>
-          <span className="text-[9px] tracking-[0.35em] uppercase px-3 py-1.5 border border-[#d4af37]/40 text-[#d4af37] bg-black/60">
+        {/* Category badge */}
+        {project.category && (
+          <span style={{
+            position: 'absolute', top: 14,
+            [isRTL ? 'right' : 'left']: 14,
+            fontSize: 10, fontWeight: 700, color: '#0D1117',
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(0,0,0,0.08)',
+            padding: '3px 10px', borderRadius: '100px',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+          }}>
             {project.category}
           </span>
+        )}
+
+        {/* View arrow on hover */}
+        <div style={{
+          position: 'absolute', top: 14,
+          [isRTL ? 'left' : 'right']: 14,
+          width: 32, height: 32,
+          borderRadius: '50%',
+          background: '#0D1117',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: hovered ? 1 : 0,
+          transform: hovered ? 'scale(1)' : 'scale(0.8)',
+          transition: 'opacity 0.2s ease, transform 0.2s ease',
+        }} aria-hidden>
+          <ArrowUpRight style={{ width: 14, height: 14, color: '#FFFFFF' }} />
         </div>
-
-        {/* Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-
-          <h3
-            className="text-white font-semibold leading-tight mb-2 transition-all duration-500 group-hover:-translate-y-1"
-            style={{
-              fontSize: isFeatured
-                ? 'clamp(1.375rem, 2.25vw, 2rem)'
-                : 'clamp(1.125rem, 1.75vw, 1.375rem)',
-              letterSpacing: '-0.015em',
-            }}
-          >
-            {title}
-          </h3>
-
-          <p
-            className="
-              text-[11px] text-white/50
-              leading-relaxed
-              line-clamp-3
-              max-w-[320px]
-              break-words
-              transition-all duration-300
-              group-hover:text-white/80
-            "
-          >
-            {shortDescription}
-          </p>
-        </div>
-
-        {/* Gold line — grows from inline-start edge */}
-        <div
-          className={`absolute bottom-0 h-[2px] w-0 group-hover:w-full transition-all duration-700 ${isRTL ? 'right-0' : 'left-0'}`}
-          style={{ background: `linear-gradient(to ${isRTL ? 'left' : 'right'}, #d4af37, transparent)` }}
-        />
       </div>
 
-      {/* Tags */}
-      {project.tags?.length > 0 && (
-        <div className={`flex items-center justify-between px-5 py-4 border-t border-white/[0.05] ${isRTL ? 'flex-row-reverse' : ''}`}>
+      {/* Content */}
+      <div style={{ padding: 'clamp(18px, 2.5vw, 28px)' }}>
+        <h3 style={{
+          fontSize: isFeatured ? 'clamp(1.125rem, 1.5vw, 1.375rem)' : 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+          fontWeight: 700,
+          color: '#0D1117',
+          margin: '0 0 6px',
+          letterSpacing: '-0.02em',
+          lineHeight: 1.3,
+        }}>
+          {title}
+        </h3>
 
-          <div className={`flex flex-wrap gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {project.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="text-[9px] px-2 py-1 border border-white/10 text-white/40 group-hover:text-[#d4af37]"
-              >
+        {description && (
+          <p style={{
+            fontSize: 13,
+            color: '#5C6370',
+            lineHeight: 1.65,
+            margin: '0 0 14px',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}>
+            {description}
+          </p>
+        )}
+
+        {project.tags?.length > 0 && (
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 6,
+            flexDirection: isRTL ? 'row-reverse' : 'row',
+          }}>
+            {project.tags.slice(0, 3).map(tag => (
+              <span key={tag} style={{
+                fontSize: 10.5, padding: '3px 10px', borderRadius: '100px',
+                background: '#F6F7F9', border: '1px solid #E8EBF0',
+                color: '#5C6370', fontWeight: 600,
+              }}>
                 {tag}
               </span>
             ))}
           </div>
-
-          {/* Arrow */}
-          <svg
-            className={`w-4 h-4 text-white/40 group-hover:text-[#d4af37] transition ${
-              isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
-      )}
+        )}
+      </div>
     </Link>
   );
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
 const PortfolioSection = () => {
-  const { isRTL, dir }  = useLanguage();
+  const { isRTL, dir } = useLanguage();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState('All');
   const sectionRef = useRef(null);
-  const headerRef  = useRef(null);
-  const cardsRef   = useRef([]);
 
-  // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await api.get('/portfolio?featured=true&limit=6');
-        setProjects(data.projects || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    api.get('/portfolio?featured=true&limit=6')
+      .then(({ data }) => setProjects(data.projects || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  // ── Derive categories ──────────────────────────────────────────────────────
   const categories = ['All', ...new Set(projects.map(p => p.category).filter(Boolean))];
   const displayed  = filter === 'All' ? projects : projects.filter(p => p.category === filter);
 
-  // ── GSAP entrance ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!sectionRef.current) return;
-
-    const ctx = gsap.context(() => {
-      // Header
-      if (headerRef.current) {
-        gsap.fromTo(
-          headerRef.current.querySelectorAll('[data-anim]'),
-          { opacity: 0, y: 30 },
-          {
-            opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out',
-            immediateRender: false, clearProps: 'all',
-            scrollTrigger: { trigger: headerRef.current, start: 'top 88%', once: true },
-          }
-        );
-      }
-
-      // Cards
-      const validCards = cardsRef.current.filter(Boolean);
-      if (validCards.length > 0) {
-        gsap.fromTo(
-          validCards,
-          { opacity: 0, y: 40 },
-          {
-            opacity: 1, y: 0,
-            duration: 0.7, stagger: 0.08, ease: 'power3.out',
-            immediateRender: false, clearProps: 'all',
-            scrollTrigger: { trigger: sectionRef.current, start: 'top 85%', once: true },
-          }
-        );
-      }
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, [projects, filter]);
-
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <section
       ref={sectionRef}
-      className="relative px-4 sm:px-8 py-24 sm:py-40 bg-black overflow-hidden"
+      id="portfolio"
       dir={dir}
+      style={{
+        background: '#FFFFFF',
+        paddingTop:    'clamp(5rem, 10vw, 8rem)',
+        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
+        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
+        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
+        borderTop: '1px solid #E8EBF0',
+      }}
     >
-      {/* Ambient glow — capped at 100% width so it never bleeds past section edges */}
-      <div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 w-full max-w-[900px] h-[500px] opacity-[0.04] pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, #d4af37 0%, transparent 65%)', filter: 'blur(120px)' }}
-      />
+      <style>{`
+        .portfolio-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: clamp(14px, 2vw, 20px);
+        }
+        @media (max-width: 900px) {
+          .portfolio-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .portfolio-grid > *:first-child {
+            grid-column: span 2 !important;
+          }
+        }
+        @media (max-width: 560px) {
+          .portfolio-grid { grid-template-columns: 1fr; }
+          .portfolio-grid > * { grid-column: span 1 !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .skeleton { animation: none; background: #F0F2F5; }
+        }
+      `}</style>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
-        {/* ── Header ── */}
-        <div ref={headerRef} className={`mb-12 sm:mb-20 ${isRTL ? 'text-right' : 'text-left'}`}>
-
-          {/* Eyebrow */}
-          <div data-anim className={`flex items-center gap-4 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <span className={`block w-10 h-px ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-transparent`} />
-            <p className="text-[10px] tracking-[0.45em] text-[#d4af37]/60 uppercase">
-              {isRTL ? 'أعمال مختارة' : 'Featured Work'}
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 'clamp(1.5rem, 3vw, 2rem)',
+          marginBottom: 'clamp(3rem, 6vw, 5rem)',
+        }}>
+          <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
+            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
+              {isRTL ? 'أعمالنا' : 'Featured Work'}
+            </span>
+            <h2 style={{
+              fontSize: 'var(--text-5xl)',
+              fontWeight: 800,
+              lineHeight: 1.0,
+              letterSpacing: isRTL ? 0 : '-0.035em',
+              color: '#0D1117',
+              margin: '0 0 12px',
+              whiteSpace: 'pre-line',
+              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {isRTL ? 'منتجات أطلقناها\nفعلاً.' : 'Products we\nactually shipped.'}
+            </h2>
+            <p style={{
+              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+              color: '#5C6370',
+              lineHeight: 1.75,
+              margin: 0,
+              maxWidth: 480,
+              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {isRTL
+                ? 'لا ماكيتات، لا عروض تجريبية. منتجات حقيقية تعمل في الإنتاج.'
+                : 'No mockups, no demos. Real products running in production, serving real users.'}
             </p>
           </div>
 
-          {/* Title row */}
-          <div
-  className={`
-    flex items-end
-    gap-6
-    ${isRTL ? 'flex-row-reverse text-right' : 'text-left'}
-    justify-between
-  `}
->
-  {/* Title */}
-  <h2
-  data-anim
-  dir={isRTL ? "rtl" : "ltr"}
-  className={`
-    font-bold tracking-tight leading-[1.06]
-    ${isRTL ? 'text-right ml-auto' : 'text-left mr-auto'}
-  `}
-  style={{
-    fontSize: 'clamp(2rem, 4.5vw, 4.5rem)',
-    letterSpacing: '-0.03em',
-  }}
->
-  {isRTL ? 'مشاريع' : 'Projects'}
-  <br />
-  <span
-    className={`
-      text-transparent bg-clip-text bg-gradient-to-r
-      ${isRTL ? 'from-white to-[#d4af37]' : 'from-[#d4af37] to-white'}
-    `}
-  >
-    {isRTL ? 'أنجزناها فعلاً' : "we've shipped"}
-  </span>
-</h2>
-
-  {/* View All */}
-  <Link
-    to="/portfolio"
-    className={`
-      group
-      hidden sm:inline-flex items-center gap-2
-      self-end mb-2
-
-      text-[11px] tracking-[0.25em] uppercase font-light
-
-      text-white/40 hover:text-[#d4af37]
-
-      border-b border-transparent hover:border-[#d4af37]/40
-
-      transition-all duration-300 pb-1
-
-      ${isRTL ? 'flex-row-reverse' : ''}
-    `}
-  >
-    {isRTL ? 'عرض الكل' : 'View All'}
-
-    <svg
-      className={`
-        w-3 h-3
-        transition-all duration-300
-        ${isRTL
-          ? 'group-hover:-translate-x-1 rotate-180'
-          : 'group-hover:translate-x-1'
-        }
-      `}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 5l7 7-7 7"
-      />
-    </svg>
-  </Link>
-</div>
-
-          {/* ── Category Filter Pills ── */}
-          {!loading && categories.length > 2 && (
-            <div data-anim className={`flex flex-wrap gap-2 mt-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setFilter(cat)}
-                  className={`
-                    text-[9px] tracking-[0.3em] uppercase px-4 py-2
-                    border transition-all duration-300
-                    ${filter === cat
-                      ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
-                      : 'border-white/10 text-white/30 hover:border-white/25 hover:text-white/60'
-                    }
-                  `}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
+          <Link
+            to="/portfolio"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: 13, fontWeight: 600, color: '#0D1117',
+              textDecoration: 'none', flexShrink: 0,
+              border: '1.5px solid #E8EBF0', borderRadius: '8px',
+              padding: '9px 18px',
+              transition: 'border-color 0.2s, background 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#0D1117'; e.currentTarget.style.background = '#0D1117'; e.currentTarget.style.color = '#FFFFFF'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8EBF0'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#0D1117'; }}
+          >
+            {isRTL ? 'عرض كل الأعمال' : 'View all work'}
+            <ArrowUpRight style={{ width: 14, height: 14, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+          </Link>
         </div>
 
-        {/* ── Grid ── */}
+        {/* Filter pills */}
+        {categories.length > 1 && (
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 8,
+            marginBottom: 'clamp(1.5rem, 3vw, 2.5rem)',
+            justifyContent: isRTL ? 'flex-end' : 'flex-start',
+          }}>
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                style={{
+                  fontSize: 12, fontWeight: 600, padding: '6px 16px',
+                  borderRadius: '100px', cursor: 'pointer',
+                  border: `1.5px solid ${filter === cat ? '#0D1117' : '#E8EBF0'}`,
+                  background: filter === cat ? '#0D1117' : '#FFFFFF',
+                  color: filter === cat ? '#FFFFFF' : '#5C6370',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Cards */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          <div className="portfolio-grid">
+            <SkeletonCard wide />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : displayed.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#9BA3AE' }}>
+            {isRTL ? 'لا توجد مشاريع بعد.' : 'No projects yet.'}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="portfolio-grid">
             {displayed.map((project, i) => (
               <ProjectCard
                 key={project._id}
                 project={project}
-                index={i}
                 isRTL={isRTL}
-                cardRef={(el) => (cardsRef.current[i] = el)}
+                isFeatured={i === 0 && displayed.length > 1}
               />
             ))}
           </div>
         )}
 
-        {/* ── Bottom CTA ── */}
-        <div className="mt-20 sm:mt-28 flex flex-col sm:flex-row items-center justify-center gap-5">
-          <Link
-            to="/portfolio"
-            className="
-              group relative inline-flex items-center gap-3
-              px-10 py-4
-              text-[10px] tracking-[0.4em] uppercase font-light
-              text-[#d4af37] border border-[#d4af37]/35
-              bg-transparent backdrop-blur-sm
-              overflow-hidden
-              transition-all duration-500
-              hover:text-black hover:border-[#d4af37] hover:shadow-[0_0_40px_-5px_rgba(212,175,55,0.5)]
-              active:scale-[0.98]
-            "
-          >
-            {/* fill sweep */}
-            <span className="absolute inset-0 origin-left scale-x-0 group-hover:scale-x-100 bg-[#d4af37] transition-transform duration-500 ease-out z-0" />
-            {/* shimmer — sweeps in reading direction */}
-            <span className={`absolute inset-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent z-10 ${isRTL ? 'translate-x-full group-hover:-translate-x-full' : '-translate-x-full group-hover:translate-x-full'}`} />
-            <span className="relative z-20">{isRTL ? 'شاهد جميع المشاريع' : 'View All Projects'}</span>
-            <svg
-              className={`relative z-20 w-3.5 h-3.5 transition-transform duration-300 ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-
-          <p className="text-[10px] text-white/25 tracking-widest uppercase">
-            {isRTL ? `${projects.length} مشروع منجز` : `${projects.length} projects delivered`}
-          </p>
-        </div>
-
-        {/* Mobile View All */}
-        <div className="sm:hidden mt-6 text-center">
-          <Link
-            to="/portfolio"
-            className={`
-              inline-flex items-center gap-2
-              text-[10px] tracking-widest uppercase text-white/30
-              hover:text-[#d4af37] transition-colors duration-300
-              ${isRTL ? 'flex-row-reverse' : ''}
-            `}
-          >
-            {isRTL ? 'كل الأعمال' : 'View All Work'}
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d={isRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
-            </svg>
-          </Link>
-        </div>
       </div>
     </section>
   );

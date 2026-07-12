@@ -1,439 +1,278 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../utils/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
-/* ═══════════════════════════════════════════════════════════════
-   Testimonials — Premium masonry-grid with static fallback
-   ═══════════════════════════════════════════════════════════════ */
-
-const STATIC_TESTIMONIALS = [
+const STATIC = [
   {
-    _id         : 'st1',
-    name        : 'Ahmed Al-Rashidi',
-    role        : 'Founder, NexusCommerce',
+    _id: 'st1', initials: 'AR',
+    name: 'Ahmed Al-Rashidi', role: 'Founder, NexusCommerce',
     projectTitle: 'E-commerce Platform',
-    reviewText  : 'YANSY built our entire online store from scratch. The quality exceeded our expectations and sales increased significantly in the first weeks after launch. Their attention to performance and UX was remarkable.',
-    rating      : 5,
-    initials    : 'AR',
+    reviewText: 'YANSY built our entire online store from scratch in 3 weeks. Sales increased 40% in the first 90 days. Their attention to performance and UX was remarkable — no other vendor came close.',
+    rating: 5,
   },
   {
-    _id         : 'st2',
-    name        : 'Sarah Mohamed',
-    role        : 'Director, MedCare Clinics',
+    _id: 'st2', initials: 'SM',
+    name: 'Sarah Mohamed', role: 'Director, MedCare Clinics',
     projectTitle: 'Medical Booking System',
-    reviewText  : "Outstanding work. They delivered a complete clinic management system on time and within budget. Communication throughout the project was excellent — always proactive, never reactive.",
-    rating      : 5,
-    initials    : 'SM',
+    reviewText: 'Outstanding delivery. A complete clinic management system, on time and within budget. No-shows dropped by 80% after launch. Communication throughout was proactive, never reactive.',
+    rating: 5,
   },
   {
-    _id         : 'st3',
-    name        : 'Khalid Al-Thani',
-    role        : 'CTO, Vault Analytics',
+    _id: 'st3', initials: 'KA',
+    name: 'Khalid Al-Thani', role: 'CTO, Vault Analytics',
     projectTitle: 'SaaS Dashboard',
-    reviewText  : 'Professional team with deep technical expertise. They transformed our complex data pipeline into a beautiful, intuitive dashboard. Our non-technical team actually uses it now — which was the real goal.',
-    rating      : 5,
-    initials    : 'KA',
+    reviewText: 'They transformed our complex data pipeline into a beautiful, usable dashboard. Our non-technical leadership team actually uses it now — which was the entire goal. Exceptional work.',
+    rating: 5,
   },
   {
-    _id         : 'st4',
-    name        : 'Layla Ibrahim',
-    role        : 'CEO, AcademyEdge',
+    _id: 'st4', initials: 'LI',
+    name: 'Layla Ibrahim', role: 'CEO, AcademyEdge',
     projectTitle: 'Educational Platform',
-    reviewText  : 'We launched our online academy with YANSY and the platform they built is world-class. Student enrollment doubled within the first month. The LMS they built saved us thousands in recurring platform fees.',
-    rating      : 5,
-    initials    : 'LI',
+    reviewText: 'We launched our online academy with YANSY and student enrollment doubled within the first month. The platform saved us thousands in recurring SaaS fees. Worth every dirham.',
+    rating: 5,
   },
   {
-    _id         : 'st5',
-    name        : 'Omar Faris',
-    role        : 'VP Sales, GrowthCRM',
+    _id: 'st5', initials: 'OF',
+    name: 'Omar Faris', role: 'VP Sales, GrowthCRM',
     projectTitle: 'CRM System',
-    reviewText  : 'The CRM YANSY built completely transformed how we manage clients. Response times improved, follow-ups are automated, and we never miss an opportunity. ROI was visible within 60 days of launch.',
-    rating      : 5,
-    initials    : 'OF',
+    reviewText: 'The CRM YANSY built completely changed how we manage clients. Follow-ups are automated, response times improved dramatically. ROI was visible within 60 days of launch.',
+    rating: 5,
   },
   {
-    _id         : 'st6',
-    name        : 'Nora Al-Sayed',
-    role        : 'Brand Director',
+    _id: 'st6', initials: 'NS',
+    name: 'Nora Al-Sayed', role: 'Brand Director',
     projectTitle: 'Corporate Website',
-    reviewText  : "From concept to launch in three weeks. The design is stunning, performance is exceptional, and our brand finally looks premium online. Multiple clients mentioned the website before even asking about our services.",
-    rating      : 5,
-    initials    : 'NS',
+    reviewText: 'From concept to launch in three weeks. The design is stunning, performance is exceptional. Multiple clients mentioned the website before even asking about our services.',
+    rating: 5,
   },
 ];
 
-/* ── Geometric Avatar — premium alternative to plain initials ── */
-const GeoAvatar = ({ initials = '?', size = 42 }) => {
-  // Use char codes as a deterministic seed for pattern variation
-  const a = initials.charCodeAt(0) || 65;
-  const b = initials.charCodeAt(1) || 65;
-  const seed = (a * 7 + b * 13) % 4; // 0–3 distinct patterns
-  const gold = '#d4af37';
-  const dim  = 'rgba(212,175,55,0.18)';
+const AVATAR_PALETTE = [
+  ['#DBEAFE', '#1D4ED8'],
+  ['#D1FAE5', '#059669'],
+  ['#EDE9FE', '#6D28D9'],
+  ['#FEF3C7', '#B45309'],
+  ['#FCE7F3', '#BE185D'],
+  ['#F0FDF4', '#16a34a'],
+];
 
-  const patterns = [
-    // Pattern 0: diamond corner marks
-    <>
-      <rect x="2" y="2" width="8" height="1" fill={dim} />
-      <rect x="2" y="2" width="1" height="8" fill={dim} />
-      <rect x={size-10} y="2" width="8" height="1" fill={dim} />
-      <rect x={size-3} y="2" width="1" height="8" fill={dim} />
-      <rect x="2" y={size-3} width="8" height="1" fill={dim} />
-      <rect x="2" y={size-10} width="1" height="8" fill={dim} />
-      <rect x={size-10} y={size-3} width="8" height="1" fill={dim} />
-      <rect x={size-3} y={size-10} width="1" height="8" fill={dim} />
-    </>,
-    // Pattern 1: center crosshair
-    <>
-      <line x1={size/2} y1="4" x2={size/2} y2="12" stroke={dim} strokeWidth="1" />
-      <line x1={size/2} y1={size-12} x2={size/2} y2={size-4} stroke={dim} strokeWidth="1" />
-      <line x1="4" y1={size/2} x2="12" y2={size/2} stroke={dim} strokeWidth="1" />
-      <line x1={size-12} y1={size/2} x2={size-4} y2={size/2} stroke={dim} strokeWidth="1" />
-    </>,
-    // Pattern 2: dots
-    <>
-      {[4,size-5].map((cx) => [4,size-5].map((cy) => (
-        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.2" fill={dim} />
-      )))}
-      <circle cx={size/2} cy="4" r="1" fill={dim} />
-      <circle cx={size/2} cy={size-4} r="1" fill={dim} />
-    </>,
-    // Pattern 3: diagonal lines
-    <>
-      <line x1="2" y1="2" x2="10" y2="10" stroke={dim} strokeWidth="1" />
-      <line x1={size-2} y1="2" x2={size-10} y2="10" stroke={dim} strokeWidth="1" />
-      <line x1="2" y1={size-2} x2="10" y2={size-10} stroke={dim} strokeWidth="1" />
-      <line x1={size-2} y1={size-2} x2={size-10} y2={size-10} stroke={dim} strokeWidth="1" />
-    </>,
-  ];
-
+const Avatar = ({ initials = '?', idx = 0 }) => {
+  const [bg, text] = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      aria-hidden="true"
-      style={{ flexShrink: 0 }}
+    <div
+      style={{
+        width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+        background: bg, color: text,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 13, fontWeight: 700,
+      }}
+      aria-hidden
     >
-      {/* Background */}
-      <rect width={size} height={size} fill="rgba(212,175,55,0.06)" rx="2" />
-      {/* Border */}
-      <rect width={size} height={size} fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth="1" rx="2" />
-      {/* Pattern */}
-      {patterns[seed]}
-      {/* Initials — centered */}
-      <text
-        x={size / 2}
-        y={size / 2 + 5}
-        textAnchor="middle"
-        fill={gold}
-        fontSize="13"
-        fontFamily="'Inter',system-ui,sans-serif"
-        fontWeight="600"
-        letterSpacing="0.04em"
-      >
-        {initials.slice(0, 2).toUpperCase()}
-      </text>
-    </svg>
+      {initials}
+    </div>
   );
 };
 
-const StarRow = ({ rating = 5 }) => (
-  <div style={{ display: 'flex', gap: 3, marginBottom: 14 }}>
+const Stars = ({ count = 5 }) => (
+  <div style={{ display: 'flex', gap: 2 }} aria-label={`${count} out of 5 stars`}>
     {Array.from({ length: 5 }).map((_, i) => (
-      <svg key={i} width="13" height="13" viewBox="0 0 24 24"
-        fill={i < rating ? '#d4af37' : 'rgba(212,175,55,.14)'}>
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      <svg key={i} viewBox="0 0 20 20" width="12" height="12" fill={i < count ? '#F59E0B' : '#E8EBF0'} aria-hidden>
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     ))}
   </div>
 );
 
-const Card = ({ item, index }) => {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          const el = ref.current;
-          el.style.transition = `opacity .7s ${index * 0.07}s ease, transform .7s ${index * 0.07}s ease`;
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-          io.disconnect();
-        }
-      },
-      { threshold: 0.12 }
-    );
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, [index]);
-
-  const rating  = typeof item.ratings === 'object'
-    ? Math.round(item.ratings.overall ?? 5)
-    : (item.rating ?? 5);
-  const initial = item.initials || item.name?.charAt(0).toUpperCase() || '?';
+const TestimonialCard = ({ t, idx, visible, delay }) => {
+  const { isRTL } = useLanguage();
 
   return (
-    <article
-      ref={ref}
+    <div
       style={{
-        opacity      : 0,
-        transform    : 'translateY(28px)',
-        background   : 'rgba(255,255,255,.025)',
-        border       : '1px solid rgba(255,255,255,.065)',
-        padding      : '28px 28px 24px',
-        display      : 'flex',
+        background: '#FFFFFF',
+        border: '1px solid #E8EBF0',
+        borderRadius: 16,
+        padding: 'clamp(22px, 2.5vw, 32px)',
+        display: 'flex',
         flexDirection: 'column',
-        transition   : 'border-color .35s, background .35s, transform .35s',
-        position     : 'relative',
-        overflow     : 'hidden',
+        gap: 16,
+        height: '100%',
+        boxSizing: 'border-box',
+        textAlign: isRTL ? 'right' : 'left',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(20px)',
+        transition: `opacity 0.6s ${delay}s cubic-bezier(0.16,1,0.3,1), transform 0.6s ${delay}s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, border-color 0.22s ease`,
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(212,175,55,.22)';
-        e.currentTarget.style.background  = 'rgba(255,255,255,.04)';
-        e.currentTarget.style.transform   = 'translateY(-2px)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,.065)';
-        e.currentTarget.style.background  = 'rgba(255,255,255,.025)';
-        e.currentTarget.style.transform   = 'translateY(0)';
-      }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = '#C9CDD6'; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#E8EBF0'; }}
     >
-      {/* Top gold accent (hover) */}
-      <div
-        aria-hidden
-        style={{
-          position  : 'absolute',
-          top       : 0, left: 0, right: 0,
-          height    : '1px',
-          background: 'linear-gradient(to right, transparent, rgba(212,175,55,.4), transparent)',
-          opacity   : 0,
-          transition: 'opacity .35s',
-        }}
-        ref={(el) => {
-          if (!el) return;
-          const p = el.parentElement;
-          if (!p) return;
-          const onE = () => { el.style.opacity = '1'; };
-          const onL = () => { el.style.opacity = '0'; };
-          p.addEventListener('mouseenter', onE);
-          p.addEventListener('mouseleave', onL);
-        }}
-      />
-
-      {/* Opening quote mark */}
-      <svg
-        width="26" height="18" viewBox="0 0 28 20"
-        fill="rgba(212,175,55,.2)"
-        style={{ marginBottom: 16, flexShrink: 0 }}
-        aria-hidden
-      >
-        <path d="M0 20V12.667C0 9.556 1.111 6.89 3.333 4.667 5.556 2.444 8.444.889 12 0l1.333 2.667C9.778 3.556 7.778 5 6.333 7S4.444 11.111 4.444 13.333H8V20H0zm16 0V12.667c0-3.111 1.111-5.778 3.333-8 2.222-2.223 5.11-3.778 8.667-4.667L29.333 2.667C25.778 3.556 23.778 5 22.333 7S20.444 11.111 20.444 13.333H24V20H16z" />
-      </svg>
-
-      <StarRow rating={rating} />
-
-      {/* Review text */}
-      <p style={{
-        fontSize             : 13.5,
-        lineHeight           : 1.78,
-        color                : 'rgba(255,255,255,.65)',
-        fontWeight           : 300,
-        flex                 : 1,
-        marginBottom         : 22,
-        display              : '-webkit-box',
-        WebkitLineClamp      : 5,
-        WebkitBoxOrient      : 'vertical',
-        overflow             : 'hidden',
+      {/* Stars + project tag */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
       }}>
-        {item.reviewText}
+        <Stars count={t.rating} />
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: '#2563EB',
+          background: '#EFF6FF', border: '1px solid #DBEAFE',
+          padding: '3px 9px', borderRadius: '100px',
+          whiteSpace: 'nowrap',
+        }}>
+          {t.projectTitle}
+        </span>
+      </div>
+
+      {/* Quote */}
+      <p style={{
+        fontSize: 'clamp(0.875rem, 1vw, 0.9375rem)',
+        lineHeight: 1.75,
+        color: '#374151',
+        margin: 0,
+        flex: 1,
+        fontFamily: "'Inter', system-ui, sans-serif",
+        fontStyle: 'italic',
+      }}>
+        "{t.reviewText}"
       </p>
 
       {/* Author */}
       <div style={{
-        display    : 'flex',
-        alignItems : 'center',
-        gap        : 12,
-        borderTop  : '1px solid rgba(255,255,255,.05)',
-        paddingTop : 18,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        paddingTop: 16,
+        borderTop: '1px solid #F0F2F5',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
       }}>
-        {/* Geometric Avatar */}
-        <GeoAvatar initials={initial} size={42} />
-        <div>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.88)', fontWeight: 400 }}>
-            {item.name}
-          </p>
-          {item.role && (
-            <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,.32)', marginTop: 1, fontWeight: 300 }}>
-              {item.role}
-            </p>
-          )}
-          {item.projectTitle && (
-            <p style={{ margin: 0, fontSize: 10, color: 'rgba(212,175,55,.5)', marginTop: 2, letterSpacing: '.06em', textTransform: 'uppercase' }}>
-              {item.projectTitle}
-            </p>
-          )}
+        <Avatar initials={t.initials} idx={idx} />
+        <div style={{ flex: 1, minWidth: 0, textAlign: isRTL ? 'right' : 'left' }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0D1117', marginBottom: 2 }}>
+            {t.name}
+          </div>
+          <div style={{ fontSize: 12, color: '#9BA3AE', lineHeight: 1.3 }}>
+            {t.role}
+          </div>
         </div>
       </div>
-    </article>
+    </div>
   );
 };
 
-/* ── Main ── */
-const Testimonials = ({ isRTL = false }) => {
-  const [items,   setItems]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const titleRef = useRef(null);
+const Testimonials = ({ isRTL: isRTLProp }) => {
+  const { isRTL: ctxRTL } = useLanguage();
+  const rtl = isRTLProp ?? ctxRTL;
+  const [list, setList] = useState(STATIC);
+  const [visible, setVisible] = useState(false);
+  const gridRef = useRef(null);
 
   useEffect(() => {
-    api.get('/feedback/testimonials?limit=6')
-      .then((r) => {
-        const data = r.data?.testimonials ?? [];
-        setItems(data.length >= 3 ? data : STATIC_TESTIMONIALS);
-      })
-      .catch(() => setItems(STATIC_TESTIMONIALS))
-      .finally(() => setLoading(false));
+    api.get('/testimonials').then(r => {
+      if (r.data?.length > 0) setList(r.data);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (!titleRef.current || loading) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          titleRef.current.style.transition = 'opacity .9s ease, transform .9s ease';
-          titleRef.current.style.opacity = '1';
-          titleRef.current.style.transform = 'translateY(0)';
-          io.disconnect();
-        }
-      },
-      { threshold: 0.25 }
-    );
-    io.observe(titleRef.current);
+    const el = gridRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); io.disconnect(); }
+    }, { threshold: 0.05 });
+    io.observe(el);
     return () => io.disconnect();
-  }, [loading]);
+  }, []);
 
-  if (loading) return null;
+  const shown = list.slice(0, 6);
 
   return (
     <section
       id="testimonials"
+      dir={rtl ? 'rtl' : 'ltr'}
       style={{
-        background : 'linear-gradient(180deg, #000 0%, #040301 50%, #000 100%)',
-        padding    : 'clamp(64px,10vw,120px) clamp(16px,5vw,48px)',
+        background: '#FAFAFA',
+        paddingTop:    'clamp(5rem, 10vw, 8rem)',
+        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
+        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
+        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
+        borderTop: '1px solid #E8EBF0',
       }}
-      aria-label={isRTL ? 'آراء العملاء' : 'Client testimonials'}
     >
-      <div style={{ maxWidth: 1280, margin: '0 auto' }} dir={isRTL ? 'rtl' : 'ltr'}>
+      <style>{`
+        .testimonials-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: clamp(12px, 1.5vw, 18px);
+        }
+        @media (max-width: 1024px) {
+          .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 560px) {
+          .testimonials-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
 
-        {/* ── Header ── */}
-        <div
-          ref={titleRef}
-          style={{
-            opacity    : 0,
-            transform  : 'translateY(24px)',
-            marginBottom: 'clamp(40px,6vw,72px)',
-          }}
-        >
-          <div style={{
-            display        : 'flex',
-            alignItems     : 'center',
-            gap            : 14,
-            marginBottom   : 20,
-            justifyContent : isRTL ? 'flex-end' : 'flex-start',
-            flexDirection  : isRTL ? 'row-reverse' : 'row',
-          }}>
-            <span style={{
-              display   : 'block',
-              width     : 40,
-              height    : 1,
-              background: `linear-gradient(to ${isRTL ? 'left' : 'right'}, #d4af37, transparent)`,
-            }} />
-            <p style={{
-              fontSize      : 10,
-              letterSpacing : '.35em',
-              textTransform : 'uppercase',
-              color         : 'rgba(212,175,55,.6)',
-              margin        : 0,
-              fontWeight    : 300,
-            }}>
-              {isRTL ? 'ماذا يقول عملاؤنا' : 'Client Testimonials'}
-            </p>
-          </div>
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
-          <h2 style={{
-            fontFamily  : "'Inter',system-ui,sans-serif",
-            fontSize    : 'clamp(2rem,4vw,3.75rem)',
-            fontWeight  : 700,
-            lineHeight  : 1.06,
-            letterSpacing: '-0.03em',
-            color       : '#fff',
-            margin      : 0,
-            textAlign   : isRTL ? 'right' : 'left',
-          }}>
-            {isRTL ? 'نتائج حقيقية،' : 'Real results,'}
-            <br />
-            <span style={{
-              color                  : 'transparent',
-              backgroundImage        : 'linear-gradient(135deg, #d4af37 0%, rgba(255,255,255,.65) 60%)',
-              WebkitBackgroundClip   : 'text',
-              backgroundClip         : 'text',
-            }}>
-              {isRTL ? 'عملاء سعداء' : 'happy clients'}
-            </span>
-          </h2>
-        </div>
-
-        {/* ── Cards grid ── */}
+        {/* Header */}
         <div style={{
-          display              : 'grid',
-          gridTemplateColumns  : 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))',
-          gap                  : 16,
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 'clamp(1.5rem, 3vw, 2rem)',
+          marginBottom: 'clamp(3rem, 6vw, 5rem)',
         }}>
-          {items.slice(0, 6).map((item, i) => (
-            <Card key={item._id} item={item} index={i} />
-          ))}
+          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
+            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
+              {rtl ? 'قصص العملاء' : 'Client Stories'}
+            </span>
+            <h2 style={{
+              fontSize: 'var(--text-5xl)',
+              fontWeight: 800,
+              lineHeight: 1.0,
+              letterSpacing: rtl ? 0 : '-0.035em',
+              color: '#0D1117',
+              margin: 0,
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {rtl ? 'عملاء حقيقيون.\nنتائج مثبتة.' : 'Real clients.\nProven results.'}
+            </h2>
+          </div>
+          <div style={{ maxWidth: 380, textAlign: rtl ? 'right' : 'left' }}>
+            <p style={{
+              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+              color: '#5C6370',
+              lineHeight: 1.75,
+              margin: '0 0 12px',
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {rtl
+                ? 'كل شهادة من مشروع حقيقي سلّمناه. لا استثناءات.'
+                : 'Every testimonial is from a real project we delivered. No exceptions.'}
+            </p>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              justifyContent: rtl ? 'flex-end' : 'flex-start',
+              flexDirection: rtl ? 'row-reverse' : 'row',
+            }}>
+              <Stars count={5} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5C6370' }}>
+                {rtl ? '5/5 متوسط التقييم' : '5/5 average rating'}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* ── Bottom CTA ── */}
-        <div style={{ marginTop: 52, textAlign: 'center' }}>
-          <a
-            href={`https://wa.me/201090385390?text=${encodeURIComponent(
-              isRTL ? 'مرحباً! أريد التحدث عن مشروع.' : "Hello! I'd like to discuss a project."
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display        : 'inline-flex',
-              alignItems     : 'center',
-              gap            : 10,
-              padding        : '14px 32px',
-              border         : '1px solid rgba(212,175,55,.3)',
-              color          : 'rgba(212,175,55,.75)',
-              fontSize       : 10,
-              letterSpacing  : '.24em',
-              textTransform  : 'uppercase',
-              textDecoration : 'none',
-              fontWeight     : 300,
-              transition     : 'all .3s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(212,175,55,.65)';
-              e.currentTarget.style.color       = '#d4af37';
-              e.currentTarget.style.background  = 'rgba(212,175,55,.04)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(212,175,55,.3)';
-              e.currentTarget.style.color       = 'rgba(212,175,55,.75)';
-              e.currentTarget.style.background  = 'transparent';
-            }}
-          >
-            {isRTL ? 'انضم لعملائنا السعداء' : 'Join our happy clients'}
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </a>
+        {/* Cards grid */}
+        <div className="testimonials-grid" ref={gridRef}>
+          {shown.map((t, i) => (
+            <TestimonialCard
+              key={t._id}
+              t={t}
+              idx={i}
+              visible={visible}
+              delay={Math.min(i * 0.08, 0.32)}
+            />
+          ))}
         </div>
 
       </div>

@@ -1,251 +1,263 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Clock, CreditCard, Zap, Edit3, Key, Shield, Phone, Wrench } from 'lucide-react';
+import { Plus, Minus, ArrowUpRight } from 'lucide-react';
 
-/* ── Icon map for FAQ items ── */
-const FAQ_ICONS = {
-  timeline    : Clock,
-  payment     : CreditCard,
-  difference  : Zap,
-  revisions   : Edit3,
-  ownership   : Key,
-  support     : Shield,
-  consultation: Phone,
-  tech        : Wrench,
-};
-
-const faqs = [
+const FAQS = [
   {
-    id: 'timeline', icon: '⏱️',
+    id: 'timeline',
     questionEN: 'How long does a project take?',
     questionAR: 'كم يستغرق المشروع؟',
-    answerEN: 'It depends on scope. A standard website or landing page takes 2–3 weeks. E-commerce or SaaS platforms typically run 4–8 weeks. Enterprise systems (ERP, CRM, medical) range from 8–16 weeks. We give you a precise timeline after the free consultation.',
-    answerAR: 'يعتمد على حجم المشروع. موقع عادي أو صفحة هبوط: 2–3 أسابيع. منصة تجارة إلكترونية أو SaaS: 4–8 أسابيع. أنظمة مؤسسية (ERP، CRM، طبية): 8–16 أسبوعاً. نعطيك جدولاً زمنياً دقيقاً بعد الاستشارة المجانية.',
+    answerEN: 'It depends on scope. A standard website takes 2–3 weeks. E-commerce or SaaS platforms run 4–8 weeks. Enterprise systems (ERP, CRM) range from 8–16 weeks. We give you a precise timeline after the free consultation.',
+    answerAR: 'يعتمد على النطاق. موقع عادي: 2–3 أسابيع. تجارة إلكترونية أو SaaS: 4–8 أسابيع. أنظمة مؤسسية (ERP، CRM): 8–16 أسبوعاً. نعطيك جدولاً دقيقاً بعد الاستشارة المجانية.',
   },
   {
-    id: 'payment', icon: '💳',
+    id: 'payment',
     questionEN: 'Do I pay the full amount upfront?',
     questionAR: 'هل أدفع المبلغ كاملاً مقدماً؟',
-    answerEN: 'No. We split payments into milestones: 30% to start, 40% at mid-delivery, and 30% on final delivery. You only pay when you see progress.',
-    answerAR: 'لا. نقسّم الدفعات على مراحل: 30٪ للبدء، 40٪ عند منتصف التسليم، و30٪ عند التسليم النهائي. تدفع فقط عندما ترى تقدماً فعلياً.',
+    answerEN: 'No. We split payments into milestones: 30% to start, 40% at mid-delivery, and 30% on final delivery. You only pay when you see real progress.',
+    answerAR: 'لا. نقسّم الدفعات على مراحل: 30٪ للبدء، 40٪ عند منتصف التسليم، و30٪ عند التسليم النهائي. تدفع فقط عندما ترى تقدماً حقيقياً.',
   },
   {
-    id: 'difference', icon: '⚡',
-    questionEN: 'What makes you different from a freelancer or agency?',
-    questionAR: 'ما الفرق بينكم وبين فريلانسر أو وكالة عادية؟',
-    answerEN: 'Freelancers lack structure and disappear. Generic agencies are slow and expensive. YANSY gives you a dedicated senior team with a transparent process, fixed timelines, and full ownership of your product — at a competitive price.',
-    answerAR: 'الفريلانسر يفتقر للمنهجية وقد يختفي. الوكالات العادية بطيئة ومكلفة. YANSY تمنحك فريقاً متخصصاً بعملية واضحة، مواعيد محددة، وملكية كاملة لمنتجك — بسعر تنافسي.',
+    id: 'difference',
+    questionEN: 'What makes you different from freelancers or other agencies?',
+    questionAR: 'ما الفرق بينكم وبين فريلانسر أو وكالة أخرى؟',
+    answerEN: 'Freelancers lack structure and disappear. Generic agencies are slow and overpriced. YANSY gives you a dedicated senior team, transparent process, fixed timelines, and full code ownership — at a competitive price.',
+    answerAR: 'الفريلانسر يفتقر للمنهجية وقد يختفي. الوكالات العادية بطيئة ومكلفة. YANSY تمنحك فريقاً متخصصاً بعملية واضحة ومواعيد ثابتة وملكية كاملة للكود — بسعر تنافسي.',
   },
   {
-    id: 'revisions', icon: '✏️',
-    questionEN: 'How many revisions do I get?',
-    questionAR: 'كم مرة يمكنني طلب تعديلات؟',
-    answerEN: 'We include 3 revision rounds per milestone. This covers design, content, and functionality changes. Major scope changes are handled separately, but we always discuss and agree before any extra charge.',
-    answerAR: 'نشمل 3 جولات تعديل لكل مرحلة تسليم. تغطي تعديلات التصميم والمحتوى والوظائف. التغييرات الجذرية في النطاق تُناقش بشكل منفصل، ونتفق دائماً قبل أي رسوم إضافية.',
-  },
-  {
-    id: 'ownership', icon: '🔑',
+    id: 'ownership',
     questionEN: 'Do I own the code after delivery?',
     questionAR: 'هل أملك الكود بعد التسليم؟',
-    answerEN: '100% yes. After final payment, all source code, assets, and intellectual property transfer to you. No recurring fees, no lock-in. You own everything.',
-    answerAR: '100٪ نعم. بعد الدفعة النهائية، كل الكود والملفات وحقوق الملكية الفكرية تنتقل إليك. لا رسوم متكررة، لا قيود. كل شيء لك.',
+    answerEN: '100% yes. After final payment, all source code, assets, and IP transfer to you. No recurring fees, no lock-in. You own everything.',
+    answerAR: '100٪ نعم. بعد الدفعة النهائية، كل الكود والملفات وحقوق الملكية تنتقل إليك. لا رسوم متكررة، لا قيود. كل شيء لك.',
   },
   {
-    id: 'support', icon: '🛡️',
+    id: 'support',
     questionEN: 'What happens after the project is delivered?',
     questionAR: 'ماذا يحدث بعد تسليم المشروع؟',
-    answerEN: 'We provide 30 days of free technical support post-launch — bug fixes, performance monitoring, and minor tweaks. After that, we offer affordable monthly maintenance packages or on-demand support.',
-    answerAR: 'نقدم 30 يوماً من الدعم التقني المجاني بعد الإطلاق — إصلاح الأخطاء، مراقبة الأداء، والتعديلات الصغيرة. بعدها نوفر باقات صيانة شهرية بأسعار مناسبة أو دعم عند الطلب.',
+    answerEN: 'We provide 30 days of free technical support post-launch — bug fixes, performance monitoring, and minor tweaks. After that, we offer affordable monthly maintenance or on-demand support.',
+    answerAR: 'نقدم 30 يوماً من الدعم التقني المجاني بعد الإطلاق — إصلاح أخطاء ومراقبة أداء وتعديلات صغيرة. بعدها نوفر باقات صيانة شهرية أو دعماً عند الطلب.',
   },
   {
-    id: 'consultation', icon: '📞',
+    id: 'consultation',
     questionEN: 'Is the consultation really free?',
     questionAR: 'هل الاستشارة مجانية فعلاً؟',
     answerEN: 'Yes, completely. No credit card, no obligation. A 30-minute call where we understand your project, answer all your questions, and give you an honest scope and timeline estimate.',
-    answerAR: 'نعم، مجانية تماماً. لا بطاقة ائتمان، لا التزام. مكالمة 30 دقيقة نفهم فيها مشروعك، نجيب على جميع أسئلتك، ونعطيك تقديراً صادقاً للنطاق والجدول الزمني.',
+    answerAR: 'نعم، مجانية تماماً. لا بطاقة ائتمان، لا التزام. مكالمة 30 دقيقة نفهم فيها مشروعك ونجيب على جميع أسئلتك ونعطيك تقديراً صادقاً.',
   },
   {
-    id: 'tech', icon: '🛠️',
+    id: 'revisions',
+    questionEN: 'How many revisions do I get?',
+    questionAR: 'كم مرة يمكنني طلب تعديلات؟',
+    answerEN: 'We include 3 revision rounds per milestone, covering design, content, and functionality. Major scope changes are discussed separately before any extra charge.',
+    answerAR: 'نشمل 3 جولات تعديل لكل مرحلة تسليم تغطي التصميم والمحتوى والوظائف. التغييرات الجذرية تُناقش بشكل منفصل قبل أي رسوم إضافية.',
+  },
+  {
+    id: 'tech',
     questionEN: 'What technologies do you use?',
     questionAR: 'ما التقنيات التي تستخدمونها؟',
-    answerEN: 'We build primarily with React, Next.js, Node.js, and PostgreSQL/MongoDB. For enterprise systems we use microservices architecture. We choose the right stack for your specific project — not the trendy one.',
-    answerAR: 'نبني بشكل أساسي بـ React و Next.js و Node.js و PostgreSQL/MongoDB. للأنظمة المؤسسية نستخدم بنية الخدمات الصغيرة. نختار التقنية المناسبة لمشروعك تحديداً — لا التقنية الرائجة.',
+    answerEN: 'Primarily React, Next.js, Node.js, and PostgreSQL/MongoDB. For enterprise systems we use microservices architecture. We choose the right stack for your specific project — not just the trendy one.',
+    answerAR: 'بشكل أساسي React وNext.js وNode.js وPostgreSQL/MongoDB. للأنظمة المؤسسية نستخدم بنية الخدمات الصغيرة. نختار التقنية المناسبة لمشروعك تحديداً.',
   },
 ];
 
-const FAQItem = ({ faq, isOpen, onToggle, isRTL, onStartProject }) => (
-  <div
-    className="border-t border-white/[0.06] last:border-b transition-colors duration-500"
-    style={{ borderColor: isOpen ? 'rgba(212,175,55,0.15)' : undefined }}
-  >
+const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
+  <div style={{ borderBottom: '1px solid #E8EBF0' }}>
     <button
-      className={`w-full flex items-center gap-5 py-6 sm:py-8 transition-all duration-300 ${isRTL ? 'flex-row-reverse text-right' : 'text-left'}`}
       onClick={onToggle}
+      aria-expanded={isOpen}
+      aria-controls={`faq-${faq.id}`}
+      id={`faq-btn-${faq.id}`}
+      style={{
+        width: '100%',
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr auto',
+        alignItems: 'center',
+        gap: 'clamp(12px, 2vw, 20px)',
+        padding: 'clamp(18px, 2.5vw, 24px) 0',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        direction: isRTL ? 'rtl' : 'ltr',
+        transition: 'opacity 0.15s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = '0.82'; }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
     >
-      {(() => {
-        const Icon = FAQ_ICONS[faq.id];
-        return Icon ? (
-          <span
-            className="flex-shrink-0 transition-all duration-500 w-5 h-5"
-            style={{
-              color    : isOpen ? '#d4af37' : 'rgba(255,255,255,0.28)',
-              transform: isOpen ? 'scale(1.1)' : 'scale(1)',
-            }}
-          >
-            <Icon className="w-5 h-5" aria-hidden="true" />
-          </span>
-        ) : (
-          <span
-            className="text-xl flex-shrink-0 transition-all duration-500"
-            style={{
-              filter   : isOpen ? 'none' : 'grayscale(100%) opacity(0.35)',
-              transform: isOpen ? 'scale(1.1)' : 'scale(1)',
-            }}
-          >
-            {faq.icon}
-          </span>
-        );
-      })()}
+      <span style={{
+        fontSize: 10,
+        fontWeight: 800,
+        color: isOpen ? '#2563EB' : '#C9CDD6',
+        letterSpacing: '0.06em',
+        fontVariantNumeric: 'tabular-nums',
+        transition: 'color 0.2s',
+        minWidth: 24,
+        textAlign: isRTL ? 'right' : 'left',
+      }}>
+        {String(idx + 1).padStart(2, '0')}
+      </span>
 
-      <h3
-        className={`flex-1 font-semibold transition-all duration-300 text-base sm:text-xl lg:text-2xl ${isRTL ? '' : 'tracking-tight'}`}
-        style={{
-          letterSpacing: isRTL ? '0' : '-0.015em',
-          lineHeight   : isRTL ? 1.45 : 1.25,
-          color: isOpen ? '#d4af37' : 'rgba(255,255,255,0.88)',
-        }}
-      >
+      <h3 style={{
+        margin: 0,
+        fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+        fontWeight: 600,
+        color: isOpen ? '#0D1117' : '#374151',
+        letterSpacing: isRTL ? 0 : '-0.015em',
+        fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+        lineHeight: 1.4,
+        transition: 'color 0.2s',
+        textAlign: isRTL ? 'right' : 'left',
+      }}>
         {isRTL ? faq.questionAR : faq.questionEN}
       </h3>
 
-      <div
-        className="flex-shrink-0 w-7 h-7 border flex items-center justify-center transition-all duration-500"
-        style={{
-          borderColor: isOpen ? '#d4af37' : 'rgba(255,255,255,0.1)',
-          backgroundColor: isOpen ? 'rgba(212,175,55,0.08)' : 'transparent',
-          transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-        }}
-      >
-        <svg className="w-3 h-3" fill="none" stroke={isOpen ? '#d4af37' : 'rgba(255,255,255,0.35)'} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-        </svg>
-      </div>
+      <span style={{
+        flexShrink: 0,
+        width: 28, height: 28,
+        borderRadius: '50%',
+        border: `1.5px solid ${isOpen ? '#0D1117' : '#E8EBF0'}`,
+        background: isOpen ? '#0D1117' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.22s ease',
+        color: isOpen ? '#FFFFFF' : '#9BA3AE',
+      }} aria-hidden>
+        {isOpen
+          ? <Minus style={{ width: 12, height: 12 }} />
+          : <Plus  style={{ width: 12, height: 12 }} />
+        }
+      </span>
     </button>
 
     <div
-      className="overflow-hidden transition-all duration-700 ease-in-out"
-      style={{ maxHeight: isOpen ? '400px' : '0px' }}
+      id={`faq-${faq.id}`}
+      role="region"
+      aria-labelledby={`faq-btn-${faq.id}`}
+      style={{
+        overflow: 'hidden',
+        maxHeight: isOpen ? '400px' : '0px',
+        transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)',
+      }}
     >
-      <div className={`pb-8 sm:pb-10 ${isRTL ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12'}`}>
-        <p
-          className="text-base sm:text-lg font-normal text-white/65 leading-relaxed mb-6"
-          style={{
-            opacity: isOpen ? 1 : 0,
-            transform: isOpen ? 'translateY(0)' : 'translateY(8px)',
-            transition: 'opacity 0.4s 0.15s, transform 0.4s 0.15s',
-          }}
-        >
-          {isRTL ? faq.answerAR : faq.answerEN}
-        </p>
-
-        {faq.id === 'consultation' && (
-          <button
-            onClick={onStartProject}
-            className="group/btn relative inline-flex items-center gap-3 px-6 py-3 border text-xs font-light tracking-widest uppercase"
-            style={{
-              borderColor: 'rgba(212,175,55,0.35)',
-              color: '#d4af37',
-              opacity: isOpen ? 1 : 0,
-              transform: isOpen ? 'translateY(0)' : 'translateY(8px)',
-              transition: 'opacity 0.4s 0.25s, transform 0.4s 0.25s, background-color 0.3s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            {isRTL ? 'احجز استشارتك المجانية' : 'Book Your Free Consultation'}
-            <svg
-              className={`w-3 h-3 transition-transform duration-300 ${isRTL ? 'rotate-180 group-hover/btn:-translate-x-1' : 'group-hover/btn:translate-x-1'}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </button>
-        )}
-      </div>
+      <p style={{
+        margin: '0 0 clamp(18px, 2.5vw, 26px)',
+        fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+        color: '#5C6370',
+        lineHeight: 1.8,
+        fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+        paddingInlineStart: 'clamp(36px, 5vw, 44px)',
+        textAlign: isRTL ? 'right' : 'left',
+      }}>
+        {isRTL ? faq.answerAR : faq.answerEN}
+      </p>
     </div>
   </div>
 );
 
 const FAQ = ({ onStartProject }) => {
   const { isRTL } = useLanguage();
-  const [openFaq, setOpenFaq] = useState(null);
+  const [open, setOpen] = useState(null);
 
   return (
-    <section id="faq" className="relative py-24 sm:py-40 px-4 sm:px-6 md:px-8 bg-black overflow-hidden">
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #d4af37 0%, transparent 65%)', opacity: 0.018, filter: 'blur(60px)' }}
-      />
+    <section
+      id="faq"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      style={{
+        background: '#FAFAFA',
+        paddingTop:    'clamp(5rem, 10vw, 8rem)',
+        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
+        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
+        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
+        borderTop: '1px solid #E8EBF0',
+      }}
+    >
+      <style>{`
+        .faq-layout {
+          display: grid;
+          grid-template-columns: 5fr 7fr;
+          gap: clamp(3rem, 7vw, 8rem);
+          align-items: start;
+        }
+        @media (max-width: 900px) {
+          .faq-layout { grid-template-columns: 1fr; }
+        }
+      `}</style>
 
-<div className={`max-w-7xl mx-auto relative z-10 ${isRTL ? 'text-right' : 'text-left'}`}>
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div className="faq-layout">
 
-
-        <div className={`flex items-center gap-4 mb-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <span className={`block w-12 h-px ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-transparent`} aria-hidden />
-          <p className="text-xs tracking-[0.35em] text-[#d4af37]/60 uppercase">
-            {isRTL ? 'أسئلة شائعة' : 'FAQ'}
-          </p>
-        </div>
-
-        <h2
-          className={`text-3xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] mb-6 ${isRTL ? '' : 'tracking-tight'}`}
-          style={{ letterSpacing: isRTL ? '0' : '-0.025em' }}
-        >
-          {isRTL ? 'الأسئلة التي' : 'The questions every'}
-          <br />
-          <span className={`text-transparent bg-clip-text ${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-[#d4af37] to-white/80`}>
-            {isRTL ? 'يسألها كل عميل ذكي.' : 'smart client asks.'}
-          </span>
-        </h2>
-
-        <p className="text-base sm:text-lg text-white/65 max-w-xl mb-16 sm:mb-24 leading-relaxed">
-          {isRTL
-            ? 'الأسئلة الأكثر شيوعاً من عملائنا — إجابات صريحة بدون تعقيد.'
-            : 'The most common questions from our clients — straightforward answers, no fluff.'}
-        </p>
-
-        <div>
-          {faqs.map((faq) => (
-            <FAQItem
-              key={faq.id}
-              faq={faq}
-              isOpen={openFaq === faq.id}
-              onToggle={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
-              isRTL={isRTL}
-              onStartProject={onStartProject}
-            />
-          ))}
-        </div>
-
-        <div className="mt-16 sm:mt-24 pt-12 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <p className="text-white/30 text-sm font-light max-w-sm text-center sm:text-start leading-relaxed">
-            {isRTL ? 'سؤالك مش موجود هنا؟ تواصل معنا مباشرة.' : "Still have a question? Reach out directly."}
-          </p>
-          <button
-            onClick={onStartProject}
-            className="group relative inline-flex items-center gap-3 px-10 py-4 border-2 border-[#d4af37] text-[#d4af37] text-xs font-light tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-all duration-500 active:scale-95 overflow-hidden flex-shrink-0"
-          >
-            <span className={`absolute inset-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent ${isRTL ? 'translate-x-full group-hover:-translate-x-full' : '-translate-x-full group-hover:translate-x-full'}`} />
-            <span className="relative">{isRTL ? 'تحدث معنا' : 'Talk to Us'}</span>
-            <svg
-              className={`relative w-3 h-3 transition-transform duration-300 ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden
+          {/* Left: header — sticky on desktop */}
+          <div style={{ textAlign: isRTL ? 'right' : 'left', position: 'sticky', top: 80 }}>
+            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
+              {isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
+            </span>
+            <h2 style={{
+              fontSize: 'var(--text-5xl)',
+              fontWeight: 800,
+              lineHeight: 1.0,
+              letterSpacing: isRTL ? 0 : '-0.035em',
+              color: '#0D1117',
+              margin: '0 0 clamp(1rem, 2vw, 1.5rem)',
+              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {isRTL ? 'كل ما تريد\nمعرفته.' : 'Everything\nyou need\nto know.'}
+            </h2>
+            <p style={{
+              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+              color: '#5C6370',
+              lineHeight: 1.75,
+              margin: '0 0 clamp(1.75rem, 3.5vw, 2.5rem)',
+              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {isRTL
+                ? 'إذا لم تجد إجابتك هنا، استشارتنا المجانية متاحة دائماً.'
+                : "Can't find your answer here? Our free consultation is always available."}
+            </p>
+            <button
+              onClick={onStartProject}
+              className="btn-primary"
+              style={{ fontSize: '13.5px', padding: '13px 26px' }}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </button>
-        </div>
+              {isRTL ? 'احجز استشارة مجانية' : 'Book Free Consultation'}
+              <ArrowUpRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+            </button>
 
+            {/* Trust note */}
+            <div style={{
+              marginTop: 'clamp(2rem, 4vw, 3rem)',
+              padding: 'clamp(16px, 2vw, 22px)',
+              background: '#FAFAFA',
+              border: '1px solid #E8EBF0',
+              borderRadius: 14,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  {isRTL ? 'نقبل مشاريع جديدة' : 'Accepting new projects'}
+                </span>
+              </div>
+              <p style={{ fontSize: 12.5, color: '#5C6370', margin: 0, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL
+                  ? 'استشارة مجانية · رد خلال ساعتين · لا التزام'
+                  : 'Free consultation · Reply within 2h · No commitment'}
+              </p>
+            </div>
+          </div>
+
+          {/* Right: FAQ items */}
+          <div>
+            {FAQS.map((faq, i) => (
+              <FAQItem
+                key={faq.id}
+                faq={faq}
+                idx={i}
+                isOpen={open === faq.id}
+                onToggle={() => setOpen(open === faq.id ? null : faq.id)}
+                isRTL={isRTL}
+              />
+            ))}
+          </div>
+
+        </div>
       </div>
     </section>
   );

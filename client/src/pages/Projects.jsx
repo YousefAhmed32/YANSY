@@ -1,329 +1,244 @@
-import { useEffect, useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  Plus, FolderKanban, Clock, CheckCircle2, AlertCircle,
-  ArrowRight, Loader2, MessageSquare, FileText, Calendar, Layers
-} from 'lucide-react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchProjects, updateProjectInList } from '../store/projectSlice';
-import { gsap } from 'gsap';
-import { io } from 'socket.io-client';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { fetchProjects } from '../store/projectSlice';
+import { FolderKanban, ArrowRight, Clock, CheckCircle2, Circle, Pause } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
-// ── project type icon map (emoji fallback) ──────────────────────────────────
-const PROJECT_TYPE_EMOJI = {
-  restaurant: '🍽️', clinic: '🏥', pharmacy: '💊',
-  ecommerce: '🛒', saas: '⚙️', realestate: '🏠',
-  education: '📚', delivery: '🚚', other: '💡',
+const TK = {
+  bg:        '#F6F7F9',
+  surface:   '#FFFFFF',
+  border:    '#E8EBF0',
+  accent:    '#2563EB',
+  accentBg:  'rgba(37,99,235,0.06)',
+  text:      '#0D1117',
+  textMuted: '#6B7280',
+  textLight: '#9CA3AF',
+};
+
+const STATUS = {
+  PLANNING:    { dot: '#94a3b8', en: 'Planning',     ar: 'التخطيط',      bg: 'rgba(148,163,184,0.12)' },
+  DESIGN:      { dot: '#2563EB', en: 'Design',       ar: 'التصميم',      bg: 'rgba(37,99,235,0.08)'   },
+  DEVELOPMENT: { dot: '#7c3aed', en: 'Development',  ar: 'التطوير',      bg: 'rgba(124,58,237,0.08)'  },
+  REVIEW:      { dot: '#d97706', en: 'Review',       ar: 'المراجعة',     bg: 'rgba(217,119,6,0.08)'   },
+  COMPLETED:   { dot: '#16a34a', en: 'Delivered',    ar: 'تم التسليم',   bg: 'rgba(22,163,74,0.08)'   },
+  PAUSED:      { dot: '#94a3b8', en: 'Paused',       ar: 'متوقف مؤقتاً', bg: 'rgba(148,163,184,0.12)' },
+  CANCELLED:   { dot: '#dc2626', en: 'Cancelled',    ar: 'ملغي',         bg: 'rgba(220,38,38,0.08)'   },
+};
+
+const StatusBadge = ({ status, language }) => {
+  const info = STATUS[status] || STATUS.PLANNING;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: '4px',
+      padding: '3px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 500,
+      background: info.bg, color: info.dot,
+    }}>
+      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: info.dot, display: 'inline-block' }} />
+      {language === 'ar' ? info.ar : info.en}
+    </span>
+  );
 };
 
 const Projects = () => {
-  const { t } = useTranslation();
-  const { user } = useSelector((state) => state.auth);
-  const { projects, loading } = useSelector((state) => state.projects);
+  const { language, isRTL } = useLanguage();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const socketRef = useRef(null);
+  const { projects = [], loading } = useSelector(s => s.projects);
+  const [search, setSearch] = useState('');
 
-  const containerRef = useRef(null);
-  const titleRef     = useRef(null);
-  const cardsRef     = useRef(null);
+  useEffect(() => { dispatch(fetchProjects()); }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(fetchProjects());
-    initializeSocket();
-    return () => { if (socketRef.current) socketRef.current.disconnect(); };
-  }, [user, dispatch]);
-
-  const initializeSocket = () => {
-    const token = localStorage.getItem('token');
-    if (!token || !user) return;
-    const socketUrl =
-      import.meta.env.VITE_SOCKET_URL ||
-      import.meta.env.VITE_API_URL?.replace('/api', '') ||
-      'http://localhost:5000';
-
-    const socket = io(socketUrl, { auth: { token }, transports: ['websocket', 'polling'] });
-    socket.on('connect', () => { socket.emit('join', user._id); });
-    socket.on('project-created',          () => dispatch(fetchProjects()));
-    socket.on('project-updated',          (d) => dispatch(updateProjectInList(d.project)));
-    socket.on('project-progress-updated', (d) => dispatch(updateProjectInList(d.project)));
-    socket.on('admin-project-update',     (d) => { if (user?.role === 'ADMIN') dispatch(updateProjectInList(d.project)); });
-    socketRef.current = socket;
-  };
-
-  // GSAP entrance
-  useEffect(() => {
-    if (!containerRef.current || !titleRef.current) return;
-    gsap.fromTo(titleRef.current,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.1 }
+  const filtered = useMemo(() => {
+    if (!search.trim()) return projects;
+    const q = search.toLowerCase();
+    return projects.filter(p =>
+      p.name?.toLowerCase().includes(q) ||
+      p.description?.toLowerCase().includes(q)
     );
-    if (cardsRef.current) {
-      gsap.fromTo(cardsRef.current.children,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.1, delay: 0.3 }
-      );
-    }
-  }, [projects]);
+  }, [projects, search]);
 
-  // ── helpers ──────────────────────────────────────────────────────────────────
-
-  const getStatusText = (progress, status) => {
-    if (status === 'cancelled')                    return t('projects.statusCancelled');
-    if (status === 'delivered' || progress === 100) return t('projects.statusDelivered');
-    if (progress >= 80)                            return t('projects.statusNearCompletion');
-    if (progress > 0)                              return t('projects.statusInProgress');
-    return t('projects.statusPending');
+  const fmt = (d) => {
+    if (!d) return null;
+    try {
+      return new Date(d).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
+        day: 'numeric', month: 'short', year: 'numeric',
+      });
+    } catch { return null; }
   };
-
-  const getStatusColor = (progress, status) => {
-    if (status === 'cancelled')                    return 'text-red-400 bg-red-500/20 border-red-500/30';
-    if (status === 'delivered' || progress === 100) return 'text-[#d4af37] bg-[#d4af37]/20 border-[#d4af37]/30';
-    if (progress >= 80)                            return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
-    if (progress > 0)                              return 'text-blue-400 bg-blue-500/20 border-blue-500/30';
-    return 'text-white/60 bg-white/10 border-white/20';
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':   return <CheckCircle2 className="h-5 w-5 text-[#d4af37]" />;
-      case 'in-progress': return <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />;
-      case 'cancelled':   return <AlertCircle className="h-5 w-5 text-red-400" />;
-      default:            return <Clock className="h-5 w-5 text-white/60" />;
-    }
-  };
-
-  const getProjectsCountLabel = (count) =>
-    `${count} ${count === 1 ? t('projects.projectSingular') : t('projects.projectPlural')}`;
-
-  const getUpdatesCountLabel = (count) =>
-    `${count} ${count === 1 ? t('projects.updateSingular') : t('projects.updatePlural')}`;
-
-  const getProjectTypeLabel = (type) => {
-    const key = `projectForm.steps.projectType.options.${type}`;
-    const label = t(key, '');
-    return label || type;
-  };
-
-  // ── loading / error ───────────────────────────────────────────────────────────
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-2 border-[#d4af37]/30 border-t-[#d4af37] rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="px-6 py-4 bg-white/5 border border-white/10 text-white/70">{error}</div>
-    );
-  }
-
-  // ── render ────────────────────────────────────────────────────────────────────
 
   return (
-    <div ref={containerRef} className="space-y-8 md:space-y-12 px-4 md:px-6 lg:px-8 py-6 md:py-8 min-h-screen">
+    <div style={{
+      minHeight: '100vh', background: TK.bg,
+      padding: 'clamp(16px,3vw,32px)',
+      fontFamily: isRTL ? 'IBM Plex Sans Arabic,system-ui,sans-serif' : 'Inter,system-ui,sans-serif',
+      direction: isRTL ? 'rtl' : 'ltr', maxWidth: '1200px', margin: '0 auto',
+    }}>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-        <div className="flex-1">
-          <h1
-            ref={titleRef}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight mb-2 md:mb-4 text-white/90"
-          >
-            {user?.role === 'ADMIN' ? t('projects.allProjects') : t('projects.myProjects')}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1 style={{ fontSize: 'clamp(18px,3vw,24px)', fontWeight: 700, color: TK.text, margin: 0 }}>
+            {language === 'ar' ? 'مشاريعي' : 'My Projects'}
           </h1>
-          <p className="text-sm md:text-lg font-light text-white/50">
-            {getProjectsCountLabel(projects.length)}
+          <p style={{ fontSize: '13px', color: TK.textMuted, margin: '4px 0 0' }}>
+            {projects.length > 0
+              ? (language === 'ar' ? `${projects.length} مشروع` : `${projects.length} project${projects.length !== 1 ? 's' : ''}`)
+              : (language === 'ar' ? 'لا مشاريع بعد' : 'No projects yet')}
           </p>
         </div>
-        <button
-          onClick={() => navigate('/app/projects/new')}
-          className="px-4 py-2 md:px-6 md:py-3 border border-[#d4af37] text-[#d4af37] text-xs md:text-sm font-light tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-all duration-500 flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4 md:h-5 md:w-5" />
-          <span className="hidden sm:inline">
-            {user?.role === 'ADMIN' ? t('projects.createProject') : t('projects.addNewProject')}
-          </span>
-          <span className="sm:hidden">{t('projects.addShort')}</span>
-        </button>
+        {/* Search */}
+        {projects.length > 0 && (
+          <div style={{ position: 'relative' }}>
+            <input
+              type="search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={language === 'ar' ? 'ابحث في المشاريع...' : 'Search projects...'}
+              style={{
+                padding: '8px 14px 8px 34px',
+                borderRadius: '9px', border: `1px solid ${TK.border}`,
+                fontSize: '13px', color: TK.text,
+                background: TK.surface, outline: 'none', width: '220px',
+                fontFamily: 'inherit', transition: 'border-color 0.15s',
+              }}
+              onFocus={e => { e.target.style.borderColor = TK.accent; }}
+              onBlur={e => { e.target.style.borderColor = TK.border; }}
+            />
+            <svg
+              style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: TK.textLight, pointerEvents: 'none' }}
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </div>
+        )}
       </div>
 
-      {/* Empty */}
-      {projects.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 24px 60px', maxWidth: '480px', margin: '0 auto' }}>
-          <div style={{
-            width: '64px', height: '64px', borderRadius: '16px', margin: '0 auto 24px',
-            background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <FolderKanban style={{ width: '28px', height: '28px', color: '#d4af37', opacity: 0.7 }} />
-          </div>
-          <h3 style={{ fontSize: '20px', fontWeight: 400, color: 'rgba(255,255,255,0.8)', marginBottom: '10px', letterSpacing: '-0.01em' }}>
-            Your projects will appear here
-          </h3>
-          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.6, marginBottom: '28px', fontWeight: 300 }}>
-            Projects are created by our team after your initial request. You can track progress, view deliverables, and communicate directly from the project page.
-          </p>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '32px' }}>
-            {[
-              { icon: MessageSquare, label: 'Send a message to start' },
-              { icon: FileText,      label: 'Upload your requirements' },
-              { icon: Calendar,      label: 'Track milestones' },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} style={{
-                display: 'flex', alignItems: 'center', gap: '7px',
-                padding: '6px 12px', borderRadius: '8px',
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                fontSize: '11px', color: 'rgba(255,255,255,0.4)',
-              }}>
-                <Icon style={{ width: '11px', height: '11px' }} />
-                {label}
-              </div>
-            ))}
-          </div>
-          <Link
-            to="/app/messages"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '7px',
-              padding: '10px 22px', borderRadius: '10px',
-              background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)',
-              color: '#d4af37', fontSize: '12px', fontWeight: 400,
-              letterSpacing: '0.08em', textDecoration: 'none', transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background='#d4af37'; e.currentTarget.style.color='#000'; }}
-            onMouseLeave={e => { e.currentTarget.style.background='rgba(212,175,55,0.1)'; e.currentTarget.style.color='#d4af37'; }}
-          >
-            <MessageSquare style={{ width: '13px', height: '13px' }} />
-            Start a Conversation
-          </Link>
-        </div>
-      ) : (
-        <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {projects.map((project) => (
-            <Link
-              key={project._id}
-              to={`/app/projects/${project._id}`}
-              className="group relative p-6 md:p-8 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#d4af37]/50 transition-all duration-500 rounded-lg"
-              onMouseEnter={e => gsap.to(e.currentTarget, { y: -4, duration: 0.3, ease: 'power2.out' })}
-              onMouseLeave={e => gsap.to(e.currentTarget, { y: 0,  duration: 0.3, ease: 'power2.out' })}
-            >
-              {/* Title row */}
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-xl md:text-2xl font-light text-white/90 group-hover:text-[#d4af37] transition-colors duration-300 flex-1 pr-4 line-clamp-2">
-                  {project.title}
-                </h3>
-                <div className="flex-shrink-0 ml-2">{getStatusIcon(project.status)}</div>
-              </div>
-
-              {/* Status badge + optional project type badge */}
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className={`inline-block px-3 py-1 text-xs font-light tracking-wide uppercase border rounded ${getStatusColor(project.progress || 0, project.status)}`}>
-                  {getStatusText(project.progress || 0, project.status)}
-                </span>
-                {project.projectType && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-light tracking-wide border border-white/15 text-white/45 rounded-full">
-                    <span>{PROJECT_TYPE_EMOJI[project.projectType] || '📁'}</span>
-                    {getProjectTypeLabel(project.projectType)}
-                  </span>
-                )}
-              </div>
-
-              {/* Description */}
-              <p className="text-xs md:text-sm font-light text-white/50 mb-4 md:mb-5 line-clamp-2">
-                {project.description || t('projects.noDescription')}
-              </p>
-
-              {/* Tags from request (if stored on project) */}
-              {project.tags && project.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {project.tags.slice(0, 4).map(tag => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 text-xs font-light border border-white/10 text-white/40 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {project.tags.length > 4 && (
-                    <span className="px-2 py-0.5 text-xs font-light border border-white/10 text-white/40 rounded-full">
-                      +{project.tags.length - 4}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Progress + meta */}
-              <div className="space-y-3">
-                {(project.progress > 0 || project.status !== 'pending') && (
-                  <div>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-white/60 font-light">{t('projects.progress')}</span>
-                      <span className="text-white/90 font-light">{project.progress || 0}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-700 ease-out ${
-                          project.progress === 100
-                            ? 'bg-gradient-to-r from-[#d4af37] to-[#f4d03f]'
-                            : project.progress >= 80
-                            ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
-                            : 'bg-gradient-to-r from-blue-500 to-blue-400'
-                        }`}
-                        style={{ width: `${project.progress || 0}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {project.updatedAt && (
-                  <div className="flex items-center gap-2 text-xs text-white/50">
-                    <Calendar className="h-3 w-3" />
-                    <span className="font-light">
-                      {t('projects.updatedOn')} {new Date(project.updatedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-
-                {project.updates && project.updates.length > 0 && (
-                  <div className="flex items-center gap-2 text-xs text-white/50">
-                    <FileText className="h-3 w-3" />
-                    <span className="font-light">{getUpdatesCountLabel(project.updates.length)}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Action buttons */}
-              <div className="mt-5 pt-4 border-t border-white/10 flex gap-2">
-                <Link
-                  to={`/app/projects/${project._id}`}
-                  className="flex-1 px-4 py-2 text-xs font-light tracking-wide uppercase border border-white/20 text-white/70 hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 text-center"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {t('projects.viewDetails')}
-                </Link>
-                <Link
-                  to={`/app/projects/${project._id}?tab=messages`}
-                  className="px-4 py-2 text-xs font-light tracking-wide uppercase border border-white/20 text-white/70 hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300"
-                  onClick={e => { e.stopPropagation(); e.preventDefault(); navigate(`/app/projects/${project._id}?tab=messages`); }}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Link>
-              </div>
-
-              {/* Hover arrow */}
-              <div className="absolute bottom-4 md:bottom-6 right-4 md:right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-[#d4af37]" />
-              </div>
-
-              {/* Bottom accent */}
-              <div className="absolute bottom-0 left-0 w-0 h-px bg-[#d4af37] group-hover:w-full transition-all duration-500" />
-            </Link>
+      {/* Loading */}
+      {loading && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: '14px' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{
+              height: '180px', borderRadius: '14px', border: `1px solid ${TK.border}`,
+              background: TK.surface, animation: 'shimmer 1.5s infinite',
+            }} />
           ))}
+          <style>{`@keyframes shimmer{0%{opacity:1}50%{opacity:0.4}100%{opacity:1}}`}</style>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && filtered.length === 0 && (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '64px 24px', textAlign: 'center',
+        }}>
+          <div style={{
+            width: '60px', height: '60px', borderRadius: '16px', background: TK.accentBg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px',
+          }}>
+            <FolderKanban style={{ width: '28px', height: '28px', color: TK.accent }} />
+          </div>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: TK.text, margin: '0 0 8px' }}>
+            {search ? (language === 'ar' ? 'لا نتائج' : 'No results') : (language === 'ar' ? 'لا مشاريع بعد' : 'No projects yet')}
+          </h2>
+          <p style={{ fontSize: '13.5px', color: TK.textMuted, margin: '0 0 20px', lineHeight: 1.5, maxWidth: '340px' }}>
+            {search
+              ? (language === 'ar' ? 'جرّب كلمة بحث مختلفة' : 'Try a different search term')
+              : (language === 'ar'
+                ? 'ستظهر مشاريعك هنا بعد إعدادها من قِبل فريقنا عقب طلبك.'
+                : 'Your projects will appear here once our team sets them up after your request.')}
+          </p>
+          {!search && (
+            <a href="https://wa.me/201090385390" target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '9px 20px', borderRadius: '9px',
+                background: '#25D366', color: '#fff', textDecoration: 'none', fontSize: '13px', fontWeight: 500,
+              }}
+            >
+              {language === 'ar' ? 'تواصل معنا' : 'Contact Us'}
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Projects grid */}
+      {!loading && filtered.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: '14px' }}>
+          {filtered.map(project => {
+            const progress = project.progress ?? 0;
+            const info = STATUS[project.status] || STATUS.PLANNING;
+            return (
+              <Link key={project._id} to={`/app/projects/${project._id}`}
+                style={{
+                  display: 'block', textDecoration: 'none',
+                  background: TK.surface, borderRadius: '14px',
+                  border: `1px solid ${TK.border}`, padding: '20px',
+                  transition: 'box-shadow 0.18s, border-color 0.18s',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget;
+                  el.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
+                  el.style.borderColor = 'rgba(37,99,235,0.22)';
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget;
+                  el.style.boxShadow = 'none';
+                  el.style.borderColor = TK.border;
+                }}
+              >
+                {/* Card header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', gap: '8px' }}>
+                  <div style={{
+                    width: '38px', height: '38px', borderRadius: '9px', flexShrink: 0,
+                    background: TK.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <FolderKanban style={{ width: '18px', height: '18px', color: TK.accent }} />
+                  </div>
+                  <StatusBadge status={project.status} language={language} />
+                </div>
+
+                {/* Title + desc */}
+                <h3 style={{ fontSize: '14.5px', fontWeight: 600, color: TK.text, margin: '0 0 5px', lineHeight: 1.35 }}>
+                  {project.name}
+                </h3>
+                {project.description && (
+                  <p style={{ fontSize: '12px', color: TK.textMuted, margin: '0 0 14px', lineHeight: 1.5 }}>
+                    {project.description.slice(0, 80)}{project.description.length > 80 ? '…' : ''}
+                  </p>
+                )}
+
+                {/* Progress bar */}
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                    <span style={{ fontSize: '10.5px', color: TK.textLight }}>
+                      {language === 'ar' ? 'الإنجاز' : 'Progress'}
+                    </span>
+                    <span style={{ fontSize: '10.5px', fontWeight: 600, color: TK.accent }}>{progress}%</span>
+                  </div>
+                  <div style={{ height: '4px', background: TK.accentBg, borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: '999px', width: `${progress}%`,
+                      background: `linear-gradient(90deg, ${TK.accent}, #60a5fa)`,
+                      transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)',
+                    }} />
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock style={{ width: '11px', height: '11px', color: TK.textLight }} />
+                    <span style={{ fontSize: '10.5px', color: TK.textLight }}>
+                      {fmt(project.updatedAt || project.createdAt)}
+                    </span>
+                  </div>
+                  <ArrowRight style={{ width: '13px', height: '13px', color: TK.accent, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

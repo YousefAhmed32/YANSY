@@ -37,12 +37,12 @@ const Pricing = () => {
   const [billing,   setBilling]   = useState('monthly'); // 'monthly' | 'annual'
   const [loading,   setLoading]   = useState(true);
 
-  const gold      = '#d4af37';
-  const bg        = isDark ? '#080806' : '#fafaf9';
-  const surface   = isDark ? 'rgba(255,255,255,0.04)' : '#ffffff';
-  const border    = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-  const textMain  = isDark ? '#f5f5f0' : '#0a0a0a';
-  const textMuted = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+  const gold      = '#2563EB';
+  const bg        = isDark ? '#F6F7F9' : '#fafaf9';
+  const surface   = isDark ? 'rgba(0,0,0,0.03)' : '#ffffff';
+  const border    = isDark ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.08)';
+  const textMain  = isDark ? '#f5f5f0' : '#0D1117';
+  const textMuted = isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.4)';
 
   useEffect(() => {
     api.get('/billing/plans')
@@ -99,7 +99,7 @@ const Pricing = () => {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             padding: '3px 12px', borderRadius: '20px',
-            border: '1px solid rgba(212,175,55,0.25)', background: 'rgba(212,175,55,0.06)',
+            border: '1px solid rgba(37,99,235,0.25)', background: 'rgba(37,99,235,0.06)',
             marginBottom: '16px',
           }}>
             <Zap style={{ width: '10px', height: '10px', color: gold }} />
@@ -120,7 +120,7 @@ const Pricing = () => {
           </p>
 
           {/* Billing toggle */}
-          <div style={{ display: 'inline-flex', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderRadius: '10px', padding: '4px', gap: '4px' }}>
+          <div style={{ display: 'inline-flex', background: isDark ? 'rgba(0,0,0,0.04)' : 'rgba(0,0,0,0.04)', borderRadius: '10px', padding: '4px', gap: '4px' }}>
             {['monthly', 'annual'].map(cycle => (
               <button
                 key={cycle}
@@ -144,7 +144,7 @@ const Pricing = () => {
         {/* Plan cards */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid rgba(212,175,55,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </div>
         ) : (
@@ -161,8 +161,8 @@ const Pricing = () => {
                   key={plan._id}
                   style={{
                     padding: '32px',
-                    background: isPro ? 'rgba(212,175,55,0.06)' : surface,
-                    border: `1px solid ${isPro ? 'rgba(212,175,55,0.3)' : border}`,
+                    background: isPro ? 'rgba(37,99,235,0.06)' : surface,
+                    border: `1px solid ${isPro ? 'rgba(37,99,235,0.3)' : border}`,
                     borderRadius: '16px',
                     position: 'relative',
                     transition: 'transform 0.2s',
@@ -186,8 +186,8 @@ const Pricing = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
                     <div style={{
                       width: '40px', height: '40px', borderRadius: '10px',
-                      background: isPro ? 'rgba(212,175,55,0.15)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-                      border: `1px solid ${isPro ? 'rgba(212,175,55,0.3)' : border}`,
+                      background: isPro ? 'rgba(37,99,235,0.15)' : isDark ? 'rgba(0,0,0,0.04)' : 'rgba(0,0,0,0.05)',
+                      border: `1px solid ${isPro ? 'rgba(37,99,235,0.3)' : border}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       <Icon style={{ width: '18px', height: '18px', color: isPro ? gold : textMuted }} />
@@ -263,7 +263,7 @@ const Pricing = () => {
                           ) : val ? (
                             <Check style={{ width: '14px', height: '14px', color: '#34d399', flexShrink: 0 }} />
                           ) : (
-                            <X style={{ width: '14px', height: '14px', color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', flexShrink: 0 }} />
+                            <X style={{ width: '14px', height: '14px', color: isDark ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.2)', flexShrink: 0 }} />
                           )}
                           <span style={{ fontSize: '12px', fontWeight: 300, color: val !== false ? textMain : textMuted }}>
                             {FEATURE_LABELS[key]}

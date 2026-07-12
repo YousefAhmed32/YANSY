@@ -16,7 +16,7 @@ export const CASE_STUDIES = [
     service: 'web-development',
     duration: '10 weeks',
     year: '2024',
-    color: '#d4af37',
+    color: '#2563EB',
     // TODO: Replace with real YANSYTECH asset
     heroImage: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80',
     // TODO: Replace with real YANSYTECH asset

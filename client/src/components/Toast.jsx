@@ -1,9 +1,7 @@
 import { Toaster } from 'react-hot-toast';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Toast = () => {
-  const { isDark } = useTheme();
   const { isRTL } = useLanguage();
 
   return (
@@ -11,58 +9,44 @@ const Toast = () => {
       position={isRTL ? 'top-left' : 'top-right'}
       reverseOrder={false}
       gutter={8}
-      containerClassName=""
-      containerStyle={{}}
       toastOptions={{
-        // Default options
         duration: 4000,
-        className: isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900',
         style: {
-          background: isDark ? '#1f2937' : '#ffffff',
-          color: isDark ? '#ffffff' : '#111827',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+          background: '#FFFFFF',
+          color: '#0D1117',
+          border: '1px solid #E8EBF0',
+          borderRadius: '10px',
+          fontSize: '13px',
+          fontWeight: 500,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+          padding: '10px 16px',
+          maxWidth: '380px',
         },
-        // Success toast
         success: {
           duration: 3000,
-          iconTheme: {
-            primary: '#10b981',
-            secondary: '#fff',
-          },
-          className: isDark 
-            ? 'bg-green-900/20 text-green-400 border-green-800' 
-            : 'bg-green-50 text-green-800 border-green-200',
+          iconTheme: { primary: '#10B981', secondary: '#fff' },
           style: {
-            background: isDark ? 'rgba(6, 78, 59, 0.2)' : '#f0fdf4',
-            color: isDark ? '#4ade80' : '#166534',
-            border: `1px solid ${isDark ? 'rgba(34, 197, 94, 0.3)' : '#86efac'}`,
+            background: '#F0FDF4',
+            color: '#166534',
+            border: '1px solid #86EFAC',
           },
         },
-        // Error toast
         error: {
           duration: 4000,
-          iconTheme: {
-            primary: '#ef4444',
-            secondary: '#fff',
-          },
-          className: isDark 
-            ? 'bg-red-900/20 text-red-400 border-red-800' 
-            : 'bg-red-50 text-red-800 border-red-200',
+          iconTheme: { primary: '#EF4444', secondary: '#fff' },
           style: {
-            background: isDark ? 'rgba(127, 29, 29, 0.2)' : '#fef2f2',
-            color: isDark ? '#f87171' : '#991b1b',
-            border: `1px solid ${isDark ? 'rgba(248, 113, 113, 0.3)' : '#fca5a5'}`,
+            background: '#FEF2F2',
+            color: '#991B1B',
+            border: '1px solid #FECACA',
           },
         },
-        // Loading toast
         loading: {
-          iconTheme: {
-            primary: '#d4af37',
-            secondary: '#fff',
+          iconTheme: { primary: '#2563EB', secondary: '#EFF6FF' },
+          style: {
+            background: '#EFF6FF',
+            color: '#1D4ED8',
+            border: '1px solid #DBEAFE',
           },
-          className: isDark 
-            ? 'bg-gray-800 text-white' 
-            : 'bg-white text-gray-900',
         },
       }}
     />

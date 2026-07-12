@@ -204,7 +204,7 @@ const StartProject = ({ onComplete }) => {
           {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-[#d4af37] rounded-full animate-float"
+              className="absolute w-2 h-2 bg-[#2563EB] rounded-full animate-float"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -219,8 +219,8 @@ const StartProject = ({ onComplete }) => {
           <div className="mb-8">
             {/* Success icon with pulse animation */}
             <div className="relative w-24 h-24 mx-auto mb-8">
-              <div className="absolute inset-0 rounded-full bg-[#d4af37]/30 animate-ping" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-[#d4af37] to-[#f4d03f] flex items-center justify-center shadow-2xl shadow-[#d4af37]/50">
+              <div className="absolute inset-0 rounded-full bg-[#2563EB]/30 animate-ping" />
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-[#2563EB] to-[#f4d03f] flex items-center justify-center shadow-2xl shadow-[#2563EB]/50">
                 <Check className="w-12 h-12 text-black animate-bounce-in" />
               </div>
             </div>
@@ -236,11 +236,11 @@ const StartProject = ({ onComplete }) => {
             {/* Animated success indicators */}
             <div className="flex items-center justify-center gap-6 text-sm text-white/50 animate-fade-in-delay-2">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#d4af37]" />
+                <Sparkles className="w-4 h-4 text-[#2563EB]" />
                 <span>Project Created</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#d4af37]" />
+                <Zap className="w-4 h-4 text-[#2563EB]" />
                 <span>Team Notified</span>
               </div>
             </div>
@@ -258,7 +258,7 @@ const StartProject = ({ onComplete }) => {
     >
       {/* Enhanced background with animated gradient */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 via-transparent to-[#d4af37]/5 animate-gradient" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/5 via-transparent to-[#2563EB]/5 animate-gradient" />
         <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
@@ -272,8 +272,8 @@ const StartProject = ({ onComplete }) => {
         <div className="mb-12 text-center">
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#d4af37]/20 blur-xl rounded-full" />
-              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#d4af37] to-[#f4d03f] flex items-center justify-center">
+              <div className="absolute inset-0 bg-[#2563EB]/20 blur-xl rounded-full" />
+              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#2563EB] to-[#f4d03f] flex items-center justify-center">
                 <Target className="w-8 h-8 text-black" />
               </div>
             </div>
@@ -297,7 +297,7 @@ const StartProject = ({ onComplete }) => {
           <div className="relative h-2 bg-white/5 rounded-full mb-6 overflow-hidden">
             <div
               ref={progressBarRef}
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] rounded-full transition-all duration-500"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] rounded-full transition-all duration-500"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             >
               <div className="absolute inset-0 bg-white/30 animate-shimmer" />
@@ -312,7 +312,7 @@ const StartProject = ({ onComplete }) => {
                   ref={el => stepRefs.current[step - 1] = el}
                   className={`relative group w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-500 ${
                     currentStep >= step
-                      ? 'bg-gradient-to-br from-[#d4af37] to-[#f4d03f] text-black scale-110 shadow-lg shadow-[#d4af37]/50'
+                      ? 'bg-gradient-to-br from-[#2563EB] to-[#f4d03f] text-black scale-110 shadow-lg shadow-[#2563EB]/50'
                       : 'bg-white/5 text-white/40 scale-100'
                   }`}
                 >
@@ -324,7 +324,7 @@ const StartProject = ({ onComplete }) => {
 
                   {/* Pulse effect for current step */}
                   {currentStep === step && (
-                    <div className="absolute inset-0 rounded-full bg-[#d4af37]/30 animate-ping" />
+                    <div className="absolute inset-0 rounded-full bg-[#2563EB]/30 animate-ping" />
                   )}
                 </div>
                 {step < 3 && (
@@ -351,7 +351,7 @@ const StartProject = ({ onComplete }) => {
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="absolute w-1 h-1 bg-[#d4af37]/30 rounded-full animate-float-slow"
+                className="absolute w-1 h-1 bg-[#2563EB]/30 rounded-full animate-float-slow"
                 style={{
                   left: `${20 + i * 20}%`,
                   top: `${10 + i * 15}%`,
@@ -367,7 +367,7 @@ const StartProject = ({ onComplete }) => {
               <div className="space-y-6">
                 <div>
                   <label className="block text-base font-light text-white/90 mb-6 flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-[#d4af37]" />
+                    <MessageCircle className="w-5 h-5 text-[#2563EB]" />
                     {t('projectForm.steps.clientType.title')}
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -393,20 +393,20 @@ const StartProject = ({ onComplete }) => {
                         onMouseLeave={() => setHoveredOption(null)}
                         className={`group relative p-8 border-2 rounded-xl text-left transition-all duration-300 transform ${
                           formData.clientType === option.type
-                            ? 'border-[#d4af37] bg-gradient-to-br from-[#d4af37]/20 to-[#d4af37]/5 scale-105 shadow-lg shadow-[#d4af37]/20'
+                            ? 'border-[#2563EB] bg-gradient-to-br from-[#2563EB]/20 to-[#2563EB]/5 scale-105 shadow-lg shadow-[#2563EB]/20'
                             : 'border-white/10 hover:border-white/30 hover:bg-white/5 hover:scale-102'
                         }`}
                       >
                         {/* Selection indicator */}
                         {formData.clientType === option.type && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#d4af37] rounded-full flex items-center justify-center shadow-lg">
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#2563EB] rounded-full flex items-center justify-center shadow-lg">
                             <Check className="w-4 h-4 text-black" />
                           </div>
                         )}
 
                         {/* Hover glow effect */}
                         {hoveredOption === option.type && (
-                          <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/10 to-transparent rounded-xl" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#2563EB]/10 to-transparent rounded-xl" />
                         )}
 
                         <div className="relative">
@@ -439,7 +439,7 @@ const StartProject = ({ onComplete }) => {
                 <div>
                   <label htmlFor="projectDescription" className="block text-base font-light text-white/90 mb-4 flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-[#d4af37]" />
+                      <Sparkles className="w-5 h-5 text-[#2563EB]" />
                       {t('projectForm.steps.projectDescription.title')}
                     </span>
                     <span className={`text-xs ${charCount >= 10 ? 'text-green-400' : 'text-white/40'} transition-colors`}>
@@ -452,15 +452,15 @@ const StartProject = ({ onComplete }) => {
                       value={formData.projectDescription}
                       onChange={(e) => handleChange('projectDescription', e.target.value)}
                       rows={8}
-                      className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all resize-none"
+                      className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all resize-none"
                       placeholder={t('projectForm.steps.projectDescription.placeholder')}
                     />
                     {/* Typing indicator */}
                     {formData.projectDescription && (
                       <div className="absolute bottom-4 right-4 flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                        <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                        <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                        <div className="w-1.5 h-1.5 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                        <div className="w-1.5 h-1.5 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                        <div className="w-1.5 h-1.5 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
                       </div>
                     )}
                   </div>
@@ -485,7 +485,7 @@ const StartProject = ({ onComplete }) => {
                         onClick={() => handleChange('budgetRange', option.value)}
                         className={`group relative px-6 py-4 border-2 rounded-xl text-left transition-all duration-300 transform ${
                           formData.budgetRange === option.value
-                            ? 'border-[#d4af37] bg-gradient-to-r from-[#d4af37]/20 to-[#d4af37]/5 scale-102 shadow-lg'
+                            ? 'border-[#2563EB] bg-gradient-to-r from-[#2563EB]/20 to-[#2563EB]/5 scale-102 shadow-lg'
                             : 'border-white/10 hover:border-white/30 hover:bg-white/5'
                         }`}
                       >
@@ -499,7 +499,7 @@ const StartProject = ({ onComplete }) => {
                             </span>
                           </div>
                           {formData.budgetRange === option.value && (
-                            <div className="w-5 h-5 bg-[#d4af37] rounded-full flex items-center justify-center">
+                            <div className="w-5 h-5 bg-[#2563EB] rounded-full flex items-center justify-center">
                               <Check className="w-3 h-3 text-black" />
                             </div>
                           )}
@@ -522,10 +522,10 @@ const StartProject = ({ onComplete }) => {
               <div className="space-y-6">
                 {/* Pre-filled user info display */}
                 <div className="relative p-6 bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-xl overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 blur-3xl" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563EB]/10 blur-3xl" />
                   <div className="relative">
                     <div className="text-xs font-light text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <div className="w-1 h-1 bg-[#d4af37] rounded-full" />
+                      <div className="w-1 h-1 bg-[#2563EB] rounded-full" />
                       {t('projectForm.steps.contact.accountInfo')}
                     </div>
                     <div className="space-y-3 text-sm font-light text-white/80">
@@ -553,7 +553,7 @@ const StartProject = ({ onComplete }) => {
                     id="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                    className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all"
+                    className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all"
                     placeholder={t('projectForm.steps.contact.phoneNumberPlaceholder')}
                   />
                   {errors.phoneNumber && (
@@ -575,7 +575,7 @@ const StartProject = ({ onComplete }) => {
                         id="companyName"
                         value={formData.companyName}
                         onChange={(e) => handleChange('companyName', e.target.value)}
-                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all"
+                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all"
                         placeholder={t('projectForm.steps.contact.companyNamePlaceholder')}
                       />
                       {errors.companyName && (
@@ -594,7 +594,7 @@ const StartProject = ({ onComplete }) => {
                         id="companySize"
                         value={formData.companySize}
                         onChange={(e) => handleChange('companySize', e.target.value)}
-                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white focus:outline-none focus:border-[#d4af37] focus:bg-white/10 transition-all cursor-pointer"
+                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-xl text-white focus:outline-none focus:border-[#2563EB] focus:bg-white/10 transition-all cursor-pointer"
                       >
                         <option value="" className="bg-black">{t('projectForm.steps.contact.companySizeSelect')}</option>
                         {companySizeOptions.map(option => (
@@ -640,7 +640,7 @@ const StartProject = ({ onComplete }) => {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#d4af37]/30 hover:shadow-xl hover:shadow-[#d4af37]/50 hover:scale-105"
+                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105"
                 >
                   <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   <span className="relative">{t('projectForm.navigation.next')}</span>
@@ -650,7 +650,7 @@ const StartProject = ({ onComplete }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#d4af37]/30 hover:shadow-xl hover:shadow-[#d4af37]/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {loading && (
                     <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />

@@ -11,14 +11,14 @@ import { gsap } from 'gsap';
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
 const Toggle = ({ value, onChange, isDark }) => {
-  const gold = '#d4af37';
+  const gold = '#2563EB';
   return (
     <button
       onClick={() => onChange(!value)}
       style={{
         width: '40px', height: '22px', borderRadius: '11px',
-        background: value ? 'rgba(212,175,55,0.2)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
-        border: `1px solid ${value ? 'rgba(212,175,55,0.4)' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')}`,
+        background: value ? 'rgba(37,99,235,0.2)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
+        border: `1px solid ${value ? 'rgba(37,99,235,0.4)' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')}`,
         cursor: 'pointer',
         padding: '2px',
         display: 'flex',
@@ -32,7 +32,7 @@ const Toggle = ({ value, onChange, isDark }) => {
         width: '16px', height: '16px', borderRadius: '50%',
         background: value ? gold : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'),
         transition: 'all 0.25s',
-        boxShadow: value ? `0 0 6px rgba(212,175,55,0.4)` : 'none',
+        boxShadow: value ? `0 0 6px rgba(37,99,235,0.4)` : 'none',
       }} />
     </button>
   );
@@ -64,7 +64,7 @@ const Section = ({ title, icon: Icon, children, isDark }) => {
   const surface  = isDark ? 'rgba(255,255,255,0.04)' : '#ffffff';
   const border   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
   const textMain = isDark ? '#f5f5f0' : '#0a0a0a';
-  const gold     = '#d4af37';
+  const gold     = '#2563EB';
 
   return (
     <div style={{
@@ -114,7 +114,7 @@ const Settings = () => {
   const bg       = isDark ? '#080806' : '#fafaf9';
   const textMain = isDark ? '#f5f5f0' : '#0a0a0a';
   const textMuted = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
-  const gold     = '#d4af37';
+  const gold     = '#2563EB';
   const border   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
   useEffect(() => {
@@ -196,11 +196,11 @@ const Settings = () => {
                     padding: '4px 10px',
                     borderRadius: '6px',
                     border: `1px solid ${(opt === 'Dark' && isDark) || (opt === 'Light' && !isDark)
-                      ? 'rgba(212,175,55,0.5)'
+                      ? 'rgba(37,99,235,0.5)'
                       : border
                     }`,
                     background: (opt === 'Dark' && isDark) || (opt === 'Light' && !isDark)
-                      ? 'rgba(212,175,55,0.1)'
+                      ? 'rgba(37,99,235,0.1)'
                       : 'transparent',
                     color: (opt === 'Dark' && isDark) || (opt === 'Light' && !isDark) ? gold : textMuted,
                     fontSize: '10px', fontWeight: 300, cursor: 'pointer',
@@ -230,15 +230,15 @@ const Settings = () => {
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
                 padding: '6px 14px',
-                background: 'rgba(212,175,55,0.08)',
-                border: '1px solid rgba(212,175,55,0.25)',
+                background: 'rgba(37,99,235,0.08)',
+                border: '1px solid rgba(37,99,235,0.25)',
                 borderRadius: '7px',
                 color: gold, fontSize: '11px',
                 fontWeight: 300, cursor: 'pointer',
                 transition: 'all 0.2s', letterSpacing: '0.06em',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.08)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.08)'; }}
             >
               <Globe style={{ width: '13px', height: '13px' }} />
               {language === 'en' ? '🇺🇸 English' : '🇸🇦 العربية'}
@@ -296,8 +296,8 @@ const Settings = () => {
               style={{
                 display: 'flex', alignItems: 'center', gap: '7px',
                 padding: '9px 18px',
-                background: saved ? 'rgba(52,211,153,0.1)' : 'rgba(212,175,55,0.08)',
-                border: `1px solid ${saved ? 'rgba(52,211,153,0.3)' : 'rgba(212,175,55,0.25)'}`,
+                background: saved ? 'rgba(52,211,153,0.1)' : 'rgba(37,99,235,0.08)',
+                border: `1px solid ${saved ? 'rgba(52,211,153,0.3)' : 'rgba(37,99,235,0.25)'}`,
                 borderRadius: '7px',
                 color: saved ? '#34d399' : gold,
                 fontSize: '10px', fontWeight: 400,

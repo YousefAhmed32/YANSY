@@ -51,7 +51,7 @@ const BUDGET_OPTIONS = [
   { value: '500-1000',      icon: '🚀', key: '500to1000',   color: '#8b5cf6' },
   { value: '1000-3000',     icon: '⭐', key: '1000to3000',  color: '#eab308' },
   { value: '3000-10000',    icon: '💎', key: '3000to10000', color: '#06b6d4' },
-  { value: '10000-plus',    icon: '👑', key: '10000plus',   color: '#d4af37' },
+  { value: '10000-plus',    icon: '👑', key: '10000plus',   color: '#2563EB' },
 ];
 
 const TIMELINE_OPTIONS = [
@@ -249,7 +249,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
   const inputCls = [
     'w-full px-4 py-3.5 bg-white/5 border border-white/12',
     'text-white placeholder-white/30 transition-all outline-none',
-    'focus:border-[#d4af37] focus:bg-white/8',
+    'focus:border-[#2563EB] focus:bg-white/8',
     /* iOS zoom prevention: font-size must be ≥16px */
     'text-base',
   ].join(' ');
@@ -292,35 +292,35 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
         /* ── Custom scrollbar ── */
         .prf-scroll::-webkit-scrollbar      { width: 5px; }
         .prf-scroll::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); }
-        .prf-scroll::-webkit-scrollbar-thumb{ background: rgba(212,175,55,.3); border-radius: 99px; }
-        .prf-scroll::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,.55); }
+        .prf-scroll::-webkit-scrollbar-thumb{ background: rgba(37,99,235,.3); border-radius: 99px; }
+        .prf-scroll::-webkit-scrollbar-thumb:hover { background: rgba(37,99,235,.55); }
 
         /* ── Type card ── */
         .prf-type-card { transition: border-color .2s, background .2s, transform .15s, box-shadow .2s; }
         .prf-type-card:hover { border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.05); }
         .prf-type-card.sel  {
-          border-color: #d4af37;
-          background: linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.04));
+          border-color: #2563EB;
+          background: linear-gradient(135deg,rgba(37,99,235,.18),rgba(37,99,235,.04));
           transform: scale(1.04);
-          box-shadow: 0 4px 24px rgba(212,175,55,.18);
+          box-shadow: 0 4px 24px rgba(37,99,235,.18);
         }
 
         /* ── Option row (budget/timeline/size) ── */
         .prf-opt-row { transition: border-color .2s, background .2s, transform .15s, box-shadow .2s; }
         .prf-opt-row:hover  { border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.05); }
         .prf-opt-row.sel    {
-          border-color: #d4af37;
-          background: linear-gradient(90deg,rgba(212,175,55,.14),rgba(212,175,55,.03));
+          border-color: #2563EB;
+          background: linear-gradient(90deg,rgba(37,99,235,.14),rgba(37,99,235,.03));
           transform: scale(1.015);
-          box-shadow: 0 2px 16px rgba(212,175,55,.14);
+          box-shadow: 0 2px 16px rgba(37,99,235,.14);
         }
 
         /* ── Client card ── */
         .prf-client-card { transition: border-color .2s, background .2s, transform .15s; }
         .prf-client-card:hover { border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.05); }
         .prf-client-card.sel {
-          border-color: #d4af37;
-          background: linear-gradient(135deg,rgba(212,175,55,.16),rgba(212,175,55,.04));
+          border-color: #2563EB;
+          background: linear-gradient(135deg,rgba(37,99,235,.16),rgba(37,99,235,.04));
           transform: scale(1.03);
         }
 
@@ -328,16 +328,16 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
         .prf-tag { transition: border-color .18s, background .18s, color .18s, transform .12s; }
         .prf-tag:hover  { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.08); color: rgba(255,255,255,.9); }
         .prf-tag.sel    {
-          border-color: #d4af37; background: rgba(212,175,55,.18);
-          color: #d4af37; transform: scale(1.04);
+          border-color: #2563EB; background: rgba(37,99,235,.18);
+          color: #2563EB; transform: scale(1.04);
         }
 
         /* ── Nav buttons ── */
         .prf-btn-next {
           transition: background .25s, box-shadow .25s, transform .12s;
-          background: linear-gradient(135deg, #d4af37, #f4d03f);
+          background: linear-gradient(135deg, #2563EB, #f4d03f);
         }
-        .prf-btn-next:hover  { box-shadow: 0 4px 28px rgba(212,175,55,.45); transform: translateY(-1px); }
+        .prf-btn-next:hover  { box-shadow: 0 4px 28px rgba(37,99,235,.45); transform: translateY(-1px); }
         .prf-btn-next:active { transform: scale(.97); }
         .prf-btn-back {
           transition: background .2s, border-color .2s;
@@ -368,7 +368,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="absolute w-1 h-1 rounded-full prf-float"
               style={{
-                background: 'rgba(212,175,55,.35)',
+                background: 'rgba(37,99,235,.35)',
                 left: `${12 + i * 15}%`,
                 top : `${18 + (i % 3) * 26}%`,
                 animationDelay: `${i * 0.5}s`,
@@ -386,7 +386,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
           aria-label={t('projectForm.projectRequest.title')}
           className="relative w-full sm:max-w-xl flex flex-col overflow-hidden"
           style={{
-            background   : 'linear-gradient(160deg,#0a0a0a 0%,#000 60%,rgba(212,175,55,.04) 100%)',
+            background   : 'linear-gradient(160deg,#0a0a0a 0%,#000 60%,rgba(37,99,235,.04) 100%)',
             border       : '1px solid rgba(255,255,255,.1)',
             borderRadius : '16px 16px 0 0',
             maxHeight    : '96dvh',
@@ -400,7 +400,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
         >
           {/* Ambient glow top-right */}
           <div aria-hidden className="absolute top-0 right-0 w-56 h-56 pointer-events-none"
-            style={{ background: 'radial-gradient(circle,rgba(212,175,55,.1) 0%,transparent 70%)', filter: 'blur(24px)' }} />
+            style={{ background: 'radial-gradient(circle,rgba(37,99,235,.1) 0%,transparent 70%)', filter: 'blur(24px)' }} />
 
           {/* ── Top bar ───────────────────────────────────────── */}
           <div className="relative flex-shrink-0 flex items-center justify-between px-5 pt-4 pb-3"
@@ -410,10 +410,10 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
             <div className="flex items-center gap-3 min-w-0">
               {/* Icon */}
               <div className="relative flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg,#d4af37,#f4d03f)' }}>
+                style={{ background: 'linear-gradient(135deg,#2563EB,#f4d03f)' }}>
                 <Target style={{ width: 16, height: 16, color: '#000' }} />
                 <div className="absolute inset-0 rounded-full prf-ping"
-                  style={{ border: '1px solid rgba(212,175,55,.5)' }} />
+                  style={{ border: '1px solid rgba(37,99,235,.5)' }} />
               </div>
 
               {/* Step name + number */}
@@ -429,9 +429,9 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                         width      : i < step ? 16 : 6,
                         height     : 4,
                         background : i < step
-                          ? 'linear-gradient(to right,#d4af37,#f4d03f)'
+                          ? 'linear-gradient(to right,#2563EB,#f4d03f)'
                           : i === step
-                          ? 'rgba(212,175,55,.35)'
+                          ? 'rgba(37,99,235,.35)'
                           : 'rgba(255,255,255,.12)',
                       }}
                     />
@@ -471,7 +471,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
           <div className="relative flex-shrink-0 h-[3px]" style={{ background: 'rgba(255,255,255,.06)' }}>
             <div ref={progressRef} className="absolute inset-y-0 left-0 prf-shimmer-bar"
               style={{
-                background: 'linear-gradient(to right,#d4af37,#f4d03f)',
+                background: 'linear-gradient(to right,#2563EB,#f4d03f)',
                 width: `${(step / TOTAL) * 100}%`,
                 transition: 'width .5s cubic-bezier(.4,0,.2,1)',
               }}>
@@ -481,9 +481,9 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
             {/* Dot */}
             <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full"
               style={{
-                background: '#d4af37',
+                background: '#2563EB',
                 left: `calc(${(step / TOTAL) * 100}% - 5px)`,
-                boxShadow: '0 0 8px rgba(212,175,55,.6)',
+                boxShadow: '0 0 8px rgba(37,99,235,.6)',
                 transition: 'left .5s cubic-bezier(.4,0,.2,1)',
               }}
             />
@@ -502,7 +502,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     <div key={i} className="absolute rounded-full prf-float"
                       style={{
                         width: 6, height: 6,
-                        background: `rgba(212,175,55,${.3 + (i % 3) * .2})`,
+                        background: `rgba(37,99,235,${.3 + (i % 3) * .2})`,
                         left: `${50 + Math.cos((i * 45) * Math.PI / 180) * 52}%`,
                         top : `${50 + Math.sin((i * 45) * Math.PI / 180) * 52}%`,
                         animationDelay: `${i * .15}s`,
@@ -510,7 +510,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     />
                   ))}
                   <div className="relative w-20 h-20 mx-auto rounded-full flex items-center justify-center"
-                    style={{ background: 'linear-gradient(135deg,#d4af37,#f4d03f)', boxShadow: '0 0 48px rgba(212,175,55,.4)' }}>
+                    style={{ background: 'linear-gradient(135deg,#2563EB,#f4d03f)', boxShadow: '0 0 48px rgba(37,99,235,.4)' }}>
                     <Check style={{ width: 36, height: 36, color: '#000' }} className="prf-bounce" />
                   </div>
                 </div>
@@ -530,8 +530,8 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     { icon: Zap,      label: t('projectForm.projectRequest.notifiedLabel') },
                   ].map(({ icon: Icon, label }) => (
                     <div key={label} className="flex items-center gap-2 px-3 py-1.5"
-                      style={{ border: '1px solid rgba(212,175,55,.25)', background: 'rgba(212,175,55,.07)' }}>
-                      <Icon style={{ width: 13, height: 13, color: '#d4af37', flexShrink: 0 }} />
+                      style={{ border: '1px solid rgba(37,99,235,.25)', background: 'rgba(37,99,235,.07)' }}>
+                      <Icon style={{ width: 13, height: 13, color: '#2563EB', flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', letterSpacing: '.08em' }}>{label}</span>
                     </div>
                   ))}
@@ -561,11 +561,11 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           <button key={opt.value} type="button" ref={opt.value === PROJECT_TYPES[0].value ? firstInputRef : null}
                             onClick={() => set('projectType', opt.value)}
                             className={`prf-type-card relative p-3.5 border text-center ${sel ? 'sel' : ''}`}
-                            style={{ borderColor: sel ? '#d4af37' : 'rgba(255,255,255,.1)', borderRadius: 10 }}
+                            style={{ borderColor: sel ? '#2563EB' : 'rgba(255,255,255,.1)', borderRadius: 10 }}
                             aria-pressed={sel}>
                             {sel && (
                               <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center prf-spin-in"
-                                style={{ background: '#d4af37' }}>
+                                style={{ background: '#2563EB' }}>
                                 <Check style={{ width: 10, height: 10, color: '#000' }} />
                               </div>
                             )}
@@ -593,7 +593,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                       <label className="flex items-center justify-between mb-2.5">
                         <span className="flex items-center gap-2 text-white/85 font-light"
                           style={{ fontSize: 'clamp(.9rem,3vw,1.05rem)' }}>
-                          <Sparkles style={{ width: 15, height: 15, color: '#d4af37', flexShrink: 0 }} />
+                          <Sparkles style={{ width: 15, height: 15, color: '#2563EB', flexShrink: 0 }} />
                           {t('projectForm.steps.projectDescription.title')}
                         </span>
                         {/* Char pill */}
@@ -615,7 +615,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                         <div className="h-full transition-all duration-300"
                           style={{
                             width: `${charPct}%`,
-                            background: charOk ? 'linear-gradient(to right,#4ade80,#22c55e)' : 'rgba(212,175,55,.5)',
+                            background: charOk ? 'linear-gradient(to right,#4ade80,#22c55e)' : 'rgba(37,99,235,.5)',
                             borderRadius: 99,
                           }}
                         />
@@ -640,7 +640,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     {/* Reference URL */}
                     <div>
                       <label className="flex items-center gap-2 mb-2 text-white/60 font-light" style={{ fontSize: 13 }}>
-                        <LinkIcon style={{ width: 13, height: 13, color: '#d4af37', flexShrink: 0 }} />
+                        <LinkIcon style={{ width: 13, height: 13, color: '#2563EB', flexShrink: 0 }} />
                         {t('projectForm.steps.reference.title')}
                         <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 11 }}>
                           ({t('projectForm.steps.reference.optional')})
@@ -666,18 +666,18 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                       <button type="button"
                         onClick={() => setTagsOpen(p => !p)}
                         className="w-full flex items-center justify-between px-4 py-3 transition-colors"
-                        style={{ background: tagsOpen ? 'rgba(212,175,55,.06)' : 'rgba(255,255,255,.03)' }}
+                        style={{ background: tagsOpen ? 'rgba(37,99,235,.06)' : 'rgba(255,255,255,.03)' }}
                         aria-expanded={tagsOpen}>
                         <span className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,.65)', fontSize: 13 }}>
-                          <Tag style={{ width: 13, height: 13, color: '#d4af37', flexShrink: 0 }} />
+                          <Tag style={{ width: 13, height: 13, color: '#2563EB', flexShrink: 0 }} />
                           {t('projectForm.steps.tags.title')}
                           <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 11 }}>
                             ({t('projectForm.steps.tags.optional')})
                           </span>
                           {form.tags.length > 0 && (
                             <span className="px-2 py-0.5"
-                              style={{ background: 'rgba(212,175,55,.2)', border: '1px solid rgba(212,175,55,.35)',
-                                color: '#d4af37', fontSize: 10, borderRadius: 99 }}>
+                              style={{ background: 'rgba(37,99,235,.2)', border: '1px solid rgba(37,99,235,.35)',
+                                color: '#2563EB', fontSize: 10, borderRadius: 99 }}>
                               {form.tags.length} ✓
                             </span>
                           )}
@@ -711,9 +711,9 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                                       className={`prf-tag px-3 py-1.5 border font-light ${sel ? 'sel' : ''}`}
                                       style={{
                                         fontSize: 11, borderRadius: 99,
-                                        borderColor: sel ? '#d4af37' : 'rgba(255,255,255,.12)',
-                                        background: sel ? 'rgba(212,175,55,.16)' : 'rgba(255,255,255,.04)',
-                                        color: sel ? '#d4af37' : 'rgba(255,255,255,.55)',
+                                        borderColor: sel ? '#2563EB' : 'rgba(255,255,255,.12)',
+                                        background: sel ? 'rgba(37,99,235,.16)' : 'rgba(255,255,255,.04)',
+                                        color: sel ? '#2563EB' : 'rgba(255,255,255,.55)',
                                       }}
                                       aria-pressed={sel}>
                                       {sel && '✓ '}{t(`projectForm.steps.tags.options.${tagKey}`)}
@@ -746,7 +746,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                               ref={opt.value === BUDGET_OPTIONS[0].value ? firstInputRef : null}
                               onClick={() => set('budgetRange', opt.value)}
                               className={`prf-opt-row w-full flex items-center justify-between px-4 py-3.5 border text-left ${sel ? 'sel' : ''}`}
-                              style={{ borderColor: sel ? '#d4af37' : 'rgba(255,255,255,.1)', borderRadius: 8 }}
+                              style={{ borderColor: sel ? '#2563EB' : 'rgba(255,255,255,.1)', borderRadius: 8 }}
                               aria-pressed={sel}>
                               <div className="flex items-center gap-3">
                                 <span style={{ fontSize: 20 }}>{opt.icon}</span>
@@ -756,7 +756,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                               </div>
                               {sel ? (
                                 <div className="w-5 h-5 rounded-full flex items-center justify-center prf-spin-in"
-                                  style={{ background: '#d4af37', flexShrink: 0 }}>
+                                  style={{ background: '#2563EB', flexShrink: 0 }}>
                                   <Check style={{ width: 10, height: 10, color: '#000' }} />
                                 </div>
                               ) : (
@@ -773,7 +773,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     <div>
                       <p className="flex items-center gap-2 text-white/80 font-light mb-3"
                         style={{ fontSize: 'clamp(.9rem,3vw,1.05rem)' }}>
-                        <Clock style={{ width: 15, height: 15, color: '#d4af37', flexShrink: 0 }} />
+                        <Clock style={{ width: 15, height: 15, color: '#2563EB', flexShrink: 0 }} />
                         {t('projectForm.steps.timeline.title')}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
@@ -783,11 +783,11 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                             <button key={opt.value} type="button"
                               onClick={() => set('timeline', opt.value)}
                               className={`prf-type-card relative p-3.5 border text-center ${sel ? 'sel' : ''}`}
-                              style={{ borderColor: sel ? '#d4af37' : 'rgba(255,255,255,.1)', borderRadius: 8 }}
+                              style={{ borderColor: sel ? '#2563EB' : 'rgba(255,255,255,.1)', borderRadius: 8 }}
                               aria-pressed={sel}>
                               {sel && (
                                 <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center prf-spin-in"
-                                  style={{ background: '#d4af37' }}>
+                                  style={{ background: '#2563EB' }}>
                                   <Check style={{ width: 10, height: 10, color: '#000' }} />
                                 </div>
                               )}
@@ -817,11 +817,11 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                             <button key={opt.type} type="button"
                               onClick={() => set('clientType', opt.type)}
                               className={`prf-client-card relative p-4 border text-left ${sel ? 'sel' : ''}`}
-                              style={{ borderColor: sel ? '#d4af37' : 'rgba(255,255,255,.1)', borderRadius: 10 }}
+                              style={{ borderColor: sel ? '#2563EB' : 'rgba(255,255,255,.1)', borderRadius: 10 }}
                               aria-pressed={sel}>
                               {sel && (
                                 <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center prf-spin-in"
-                                  style={{ background: '#d4af37' }}>
+                                  style={{ background: '#2563EB' }}>
                                   <Check style={{ width: 10, height: 10, color: '#000' }} />
                                 </div>
                               )}
@@ -872,7 +872,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     <div>
                       <label className="flex items-center gap-2 mb-2 font-light"
                         style={{ fontSize: 13, color: 'rgba(255,255,255,.8)' }}>
-                        <Phone style={{ width: 13, height: 13, color: '#d4af37', flexShrink: 0 }} />
+                        <Phone style={{ width: 13, height: 13, color: '#2563EB', flexShrink: 0 }} />
                         {t('projectForm.steps.contact.phoneNumber')}
                         <span style={{ color: '#f87171', fontSize: 12 }}>*</span>
                       </label>
@@ -896,7 +896,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     <div>
                       <label className="flex items-center gap-2 mb-2 font-light"
                         style={{ fontSize: 13, color: 'rgba(255,255,255,.8)' }}>
-                        <Mail style={{ width: 13, height: 13, color: '#d4af37', flexShrink: 0 }} />
+                        <Mail style={{ width: 13, height: 13, color: '#2563EB', flexShrink: 0 }} />
                         {t('projectForm.steps.contact.email')}
                         <span style={{ fontSize: 11, color: 'rgba(255,255,255,.35)' }}>
                           ({t('projectForm.steps.contact.emailOptional')})
@@ -924,7 +924,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                         <div>
                           <label className="flex items-center gap-2 mb-2 font-light"
                             style={{ fontSize: 13, color: 'rgba(255,255,255,.8)' }}>
-                            <Building2 style={{ width: 13, height: 13, color: '#d4af37', flexShrink: 0 }} />
+                            <Building2 style={{ width: 13, height: 13, color: '#2563EB', flexShrink: 0 }} />
                             {t('projectForm.steps.contact.companyName')}
                             <span style={{ color: '#f87171', fontSize: 12 }}>*</span>
                           </label>
@@ -957,7 +957,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                                 <button key={opt.value} type="button"
                                   onClick={() => set('companySize', opt.value)}
                                   className={`prf-opt-row w-full flex items-center justify-between px-4 py-3 border text-left ${sel ? 'sel' : ''}`}
-                                  style={{ borderColor: sel ? '#d4af37' : 'rgba(255,255,255,.1)', borderRadius: 8 }}
+                                  style={{ borderColor: sel ? '#2563EB' : 'rgba(255,255,255,.1)', borderRadius: 8 }}
                                   aria-pressed={sel}>
                                   <div className="flex items-center gap-3">
                                     <span style={{ fontSize: 18 }}>{opt.icon}</span>
@@ -967,7 +967,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                                   </div>
                                   {sel ? (
                                     <div className="w-4 h-4 rounded-full flex items-center justify-center prf-spin-in"
-                                      style={{ background: '#d4af37', flexShrink: 0 }}>
+                                      style={{ background: '#2563EB', flexShrink: 0 }}>
                                       <Check style={{ width: 9, height: 9, color: '#000' }} />
                                     </div>
                                   ) : (

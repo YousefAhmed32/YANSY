@@ -1,221 +1,357 @@
+import { useEffect, useRef } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { ArrowUpRight } from 'lucide-react';
 
-import { useState } from 'react';
-import { getProcessSteps } from '../data/processSteps';
+const STEPS = [
+  {
+    num: '01',
+    titleEN: 'Discovery Call',
+    titleAR: 'مكالمة الاكتشاف',
+    descEN: 'We start with a free 30-minute consultation. We listen to your goals, ask the right questions, and understand your business before writing a single line of code.',
+    descAR: 'نبدأ باستشارة مجانية 30 دقيقة. نستمع لأهدافك ونطرح الأسئلة الصحيحة ونفهم عملك قبل كتابة أي سطر كود.',
+    tagEN: 'Free · 30 minutes',
+    tagAR: 'مجاناً · 30 دقيقة',
+    accentColor: '#2563EB',
+  },
+  {
+    num: '02',
+    titleEN: 'Proposal & Planning',
+    titleAR: 'العرض والتخطيط',
+    descEN: 'You receive a clear proposal within 48 hours — scope, timeline, milestones, and pricing. No hidden fees. No vague estimates. You decide with full information.',
+    descAR: 'تتلقى عرضاً واضحاً خلال 48 ساعة — النطاق والجدول والمراحل والتسعير. لا رسوم مخفية. لا تقديرات ضبابية.',
+    tagEN: 'Within 48 hours',
+    tagAR: 'خلال 48 ساعة',
+    accentColor: '#7C3AED',
+  },
+  {
+    num: '03',
+    titleEN: 'Design & Prototype',
+    titleAR: 'التصميم والنموذج الأولي',
+    descEN: 'Before any development starts, we build interactive prototypes of your product. You see and interact with it before we code anything — revisions are easy at this stage.',
+    descAR: 'قبل أي تطوير، نبني نماذج تفاعلية لمنتجك. تراه وتتفاعل معه قبل أن نبدأ البرمجة. التعديلات سهلة في هذه المرحلة.',
+    tagEN: 'You see it before we code',
+    tagAR: 'تراه قبل البرمجة',
+    accentColor: '#0891B2',
+  },
+  {
+    num: '04',
+    titleEN: 'Development',
+    titleAR: 'التطوير',
+    descEN: 'Weekly progress updates. You have access to a staging environment from day one. Every week you can see exactly what\'s been built — no silent weeks.',
+    descAR: 'تحديثات أسبوعية. لديك وصول لبيئة التجربة من اليوم الأول. كل أسبوع ترى بالضبط ما تم بناؤه — لا أسابيع صامتة.',
+    tagEN: 'Weekly updates',
+    tagAR: 'تحديثات أسبوعية',
+    accentColor: '#059669',
+  },
+  {
+    num: '05',
+    titleEN: 'Testing & QA',
+    titleAR: 'الاختبار وضمان الجودة',
+    descEN: 'Rigorous testing across all devices and browsers. We test every user flow before delivery. You get a bug-free product — not a beta version.',
+    descAR: 'اختبار شامل على جميع الأجهزة والمتصفحات. نختبر كل تدفق مستخدم قبل التسليم. تحصل على منتج خالٍ من الأخطاء.',
+    tagEN: 'All devices & browsers',
+    tagAR: 'كل الأجهزة والمتصفحات',
+    accentColor: '#D97706',
+  },
+  {
+    num: '06',
+    titleEN: 'Launch & Support',
+    titleAR: 'الإطلاق والدعم',
+    descEN: 'We handle the deployment. Then 30 days of free technical support — bug fixes, performance monitoring, and tweaks. You are never left alone after delivery.',
+    descAR: 'نتولى النشر. ثم 30 يوماً من الدعم التقني المجاني — إصلاح أخطاء ومراقبة أداء وتعديلات. لا تُترك وحيداً بعد التسليم.',
+    tagEN: '30 days free support',
+    tagAR: '30 يوماً دعم مجاني',
+    accentColor: '#DC2626',
+  },
+];
 
-const ProcessSection = ({ sectionRef, processRef, isRTL, onStartProject }) => {
-  const [active, setActive] = useState(null);
-  const steps = getProcessSteps(isRTL);
+const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
+  const { isRTL: ctxRTL } = useLanguage();
+  const rtl = isRTL ?? ctxRTL;
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = el.querySelectorAll('[data-step]');
+    if (prefersReduced) {
+      items.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
+      return;
+    }
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          items.forEach((c, i) => {
+            setTimeout(() => {
+              c.style.transition = `opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1)`;
+              c.style.opacity = '1';
+              c.style.transform = 'translateY(0)';
+            }, i * 90);
+          });
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <section
       id="process"
       ref={sectionRef}
-      className="relative py-24 sm:py-40 px-4 sm:px-8 bg-black overflow-hidden"
+      dir={rtl ? 'rtl' : 'ltr'}
+      style={{
+        background: '#FAFAFA',
+        paddingTop:    'clamp(5rem, 10vw, 8rem)',
+        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
+        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
+        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
+        borderTop: '1px solid #E8EBF0',
+      }}
     >
-      {/* Ambient glows */}
-      <div aria-hidden className="absolute top-1/3 left-0 w-[40vw] h-[40vw] rounded-full opacity-[0.025] pointer-events-none"
-        style={{ background:'radial-gradient(circle,#d4af37 0%,transparent 70%)', filter:'blur(60px)' }} />
-      <div aria-hidden className="absolute bottom-1/3 right-0 w-[30vw] h-[30vw] rounded-full opacity-[0.02] pointer-events-none"
-        style={{ background:'radial-gradient(circle,#d4af37 0%,transparent 70%)', filter:'blur(80px)' }} />
+      <style>{`
+        .process-row {
+          display: grid;
+          grid-template-columns: clamp(56px, 8vw, 96px) 1fr;
+          gap: 0 clamp(24px, 4vw, 48px);
+          align-items: start;
+          position: relative;
+        }
+        [dir="rtl"] .process-row {
+          grid-template-columns: 1fr clamp(56px, 8vw, 96px);
+        }
+        .process-num-col {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        [dir="rtl"] .process-num-col {
+          order: 2;
+        }
+        .process-content-col {
+          padding-bottom: clamp(2.5rem, 5vw, 4rem);
+        }
+        [dir="rtl"] .process-content-col {
+          order: 1;
+          text-align: right;
+        }
+        .process-num-circle {
+          width: clamp(48px, 7vw, 72px);
+          height: clamp(48px, 7vw, 72px);
+          border-radius: 50%;
+          border: 1.5px solid #E8EBF0;
+          background: #FFFFFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: clamp(12px, 1.2vw, 14px);
+          font-weight: 800;
+          color: #9BA3AE;
+          letter-spacing: 0.04em;
+          flex-shrink: 0;
+          position: relative;
+          z-index: 1;
+          transition: border-color 0.3s, color 0.3s, background 0.3s;
+        }
+        .process-row:hover .process-num-circle {
+          border-color: currentColor;
+        }
+        .process-num-line {
+          width: 1.5px;
+          flex: 1;
+          min-height: clamp(2rem, 4vw, 3rem);
+          background: linear-gradient(to bottom, #E8EBF0, transparent);
+          margin-top: 8px;
+        }
+        .process-title {
+          font-size: clamp(1.25rem, 2vw, 1.625rem);
+          font-weight: 700;
+          color: #0D1117;
+          margin: 0 0 10px;
+          letter-spacing: -0.025em;
+          line-height: 1.2;
+        }
+        [dir="rtl"] .process-title {
+          font-family: 'IBM Plex Sans Arabic', 'Alexandria', system-ui, sans-serif;
+          letter-spacing: 0;
+          line-height: 1.35;
+        }
+        .process-desc {
+          font-size: clamp(0.9375rem, 1vw, 1.0625rem);
+          color: #5C6370;
+          line-height: 1.75;
+          margin: 0 0 14px;
+          max-width: 640px;
+        }
+        [dir="rtl"] .process-desc {
+          font-family: 'IBM Plex Sans Arabic', 'Alexandria', system-ui, sans-serif;
+          line-height: 1.9;
+        }
+        .process-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #9BA3AE;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+        }
+        [dir="rtl"] .process-tag { letter-spacing: 0; text-transform: none; }
+        .process-tag-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .process-step-num-top {
+          font-size: clamp(0.6875rem, 1vw, 0.75rem);
+          font-weight: 700;
+          color: #9BA3AE;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 10px;
+        }
+        [dir="rtl"] .process-step-num-top { letter-spacing: 0; text-transform: none; }
+      `}</style>
 
-      <div className={`max-w-6xl mx-auto relative z-10 ${isRTL ? 'text-right' : 'text-left'}`}>
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
         {/* Header */}
-        <div className="mb-16 sm:mb-24">
-          <p className="text-xs tracking-[.1em] text-[#d4af37]/65 uppercase mb-4 font-medium">
-            {isRTL ? 'العملية — واضحة ومضمونة' : 'Process — transparent by design'}
-          </p>
-          <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] mb-6 ${isRTL ? '' : 'tracking-tight'}`}
-            style={{ letterSpacing: isRTL ? '0' : '-0.025em' }}>
-            {isRTL ? 'من اليوم الأول ' : 'From day one '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-white">
-              {isRTL ? 'تعرف ما يحدث.' : 'you know what\'s happening.'}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 'clamp(2rem, 4vw, 4rem)',
+          alignItems: 'end',
+          marginBottom: 'clamp(4rem, 8vw, 7rem)',
+        }}>
+          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
+            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
+              {rtl ? 'كيف نعمل' : 'Our Process'}
             </span>
-          </h2>
-          <p className="text-base sm:text-lg text-white/62 max-w-2xl">
-            {isRTL
-              ? 'لا أسابيع صامتة، لا مفاجآت في التسليم، لا تجاوز في الميزانية. نبني بالشفافية الكاملة — ترى التقدم كل أسبوع.'
-              : 'No silent weeks, no delivery surprises, no budget overruns. We build with full transparency — you see progress every week.'}
-          </p>
+            <h2 style={{
+              fontSize: 'var(--text-5xl)',
+              fontWeight: 800,
+              lineHeight: 1.0,
+              letterSpacing: rtl ? 0 : '-0.035em',
+              color: '#0D1117',
+              margin: 0,
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {rtl ? 'من اليوم الأول\nتعرف ما يحدث.' : 'From day one,\nyou know exactly\nwhat\'s happening.'}
+            </h2>
+          </div>
+          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
+            <p style={{
+              fontSize: 'clamp(1rem, 1.2vw, 1.125rem)',
+              color: '#5C6370',
+              lineHeight: 1.75,
+              margin: '0 0 clamp(1.5rem, 3vw, 2rem)',
+              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+            }}>
+              {rtl
+                ? 'لا أسابيع صامتة، لا مفاجآت في التسليم. نبني بشفافية كاملة — ترى التقدم كل أسبوع.'
+                : 'No silent weeks, no delivery surprises. We build with full transparency — you see real progress every single week.'}
+            </p>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 20,
+              justifyContent: rtl ? 'flex-end' : 'flex-start',
+            }}>
+              {(rtl
+                ? ['6 مراحل', '30 يوم متوسط', 'تحديثات أسبوعية']
+                : ['6 Milestones', '30d average', 'Weekly updates']
+              ).map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#2563EB', flexShrink: 0 }} aria-hidden />
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: '#5C6370' }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* ── Desktop: 2-column grid (4+4) ── */}
-        {/* UX Fix: بدل snake — grid بسيط مرقّم بوضوح */}
-        <div className="hidden lg:grid grid-cols-2 gap-x-16 gap-y-0">
-          {/* Column A: steps 1-4 */}
-          <div className="space-y-0">
-            {steps.slice(0,4).map((step, i) => (
-              <DesktopStep key={step.num} step={step} idx={i}
-                active={active} setActive={setActive}
-                refCb={(el) => (processRef.current[i] = el)}
-                isRTL={isRTL} isLast={i === 3} />
-            ))}
-          </div>
-          {/* Column B: steps 5-8 */}
-          <div className="space-y-0 mt-12">
-            {steps.slice(4,8).map((step, i) => (
-              <DesktopStep key={step.num} step={step} idx={i+4}
-                active={active} setActive={setActive}
-                refCb={(el) => (processRef.current[i+4] = el)}
-                isRTL={isRTL} isLast={i === 3} />
-            ))}
-          </div>
-        </div>
+        {/* Steps */}
+        <div ref={listRef}>
+          {STEPS.map((step, i) => (
+            <div
+              key={i}
+              data-step
+              className="process-row"
+              style={{
+                opacity: 0,
+                transform: 'translateY(20px)',
+              }}
+            >
+              {/* Number column */}
+              <div className="process-num-col">
+                <div
+                  className="process-num-circle"
+                  style={{ color: step.accentColor }}
+                >
+                  {step.num}
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div className="process-num-line" />
+                )}
+              </div>
 
-        {/* ── Mobile: vertical accordion ── */}
-        <div className="lg:hidden">
-          {steps.map((step, i) => (
-            <MobileStep key={step.num} step={step} idx={i}
-              active={active} setActive={setActive}
-              isRTL={isRTL} isLast={i === steps.length - 1} />
+              {/* Content column */}
+              <div className="process-content-col">
+                <div className="process-step-num-top" aria-hidden>
+                  {rtl ? `الخطوة ${step.num}` : `Step ${step.num}`}
+                </div>
+                <h3 className="process-title"
+                  style={{
+                    fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+                  }}
+                >
+                  {rtl ? step.titleAR : step.titleEN}
+                </h3>
+                <p className="process-desc"
+                  style={{
+                    fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+                  }}
+                >
+                  {rtl ? step.descAR : step.descEN}
+                </p>
+                <div className="process-tag">
+                  <span className="process-tag-dot" style={{ background: step.accentColor }} aria-hidden />
+                  {rtl ? step.tagAR : step.tagEN}
+                </div>
+              </div>
+            </div>
           ))}
         </div>
 
         {/* CTA */}
-        <div className={`mt-16 sm:mt-24 flex flex-col sm:flex-row gap-4 items-center justify-center ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
-          <button onClick={onStartProject}
-            className="group relative inline-flex items-center gap-3 px-10 py-4 border-2 border-[#d4af37] text-[#d4af37] text-xs font-light tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-all duration-500 active:scale-95 overflow-hidden">
-            {/* Shimmer sweeps in reading direction */}
-            <span className={`absolute inset-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent ${isRTL ? 'translate-x-full group-hover:-translate-x-full' : '-translate-x-full group-hover:translate-x-full'}`} />
-            <span className="relative">{isRTL ? 'ابدأ مشروعك الآن' : 'Start Your Project Now'}</span>
-            {/* Arrow flips in RTL and nudges toward start on hover */}
-            <svg
-              className={`relative w-4 h-4 flex-shrink-0 transition-transform duration-300 ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 14,
+          marginTop: 'clamp(4rem, 8vw, 6rem)',
+          paddingTop: 'clamp(3rem, 6vw, 5rem)',
+          borderTop: '1px solid #E8EBF0',
+        }}>
+          <button
+            onClick={onStartProject}
+            className="btn-primary"
+            style={{ fontSize: '14px', padding: '14px 32px' }}
+          >
+            {rtl ? 'ابدأ عملية المشروع' : 'Start the Project Process'}
+            <ArrowUpRight style={{ width: 15, height: 15, transform: rtl ? 'scaleX(-1)' : 'none' }} aria-hidden />
           </button>
-          <p className="text-xs text-white/30 text-center">
-            {isRTL ? 'استشارة مجانية • بدون التزام • رد خلال 24 ساعة'
-                    : 'Free consultation • No obligation • Reply within 24h'}
+          <p style={{ fontSize: 12.5, color: '#9BA3AE', margin: 0, textAlign: 'center' }}>
+            {rtl ? 'استشارة مجانية · لا التزام · رد خلال ساعتين' : 'Free consultation · No commitment · Reply within 2 hours'}
           </p>
         </div>
+
       </div>
     </section>
-  );
-};
-
-/* ── Desktop Step Row ───────────────────────────────────────── */
-const DesktopStep = ({ step, idx, active, setActive, refCb, isRTL, isLast }) => {
-  const isActive = active === idx;
-  return (
-    <div ref={refCb}
-      /* flex-row-reverse in RTL: timeline circle moves to the end (right) side */
-      className={`group relative flex gap-5 cursor-pointer ${isRTL ? 'flex-row-reverse' : ''}`}
-      style={{ paddingBottom: isLast ? 0 : '2rem' }}
-      onMouseEnter={() => setActive(idx)}
-      onMouseLeave={() => setActive(null)}
-    >
-      {/* Timeline column */}
-      <div className="flex flex-col items-center flex-shrink-0 w-12">
-        {/* Circle */}
-        <div className="relative w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-400 flex-shrink-0 z-10"
-          style={{
-            borderColor    : isActive ? step.color : 'rgba(255,255,255,.12)',
-            backgroundColor: isActive ? `${step.color}15` : 'rgba(0,0,0,.8)',
-            boxShadow      : isActive ? `0 0 24px ${step.color}30` : 'none',
-            transform      : isActive ? 'scale(1.1)' : 'scale(1)',
-          }}>
-          {/* Step number — clean, no emoji */}
-          <span
-            style={{
-              fontFamily  : "'Inter',system-ui,sans-serif",
-              fontSize    : 13,
-              fontWeight  : 600,
-              color       : isActive ? step.color : 'rgba(255,255,255,.45)',
-              letterSpacing: '0',
-              transition  : 'color .3s',
-            }}
-          >
-            {step.num}
-          </span>
-        </div>
-        {/* Connector line */}
-        {!isLast && (
-          <div className="w-px flex-1 mt-2 min-h-[2rem]"
-            style={{ background:`linear-gradient(to bottom,${step.color}50,transparent)` }} />
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 pt-2 pb-4">
-        <h3 className="font-semibold mb-0.5 transition-colors duration-300"
-          style={{ fontSize:'clamp(0.9375rem,1.4vw,1.0625rem)', letterSpacing:'-0.01em', color: isActive ? step.color : 'rgba(255,255,255,.88)' }}>
-          {step.title}
-        </h3>
-        <p className="text-[11px] text-white/30 mb-2 tracking-wide">{step.sub}</p>
-        {/* Expandable detail */}
-        <div className="overflow-hidden transition-all duration-400"
-          style={{ maxHeight: isActive ? 160 : 0, opacity: isActive ? 1 : 0 }}>
-          <p className="text-sm text-white/55 leading-relaxed mb-1">{step.desc}</p>
-          <p className="text-[11px] text-white/30 leading-loose">{step.detail}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* ── Mobile Step Row ────────────────────────────────────────── */
-const MobileStep = ({ step, idx, active, setActive, isRTL, isLast }) => {
-  const isActive = active === idx;
-  return (
-    /* flex-row-reverse in RTL: timeline circle on end (right) side */
-    <div className={`relative flex gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-      {/* Timeline */}
-      <div className="flex flex-col items-center flex-shrink-0">
-        <button
-          className="relative w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10"
-          style={{
-            borderColor: isActive ? step.color : 'rgba(255,255,255,.15)',
-            backgroundColor: isActive ? `${step.color}20` : 'rgba(0,0,0,.9)',
-          }}
-          onClick={() => setActive(isActive ? null : idx)}
-          aria-expanded={isActive}>
-          <span style={{
-            fontFamily  : "'Inter',system-ui,sans-serif",
-            fontSize    : 12,
-            fontWeight  : 600,
-            color       : isActive ? step.color : 'rgba(255,255,255,.5)',
-            transition  : 'color .3s',
-          }}>{step.num}</span>
-        </button>
-        {!isLast && (
-          <div className="w-px flex-1 min-h-[2rem]"
-            style={{ background:`linear-gradient(to bottom,${step.color}40,transparent)` }} />
-        )}
-      </div>
-      {/* Content */}
-      <div className="flex-1 pb-6">
-        <button
-          className="w-full flex items-center gap-2 mb-1"
-          onClick={() => setActive(isActive ? null : idx)}
-          aria-expanded={isActive}
-          style={{ background:'none', border:'none', padding:0, cursor:'pointer',
-            /* textAlign:start is a CSS logical property — right in RTL, left in LTR */
-            textAlign: 'start' }}>
-          <span className="text-xs px-2 py-0.5 rounded-full font-light"
-            style={{ background:`${step.color}20`, color: step.color }}>
-            {step.num}
-          </span>
-          <h3 className="font-semibold transition-colors duration-300"
-            style={{ fontSize:'0.9375rem', letterSpacing:'-0.01em', color: isActive ? step.color : 'rgba(255,255,255,.88)' }}>
-            {step.title}
-          </h3>
-          {/* ms-auto = margin-inline-start:auto — pushes chevron to the inline-end regardless of dir */}
-          <span className="ms-auto text-white/30 text-xs"
-            style={{ transform: isActive ? 'rotate(180deg)' : 'none', display:'inline-block', transition:'transform .3s' }}>
-            ▼
-          </span>
-        </button>
-        <p className="text-xs text-white/30 mb-1 tracking-wide">{step.sub}</p>
-        <div className="overflow-hidden transition-all duration-500"
-          style={{ maxHeight: isActive ? 200 : 0, opacity: isActive ? 1 : 0 }}>
-          <p className="text-sm text-white/60 leading-relaxed mb-1 mt-1">{step.desc}</p>
-          <p className="text-xs text-white/30 leading-loose">{step.detail}</p>
-        </div>
-      </div>
-    </div>
   );
 };
 

@@ -44,16 +44,16 @@ const CSS = `
   .yai-win    { animation: yai-in .32s cubic-bezier(.16,1,.3,1) both; }
   .yai-notif  { animation: yai-up .28s cubic-bezier(.16,1,.3,1) both; }
   .yai-fade   { animation: yai-fade .4s ease both; }
-  .yai-msg-ai { animation: yai-up .22s ease both; }
-  .yai-msg-usr{ animation: yai-up .18s ease both; }
-  .yai-card   { animation: yai-card .35s cubic-bezier(.16,1,.3,1) both; }
-  .yai-scroll::-webkit-scrollbar { width:3px; }
-  .yai-scroll::-webkit-scrollbar-thumb { background:rgba(212,175,55,.18); border-radius:2px; }
+  .yai-msg-ai { animation: yai-up .24s cubic-bezier(.16,1,.3,1) both; }
+  .yai-msg-usr{ animation: yai-up .2s cubic-bezier(.16,1,.3,1) both; }
+  .yai-card   { animation: yai-card .32s cubic-bezier(.16,1,.3,1) both; }
+  .yai-scroll::-webkit-scrollbar { width:4px; }
+  .yai-scroll::-webkit-scrollbar-thumb { background:#E8EBF0; border-radius:2px; }
   .yai-scroll::-webkit-scrollbar-track { background:transparent; }
   .yai-cursor::after { content:'▋'; animation:yai-blink .8s step-end infinite; font-size:.85em; opacity:.6; margin-left:1px; }
-  .yai-btn:hover { background:rgba(212,175,55,.13) !important; border-color:rgba(212,175,55,.5) !important; transform:translateY(-1px); }
-  .yai-send:hover:not(:disabled) { background:#e8c546 !important; transform:scale(1.04); }
-  .yai-ico:hover { background:rgba(255,255,255,.09) !important; }
+  .yai-btn:hover { background:#EFF6FF !important; border-color:rgba(37,99,235,.35) !important; color:#2563EB !important; transform:translateY(-1px); }
+  .yai-send:hover:not(:disabled) { background:#1d4ed8 !important; transform:scale(1.05); box-shadow:0 4px 14px rgba(37,99,235,.35) !important; }
+  .yai-ico:hover { background:#F0F2F5 !important; border-color:#C9CDD6 !important; color:#374151 !important; }
   .yai-wa:hover  { filter:brightness(1.1); transform:translateY(-1px); }
   .yai-chip { animation: yai-up .25s cubic-bezier(.16,1,.3,1) both; }
 `;
@@ -107,9 +107,9 @@ const THINKING_AR = [
 // ── Rich text renderer ──────────────────────────────────────────────────────────
 const fmtInline = (text) =>
   text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g).map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} style={{ color: '#fff', fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
-    if (part.startsWith('*')  && part.endsWith('*'))  return <em key={i} style={{ color: 'rgba(255,255,255,.75)' }}>{part.slice(1, -1)}</em>;
-    if (part.startsWith('`')  && part.endsWith('`'))  return <code key={i} style={{ background: 'rgba(212,175,55,.1)', color: '#d4af37', padding: '1px 5px', borderRadius: 3, fontSize: '.9em', fontFamily: 'monospace' }}>{part.slice(1, -1)}</code>;
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} style={{ color: '#0D1117', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith('*')  && part.endsWith('*'))  return <em key={i} style={{ color: '#374151' }}>{part.slice(1, -1)}</em>;
+    if (part.startsWith('`')  && part.endsWith('`'))  return <code key={i} style={{ background: 'rgba(37,99,235,.1)', color: '#2563EB', padding: '1px 5px', borderRadius: 3, fontSize: '.9em', fontFamily: 'monospace' }}>{part.slice(1, -1)}</code>;
     return part;
   });
 
@@ -120,8 +120,8 @@ const RichText = memo(({ text, streaming }) => {
   while (i < lines.length) {
     const line = lines[i];
     if (!line.trim() && i > 0) { els.push(<div key={i} style={{ height: 5 }} />); }
-    else if (line.startsWith('### ')) { els.push(<p key={i} style={{ margin: '8px 0 3px', fontWeight: 700, fontSize: 12.5, color: '#d4af37' }}>{line.slice(4)}</p>); }
-    else if (line.startsWith('## ')) { els.push(<p key={i} style={{ margin: '10px 0 4px', fontWeight: 700, fontSize: 13, color: '#fff' }}>{line.slice(3)}</p>); }
+    else if (line.startsWith('### ')) { els.push(<p key={i} style={{ margin: '8px 0 3px', fontWeight: 700, fontSize: 12.5, color: '#2563EB' }}>{line.slice(4)}</p>); }
+    else if (line.startsWith('## ')) { els.push(<p key={i} style={{ margin: '10px 0 4px', fontWeight: 700, fontSize: 13, color: '#0D1117' }}>{line.slice(3)}</p>); }
     else if (/^[\-•*]\s/.test(line)) {
       const items = [];
       while (i < lines.length && /^[\-•*]\s/.test(lines[i])) { items.push(<li key={i} style={{ marginBottom: 3 }}>{fmtInline(lines[i].slice(2))}</li>); i++; }
@@ -143,14 +143,14 @@ const WaIcon    = ({ size = 16 }) => <svg width={size} height={size} fill="curre
 const SendIcon  = () => <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
 const MinIcon   = () => <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const CloseIcon = () => <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-const MicIcon   = ({ on }) => <svg width="12" height="12" fill={on ? '#d4af37' : 'currentColor'} viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4m-4 0h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
+const MicIcon   = ({ on }) => <svg width="12" height="12" fill={on ? '#2563EB' : 'currentColor'} viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4m-4 0h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
 const PanelIcon = () => <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>;
 
 // ── Typing dots ─────────────────────────────────────────────────────────────────
 const TypingDots = () => (
   <div style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '10px 14px' }}>
     {[0, 1, 2].map(i => (
-      <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(212,175,55,.5)', display: 'block', animation: `yai-dot 1.3s ease-in-out ${i * 0.22}s infinite` }} />
+      <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9CDD6', display: 'block', animation: `yai-dot 1.3s ease-in-out ${i * 0.22}s infinite` }} />
     ))}
   </div>
 );
@@ -167,9 +167,9 @@ const ThinkingState = memo(({ lang }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
       <span style={{ fontSize: 14, animation: 'yai-think 1.8s ease infinite' }}>{s.icon}</span>
-      <span style={{ fontSize: 12, color: 'rgba(212,175,55,.6)', fontStyle: 'italic' }}>{s.text}</span>
+      <span style={{ fontSize: 12, color: 'rgba(37,99,235,.6)', fontStyle: 'italic' }}>{s.text}</span>
       <div style={{ display: 'flex', gap: 3 }}>
-        {[0,1,2].map(i => <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(212,175,55,.45)', animation: `yai-dot 1.3s ease ${i*.22}s infinite` }} />)}
+        {[0,1,2].map(i => <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(37,99,235,.45)', animation: `yai-dot 1.3s ease ${i*.22}s infinite` }} />)}
       </div>
     </div>
   );
@@ -180,24 +180,24 @@ ThinkingState.displayName = 'ThinkingState';
 const StageBar = memo(({ stage, lang }) => {
   if (stage === 0) return null;
   const steps = STAGE_STEPS[lang] || STAGE_STEPS.en;
-  const color = stage >= 5 ? '#22c55e' : '#d4af37';
+  const color = stage >= 5 ? '#22c55e' : '#2563EB';
   return (
-    <div style={{ padding: '7px 14px 9px', borderBottom: '1px solid rgba(255,255,255,.04)', background: 'rgba(0,0,0,.12)', flexShrink: 0 }}>
+    <div style={{ padding: '8px 14px 10px', borderBottom: '1px solid #E8EBF0', background: '#F6F7F9', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 6 }}>
         {steps.map((label, i) => {
           const done   = i < stage;
           const active = i === stage - 1;
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', background: done ? color : 'rgba(255,255,255,.05)', border: `1.5px solid ${active ? color : done ? color : 'rgba(255,255,255,.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: done ? '#000' : 'rgba(255,255,255,.25)', fontWeight: 700, transition: 'all .4s ease' }}>
+              <div style={{ width: 18, height: 18, borderRadius: '50%', background: done ? color : 'rgba(255,255,255,.05)', border: `1.5px solid ${active ? color : done ? color : 'rgba(255,255,255,.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: done ? '#fff' : '#9BA3AE', fontWeight: 700, transition: 'all .4s ease' }}>
                 {done ? '✓' : i + 1}
               </div>
-              <span style={{ fontSize: 8, color: active ? color : done ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.18)', letterSpacing: '.02em', textAlign: 'center', transition: 'color .4s' }}>{label}</span>
+              <span style={{ fontSize: 8, color: active ? color : done ? '#374151' : '#9BA3AE', letterSpacing: '.02em', textAlign: 'center', transition: 'color .4s' }}>{label}</span>
             </div>
           );
         })}
       </div>
-      <div style={{ height: 2, background: 'rgba(255,255,255,.04)', borderRadius: 1, overflow: 'hidden' }}>
+      <div style={{ height: 2, background: '#E8EBF0', borderRadius: 1, overflow: 'hidden' }}>
         <div style={{ width: `${Math.round((Math.min(stage,5)/5)*100)}%`, height: '100%', background: `linear-gradient(90deg,${color},${color}cc)`, borderRadius: 1, transition: 'width .6s ease' }} />
       </div>
     </div>
@@ -210,18 +210,18 @@ const IntelligenceStrip = memo(({ intelligence, collected, leadScore: fallbackSc
   const { leadScore = fallbackScore || 0, industry, projectType, complexity, estimatedBudget } = intelligence || {};
   const hasData = industry || (projectType || collected?.projectType) || complexity || estimatedBudget || leadScore > 0;
   if (!hasData) return null;
-  const tierColor  = leadScore >= 70 ? '#22c55e' : leadScore >= 40 ? '#d4af37' : 'rgba(255,255,255,.4)';
+  const tierColor  = leadScore >= 70 ? '#22c55e' : leadScore >= 40 ? '#2563EB' : '#C9CDD6';
   const cxColor    = complexity === 'Enterprise' ? '#f59e0b' : complexity === 'High' ? '#8b5cf6' : complexity === 'Medium' ? '#06b6d4' : '#22c55e';
   const isAR = lang === 'ar';
   return (
-    <div style={{ padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,.04)', background: 'rgba(0,0,0,.18)', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
-      {industry && <Tag label={industry} color="#d4af37" />}
+    <div style={{ padding: '6px 12px', borderBottom: '1px solid #E8EBF0', background: '#F6F7F9', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
+      {industry && <Tag label={industry} color="#2563EB" />}
       {complexity && <Tag label={complexity} color={cxColor} />}
       {estimatedBudget && <Tag label={estimatedBudget} color="#22c55e" />}
       {leadScore > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 'auto' }}>
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{isAR ? 'التقييم' : 'Score'}</span>
-          <div style={{ width: 44, height: 4, background: 'rgba(255,255,255,.07)', borderRadius: 2, overflow: 'hidden' }}>
+          <span style={{ fontSize: 9, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.05em' }}>{isAR ? 'التقييم' : 'Score'}</span>
+          <div style={{ width: 44, height: 4, background: '#E8EBF0', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{ width: `${leadScore}%`, height: '100%', background: tierColor, borderRadius: 2, transition: 'width .8s ease', animation: 'yai-score .8s ease' }} />
           </div>
           <span style={{ fontSize: 11, fontWeight: 800, color: tierColor, fontFamily: 'monospace' }}>{leadScore}</span>
@@ -252,7 +252,7 @@ const IntelligencePanel = memo(({ intelligence, collected, leadScore: fallbackSc
   const hasContact = collected?.name || collected?.phone || collected?.email;
   const hasAny     = hasProject || hasBudget || hasTime || hasScore || hasRec || hasContact;
 
-  const tierColor = leadScore >= 70 ? '#22c55e' : leadScore >= 40 ? '#d4af37' : 'rgba(255,255,255,.4)';
+  const tierColor = leadScore >= 70 ? '#22c55e' : leadScore >= 40 ? '#2563EB' : '#C9CDD6';
   const tierLabel = leadScore >= 70 ? (isAR ? 'عميل محتمل' : 'Qualified') : leadScore >= 40 ? (isAR ? 'واعد' : 'Warm Lead') : (isAR ? 'استكشاف' : 'Discovery');
   const cxColor   = complexity === 'Enterprise' ? '#f59e0b' : complexity === 'High' ? '#8b5cf6' : complexity === 'Medium' ? '#06b6d4' : '#22c55e';
 
@@ -260,8 +260,8 @@ const IntelligencePanel = memo(({ intelligence, collected, leadScore: fallbackSc
     // <div className="yai-scroll" style={{ width: 210, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.05)', background: 'rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }}>
 
     
-    //   <div style={{ padding: '11px 12px 8px', borderBottom: '1px solid rgba(212,175,55,.08)', flexShrink: 0 }}>
-    //     <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: 'rgba(212,175,55,.55)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+    //   <div style={{ padding: '11px 12px 8px', borderBottom: '1px solid rgba(37,99,235,.08)', flexShrink: 0 }}>
+    //     <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: 'rgba(37,99,235,.55)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
     //       ✦ {isAR ? 'مخطط المشروع' : 'Live Blueprint'}
     //     </p>
     //   </div>
@@ -283,7 +283,7 @@ const IntelligencePanel = memo(({ intelligence, collected, leadScore: fallbackSc
     //     )}
 
     //     {hasProject && (
-    //       <div className="yai-card" style={{ background: 'rgba(212,175,55,.04)', border: '1px solid rgba(212,175,55,.1)', borderRadius: 10, padding: '10px 11px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+    //       <div className="yai-card" style={{ background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, padding: '10px 11px', display: 'flex', flexDirection: 'column', gap: 7 }}>
     //         {industry && <IPRow label={isAR ? 'القطاع' : 'Industry'} value={industry} />}
     //         {(projectType || collected?.projectType) && <IPRow label={isAR ? 'المشروع' : 'Project'} value={projectType || collected.projectType} />}
     //         {complexity && (
@@ -329,7 +329,7 @@ const IntelligencePanel = memo(({ intelligence, collected, leadScore: fallbackSc
 
   
     //     {hasRec && (
-    //       <div className="yai-card" style={{ background: 'rgba(212,175,55,.04)', border: '1px solid rgba(212,175,55,.1)', borderRadius: 10, padding: '10px 11px' }}>
+    //       <div className="yai-card" style={{ background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, padding: '10px 11px' }}>
     //         <p style={{ margin: '0 0 5px', fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>✦ {isAR ? 'التوصية' : 'Recommendation'}</p>
     //         <p style={{ margin: 0, fontSize: 10.5, color: 'rgba(255,255,255,.72)', lineHeight: 1.55 }}>{recommendation}</p>
     //       </div>
@@ -353,8 +353,8 @@ IntelligencePanel.displayName = 'IntelligencePanel';
 
 const IPRow = ({ label, value }) => (
   <div>
-    <p style={{ margin: '0 0 1px', fontSize: 8, color: 'rgba(255,255,255,.25)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</p>
-    <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,.82)', fontWeight: 500, lineHeight: 1.35, wordBreak: 'break-word' }}>{value}</p>
+    <p style={{ margin: '0 0 1px', fontSize: 8, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</p>
+    <p style={{ margin: 0, fontSize: 11, color: '#374151', fontWeight: 500, lineHeight: 1.35, wordBreak: 'break-word' }}>{value}</p>
   </div>
 );
 
@@ -367,7 +367,7 @@ const WACard = memo(({ msg, isRTL }) => {
         <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#25d366', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><WaIcon size={14} /></div>
         <span style={{ fontSize: 12.5, fontWeight: 600, color: '#25d366' }}>{isRTL ? 'تواصل عبر واتساب' : 'Continue on WhatsApp'}</span>
       </div>
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,.6)', margin: '0 0 11px', lineHeight: 1.55 }}>{msg.content}</p>
+      <p style={{ fontSize: 12, color: '#374151', margin: '0 0 11px', lineHeight: 1.55 }}>{msg.content}</p>
       <a href={url} target="_blank" rel="noopener noreferrer" className="yai-wa"
         style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#25d366', color: '#000', padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all .2s' }}>
         <WaIcon size={13} /> {isRTL ? 'ابدأ محادثة' : 'Start Chat'}
@@ -378,16 +378,16 @@ const WACard = memo(({ msg, isRTL }) => {
 WACard.displayName = 'WACard';
 
 const TicketCard = memo(({ msg, isRTL }) => (
-  <div className="yai-msg-ai" style={{ background: 'rgba(110,175,255,.04)', border: '1px solid rgba(110,175,255,.18)', borderRadius: 14, padding: '14px 16px', marginTop: 2 }}>
+  <div className="yai-msg-ai" style={{ background: '#EFF6FF', border: '1px solid #DBEAFE', borderRadius: 14, padding: '14px 16px', marginTop: 2 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
       <span style={{ fontSize: 16 }}>🎫</span>
-      <span style={{ fontSize: 12.5, fontWeight: 600, color: '#6eafff' }}>{isRTL ? 'تم إنشاء تذكرة دعم' : 'Support Ticket Created'}</span>
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: '#2563EB' }}>{isRTL ? 'تم إنشاء تذكرة دعم' : 'Support Ticket Created'}</span>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
-      <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: 'monospace', background: 'rgba(110,175,255,.1)', padding: '3px 10px', borderRadius: 6 }}>{msg.ticketId}</span>
-      <span style={{ fontSize: 10.5, color: '#6eafff' }}>• Open</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: '#1D4ED8', fontFamily: 'monospace', background: '#DBEAFE', padding: '3px 10px', borderRadius: 6 }}>{msg.ticketId}</span>
+      <span style={{ fontSize: 10.5, color: '#2563EB' }}>• Open</span>
     </div>
-    <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,.45)', margin: 0, lineHeight: 1.5 }}>
+    <p style={{ fontSize: 11.5, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
       {isRTL ? 'سيتواصل معك فريقنا قريباً.' : 'Our team will reach out shortly.'}
     </p>
   </div>
@@ -395,15 +395,15 @@ const TicketCard = memo(({ msg, isRTL }) => (
 TicketCard.displayName = 'TicketCard';
 
 const RequestCard = memo(({ msg, isRTL }) => (
-  <div className="yai-msg-ai" style={{ background: 'linear-gradient(135deg,rgba(212,175,55,.07),rgba(212,175,55,.02))', border: '1px solid rgba(212,175,55,.2)', borderRadius: 14, padding: '16px 18px', marginTop: 2 }}>
+  <div className="yai-msg-ai" style={{ background: 'linear-gradient(135deg,rgba(37,99,235,.07),rgba(37,99,235,.02))', border: '1px solid rgba(37,99,235,.2)', borderRadius: 14, padding: '16px 18px', marginTop: 2 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-      <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(212,175,55,.12)', border: '1px solid rgba(212,175,55,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✦</div>
+      <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(37,99,235,.12)', border: '1px solid rgba(37,99,235,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✦</div>
       <div>
-        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#d4af37' }}>{isRTL ? 'تم إنشاء طلب المشروع' : 'Project Request Created'}</p>
-        <p style={{ margin: 0, fontSize: 10.5, color: 'rgba(255,255,255,.38)' }}>{isRTL ? 'سيتواصل معك الفريق خلال 24 ساعة' : 'Our team will contact you within 24h'}</p>
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#2563EB' }}>{isRTL ? 'تم إنشاء طلب المشروع' : 'Project Request Created'}</p>
+        <p style={{ margin: 0, fontSize: 10.5, color: '#9BA3AE' }}>{isRTL ? 'سيتواصل معك الفريق خلال 24 ساعة' : 'Our team will contact you within 24h'}</p>
       </div>
     </div>
-    <div style={{ background: 'rgba(0,0,0,.22)', borderRadius: 9, padding: '10px 13px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px 12px' }}>
+    <div style={{ background: '#F6F7F9', borderRadius: 9, padding: '10px 13px', border: '1px solid #E8EBF0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px 12px' }}>
       {msg.requestData?.id           && <RCRow label={isRTL ? 'رقم الطلب'   : 'Request ID'}  value={msg.requestData.id}          mono />}
       {msg.requestData?.customerName && <RCRow label={isRTL ? 'الاسم'       : 'Name'}         value={msg.requestData.customerName} />}
       {msg.requestData?.projectType  && <RCRow label={isRTL ? 'نوع المشروع' : 'Project'}      value={msg.requestData.projectType}  />}
@@ -420,8 +420,8 @@ RequestCard.displayName = 'RequestCard';
 
 const RCRow = ({ label, value, mono }) => (
   <div>
-    <p style={{ margin: '0 0 1px', fontSize: 9, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</p>
-    <p style={{ margin: 0, fontSize: 11.5, color: 'rgba(255,255,255,.8)', fontFamily: mono ? 'monospace' : 'inherit', fontWeight: mono ? 600 : 400 }}>{value}</p>
+    <p style={{ margin: '0 0 1px', fontSize: 9, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</p>
+    <p style={{ margin: 0, fontSize: 11.5, color: '#0D1117', fontFamily: mono ? 'monospace' : 'inherit', fontWeight: mono ? 600 : 400 }}>{value}</p>
   </div>
 );
 
@@ -781,53 +781,53 @@ const AIChatWidget = ({ isRTL, user }) => {
       <div style={{ position: 'fixed', bottom: '1.5rem', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, alignItems: align, ...pos }}>
 
         {/* Notification bubble */}
-        {showNotif && !open && (
-          <div className="yai-notif" onClick={openChat} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', cursor: 'pointer', maxWidth: 270, background: 'rgba(5,5,9,.97)', border: '1px solid rgba(212,175,55,.18)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.75)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: 'rgba(212,175,55,.1)', border: '1px solid rgba(212,175,55,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>👋</div>
+        {/* {showNotif && !open && (
+          <div className="yai-notif" onClick={openChat} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '14px 16px', cursor: 'pointer', maxWidth: 280, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>👋</div>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: '0 0 3px', fontSize: 12.5, fontWeight: 600, color: '#fff' }}>YANSY AI</p>
-              <p style={{ margin: 0, fontSize: 11.5, color: 'rgba(255,255,255,.55)', lineHeight: 1.5 }}>{isRTL ? 'مرحباً! كيف يمكنني مساعدتك اليوم؟' : 'Hi! How can I help you today?'}</p>
+              <p style={{ margin: '0 0 3px', fontSize: 12.5, fontWeight: 600, color: '#0D1117' }}>YANSY AI</p>
+              <p style={{ margin: 0, fontSize: 11.5, color: '#6B7280', lineHeight: 1.5 }}>{isRTL ? 'مرحباً! كيف يمكنني مساعدتك اليوم؟' : 'Hi! How can I help you today?'}</p>
             </div>
-            <button onClick={e => { e.stopPropagation(); setShowNotif(false); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.22)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, marginTop: -2 }}>×</button>
+            <button onClick={e => { e.stopPropagation(); setShowNotif(false); }} style={{ background: 'none', border: 'none', color: '#9BA3AE', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, marginTop: -2 }}>×</button>
           </div>
-        )}
+        )} */}
 
         {/* Chat window */}
         {open && !minimized && (
           <div className={fullscreen ? '' : 'yai-win'} dir={dir} style={fullscreen ? {
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', flexDirection: 'row', overflow: 'hidden',
-            background: 'rgba(3,3,6,.99)',
+            background: '#FFFFFF',
             animation: 'yai-fs-in .22s ease both',
           } : {
             width:  `min(${showSplitPanel ? 640 : 455}px, calc(100vw - 1rem))`,
             height: 'min(680px, calc(100vh - 90px))',
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
-            background: 'rgba(4,4,8,.98)',
-            border: '1px solid rgba(212,175,55,.13)',
+            background: '#FFFFFF',
+            border: '1px solid rgba(37,99,235,.13)',
             borderRadius: 20,
-            boxShadow: '0 40px 120px rgba(0,0,0,.88), 0 0 0 1px rgba(212,175,55,.04), inset 0 1px 0 rgba(255,255,255,.04)',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
             backdropFilter: 'blur(24px)',
             transition: 'width .3s cubic-bezier(.16,1,.3,1)',
           }}>
 
             {/* Fullscreen: conversations sidebar */}
             {fullscreen && showSidebar && (
-              <div dir={dir} style={{ width: 230, flexShrink: 0, background: 'rgba(0,0,0,.35)', borderRight: '1px solid rgba(212,175,55,.07)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
-                  <button onClick={startNewConversation} style={{ width: '100%', padding: '8px 12px', background: 'rgba(212,175,55,.08)', border: '1px solid rgba(212,175,55,.2)', borderRadius: 8, color: '#d4af37', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+              <div dir={dir} style={{ width: 230, flexShrink: 0, background: '#F6F7F9', borderRight: '1px solid #E8EBF0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #E8EBF0' }}>
+                  <button onClick={startNewConversation} style={{ width: '100%', padding: '8px 12px', background: 'rgba(37,99,235,.08)', border: '1px solid rgba(37,99,235,.2)', borderRadius: 8, color: '#2563EB', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                     {isRTL ? '+ محادثة جديدة' : '+ New Conversation'}
                   </button>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
                   {convList.length === 0 && (
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,.22)', textAlign: 'center', padding: '20px 8px' }}>{isRTL ? 'لا توجد محادثات' : 'No conversations yet'}</p>
+                    <p style={{ fontSize: 11, color: '#9BA3AE', textAlign: 'center', padding: '20px 8px' }}>{isRTL ? 'لا توجد محادثات' : 'No conversations yet'}</p>
                   )}
                   {convList.map(c => (
-                    <div key={c.id} style={{ padding: '9px 10px', borderRadius: 8, marginBottom: 4, background: c.id === sessionRef.current ? 'rgba(212,175,55,.09)' : 'rgba(255,255,255,.02)', border: `1px solid ${c.id === sessionRef.current ? 'rgba(212,175,55,.18)' : 'rgba(255,255,255,.04)'}`, cursor: 'pointer' }}>
-                      <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title || 'AI Conversation'}</p>
-                      {c.lastMsg && <p style={{ margin: '2px 0 0', fontSize: 10.5, color: 'rgba(255,255,255,.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastMsg}</p>}
-                      {c.score > 0 && <p style={{ margin: '3px 0 0', fontSize: 9.5, color: '#d4af37', fontFamily: 'monospace' }}>Score: {c.score}</p>}
+                    <div key={c.id} style={{ padding: '9px 10px', borderRadius: 8, marginBottom: 4, background: c.id === sessionRef.current ? '#EFF6FF' : '#FAFAFA', border: `1px solid ${c.id === sessionRef.current ? '#DBEAFE' : '#E8EBF0'}`, cursor: 'pointer' }}>
+                      <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#0D1117', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title || 'AI Conversation'}</p>
+                      {c.lastMsg && <p style={{ margin: '2px 0 0', fontSize: 10.5, color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastMsg}</p>}
+                      {c.score > 0 && <p style={{ margin: '3px 0 0', fontSize: 9.5, color: '#2563EB', fontFamily: 'monospace' }}>Score: {c.score}</p>}
                     </div>
                   ))}
                 </div>
@@ -841,17 +841,17 @@ const AIChatWidget = ({ isRTL, user }) => {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, maxWidth: fullscreen ? 700 : '100%', margin: fullscreen && !showSplitPanel ? '0 auto' : undefined }}>
 
                 {/* Header */}
-                <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(212,175,55,.08)', background: 'linear-gradient(135deg,rgba(212,175,55,.04),rgba(0,0,0,.1))', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.05))', border: '1.5px solid rgba(212,175,55,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <span style={{ fontSize: 17, filter: 'drop-shadow(0 0 7px rgba(212,175,55,.5))' }}>✦</span>
-                    <span style={{ position: 'absolute', bottom: -1, right: -1, width: 9, height: 9, borderRadius: '50%', background: '#22c55e', border: '1.5px solid rgba(4,4,8,.95)' }} />
+                <div style={{ padding: '13px 14px', borderBottom: '1px solid #E8EBF0', background: '#FAFAFA', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,rgba(37,99,235,.15),rgba(37,99,235,.05))', border: '1.5px solid rgba(37,99,235,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <span style={{ fontSize: 17, filter: 'drop-shadow(0 0 7px rgba(37,99,235,.5))' }}>✦</span>
+                    <span style={{ position: 'absolute', bottom: -1, right: -1, width: 9, height: 9, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #FFFFFF' }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#fff', letterSpacing: '-.01em' }}>YANSY AI</p>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#0D1117', letterSpacing: '-.01em' }}>YANSY AI</p>
                       {user && <span style={{ fontSize: 9, background: 'rgba(160,145,235,.15)', border: '1px solid rgba(160,145,235,.22)', color: 'rgba(160,145,235,.85)', padding: '1px 6px', borderRadius: 9, fontWeight: 700 }}>VIP</span>}
                     </div>
-                    <p style={{ margin: 0, fontSize: 10, color: 'rgba(212,175,55,.6)', letterSpacing: '.02em' }}>
+                    <p style={{ margin: 0, fontSize: 10.5, color: '#6B7280', letterSpacing: '.01em' }}>
                       {streaming
                         ? (isRTL ? '⟳ جاري التحليل...' : '⟳ Analyzing...')
                         : (isRTL ? '✦ متصل · يرد فوراً' : '✦ Online · Responds instantly')}
@@ -861,21 +861,21 @@ const AIChatWidget = ({ isRTL, user }) => {
                   {/* Header controls */}
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                     {!isNarrow && (
-                      <button className="yai-ico" onClick={() => setShowPanel(p => !p)} title={isRTL ? 'لوحة المعلومات' : 'Intelligence panel'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showPanel ? 'rgba(212,175,55,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${showPanel ? 'rgba(212,175,55,.28)' : 'rgba(255,255,255,.07)'}`, borderRadius: 6, color: showPanel ? '#d4af37' : 'rgba(255,255,255,.35)', cursor: 'pointer', transition: 'all .2s' }}>
+                      <button className="yai-ico" onClick={() => setShowPanel(p => !p)} title={isRTL ? 'لوحة المعلومات' : 'Intelligence panel'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showPanel ? 'rgba(37,99,235,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${showPanel ? 'rgba(37,99,235,.28)' : 'rgba(255,255,255,.07)'}`, borderRadius: 6, color: showPanel ? '#2563EB' : 'rgba(255,255,255,.35)', cursor: 'pointer', transition: 'all .2s' }}>
                         <PanelIcon />
                       </button>
                     )}
                     {fullscreen && (
-                      <button className="yai-ico" onClick={() => setShowSidebar(s => !s)} title="Conversations" style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showSidebar ? 'rgba(212,175,55,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${showSidebar ? 'rgba(212,175,55,.28)' : 'rgba(255,255,255,.07)'}`, borderRadius: 6, color: showSidebar ? '#d4af37' : 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 13 }}>≡</button>
+                      <button className="yai-ico" onClick={() => setShowSidebar(s => !s)} title="Conversations" style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showSidebar ? 'rgba(37,99,235,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${showSidebar ? 'rgba(37,99,235,.28)' : 'rgba(255,255,255,.07)'}`, borderRadius: 6, color: showSidebar ? '#2563EB' : 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 13 }}>≡</button>
                     )}
                     {fullscreen && (
-                      <button className="yai-ico" onClick={startNewConversation} title={isRTL ? 'محادثة جديدة' : 'New conversation'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 6, color: 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>+</button>
+                      <button className="yai-ico" onClick={startNewConversation} title={isRTL ? 'محادثة جديدة' : 'New conversation'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>+</button>
                     )}
-                    <button className="yai-ico" onClick={toggleFullscreen} title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 6, color: 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 11 }}>
+                    <button className="yai-ico" onClick={toggleFullscreen} title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', fontSize: 11 }}>
                       {fullscreen ? '⊡' : '⊞'}
                     </button>
-                    {!fullscreen && <button className="yai-ico" onClick={() => setMinimized(true)} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 6, color: 'rgba(255,255,255,.35)', cursor: 'pointer', transition: 'background .2s' }}><MinIcon /></button>}
-                    <button className="yai-ico" onClick={closeChat} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 6, color: 'rgba(255,255,255,.35)', cursor: 'pointer', transition: 'background .2s' }}><CloseIcon /></button>
+                    {!fullscreen && <button className="yai-ico" onClick={() => setMinimized(true)} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', transition: 'background .2s, border-color .2s' }}><MinIcon /></button>}
+                    <button className="yai-ico" onClick={closeChat} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', transition: 'background .2s, border-color .2s' }}><CloseIcon /></button>
                   </div>
                 </div>
 
@@ -901,10 +901,10 @@ const AIChatWidget = ({ isRTL, user }) => {
                         <div key={msg.id} className="yai-msg-usr" style={{ display: 'flex', justifyContent: isRTL ? 'flex-start' : 'flex-end' }}>
                           <div style={{
                             maxWidth: '82%', padding: '9px 14px', fontSize: 13, lineHeight: 1.65,
-                            background: 'linear-gradient(135deg,#d4af37,#c29b24)',
+                            background: 'linear-gradient(135deg,#2563EB,#1e40af)',
                             borderRadius: isRTL ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
                             color: '#000', fontWeight: 500,
-                            boxShadow: '0 2px 10px rgba(212,175,55,.22)',
+                            boxShadow: '0 2px 10px rgba(37,99,235,.22)',
                           }}>
                             {msg.content}
                           </div>
@@ -915,15 +915,15 @@ const AIChatWidget = ({ isRTL, user }) => {
                     // AI message — document block style
                     return (
                       <div key={msg.id} className="yai-msg-ai" style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
-                        <div style={{ width: 26, height: 26, borderRadius: 8, background: 'linear-gradient(135deg,rgba(212,175,55,.14),rgba(212,175,55,.05))', border: '1.5px solid rgba(212,175,55,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, marginTop: 2 }}>✦</div>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, marginTop: 2 }}>✦</div>
                         <div style={{
                           flex: 1, padding: '10px 14px',
-                          background: 'rgba(255,255,255,.025)',
+                          background: '#F6F7F9',
                           borderRadius: isRTL ? '12px 2px 12px 12px' : '2px 12px 12px 12px',
-                          border: '1px solid rgba(255,255,255,.05)',
-                          borderLeft: isRTL ? '1px solid rgba(255,255,255,.05)' : '2px solid rgba(212,175,55,.22)',
-                          borderRight: isRTL ? '2px solid rgba(212,175,55,.22)' : '1px solid rgba(255,255,255,.05)',
-                          fontSize: 13, color: 'rgba(255,255,255,.86)', lineHeight: 1.65,
+                          border: '1px solid #E8EBF0',
+                          borderLeft: isRTL ? '1px solid #E8EBF0' : '2px solid rgba(37,99,235,0.3)',
+                          borderRight: isRTL ? '2px solid rgba(37,99,235,0.3)' : '1px solid #E8EBF0',
+                          fontSize: 13, color: '#0D1117', lineHeight: 1.68,
                         }}>
                           {msg.streaming && !msg.content
                             ? <ThinkingState lang={lang} />
@@ -936,8 +936,8 @@ const AIChatWidget = ({ isRTL, user }) => {
 
                   {typing && (
                     <div className="yai-msg-ai" style={{ display: 'flex', alignItems: 'flex-end', gap: 9 }}>
-                      <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(212,175,55,.1)', border: '1.5px solid rgba(212,175,55,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12 }}>✦</div>
-                      <div style={{ background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.05)', borderRadius: '2px 12px 12px 12px' }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12 }}>✦</div>
+                      <div style={{ background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: '2px 12px 12px 12px' }}>
                         <TypingDots />
                       </div>
                     </div>
@@ -947,7 +947,7 @@ const AIChatWidget = ({ isRTL, user }) => {
                   {showActions && !typing && messages.length > 0 && (
                     <div className="yai-fade" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                       {activeButtons.map((a, idx) => (
-                        <button key={`${a.label}-${idx}`} className="yai-btn yai-chip" onClick={() => send(a.msg)} style={{ padding: '6px 11px', fontSize: 11.5, cursor: 'pointer', border: '1px solid rgba(212,175,55,.18)', color: 'rgba(255,255,255,.7)', background: 'rgba(212,175,55,.04)', borderRadius: 8, transition: 'all .2s', display: 'flex', alignItems: 'center', gap: 5, animationDelay: `${idx * 0.04}s` }}>
+                        <button key={`${a.label}-${idx}`} className="yai-btn yai-chip" onClick={() => send(a.msg)} style={{ padding: '6px 11px', fontSize: 11.5, cursor: 'pointer', border: '1px solid #E8EBF0', color: '#374151', background: '#FAFAFA', borderRadius: 8, transition: 'all .2s', display: 'flex', alignItems: 'center', gap: 5, animationDelay: `${idx * 0.04}s` }}>
                           {a.icon && <span>{a.icon}</span>}
                           <span>{a.label}</span>
                         </button>
@@ -959,10 +959,10 @@ const AIChatWidget = ({ isRTL, user }) => {
                 </div>
 
                 {/* Input bar */}
-                <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,.05)', background: 'rgba(0,0,0,.3)', flexShrink: 0 }}>
+                <div style={{ padding: '10px 12px', borderTop: '1px solid #E8EBF0', background: '#FAFAFA', flexShrink: 0 }}>
                   <form onSubmit={submit} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
                     {hasSpeech && (
-                      <button type="button" className="yai-ico" onClick={toggleVoice} style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: listening ? 'rgba(212,175,55,.12)' : 'rgba(255,255,255,.04)', border: `1px solid ${listening ? 'rgba(212,175,55,.4)' : 'rgba(255,255,255,.07)'}`, borderRadius: 9, color: listening ? '#d4af37' : 'rgba(255,255,255,.28)', cursor: 'pointer', transition: 'all .2s' }}>
+                      <button type="button" className="yai-ico" onClick={toggleVoice} style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: listening ? 'rgba(37,99,235,.12)' : 'rgba(255,255,255,.04)', border: `1px solid ${listening ? 'rgba(37,99,235,.4)' : 'rgba(255,255,255,.07)'}`, borderRadius: 9, color: listening ? '#2563EB' : 'rgba(255,255,255,.28)', cursor: 'pointer', transition: 'all .2s' }}>
                         <MicIcon on={listening} />
                       </button>
                     )}
@@ -972,16 +972,16 @@ const AIChatWidget = ({ isRTL, user }) => {
                       onKeyDown={onKey}
                       placeholder={isRTL ? 'اكتب رسالتك...' : 'Message YANSY AI...'}
                       dir={dir} rows={1}
-                      style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 9, color: '#fff', padding: '9px 12px', fontSize: 13, outline: 'none', resize: 'none', minHeight: 36, maxHeight: 110, lineHeight: 1.5, fontFamily: 'inherit', transition: 'border-color .2s' }}
-                      onFocus={e => { e.target.style.borderColor = 'rgba(212,175,55,.32)'; }}
-                      onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,.07)'; }}
+                      style={{ flex: 1, minWidth: 0, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 9, color: '#0D1117', padding: '9px 12px', fontSize: 13, outline: 'none', resize: 'none', minHeight: 36, maxHeight: 110, lineHeight: 1.5, fontFamily: 'inherit', transition: 'border-color .2s, box-shadow .2s' }}
+                      onFocus={e => { e.target.style.borderColor = '#2563EB'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.08)'; }}
+                      onBlur={e  => { e.target.style.borderColor = '#E8EBF0'; e.target.style.boxShadow = 'none'; }}
                       onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 110) + 'px'; }}
                     />
-                    <button type="submit" className="yai-send" disabled={!input.trim() || streaming} style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: input.trim() && !streaming ? '#d4af37' : 'rgba(212,175,55,.07)', border: 'none', borderRadius: 9, color: input.trim() && !streaming ? '#000' : 'rgba(212,175,55,.28)', cursor: input.trim() && !streaming ? 'pointer' : 'not-allowed', transition: 'all .2s' }}>
-                      {streaming ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(212,175,55,.3)', borderTopColor: '#d4af37', animation: 'yai-spin .7s linear infinite' }} /> : <SendIcon />}
+                    <button type="submit" className="yai-send" disabled={!input.trim() || streaming} style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: input.trim() && !streaming ? '#2563EB' : '#F0F2F5', border: 'none', borderRadius: 9, color: input.trim() && !streaming ? '#FFFFFF' : '#9BA3AE', cursor: input.trim() && !streaming ? 'pointer' : 'not-allowed', transition: 'all .2s' }}>
+                      {streaming ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: '#2563EB', animation: 'yai-spin .7s linear infinite' }} /> : <SendIcon />}
                     </button>
                   </form>
-                  <p style={{ margin: '6px 0 0', textAlign: 'center', fontSize: 9, color: 'rgba(255,255,255,.15)', letterSpacing: '.05em' }}>
+                  <p style={{ margin: '6px 0 0', textAlign: 'center', fontSize: 9.5, color: '#9BA3AE', letterSpacing: '.04em' }}>
                     {isRTL ? 'مدعوم بالذكاء الاصطناعي · YANSY Tech' : 'AI-powered · YANSY Tech'}
                   </p>
                 </div>
@@ -1002,12 +1002,12 @@ const AIChatWidget = ({ isRTL, user }) => {
 
         {/* Minimized bar */}
         {open && minimized && (
-          <button className="yai-notif" onClick={() => setMinimized(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', cursor: 'pointer', width: 230, background: 'rgba(4,4,8,.97)', border: '1px solid rgba(212,175,55,.18)', borderRadius: 12, boxShadow: '0 10px 40px rgba(0,0,0,.5)' }}>
+          <button className="yai-notif" onClick={() => setMinimized(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', cursor: 'pointer', width: 240, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
           <span style={{ fontSize: 16 }}>✦</span>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.8)', flex: 1, textAlign: 'start' }}>YANSY AI</span>
-          {stageNum > 0 && <span style={{ fontSize: 9.5, color: 'rgba(212,175,55,.6)', fontFamily: 'monospace' }}>{stageNum}/5</span>}
-          {leadScore > 0 && <span style={{ fontSize: 10, color: leadScore >= 70 ? '#22c55e' : '#d4af37', fontFamily: 'monospace', fontWeight: 700 }}>{leadScore}</span>}
-          <span style={{ fontSize: 10, color: 'rgba(212,175,55,.5)' }}>{isRTL ? 'افتح' : 'Open'}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#0D1117', flex: 1, textAlign: 'start' }}>YANSY AI</span>
+          {stageNum > 0 && <span style={{ fontSize: 9.5, color: 'rgba(37,99,235,.6)', fontFamily: 'monospace' }}>{stageNum}/5</span>}
+          {leadScore > 0 && <span style={{ fontSize: 10, color: leadScore >= 70 ? '#22c55e' : '#2563EB', fontFamily: 'monospace', fontWeight: 700 }}>{leadScore}</span>}
+          <span style={{ fontSize: 10, color: '#6B7280' }}>{isRTL ? 'افتح' : 'Open'}</span>
           </button>
         )}
 
@@ -1015,12 +1015,12 @@ const AIChatWidget = ({ isRTL, user }) => {
         <div style={{ position: 'relative', alignSelf: align }}>
           {!open && (
             <>
-              <span style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(212,175,55,.26)', animation: 'yai-pulse 2.4s ease-out infinite', pointerEvents: 'none' }} />
-              <span style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(212,175,55,.12)', animation: 'yai-pulse 2.4s ease-out .8s infinite', pointerEvents: 'none' }} />
+              <span style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(37,99,235,.26)', animation: 'yai-pulse 2.4s ease-out infinite', pointerEvents: 'none' }} />
+              <span style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(37,99,235,.12)', animation: 'yai-pulse 2.4s ease-out .8s infinite', pointerEvents: 'none' }} />
             </>
           )}
-          <button onClick={() => open ? closeChat() : openChat()} aria-label={open ? 'Close AI assistant' : 'Open YANSY AI assistant'} style={{ width: 58, height: 58, borderRadius: '50%', background: open ? 'linear-gradient(135deg,#d4af37,#c29b24)' : 'linear-gradient(135deg,#0d0d14,#060608)', border: `2px solid ${open ? '#d4af37' : 'rgba(212,175,55,.38)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', zIndex: 1, boxShadow: '0 8px 32px rgba(0,0,0,.75), 0 0 0 1px rgba(212,175,55,.05)', transition: 'all .3s cubic-bezier(.16,1,.3,1)' }}>
-            {open ? <CloseIcon /> : <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 10px rgba(212,175,55,.5))' }}>✦</span>}
+          <button onClick={() => open ? closeChat() : openChat()} aria-label={open ? 'Close AI assistant' : 'Open YANSY AI assistant'} style={{ width: 58, height: 58, borderRadius: '50%', background: open ? '#2563EB' : '#0D1117', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', zIndex: 1, boxShadow: open ? '0 8px 24px rgba(37,99,235,0.4)' : '0 8px 28px rgba(0,0,0,0.3)', transition: 'all .3s cubic-bezier(.16,1,.3,1)' }}>
+            {open ? <CloseIcon /> : <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 10px rgba(37,99,235,.5))' }}>✦</span>}
           </button>
         </div>
       </div>
@@ -1029,3 +1029,4 @@ const AIChatWidget = ({ isRTL, user }) => {
 };
 
 export default AIChatWidget;
+

@@ -33,7 +33,7 @@ const imgUrl = (id) => {
 
 /* ── Skeleton ─────────────────────────────────────────────────────────────── */
 const Skeleton = () => (
-  <div className="bg-black min-h-screen">
+  <div className="bg-white min-h-screen">
     <div className="h-[60vh] sm:h-[75vh] bg-white/5 animate-pulse" />
     <div className="max-w-5xl mx-auto px-6 py-16 space-y-8">
       <div className="h-3 w-24 bg-white/8 animate-pulse rounded" />
@@ -59,7 +59,7 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-white/95"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -68,7 +68,7 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext }) => {
       {/* Close */}
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center border border-white/15 text-white/50 hover:text-white hover:border-white/35 transition-all z-10"
+        className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-white hover:border-[#C9CDD6] transition-all z-10"
         aria-label="Close"
       >
         <X className="w-4 h-4" />
@@ -92,14 +92,14 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext }) => {
         <>
           <button
             onClick={(e) => { e.stopPropagation(); onPrev(); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-white/15 text-white/50 hover:text-white hover:border-white/35 transition-all"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-white hover:border-[#C9CDD6] transition-all"
             aria-label="Previous image"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onNext(); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-white/15 text-white/50 hover:text-white hover:border-white/35 transition-all"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-white hover:border-[#C9CDD6] transition-all"
             aria-label="Next image"
           >
             <ChevronRight className="w-5 h-5" />
@@ -153,7 +153,7 @@ const NarrativeBlock = ({ label, content, delay = 0 }) => {
             fontSize    : 9,
             letterSpacing: '0.35em',
             textTransform: 'uppercase',
-            color       : 'rgba(212,175,55,0.55)',
+            color       : 'rgba(37,99,235,0.55)',
             paddingTop  : 4,
             fontWeight  : 300,
           }}
@@ -167,7 +167,7 @@ const NarrativeBlock = ({ label, content, delay = 0 }) => {
           style={{
             width     : 24,
             height    : 1,
-            background: 'rgba(212,175,55,0.3)',
+            background: 'rgba(37,99,235,0.3)',
             marginBottom: 16,
           }}
         />
@@ -175,7 +175,7 @@ const NarrativeBlock = ({ label, content, delay = 0 }) => {
           style={{
             fontSize  : 'clamp(1rem, 1.8vw, 1.15rem)',
             fontWeight: 300,
-            color     : 'rgba(255,255,255,0.7)',
+            color     : 'rgba(0,0,0,0.65)',
             lineHeight: 1.8,
           }}
         >
@@ -274,10 +274,10 @@ const PortfolioDetail = () => {
 
   if (loading) return <Skeleton />;
   if (!project) return (
-    <div className="bg-black text-white min-h-screen flex items-center justify-center" dir={dir}>
+    <div className="bg-white text-[#0D1117] min-h-screen flex items-center justify-center" dir={dir}>
       <div className="text-center">
         <p className="text-white/30 font-light mb-6">{isRTL ? 'المشروع غير موجود' : 'Project not found'}</p>
-        <Link to="/portfolio" className="text-[#d4af37] text-xs tracking-widest uppercase border border-[#d4af37]/30 px-6 py-3 hover:bg-[#d4af37]/08 transition-all">
+        <Link to="/portfolio" className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 px-6 py-3 hover:bg-[#2563EB]/08 transition-all">
           {isRTL ? '← العودة للمحفظة' : '← Back to Portfolio'}
         </Link>
       </div>
@@ -288,7 +288,7 @@ const PortfolioDetail = () => {
   const desc  = isRTL && project.descriptionAr ? project.descriptionAr : project.description;
 
   return (
-    <div className="bg-black text-white min-h-screen overflow-x-hidden" dir={dir}>
+    <div className="bg-white text-[#0D1117] min-h-screen overflow-x-hidden" dir={dir}>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -319,7 +319,7 @@ const PortfolioDetail = () => {
         <div
           aria-hidden
           className="absolute top-0 left-0 right-0 h-[1.5px]"
-          style={{ background: 'linear-gradient(to right, transparent, rgba(212,175,55,0.45), transparent)' }}
+          style={{ background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.45), transparent)' }}
         />
 
         {/* Content */}
@@ -331,7 +331,7 @@ const PortfolioDetail = () => {
           <Link
             data-fade
             to="/portfolio"
-            className="inline-flex items-center gap-2 mb-8 text-[10px] tracking-[0.25em] uppercase text-white/35 hover:text-[#d4af37] transition-colors duration-250"
+            className="inline-flex items-center gap-2 mb-8 text-[10px] tracking-[0.25em] uppercase text-[#9CA3AF] hover:text-[#2563EB] transition-colors duration-250"
             style={{ opacity: 0 }}
           >
             <ArrowLeft className="w-3 h-3" aria-hidden />
@@ -346,7 +346,7 @@ const PortfolioDetail = () => {
               fontSize     : 10,
               letterSpacing: '0.35em',
               textTransform: 'uppercase',
-              color        : 'rgba(212,175,55,0.65)',
+              color        : 'rgba(37,99,235,0.65)',
               marginBottom : 12,
               fontWeight   : 300,
             }}
@@ -364,7 +364,7 @@ const PortfolioDetail = () => {
               fontWeight   : 700,
               lineHeight   : 1.06,
               letterSpacing: '-0.03em',
-              color        : '#fff',
+              color        : '#0D1117',
               maxWidth     : 720,
             }}
           >
@@ -383,8 +383,8 @@ const PortfolioDetail = () => {
                   style={{
                     fontSize      : 10,
                     padding       : '3px 10px',
-                    border        : '1px solid rgba(212,175,55,0.2)',
-                    color         : 'rgba(212,175,55,0.6)',
+                    border        : '1px solid rgba(37,99,235,0.2)',
+                    color         : 'rgba(37,99,235,0.6)',
                     letterSpacing : '0.1em',
                     textTransform : 'uppercase',
                     fontWeight    : 300,
@@ -406,9 +406,9 @@ const PortfolioDetail = () => {
       <div
         ref={metaRef}
         style={{
-          borderTop   : '1px solid rgba(255,255,255,0.05)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          background  : 'rgba(255,255,255,0.015)',
+          borderTop   : '1px solid #E8EBF0',
+          borderBottom: '1px solid #E8EBF0',
+          background  : 'rgba(0,0,0,0.015)',
           padding     : '18px clamp(16px,5vw,64px)',
         }}
       >
@@ -424,10 +424,10 @@ const PortfolioDetail = () => {
         >
           {/* Category */}
           <div>
-            <p style={{ fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 3, fontWeight: 300 }}>
+            <p style={{ fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.25)', marginBottom: 3, fontWeight: 300 }}>
               {isRTL ? 'التصنيف' : 'Category'}
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 300 }}>
+            <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.7)', fontWeight: 300 }}>
               {project.category}
             </p>
           </div>
@@ -435,10 +435,10 @@ const PortfolioDetail = () => {
           {/* Tags count */}
           {project.tags?.length > 0 && (
             <div>
-              <p style={{ fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 3, fontWeight: 300 }}>
+              <p style={{ fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.25)', marginBottom: 3, fontWeight: 300 }}>
                 {isRTL ? 'التقنيات' : 'Technologies'}
               </p>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 300 }}>
+              <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.7)', fontWeight: 300 }}>
                 {project.tags.slice(0, 3).join(' · ')}
               </p>
             </div>
@@ -457,20 +457,20 @@ const PortfolioDetail = () => {
                 fontSize      : 10,
                 letterSpacing : '0.22em',
                 textTransform : 'uppercase',
-                color         : '#d4af37',
-                border        : '1px solid rgba(212,175,55,0.25)',
+                color         : '#2563EB',
+                border        : '1px solid rgba(37,99,235,0.25)',
                 padding       : '8px 18px',
                 fontWeight    : 300,
                 transition    : 'all 0.25s',
                 textDecoration: 'none',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(212,175,55,0.06)';
-                e.currentTarget.style.borderColor = 'rgba(212,175,55,0.5)';
+                e.currentTarget.style.background = 'rgba(37,99,235,0.06)';
+                e.currentTarget.style.borderColor = 'rgba(37,99,235,0.5)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(212,175,55,0.25)';
+                e.currentTarget.style.borderColor = 'rgba(37,99,235,0.25)';
               }}
             >
               <ExternalLink className="w-3 h-3" aria-hidden />
@@ -555,12 +555,12 @@ const TechStack = ({ tags, isRTL }) => {
   return (
     <div ref={ref} className="flex flex-col sm:flex-row gap-6 sm:gap-12">
       <div className="flex-shrink-0 sm:w-28">
-        <span style={{ display:'block', fontSize:9, letterSpacing:'0.35em', textTransform:'uppercase', color:'rgba(212,175,55,0.55)', paddingTop:4, fontWeight:300 }}>
+        <span style={{ display:'block', fontSize:9, letterSpacing:'0.35em', textTransform:'uppercase', color:'rgba(37,99,235,0.55)', paddingTop:4, fontWeight:300 }}>
           {isRTL ? 'التقنيات' : 'Stack Used'}
         </span>
       </div>
       <div className="flex-1">
-        <div style={{ width:24, height:1, background:'rgba(212,175,55,0.3)', marginBottom:16 }} />
+        <div style={{ width:24, height:1, background:'rgba(37,99,235,0.3)', marginBottom:16 }} />
         <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
           {tags.map((tag) => (
             <span
@@ -568,19 +568,19 @@ const TechStack = ({ tags, isRTL }) => {
               style={{
                 fontSize    : 11,
                 padding     : '5px 14px',
-                border      : '1px solid rgba(255,255,255,0.1)',
-                color       : 'rgba(255,255,255,0.55)',
+                border      : '1px solid #E8EBF0',
+                color       : 'rgba(0,0,0,0.52)',
                 letterSpacing: '0.08em',
                 fontWeight  : 300,
                 transition  : 'all 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(212,175,55,0.3)';
-                e.currentTarget.style.color = 'rgba(212,175,55,0.8)';
+                e.currentTarget.style.borderColor = 'rgba(37,99,235,0.3)';
+                e.currentTarget.style.color = 'rgba(37,99,235,0.8)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)';
+                e.currentTarget.style.color = 'rgba(0,0,0,0.52)';
               }}
             >
               {tag}
@@ -602,17 +602,17 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
       style={{
         background : 'linear-gradient(180deg, #000 0%, #030201 50%, #000 100%)',
         padding    : 'clamp(40px,6vw,80px) clamp(16px,5vw,48px)',
-        borderTop  : '1px solid rgba(255,255,255,0.04)',
+        borderTop  : '1px solid rgba(0,0,0,0.03)',
       }}
     >
       <div className="max-w-5xl mx-auto">
         {/* Section label */}
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:28 }}>
-          <span style={{ display:'block', width:24, height:1, background:'linear-gradient(to right,#d4af37,transparent)' }} aria-hidden />
-          <p style={{ fontSize:9, letterSpacing:'0.35em', textTransform:'uppercase', color:'rgba(212,175,55,0.55)', fontWeight:300, margin:0 }}>
+          <span style={{ display:'block', width:24, height:1, background:'linear-gradient(to right,#2563EB,transparent)' }} aria-hidden />
+          <p style={{ fontSize:9, letterSpacing:'0.35em', textTransform:'uppercase', color:'rgba(37,99,235,0.55)', fontWeight:300, margin:0 }}>
             {isRTL ? 'معرض الصور' : 'Project Gallery'}
           </p>
-          <span style={{ marginLeft:'auto', fontSize:10, color:'rgba(255,255,255,0.2)', fontWeight:300 }}>
+          <span style={{ marginLeft:'auto', fontSize:10, color:'rgba(0,0,0,0.18)', fontWeight:300 }}>
             {activeImg + 1} / {images.length}
           </span>
         </div>
@@ -622,8 +622,8 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
           className="relative overflow-hidden cursor-zoom-in group"
           style={{
             aspectRatio : '16/9',
-            background  : 'rgba(255,255,255,0.03)',
-            border      : '1px solid rgba(255,255,255,0.06)',
+            background  : 'rgba(0,0,0,0.025)',
+            border      : '1px solid #E8EBF0',
             marginBottom: 12,
           }}
           onClick={onOpenLightbox}
@@ -641,7 +641,7 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           {/* Zoom icon */}
           <div
-            className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border border-white/20 bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border border-[#E8EBF0] bg-[#F6F7F9] backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             aria-hidden
           >
             <ZoomIn className="w-4 h-4 text-white/70" />
@@ -652,14 +652,14 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); onPrev(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-white/15 bg-black/50 text-white/50 hover:text-white hover:border-white/35 transition-all opacity-0 group-hover:opacity-100"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-[#F6F7F9]/80 text-[#6B7280] hover:text-white hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100"
                 aria-label="Previous"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onNext(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-white/15 bg-black/50 text-white/50 hover:text-white hover:border-white/35 transition-all opacity-0 group-hover:opacity-100"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-[#F6F7F9]/80 text-[#6B7280] hover:text-white hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100"
                 aria-label="Next"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -684,7 +684,7 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
                 style={{
                   aspectRatio : '16/9',
                   overflow    : 'hidden',
-                  border      : `1px solid ${i === activeImg ? '#d4af37' : 'rgba(255,255,255,0.06)'}`,
+                  border      : `1px solid ${i === activeImg ? '#2563EB' : 'rgba(0,0,0,0.04)'}`,
                   opacity     : i === activeImg ? 1 : 0.5,
                   transition  : 'all 0.25s',
                   cursor      : 'pointer',
@@ -726,7 +726,7 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
       ref={ref}
       style={{
         padding   : 'clamp(64px,10vw,120px) clamp(16px,5vw,48px)',
-        borderTop : '1px solid rgba(255,255,255,0.04)',
+        borderTop : '1px solid rgba(0,0,0,0.03)',
         position  : 'relative',
         overflow  : 'hidden',
       }}
@@ -740,7 +740,7 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
           transform   : 'translate(-50%,-50%)',
           width: 600, height: 200,
           borderRadius: '50%',
-          background  : 'radial-gradient(ellipse, rgba(212,175,55,0.06) 0%, transparent 70%)',
+          background  : 'radial-gradient(ellipse, rgba(37,99,235,0.06) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -751,7 +751,7 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
             fontSize     : 9,
             letterSpacing: '0.5em',
             textTransform: 'uppercase',
-            color        : 'rgba(212,175,55,0.5)',
+            color        : 'rgba(37,99,235,0.5)',
             marginBottom : 20,
             fontWeight   : 300,
           }}
@@ -766,13 +766,13 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
             fontWeight   : 700,
             letterSpacing: '-0.03em',
             lineHeight   : 1.06,
-            color        : '#fff',
+            color        : '#0D1117',
             marginBottom : 16,
           }}
         >
           {isRTL
-            ? <><span style={{ color:'#d4af37' }}>أريد مشروعاً</span><br />مشابهاً لهذا</>
-            : <>Want something<br /><span style={{ color:'#d4af37' }}>like this?</span></>
+            ? <><span style={{ color:'#2563EB' }}>أريد مشروعاً</span><br />مشابهاً لهذا</>
+            : <>Want something<br /><span style={{ color:'#2563EB' }}>like this?</span></>
           }
         </h2>
 
@@ -780,7 +780,7 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
           style={{
             fontSize  : '1rem',
             fontWeight: 300,
-            color     : 'rgba(255,255,255,0.35)',
+            color     : 'rgba(0,0,0,0.35)',
             maxWidth  : 380,
             margin    : '0 auto 40px',
             lineHeight: 1.65,
@@ -796,7 +796,7 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
             onClick={onStartProject}
             style={{
               padding     : '14px 36px',
-              background  : '#d4af37',
+              background  : '#2563EB',
               color       : '#000',
               fontSize    : 10,
               letterSpacing: '0.2em',
@@ -806,8 +806,8 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
               cursor      : 'pointer',
               transition  : 'background 0.3s',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#fff'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#d4af37'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#0D1117'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#2563EB'; }}
           >
             {isRTL ? 'ابدأ مشروعك' : 'Start Your Project'}
           </button>
@@ -852,12 +852,12 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
               fontSize    : 10,
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
-              color       : 'rgba(255,255,255,0.2)',
+              color       : 'rgba(0,0,0,0.18)',
               textDecoration: 'none',
               transition  : 'color 0.25s',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(212,175,55,0.6)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(37,99,235,0.6)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.18)'; }}
           >
             <ArrowLeft className="w-3 h-3" aria-hidden />
             {isRTL ? 'عودة للمحفظة' : 'Back to Portfolio'}
