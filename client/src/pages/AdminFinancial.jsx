@@ -1,49 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
-import { DollarSign, TrendingUp, Users, CreditCard, RefreshCw, Loader2, BarChart3, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, RefreshCw, BarChart3 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-};
-
-const MetricCard = ({ title, value, subtitle, trend, icon: Icon, color, bg }) => {
-  const isPositive = trend > 0;
-  const TrendIcon = isPositive ? ArrowUpRight : ArrowDownRight;
-  return (
-    <div style={{ padding: '20px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px', transition: 'all 0.2s' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.2)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = TK.border; }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: bg, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={16} style={{ color }} />
-        </div>
-        {trend !== null && trend !== undefined && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '10px', background: isPositive ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)', color: isPositive ? '#34d399' : '#f87171', fontSize: '10px', fontWeight: 400 }}>
-            <TrendIcon size={10} />
-            {isPositive ? '+' : ''}{trend}%
-          </div>
-        )}
-      </div>
-      <div style={{ fontSize: '28px', fontWeight: 600, color: TK.text, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '5px' }}>{value}</div>
-      <div style={{ fontSize: '10px', fontWeight: 400, color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{title}</div>
-      {subtitle && <div style={{ fontSize: '10px', color: TK.textMuted, marginTop: '3px', fontWeight: 300 }}>{subtitle}</div>}
-    </div>
-  );
-};
+import { useLanguage } from '../contexts/LanguageContext';
+import { TK, PageHeader, Card, Button, StatCard, PageSpinner } from '../admin-ui';
 
 const AdminFinancial = () => {
+  const { language } = useLanguage();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const PLAN_COLORS = { FREE: '#6b7280', STARTER: '#60a5fa', PRO: TK.accent, ENTERPRISE: '#a78bfa' };
+  const PLAN_COLORS = { FREE: TK.textMuted, STARTER: '#60a5fa', PRO: TK.accent, ENTERPRISE: '#a78bfa' };
 
   const fetchAll = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -54,12 +22,12 @@ const AdminFinancial = () => {
       ]);
       setStats(statsRes.data);
     } catch (err) {
-      toast.error('Failed to load financial data');
+      toast.error(language === 'ar' ? 'فشل تحميل البيانات المالية' : 'Failed to load financial data');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [language]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -70,57 +38,43 @@ const AdminFinancial = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: TK.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 style={{ width: '28px', height: '28px', color: TK.accent, animation: 'spin 1s linear infinite' }} />
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div style={{ minHeight: '100vh', background: TK.bg }}>
+        <PageSpinner />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: TK.bg, color: TK.text, padding: '32px 32px 60px' }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
-        <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(37,99,235,0.25)', background: 'rgba(37,99,235,0.06)', marginBottom: '10px' }}>
-            <DollarSign style={{ width: '10px', height: '10px', color: TK.accent }} />
-            <span style={{ fontSize: '10px', fontWeight: 400, color: TK.accent, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Revenue Intelligence</span>
-          </div>
-          <h1 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 600, letterSpacing: '-0.02em', color: TK.text, margin: 0, fontFamily: "'Inter',system-ui,sans-serif" }}>
-            Financial Dashboard
-          </h1>
-          <p style={{ fontSize: '12px', color: TK.textMuted, marginTop: '6px', fontWeight: 300 }}>
-            MRR · ARR · Subscription Health · Revenue
-          </p>
-        </div>
-        <button onClick={() => fetchAll(true)} disabled={refreshing} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: '8px', color: TK.textMuted, fontSize: '11px', cursor: refreshing ? 'not-allowed' : 'pointer' }}>
-          <RefreshCw size={13} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-          Refresh
-        </button>
-      </div>
+      <PageHeader
+        icon={DollarSign}
+        eyebrow={language === 'ar' ? 'ذكاء الإيرادات' : 'Revenue Intelligence'}
+        title={language === 'ar' ? 'لوحة البيانات المالية' : 'Financial Dashboard'}
+        subtitle={language === 'ar' ? 'الإيراد الشهري · الإيراد السنوي · صحة الاشتراكات · الإيرادات' : 'MRR · ARR · Subscription Health · Revenue'}
+        actions={<Button variant="secondary" icon={RefreshCw} onClick={() => fetchAll(true)} loading={refreshing}>{language === 'ar' ? 'تحديث' : 'Refresh'}</Button>}
+      />
 
       {!stats ? (
-        <div style={{ padding: '48px', textAlign: 'center', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px' }}>
+        <Card style={{ padding: '48px', textAlign: 'center' }}>
           <BarChart3 style={{ width: '32px', height: '32px', color: TK.textMuted, margin: '0 auto 12px' }} />
-          <p style={{ color: TK.textMuted, fontSize: '13px', fontWeight: 300 }}>Financial data unavailable. Configure Stripe to see revenue metrics.</p>
-        </div>
+          <p style={{ color: TK.textMuted, fontSize: '13px' }}>{language === 'ar' ? 'البيانات المالية غير متاحة. قم بإعداد Stripe لعرض مقاييس الإيرادات.' : 'Financial data unavailable. Configure Stripe to see revenue metrics.'}</p>
+        </Card>
       ) : (
         <>
           {/* KPI Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '28px' }}>
-            <MetricCard title="MRR" value={fmt(stats.mrr)} subtitle="Monthly Recurring Revenue" trend={stats.revenueGrowth} icon={TrendingUp} color="#34d399" bg="rgba(52,211,153,0.1)" />
-            <MetricCard title="ARR" value={fmt(stats.arr)} subtitle="Annual Run Rate" trend={null} icon={BarChart3} color={TK.accent} bg="rgba(37,99,235,0.1)" />
-            <MetricCard title="Active Subs" value={stats.activeSubscriptions || 0} subtitle="Paying customers" trend={null} icon={Users} color="#60a5fa" bg="rgba(96,165,250,0.1)" />
-            <MetricCard title="This Month" value={fmt(stats.thisMonthRevenue)} subtitle={`vs ${fmt(stats.lastMonthRevenue)} last month`} trend={stats.revenueGrowth} icon={DollarSign} color="#a78bfa" bg="rgba(167,139,250,0.1)" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+            <StatCard icon={TrendingUp} label={language === 'ar' ? 'الإيراد الشهري' : 'MRR'} value={fmt(stats.mrr)} sub={language === 'ar' ? 'الإيراد المتكرر الشهري' : 'Monthly Recurring Revenue'} trend={stats.revenueGrowth} tone="success" />
+            <StatCard icon={BarChart3} label={language === 'ar' ? 'الإيراد السنوي' : 'ARR'} value={fmt(stats.arr)} sub={language === 'ar' ? 'معدل التشغيل السنوي' : 'Annual Run Rate'} tone="info" />
+            <StatCard icon={Users} label={language === 'ar' ? 'الاشتراكات النشطة' : 'Active Subs'} value={stats.activeSubscriptions || 0} sub={language === 'ar' ? 'عملاء مدفوعون' : 'Paying customers'} tone="info" />
+            <StatCard icon={DollarSign} label={language === 'ar' ? 'هذا الشهر' : 'This Month'} value={fmt(stats.thisMonthRevenue)} sub={language === 'ar' ? `مقابل ${fmt(stats.lastMonthRevenue)} الشهر الماضي` : `vs ${fmt(stats.lastMonthRevenue)} last month`} trend={stats.revenueGrowth} tone="purple" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
             {/* Plan Breakdown */}
-            <div style={{ padding: '22px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px' }}>
-              <h2 style={{ fontSize: '11px', fontWeight: 400, color: TK.text, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 18px' }}>
-                Plan Distribution
+            <Card padding="22px">
+              <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: '0 0 18px' }}>
+                {language === 'ar' ? 'توزيع الخطط' : 'Plan Distribution'}
               </h2>
               {stats.planBreakdown?.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -131,8 +85,8 @@ const AdminFinancial = () => {
                     return (
                       <div key={p._id}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 300, color: TK.text }}>{p.displayName || p._id}</span>
-                          <span style={{ fontSize: '11px', color: TK.textMuted }}>{p.count} · {pct}%</span>
+                          <span style={{ fontSize: '11.5px', fontWeight: 500, color: TK.text }}>{p.displayName || p._id}</span>
+                          <span style={{ fontSize: '11.5px', color: TK.textMuted }}>{p.count} · {pct}%</span>
                         </div>
                         <div style={{ height: '4px', background: 'rgba(0,0,0,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: col, borderRadius: '2px', transition: 'width 0.8s ease' }} />
@@ -142,68 +96,68 @@ const AdminFinancial = () => {
                   })}
                 </div>
               ) : (
-                <p style={{ fontSize: '12px', color: TK.textMuted, fontWeight: 300 }}>No subscription data yet.</p>
+                <p style={{ fontSize: '12px', color: TK.textMuted }}>{language === 'ar' ? 'لا توجد بيانات اشتراك بعد.' : 'No subscription data yet.'}</p>
               )}
-            </div>
+            </Card>
 
             {/* Subscription Status */}
-            <div style={{ padding: '22px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px' }}>
-              <h2 style={{ fontSize: '11px', fontWeight: 400, color: TK.text, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 18px' }}>
-                Subscription Status
+            <Card padding="22px">
+              <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: '0 0 18px' }}>
+                {language === 'ar' ? 'حالة الاشتراكات' : 'Subscription Status'}
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 {Object.entries(stats.subscriptionStatus || {}).map(([status, count]) => {
-                  const colorMap = { active: '#34d399', trialing: '#60a5fa', cancelled: '#f87171', past_due: '#f59e0b', free: '#6b7280' };
+                  const colorMap = { active: TK.green, trialing: '#60a5fa', cancelled: TK.red, past_due: TK.amber, free: TK.textMuted };
                   const col = colorMap[status] || TK.textMuted;
                   return (
                     <div key={status} style={{ padding: '14px', background: `${col}10`, border: `1px solid ${col}25`, borderRadius: '9px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '24px', fontWeight: 600, color: col, letterSpacing: '-0.03em' }}>{count}</div>
+                      <div style={{ fontSize: '24px', fontWeight: 700, color: col, letterSpacing: '-0.03em' }}>{count}</div>
                       <div style={{ fontSize: '10px', color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'capitalize', marginTop: '3px' }}>{status.replace(/_/g, ' ')}</div>
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Invoice Summary */}
           {stats.invoiceStatus && Object.keys(stats.invoiceStatus).length > 0 && (
-            <div style={{ padding: '22px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '11px', fontWeight: 400, color: TK.text, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 18px' }}>
-                Invoice Summary
+            <Card padding="22px" style={{ marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: '0 0 18px' }}>
+                {language === 'ar' ? 'ملخص الفواتير' : 'Invoice Summary'}
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
                 {Object.entries(stats.invoiceStatus).map(([status, data]) => {
-                  const colorMap = { paid: '#34d399', pending: '#f59e0b', overdue: '#f87171', draft: '#6b7280', cancelled: '#f87171', sent: '#60a5fa' };
+                  const colorMap = { paid: TK.green, pending: TK.amber, overdue: TK.red, draft: TK.textMuted, cancelled: TK.red, sent: '#60a5fa' };
                   const col = colorMap[status] || TK.textMuted;
                   return (
                     <div key={status} style={{ padding: '16px', background: `${col}08`, border: `1px solid ${col}25`, borderRadius: '9px' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 600, color: col, letterSpacing: '-0.02em' }}>{data.count}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: col, letterSpacing: '-0.02em' }}>{data.count}</div>
                       <div style={{ fontSize: '10px', color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'capitalize', marginTop: '3px' }}>{status}</div>
                       {data.total > 0 && <div style={{ fontSize: '11px', color: TK.textMuted, marginTop: '4px' }}>{fmt(data.total)}</div>}
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </Card>
           )}
 
           {/* Recent Payments */}
           {stats.recentPayments?.length > 0 && (
-            <div style={{ padding: '22px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px' }}>
-              <h2 style={{ fontSize: '11px', fontWeight: 400, color: TK.text, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 18px' }}>
-                Recent Payments
+            <Card padding="22px">
+              <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: '0 0 18px' }}>
+                {language === 'ar' ? 'المدفوعات الأخيرة' : 'Recent Payments'}
               </h2>
               {stats.recentPayments.map(inv => (
-                <div key={inv._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid rgba(0,0,0,0.04)` }}>
+                <div key={inv._id} className="au-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 4px', borderBottom: `1px solid ${TK.borderSoft}` }}>
                   <div>
-                    <div style={{ fontSize: '12px', fontWeight: 300, color: TK.text }}>{inv.client?.fullName || inv.client?.email || 'Unknown'}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 500, color: TK.text }}>{inv.client?.fullName || inv.client?.email || (language === 'ar' ? 'غير معروف' : 'Unknown')}</div>
                     <div style={{ fontSize: '10px', color: TK.textMuted }}>{inv.invoiceNumber} · {inv.paidAt ? new Date(inv.paidAt).toLocaleDateString() : ''}</div>
                   </div>
-                  <span style={{ fontSize: '13px', fontWeight: 300, color: '#34d399' }}>{fmt(inv.total)}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: TK.green }}>{fmt(inv.total)}</span>
                 </div>
               ))}
-            </div>
+            </Card>
           )}
         </>
       )}

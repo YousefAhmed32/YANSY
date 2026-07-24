@@ -1,16 +1,72 @@
-import { useEffect, useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { 
-  Star, StarHalf, TrendingUp, AlertTriangle, CheckCircle, 
-  Flag, Eye, Trash2, X, Filter, Calendar, User, Building2,
-  BarChart3, MessageSquare
+import { useEffect, useState } from 'react';
+import {
+  Star, StarHalf, TrendingUp, AlertTriangle, CheckCircle,
+  Flag, Trash2, Filter, Calendar, User, Building2,
+  MessageSquare, BarChart3,
 } from 'lucide-react';
 import api from '../utils/api';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { useLanguage } from '../contexts/LanguageContext';
+import {
+  TK, PageHeader, StatCard, DataTable, Select, Badge,
+  IconButton, Card, SectionHead, ConfirmDialog, PageSpinner,
+} from '../admin-ui';
+
+// ── Rating → tone/color helpers ────────────────────────────────────────────────
+const ratingTone  = (rating) => rating >= 4 ? 'info' : rating >= 3 ? 'warning' : 'danger';
+const ratingColor = (rating) => rating >= 4 ? TK.accent : rating >= 3 ? TK.amber : TK.red;
+
+const renderStars = (rating, size = 14) => {
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+
+  for (let i = 0; i < fullStars; i++) {
+    stars.push(<Star key={i} style={{ width: size, height: size, color: TK.accent, fill: TK.accent }} />);
+  }
+  if (hasHalfStar && fullStars < 5) {
+    stars.push(<StarHalf key="half" style={{ width: size, height: size, color: TK.accent, fill: TK.accent }} />);
+  }
+  for (let i = stars.length; i < 5; i++) {
+    stars.push(<Star key={i} style={{ width: size, height: size, color: TK.border, fill: TK.border }} />);
+  }
+  return stars;
+};
+
+const getActionDescriptions = (language) => ({
+  delete:      language === 'ar' ? 'هل أنت متأكد من حذف هذا التقييم؟' : 'Are you sure you want to delete this feedback?',
+  flag:        language === 'ar' ? 'هل تريد وضع علامة على هذا التقييم للمراجعة؟' : 'Flag this feedback for review?',
+  unflag:      language === 'ar' ? 'إزالة العلامة من هذا التقييم؟' : 'Remove flag from this feedback?',
+  highlight:   language === 'ar' ? 'إبراز هذا التقييم للعرض العام؟' : 'Highlight this feedback for public display?',
+  unhighlight: language === 'ar' ? 'إزالة الإبراز من هذا التقييم؟' : 'Remove highlight from this feedback?',
+  review:      language === 'ar' ? 'وضع علامة على هذا التقييم كمُراجَع؟' : 'Mark this feedback as reviewed?',
+});
+
+const getReviewedOptions = (language) => [
+  { value: '', label: language === 'ar' ? 'الكل' : 'All' },
+  { value: 'true', label: language === 'ar' ? 'تمت المراجعة' : 'Reviewed' },
+  { value: 'false', label: language === 'ar' ? 'لم تتم المراجعة' : 'Not Reviewed' },
+];
+const getFlaggedOptions = (language) => [
+  { value: '', label: language === 'ar' ? 'الكل' : 'All' },
+  { value: 'true', label: language === 'ar' ? 'مُعلَّم' : 'Flagged' },
+  { value: 'false', label: language === 'ar' ? 'غير مُعلَّم' : 'Not Flagged' },
+];
+const getMinRatingOptions = (language) => [
+  { value: '', label: language === 'ar' ? 'كل التقييمات' : 'All Ratings' },
+  { value: '5', label: language === 'ar' ? '5 نجوم' : '5 Stars' },
+  { value: '4', label: language === 'ar' ? '4+ نجوم' : '4+ Stars' },
+  { value: '3', label: language === 'ar' ? '3+ نجوم' : '3+ Stars' },
+  { value: '2', label: language === 'ar' ? '2+ نجوم' : '2+ Stars' },
+];
+const getSortOptions = (language) => [
+  { value: 'createdAt', label: language === 'ar' ? 'التاريخ' : 'Date' },
+  { value: 'ratings.overall', label: language === 'ar' ? 'التقييم' : 'Rating' },
+];
 
 const AdminFeedback = () => {
-  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [feedback, setFeedback] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,10 +82,6 @@ const AdminFeedback = () => {
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalAction, setModalAction] = useState(null);
-
-  const containerRef = useRef(null);
-  const titleRef = useRef(null);
-  const statsRef = useRef(null);
 
   useEffect(() => {
     fetchFeedback();
@@ -49,7 +101,7 @@ const AdminFeedback = () => {
       setFeedback(response.data.feedback || []);
     } catch (error) {
       console.error('Failed to fetch feedback:', error);
-      toast.error('Failed to load feedback');
+      toast.error(language === 'ar' ? 'فشل تحميل التقييمات' : 'Failed to load feedback');
     } finally {
       setLoading(false);
     }
@@ -67,7 +119,7 @@ const AdminFeedback = () => {
   const handleAction = async (action, feedbackId) => {
     try {
       const updates = {};
-      
+
       switch (action) {
         case 'review':
           updates.isReviewed = true;
@@ -92,14 +144,14 @@ const AdminFeedback = () => {
       }
 
       await api.patch(`/feedback/${feedbackId}`, updates);
-      toast.success('Feedback updated successfully');
+      toast.success(language === 'ar' ? 'تم تحديث التقييم بنجاح' : 'Feedback updated successfully');
       fetchFeedback();
       fetchStats();
       setShowModal(false);
       setSelectedFeedback(null);
     } catch (error) {
       console.error('Failed to update feedback:', error);
-      toast.error('Failed to update feedback');
+      toast.error(language === 'ar' ? 'فشل تحديث التقييم' : 'Failed to update feedback');
     }
   };
 
@@ -109,442 +161,258 @@ const AdminFeedback = () => {
     setShowModal(true);
   };
 
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} className="w-4 h-4 text-[#2563EB] fill-[#2563EB]" />);
-    }
-    if (hasHalfStar && fullStars < 5) {
-      stars.push(<StarHalf key="half" className="w-4 h-4 text-[#2563EB] fill-[#2563EB]" />);
-    }
-    for (let i = stars.length; i < 5; i++) {
-      stars.push(<Star key={i} className="w-4 h-4 text-white/20 fill-white/10" />);
-    }
-    return stars;
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedFeedback(null);
   };
 
-  const getRatingColor = (rating) => {
-    if (rating >= 4) return 'text-[#2563EB]';
-    if (rating >= 3) return 'text-yellow-400';
-    if (rating >= 2) return 'text-orange-400';
-    return 'text-red-400';
-  };
+  const columns = [
+    {
+      key: 'reviewer', label: language === 'ar' ? 'المُراجِع' : 'Reviewer', width: '24%',
+      render: (fb) => (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px', flexWrap: 'wrap' }}>
+            {fb.isAnonymous ? <User style={{ width: '13px', height: '13px', color: TK.textLight, flexShrink: 0 }} /> : <Building2 style={{ width: '13px', height: '13px', color: TK.textLight, flexShrink: 0 }} />}
+            <span style={{ fontSize: '12.5px', fontWeight: 500, color: TK.text }}>{fb.isAnonymous ? (language === 'ar' ? 'مجهول' : 'Anonymous') : fb.name}</span>
+            {fb.isHighlighted && <Badge tone="info">{language === 'ar' ? 'مُبرز' : 'Highlighted'}</Badge>}
+          </div>
+          {fb.projectId && <div style={{ fontSize: '10.5px', color: TK.textMuted, marginBottom: '2px' }}>{language === 'ar' ? 'المشروع' : 'Project'}: {fb.projectId.title}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TK.textLight }}>
+            <Calendar style={{ width: '10px', height: '10px' }} />
+            {format(new Date(fb.createdAt), 'MMM d, yyyy')}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'rating', label: language === 'ar' ? 'التقييم' : 'Rating', width: '14%',
+      render: (fb) => {
+        const avg = (
+          (fb.ratings.quality + fb.ratings.speed + fb.ratings.communication +
+           fb.ratings.professionalism + fb.ratings.overall) / 5
+        ).toFixed(1);
+        return (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginBottom: '3px' }}>
+              {renderStars(parseFloat(avg))}
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: ratingColor(parseFloat(avg)) }}>{avg}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'breakdown', label: language === 'ar' ? 'التفصيل' : 'Breakdown', width: '16%',
+      render: (fb) => (
+        <span style={{ fontSize: '10.5px', color: TK.textMuted, lineHeight: 1.7 }}>
+          Q:{fb.ratings.quality} · S:{fb.ratings.speed} · C:{fb.ratings.communication}<br />
+          P:{fb.ratings.professionalism} · O:{fb.ratings.overall}
+        </span>
+      ),
+    },
+    {
+      key: 'review', label: language === 'ar' ? 'المراجعة' : 'Review', width: '24%',
+      render: (fb) => fb.reviewText ? (
+        <span style={{
+          fontSize: '11.5px', color: TK.textMuted, lineHeight: 1.5,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {fb.reviewText}
+        </span>
+      ) : <span style={{ fontSize: '11px', color: TK.textLight }}>—</span>,
+    },
+    {
+      key: 'flags', label: language === 'ar' ? 'العلامات' : 'Flags', width: '8%',
+      render: (fb) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+          {fb.isFlagged && <Badge tone="danger">{language === 'ar' ? 'مُعلَّم' : 'Flagged'}</Badge>}
+          {fb.ratings.overall <= 2 && <Badge tone="warning">{language === 'ar' ? 'منخفض' : 'Low'}</Badge>}
+        </div>
+      ),
+    },
+    {
+      key: 'actions', label: language === 'ar' ? 'الإجراءات' : 'Actions', width: '14%', align: 'right',
+      render: (fb) => (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '2px' }} onClick={e => e.stopPropagation()}>
+          {!fb.isReviewed && (
+            <IconButton icon={CheckCircle} size={30} onClick={() => openActionModal('review', fb)} title={language === 'ar' ? 'وضع علامة كمُراجَع' : 'Mark as Reviewed'} />
+          )}
+          <IconButton
+            icon={Flag} size={30}
+            onClick={() => openActionModal(fb.isFlagged ? 'unflag' : 'flag', fb)}
+            title={fb.isFlagged ? (language === 'ar' ? 'إزالة العلامة' : 'Unflag') : (language === 'ar' ? 'وضع علامة' : 'Flag')}
+            style={fb.isFlagged ? { color: TK.red } : undefined}
+          />
+          <IconButton
+            icon={Star} size={30}
+            onClick={() => openActionModal(fb.isHighlighted ? 'unhighlight' : 'highlight', fb)}
+            title={fb.isHighlighted ? (language === 'ar' ? 'إزالة الإبراز' : 'Unhighlight') : (language === 'ar' ? 'إبراز' : 'Highlight')}
+            style={fb.isHighlighted ? { color: TK.accent } : undefined}
+          />
+          <IconButton icon={Trash2} size={30} onClick={() => openActionModal('delete', fb)} title={language === 'ar' ? 'حذف' : 'Delete'} />
+        </div>
+      ),
+    },
+  ];
 
   if (loading && !stats) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin"></div>
+      <div style={{ minHeight: '100vh', background: TK.bg }}>
+        <PageSpinner />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="space-y-12 px-4 py-8">
-      {/* Header */}
-      <div>
-        <h1 
-          ref={titleRef}
-          className="text-5xl md:text-6xl font-light tracking-tight mb-4 text-white/90"
-        >
-          Feedback Intelligence
-        </h1>
-        <p className="text-lg font-light text-white/50">
-          Monitor service quality and client satisfaction
-        </p>
-      </div>
+    <div style={{ minHeight: '100vh', background: TK.bg, padding: 'clamp(20px,3vw,32px) clamp(16px,3vw,32px) 60px' }}>
+
+      <PageHeader
+        icon={Star}
+        eyebrow={language === 'ar' ? 'لوحة الإدارة' : 'Admin Panel'}
+        title={language === 'ar' ? 'ذكاء التقييمات' : 'Feedback Intelligence'}
+        subtitle={language === 'ar' ? 'مراقبة جودة الخدمة ورضا العملاء' : 'Monitor service quality and client satisfaction'}
+      />
 
       {/* Statistics Cards */}
       {stats && (
-        <div ref={statsRef} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="p-6 bg-white/5 border border-white/10">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 bg-[#2563EB]/20 border border-[#2563EB]/30">
-                <Star className="h-6 w-6 text-[#2563EB]" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-light text-white/60 tracking-wide uppercase">
-                    Overall Average
-                  </dt>
-                  <dd className={`text-2xl font-light mt-1 ${getRatingColor(parseFloat(stats.overallAverage))}`}>
-                    {stats.overallAverage} / 5
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/5 border border-white/10">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 bg-white/10 border border-white/20">
-                <MessageSquare className="h-6 w-6 text-white/70" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-light text-white/60 tracking-wide uppercase">
-                    Total Feedback
-                  </dt>
-                  <dd className="text-2xl font-light text-white/90 mt-1">
-                    {stats.totalFeedback}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/5 border border-white/10">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 bg-[#2563EB]/20 border border-[#2563EB]/30">
-                <TrendingUp className="h-6 w-6 text-[#2563EB]" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-light text-white/60 tracking-wide uppercase">
-                    5★ Reviews
-                  </dt>
-                  <dd className="text-2xl font-light text-white/90 mt-1">
-                    {stats.fiveStarPercentage}%
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white/5 border border-white/10">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 bg-red-500/20 border border-red-500/30">
-                <AlertTriangle className="h-6 w-6 text-red-400" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-light text-white/60 tracking-wide uppercase">
-                    Low Satisfaction
-                  </dt>
-                  <dd className="text-2xl font-light text-red-400 mt-1">
-                    {stats.lowSatisfactionCount}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+          <StatCard icon={Star}          label={language === 'ar' ? 'المتوسط العام' : 'Overall Average'}  value={`${stats.overallAverage} / 5`}       tone={ratingTone(parseFloat(stats.overallAverage))} highlight />
+          <StatCard icon={MessageSquare} label={language === 'ar' ? 'إجمالي التقييمات' : 'Total Feedback'}   value={stats.totalFeedback}                 tone="neutral" />
+          <StatCard icon={TrendingUp}    label={language === 'ar' ? 'تقييمات 5 نجوم' : '5★ Reviews'}       value={`${stats.fiveStarPercentage}%`}      tone="success" />
+          <StatCard icon={AlertTriangle} label={language === 'ar' ? 'رضا منخفض' : 'Low Satisfaction'} value={stats.lowSatisfactionCount}          tone="danger" />
         </div>
       )}
 
       {/* Average Ratings by Category */}
       {stats && (
-        <div className="bg-white/5 border border-white/10 p-8">
-          <h2 className="text-xl font-light tracking-wide uppercase text-white/90 mb-6">
-            Average Ratings by Category
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <Card style={{ marginBottom: '20px' }}>
+          <SectionHead icon={BarChart3} title={language === 'ar' ? 'متوسط التقييمات حسب الفئة' : 'Average Ratings by Category'} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '16px' }}>
             {Object.entries(stats.averageRatings).map(([category, rating]) => (
-              <div key={category} className="text-center">
-                <p className="text-sm font-light text-white/60 tracking-wide uppercase mb-2">
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+              <div key={category} style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  {language === 'ar'
+                    ? ({ quality: 'الجودة', speed: 'السرعة', communication: 'التواصل', professionalism: 'الاحترافية', overall: 'التقييم العام' }[category] || category)
+                    : (category.charAt(0).toUpperCase() + category.slice(1))}
                 </p>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  {renderStars(parseFloat(rating))}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', marginBottom: '6px' }}>
+                  {renderStars(parseFloat(rating), 13)}
                 </div>
-                <p className={`text-2xl font-light ${getRatingColor(parseFloat(rating))}`}>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: ratingColor(parseFloat(rating)), margin: 0 }}>
                   {rating}
                 </p>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Rating Distribution Chart */}
       {stats && (
-        <div className="bg-white/5 border border-white/10 p-8">
-          <h2 className="text-xl font-light tracking-wide uppercase text-white/90 mb-6">
-            Rating Distribution
-          </h2>
-          <div className="space-y-4">
+        <Card style={{ marginBottom: '20px' }}>
+          <SectionHead icon={TrendingUp} title={language === 'ar' ? 'توزيع التقييمات' : 'Rating Distribution'} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[5, 4, 3, 2, 1].map((star) => {
               const count = stats.distribution[star] || 0;
-              const percentage = stats.totalFeedback > 0 
-                ? (count / stats.totalFeedback) * 100 
+              const percentage = stats.totalFeedback > 0
+                ? (count / stats.totalFeedback) * 100
                 : 0;
+              const color = star >= 4 ? TK.green : star === 3 ? TK.amber : TK.red;
               return (
-                <div key={star} className="flex items-center gap-4">
-                  <div className="flex items-center gap-1 w-20">
-                    <span className="text-sm font-light text-white/60 w-4">{star}</span>
-                    <Star className="w-4 h-4 text-[#2563EB]" />
+                <div key={star} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '36px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '11px', color: TK.textMuted }}>{star}</span>
+                    <Star style={{ width: '11px', height: '11px', color: TK.accent, fill: TK.accent }} />
                   </div>
-                  <div className="flex-1 bg-white/5 h-6 border border-white/10 relative overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-500 ${
-                        star >= 4 ? 'bg-[#2563EB]' : 
-                        star >= 3 ? 'bg-yellow-500' : 
-                        star >= 2 ? 'bg-orange-500' : 
-                        'bg-red-500'
-                      }`}
-                      style={{ width: `${percentage}%` }}
-                    />
+                  <div style={{ flex: 1, height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${percentage}%`, background: color, borderRadius: '4px', transition: 'width 0.5s ease' }} />
                   </div>
-                  <span className="text-sm font-light text-white/60 w-16 text-right">
+                  <span style={{ fontSize: '11px', color: TK.textMuted, width: '84px', textAlign: 'right', flexShrink: 0 }}>
                     {count} ({percentage.toFixed(1)}%)
                   </span>
                 </div>
               );
             })}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Filters */}
-      <div className="bg-white/5 border border-white/10 p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Filter className="w-5 h-5 text-white/60" />
-          <h2 className="text-sm font-light text-white/60 tracking-widest uppercase">Filters</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Card style={{ marginBottom: '20px' }}>
+        <SectionHead icon={Filter} title={language === 'ar' ? 'التصفية' : 'Filters'} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
           <div>
-            <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-3">
-              Reviewed Status
+            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+              {language === 'ar' ? 'حالة المراجعة' : 'Reviewed Status'}
             </label>
-            <select
+            <Select
               value={filters.isReviewed}
               onChange={(e) => setFilters(prev => ({ ...prev, isReviewed: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
-            >
-              <option value="">All</option>
-              <option value="true">Reviewed</option>
-              <option value="false">Not Reviewed</option>
-            </select>
+              options={getReviewedOptions(language)}
+              style={{ width: '100%' }}
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-3">
-              Flagged
+            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+              {language === 'ar' ? 'مُعلَّم' : 'Flagged'}
             </label>
-            <select
+            <Select
               value={filters.isFlagged}
               onChange={(e) => setFilters(prev => ({ ...prev, isFlagged: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
-            >
-              <option value="">All</option>
-              <option value="true">Flagged</option>
-              <option value="false">Not Flagged</option>
-            </select>
+              options={getFlaggedOptions(language)}
+              style={{ width: '100%' }}
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-3">
-              Minimum Rating
+            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+              {language === 'ar' ? 'أقل تقييم' : 'Minimum Rating'}
             </label>
-            <select
+            <Select
               value={filters.minRating}
               onChange={(e) => setFilters(prev => ({ ...prev, minRating: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
-            >
-              <option value="">All Ratings</option>
-              <option value="5">5 Stars</option>
-              <option value="4">4+ Stars</option>
-              <option value="3">3+ Stars</option>
-              <option value="2">2+ Stars</option>
-            </select>
+              options={getMinRatingOptions(language)}
+              style={{ width: '100%' }}
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-light text-white/60 tracking-wide uppercase mb-3">
-              Sort By
+            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+              {language === 'ar' ? 'الترتيب حسب' : 'Sort By'}
             </label>
-            <select
+            <Select
               value={filters.sortBy}
               onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/5 border-b border-white/20 text-white font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-500"
-            >
-              <option value="createdAt">Date</option>
-              <option value="ratings.overall">Rating</option>
-            </select>
+              options={getSortOptions(language)}
+              style={{ width: '100%' }}
+            />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Feedback Table */}
-      <div className="bg-white/5 border border-white/10">
-        <div className="px-8 py-6 border-b border-white/10">
-          <h2 className="text-xl font-light tracking-wide uppercase text-white/90">
-            All Feedback ({feedback.length})
-          </h2>
-        </div>
-
-        {loading ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin mx-auto"></div>
-          </div>
-        ) : feedback.length === 0 ? (
-          <div className="p-12 text-center">
-            <MessageSquare className="w-12 h-12 text-white/30 mx-auto mb-4" />
-            <p className="text-white/50 font-light">No feedback found</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-white/10">
-            {feedback.map((fb) => {
-              const avgRating = (
-                (fb.ratings.quality + fb.ratings.speed + fb.ratings.communication + 
-                 fb.ratings.professionalism + fb.ratings.overall) / 5
-              ).toFixed(1);
-              
-              return (
-                <div
-                  key={fb._id}
-                  className={`p-8 hover:bg-white/5 transition-colors duration-300 ${
-                    fb.isFlagged ? 'bg-red-500/10 border-l-4 border-red-500' : ''
-                  } ${fb.ratings.overall <= 2 ? 'bg-orange-500/5 border-l-4 border-orange-500' : ''}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="flex items-center gap-2">
-                          {fb.isAnonymous ? (
-                            <User className="w-5 h-5 text-white/40" />
-                          ) : (
-                            <Building2 className="w-5 h-5 text-white/40" />
-                          )}
-                          <span className="text-lg font-light text-white/90">
-                            {fb.isAnonymous ? 'Anonymous' : fb.name}
-                          </span>
-                        </div>
-                        {fb.projectId && (
-                          <span className="text-sm font-light text-white/50">
-                            Project: {fb.projectId.title}
-                          </span>
-                        )}
-                        <span className="text-sm font-light text-white/50 flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {format(new Date(fb.createdAt), 'MMM d, yyyy')}
-                        </span>
-                        {fb.isHighlighted && (
-                          <span className="px-2 py-1 text-xs font-light text-[#2563EB] bg-[#2563EB]/20 border border-[#2563EB]/30">
-                            Highlighted
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-6 mb-4">
-                        <div className="flex items-center gap-2">
-                          {renderStars(parseFloat(avgRating))}
-                          <span className={`text-lg font-light ${getRatingColor(parseFloat(avgRating))}`}>
-                            {avgRating}
-                          </span>
-                        </div>
-                        <div className="text-sm font-light text-white/50">
-                          Q: {fb.ratings.quality} | S: {fb.ratings.speed} | C: {fb.ratings.communication} | P: {fb.ratings.professionalism} | O: {fb.ratings.overall}
-                        </div>
-                      </div>
-
-                      {fb.reviewText && (
-                        <p className="text-white/70 font-light mb-4 leading-relaxed">
-                          {fb.reviewText}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-start gap-2 ml-6">
-                      {!fb.isReviewed && (
-                        <button
-                          onClick={() => openActionModal('review', fb)}
-                          className="p-2 text-white/60 hover:text-green-400 transition-colors"
-                          title="Mark as Reviewed"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => openActionModal(fb.isFlagged ? 'unflag' : 'flag', fb)}
-                        className={`p-2 transition-colors ${
-                          fb.isFlagged ? 'text-red-400' : 'text-white/60 hover:text-red-400'
-                        }`}
-                        title={fb.isFlagged ? 'Unflag' : 'Flag'}
-                      >
-                        <Flag className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => openActionModal(fb.isHighlighted ? 'unhighlight' : 'highlight', fb)}
-                        className={`p-2 transition-colors ${
-                          fb.isHighlighted ? 'text-[#2563EB]' : 'text-white/60 hover:text-[#2563EB]'
-                        }`}
-                        title={fb.isHighlighted ? 'Unhighlight' : 'Highlight'}
-                      >
-                        <Star className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => openActionModal('delete', fb)}
-                        className="p-2 text-white/60 hover:text-red-400 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        rows={feedback}
+        loading={loading}
+        emptyIcon={MessageSquare}
+        emptyTitle={language === 'ar' ? 'لا توجد تقييمات' : 'No feedback found'}
+        footer={language === 'ar' ? `كل التقييمات (${feedback.length})` : `All Feedback (${feedback.length})`}
+      />
 
       {/* Action Confirmation Modal */}
-      {showModal && selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-black border border-white/20 max-w-md w-full p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-light text-white/90">
-                Confirm Action
-              </h3>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setSelectedFeedback(null);
-                }}
-                className="p-2 text-white/60 hover:text-white transition-colors duration-300"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <p className="text-white/70 font-light mb-8">
-              {modalAction === 'delete' && 'Are you sure you want to delete this feedback?'}
-              {modalAction === 'flag' && 'Flag this feedback for review?'}
-              {modalAction === 'unflag' && 'Remove flag from this feedback?'}
-              {modalAction === 'highlight' && 'Highlight this feedback for public display?'}
-              {modalAction === 'unhighlight' && 'Remove highlight from this feedback?'}
-              {modalAction === 'review' && 'Mark this feedback as reviewed?'}
-            </p>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setSelectedFeedback(null);
-                }}
-                className="flex-1 px-6 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all duration-300 text-sm font-light tracking-wide uppercase"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleAction(modalAction, selectedFeedback._id)}
-                className={`flex-1 px-6 py-3 border text-sm font-light tracking-widest uppercase transition-all duration-500 ${
-                  modalAction === 'delete' 
-                    ? 'border-red-500 text-red-500 hover:bg-red-500 hover:text-black'
-                    : 'border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-black'
-                }`}
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showModal}
+        onClose={closeModal}
+        onConfirm={() => handleAction(modalAction, selectedFeedback?._id)}
+        title={language === 'ar' ? 'تأكيد الإجراء' : 'Confirm Action'}
+        description={getActionDescriptions(language)[modalAction] || ''}
+        confirmLabel={language === 'ar' ? 'تأكيد' : 'Confirm'}
+        danger={modalAction === 'delete'}
+      />
     </div>
   );
 };
 
 export default AdminFeedback;
-

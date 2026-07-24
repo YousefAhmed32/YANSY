@@ -5,29 +5,14 @@ import {
   fetchInbox, fetchThreadMessages, sendMessage, markThreadRead, markThreadReadLocal,
 } from '../store/messageSlice';
 import {
-  MessageSquare, Search, Send, Clock, CheckCheck, User,
+  MessageSquare, Send, Clock, CheckCheck, User,
   FolderKanban, Filter, SortAsc, Inbox, ChevronDown,
   AlertCircle, X, Lock, Megaphone, MoreHorizontal,
   ArrowRight, RefreshCw, Pencil, Trash2,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../utils/api';
-
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E7EAF0',
-  accent:    '#2563EB',
-  accentBg:  '#EFF6FF',
-  accentBd:  '#DBEAFE',
-  text:      '#111827',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
-  green:     '#25D366',
-  red:       '#EF4444',
-  amber:     '#F59E0B',
-};
+import { TK, FONT, Avatar, Badge, SearchInput, FilterPills, IconButton } from '../admin-ui';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -99,22 +84,6 @@ const WaIcon = () => (
   </svg>
 );
 
-const Avatar = ({ name, size = 34 }) => {
-  const initials = name
-    ? name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: size * 0.28,
-      background: TK.accentBg, border: `1px solid ${TK.accentBd}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0, fontSize: size * 0.33, fontWeight: 700, color: TK.accent,
-    }}>
-      {initials}
-    </div>
-  );
-};
-
 // ── Main Component ────────────────────────────────────────────────────────────
 
 const AdminMessages = () => {
@@ -140,9 +109,7 @@ const AdminMessages = () => {
   const messagesEndRef = useRef(null);
   const textareaRef    = useRef(null);
 
-  const font = isRTL
-    ? 'IBM Plex Sans Arabic, system-ui, sans-serif'
-    : 'Inter, system-ui, sans-serif';
+  const font = FONT(isRTL);
 
   // ── Responsive ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -327,11 +294,11 @@ const AdminMessages = () => {
           maxWidth: 'min(70%, 540px)',
           padding: '9px 13px',
           borderRadius: isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-          background: isAdmin ? TK.accent : TK.surface,
-          border: isAdmin ? 'none' : `1px solid ${TK.border}`,
-          color: isAdmin ? 'white' : TK.text,
+          background: isAdmin ? TK.accentBg : TK.surface,
+          border: `1px solid ${isAdmin ? TK.accentBd : TK.border}`,
+          color: TK.text,
           fontSize: 13.5, lineHeight: 1.55, wordBreak: 'break-word',
-          boxShadow: isAdmin ? '0 2px 8px rgba(37,99,235,0.2)' : '0 1px 4px rgba(0,0,0,0.04)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
         }}>
           {msg.content || msg.text || msg.message || ''}
         </div>
@@ -373,78 +340,46 @@ const AdminMessages = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {totalUnread > 0 && (
-              <span style={{
-                padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700,
-                background: TK.accent, color: 'white',
-              }}>
-                {totalUnread > 99 ? '99+' : totalUnread}
-              </span>
+              <Badge tone="info">{totalUnread > 99 ? '99+' : totalUnread}</Badge>
             )}
-            <button
+            <IconButton
+              icon={RefreshCw}
+              size={24}
               onClick={() => dispatch(fetchInbox())}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textLight, display: 'flex', padding: 3 }}
               title={language === 'ar' ? 'تحديث' : 'Refresh'}
-            >
-              <RefreshCw style={{ width: 12, height: 12 }} />
-            </button>
+            />
           </div>
         </div>
 
         {/* Stats chips */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-          {[
-            { id: 'all',    label: language === 'ar' ? 'الكل' : 'All',      count: threads.length },
-            { id: 'unread', label: language === 'ar' ? 'غير مقروء' : 'Unread', count: totalUnread, color: TK.accent },
-            { id: 'urgent', label: language === 'ar' ? 'عاجل' : 'Urgent',   count: urgentCount,  color: TK.red },
-          ].map(f => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                padding: '4px 9px', borderRadius: 99,
-                background: filter === f.id ? (f.color || TK.accent) : TK.bg,
-                border: `1px solid ${filter === f.id ? (f.color || TK.accent) : TK.border}`,
-                color: filter === f.id ? 'white' : TK.textMuted,
-                fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: font,
-                transition: 'all 0.12s',
-              }}
-            >
-              {f.label}
-              {f.count > 0 && (
-                <span style={{
-                  fontSize: 9.5, fontWeight: 700,
-                  color: filter === f.id ? 'rgba(255,255,255,0.8)' : TK.textLight,
-                }}>
-                  {f.count}
-                </span>
-              )}
-            </button>
-          ))}
+        <div style={{ marginBottom: 10 }}>
+          <FilterPills
+            value={filter}
+            onChange={setFilter}
+            options={[
+              {
+                value: 'all',
+                label: <>{language === 'ar' ? 'الكل' : 'All'}{threads.length > 0 && <span style={{ marginInlineStart: 4, opacity: 0.6 }}>{threads.length}</span>}</>,
+              },
+              {
+                value: 'unread',
+                label: <>{language === 'ar' ? 'غير مقروء' : 'Unread'}{totalUnread > 0 && <span style={{ marginInlineStart: 4, opacity: 0.6 }}>{totalUnread}</span>}</>,
+              },
+              {
+                value: 'urgent',
+                label: <>{language === 'ar' ? 'عاجل' : 'Urgent'}{urgentCount > 0 && <span style={{ marginInlineStart: 4, opacity: 0.6 }}>{urgentCount}</span>}</>,
+              },
+            ]}
+          />
         </div>
 
         {/* Search */}
-        <div style={{ position: 'relative' }}>
-          <Search style={{
-            position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-            [isRTL ? 'right' : 'left']: 10,
-            width: 12, height: 12, color: TK.textLight, pointerEvents: 'none',
-          }} />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={language === 'ar' ? 'بحث في المحادثات...' : 'Search conversations...'}
-            style={{
-              width: '100%', padding: isRTL ? '7px 30px 7px 10px' : '7px 10px 7px 30px',
-              borderRadius: 8, border: `1px solid ${TK.border}`,
-              fontSize: 12.5, fontFamily: font, color: TK.text,
-              background: TK.bg, outline: 'none', boxSizing: 'border-box',
-              transition: 'border-color 0.15s',
-            }}
-            onFocus={e => { e.target.style.borderColor = TK.accent; }}
-            onBlur={e => { e.target.style.borderColor = TK.border; }}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+          placeholder={language === 'ar' ? 'بحث في المحادثات...' : 'Search conversations...'}
+        />
       </div>
 
       {/* Thread list */}
@@ -474,19 +409,18 @@ const AdminMessages = () => {
             <button
               key={thread._id}
               onClick={() => handleSelectThread(thread)}
+              className={isActive ? '' : 'au-row'}
               style={{
                 display: 'flex', gap: 10, width: '100%',
                 padding: '11px 12px', textAlign: isRTL ? 'right' : 'left',
                 background: isActive ? TK.accentBg : 'transparent',
                 border: `1px solid ${isActive ? TK.accentBd : 'transparent'}`,
                 borderRadius: 10, margin: '1px 0',
-                cursor: 'pointer', transition: 'all 0.12s', fontFamily: font,
+                cursor: 'pointer', fontFamily: font,
               }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = TK.bg; }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.border = '1px solid transparent'; } }}
             >
               <div style={{ position: 'relative', flexShrink: 0 }}>
-                <Avatar name={thread.clientName || title} size={36} />
+                <Avatar name={thread.clientName || title} size={36} tone="info" />
                 {unread && (
                   <span style={{
                     position: 'absolute', top: -3, right: isRTL ? 'auto' : -3, left: isRTL ? -3 : 'auto',
@@ -524,14 +458,7 @@ const AdminMessages = () => {
                     {String(preview).slice(0, 50)}{preview.length > 50 ? '…' : ''}
                   </span>
                   {unread && (
-                    <span style={{
-                      minWidth: 17, height: 17, borderRadius: 9,
-                      background: TK.accent, color: 'white',
-                      fontSize: 9, fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', flexShrink: 0,
-                    }}>
-                      {thread.unreadCount > 9 ? '9+' : thread.unreadCount}
-                    </span>
+                    <Badge tone="info">{thread.unreadCount > 9 ? '9+' : thread.unreadCount}</Badge>
                   )}
                 </div>
 
@@ -576,7 +503,7 @@ const AdminMessages = () => {
                 <ArrowRight style={{ width: 15, height: 15, transform: isRTL ? 'none' : 'rotate(180deg)' }} />
               </button>
             )}
-            <Avatar name={title} size={32} />
+            <Avatar name={title} size={32} tone="info" />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: TK.text, fontFamily: font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {title}
@@ -707,13 +634,13 @@ const AdminMessages = () => {
             {/* Internal note panel */}
             {showNote && activeThreadId && (
               <div style={{
-                borderTop: `2px dashed rgba(37,99,235,0.2)`,
-                background: '#FFFBEB',
+                borderTop: `2px dashed ${TK.accentBd}`,
+                background: TK.amberBg,
                 padding: '12px 16px', flexShrink: 0,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <Lock style={{ width: 11, height: 11, color: '#D97706' }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#D97706', fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <Lock style={{ width: 11, height: 11, color: TK.amber }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: TK.amber, fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {language === 'ar' ? 'ملاحظة داخلية — لا يراها العميل' : 'Internal note — Not visible to client'}
                   </span>
                 </div>
@@ -723,13 +650,13 @@ const AdminMessages = () => {
                   <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {(notes[activeThreadId] || []).map((note, i) => (
                       <div key={note._id || i} style={{
-                        background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.18)',
+                        background: TK.amberBg, border: `1px solid ${TK.amberBd}`,
                         borderRadius: 8, padding: '8px 10px',
                       }}>
                         <div style={{ fontSize: 12.5, color: TK.text, fontFamily: font, lineHeight: 1.5 }}>
                           {note.content}
                         </div>
-                        <div style={{ fontSize: 10, color: '#92400E', marginTop: 4, fontFamily: font }}>
+                        <div style={{ fontSize: 10, color: TK.amber, marginTop: 4, fontFamily: font }}>
                           {note.author} · {fmtTime(note.createdAt, language)}
                         </div>
                       </div>
@@ -745,8 +672,8 @@ const AdminMessages = () => {
                     rows={2}
                     style={{
                       flex: 1, padding: '8px 10px', borderRadius: 8,
-                      border: '1px solid rgba(245,158,11,0.3)', fontSize: 12.5,
-                      fontFamily: font, color: TK.text, background: 'white',
+                      border: `1px solid ${TK.amberBd}`, fontSize: 12.5,
+                      fontFamily: font, color: TK.text, background: TK.surface,
                       outline: 'none', resize: 'none',
                     }}
                   />
@@ -755,7 +682,7 @@ const AdminMessages = () => {
                     disabled={!noteText.trim() || savingNote}
                     style={{
                       padding: '8px 14px', borderRadius: 8, border: 'none',
-                      background: '#D97706', color: 'white',
+                      background: TK.amber, color: 'white',
                       cursor: noteText.trim() ? 'pointer' : 'default',
                       fontSize: 12, fontWeight: 500, fontFamily: font, flexShrink: 0,
                       opacity: (!noteText.trim() || savingNote) ? 0.5 : 1,
@@ -836,7 +763,7 @@ const AdminMessages = () => {
                 ) : clientInfo ? (
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                      <Avatar name={clientInfo.fullName || clientInfo.name} size={36} />
+                      <Avatar name={clientInfo.fullName || clientInfo.name} size={36} tone="info" />
                       <div>
                         <div style={{ fontSize: 12.5, fontWeight: 600, color: TK.text, fontFamily: font }}>
                           {clientInfo.fullName || clientInfo.name || '—'}

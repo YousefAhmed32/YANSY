@@ -22,6 +22,12 @@ const auditLogSchema = new mongoose.Schema({
       'feedback.delete', 'feedback.flag', 'feedback.highlight', 'feedback.review',
       // Portfolio actions
       'portfolio.create', 'portfolio.update', 'portfolio.delete', 'portfolio.feature',
+      'portfolio.status_change', 'portfolio.reorder', 'portfolio.media_upload', 'portfolio.media_delete', 'portfolio.bulk_action',
+      // Intro system actions
+      'intro.update', 'intro.video_upload', 'intro.video_delete',
+      // Homepage video showcase actions
+      'homepage_video.update', 'homepage_video.video_upload', 'homepage_video.video_delete',
+      'homepage_video.poster_upload', 'homepage_video.poster_delete',
       // Invoice actions
       'invoice.create', 'invoice.send', 'invoice.mark_paid', 'invoice.delete',
       // System actions
@@ -35,7 +41,7 @@ const auditLogSchema = new mongoose.Schema({
 
   entityType: {
     type: String,
-    enum: ['User', 'Project', 'Feedback', 'PortfolioProject', 'Invoice', 'File', 'System', 'Report'],
+    enum: ['User', 'Project', 'Feedback', 'PortfolioProject', 'Invoice', 'File', 'System', 'Report', 'IntroSettings', 'HomepageVideoSettings'],
     required: true,
   },
 

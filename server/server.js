@@ -30,6 +30,9 @@ const analyticsRoutes = require('./routes/analytics');
 const fileRoutes = require('./routes/files');
 const feedbackRoutes = require('./routes/feedback');
 const portfolioRoutes = require('./routes/portfolio.routes');
+const introRoutes = require('./routes/intro.routes');
+const homepageVideoRoutes = require('./routes/homepageVideo.routes');
+const startProjectRoutes = require('./routes/startProject.routes');
 const notificationRoutes = require('./routes/notifications');
 
 // Activity log route
@@ -122,6 +125,11 @@ if (helmet) {
       },
     },
     crossOriginEmbedderPolicy: false,
+    // Portfolio/media images are served from this origin (or a different
+    // subdomain in prod) but rendered on the client origin — same-origin
+    // CORP (helmet's default) silently blocks the browser from painting
+    // them with no console-visible cause beyond a cryptic NotSameOrigin.
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   }));
 }
 
@@ -275,6 +283,9 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/intro', introRoutes);
+app.use('/api/homepage-video', homepageVideoRoutes);
+app.use('/api/start-project', startProjectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity',      activityRoutes);
 

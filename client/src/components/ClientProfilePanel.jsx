@@ -1,291 +1,178 @@
 import { useEffect, useState } from 'react';
+import { gsap } from 'gsap';
 import { X, User, Mail, Phone, Building, Users, FolderKanban, Calendar, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import api from '../utils/api';
-import { gsap } from 'gsap';
+import { useLanguage } from '../contexts/LanguageContext';
+import { TK, RADIUS, STATUS_TONE, PageHeader, Card, Badge, IconButton, Button, PageSpinner } from '../admin-ui';
+
+const InfoRow = ({ icon: Icon, label, value }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+    <div style={{ width: '38px', height: '38px', flexShrink: 0, borderRadius: RADIUS.md, background: TK.accentBg, border: `1px solid ${TK.accentBd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon style={{ width: '16px', height: '16px', color: TK.accent }} />
+    </div>
+    <div style={{ minWidth: 0 }}>
+      <p style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textLight, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 3px' }}>{label}</p>
+      <p style={{ fontSize: '14px', fontWeight: 500, color: TK.text, margin: 0, wordBreak: 'break-word' }}>{value}</p>
+    </div>
+  </div>
+);
+
+const MiniStat = ({ value, label, tone = TK.text }) => (
+  <div>
+    <p style={{ fontSize: '24px', fontWeight: 700, color: tone, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{value}</p>
+    <p style={{ fontSize: '10.5px', fontWeight: 500, color: TK.textLight, letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0 }}>{label}</p>
+  </div>
+);
+
+const statusMeta = (status, progress, isRTL) => {
+  if (status === 'cancelled') return { tone: 'danger', Icon: AlertCircle, label: isRTL ? 'ملغى' : 'Cancelled' };
+  if (status === 'delivered' || progress === 100) return { tone: 'success', Icon: CheckCircle2, label: isRTL ? 'تم التسليم' : 'Delivered' };
+  if (progress >= 80) return { tone: 'warning', Icon: Clock, label: isRTL ? 'قرب الإنجاز' : 'Near Completion' };
+  if (progress > 0) return { tone: 'info', Icon: Clock, label: isRTL ? 'قيد التنفيذ' : 'In Progress' };
+  return { tone: 'neutral', Icon: Clock, label: isRTL ? 'قيد الانتظار' : 'Pending' };
+};
 
 const ClientProfilePanel = ({ clientId, onClose }) => {
+  const { isRTL } = useLanguage();
   const [client, setClient] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (clientId) {
-      fetchClientDetails();
-    }
+    if (!clientId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await api.get(`/users/${clientId}/client-details`);
+        if (cancelled) return;
+        setClient(response.data.client);
+        setProjects(response.data.projects || []);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err.response?.data?.error || (isRTL ? 'فشل تحميل بيانات العميل' : 'Failed to load client details'));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
   useEffect(() => {
     if (client) {
-      gsap.fromTo('.client-panel', 
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
-      );
+      gsap.fromTo('.client-panel', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
     }
   }, [client]);
 
-  const fetchClientDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/users/${clientId}/client-details`);
-      setClient(response.data.client);
-      setProjects(response.data.projects || []);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load client details');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'delivered':
-        return <CheckCircle2 className="h-4 w-4 text-[#2563EB]" />;
-      case 'in-progress':
-      case 'near-completion':
-        return <Clock className="h-4 w-4 text-blue-400" />;
-      case 'cancelled':
-        return <AlertCircle className="h-4 w-4 text-red-400" />;
-      default:
-        return <Clock className="h-4 w-4 text-white/60" />;
-    }
-  };
-
-  const getStatusText = (progress, status) => {
-    if (status === 'cancelled') return 'Cancelled';
-    if (status === 'delivered' || progress === 100) return 'Delivered';
-    if (progress >= 80) return 'Near Completion';
-    if (progress > 0) return 'In Progress';
-    return 'Pending';
-  };
-
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error || !client) {
-    return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div className="bg-white/10 border border-white/20 p-8 max-w-md">
-          <p className="text-white/70 mb-4">{error || 'Client not found'}</p>
-          <button
-            onClick={onClose}
-            className="px-6 py-3 border border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-black transition-all duration-300 text-sm font-light tracking-wide uppercase"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
-      <div className="min-h-screen py-8 px-4">
-        <div className="max-w-6xl mx-auto client-panel">
-          {/* Header */}
-          <div className="bg-white/5 border border-white/10 p-6 md:p-8 mb-6">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-2 text-white/90">
-                  Client Profile
-                </h2>
-                <p className="text-white/50 font-light">Complete client information and project history</p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 text-white/60 hover:text-[#2563EB] transition-colors"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: TK.bg, overflowY: 'auto' }} dir={isRTL ? 'rtl' : 'ltr'}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px 60px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: loading || error ? 0 : '-4px' }}>
+          <IconButton icon={X} variant="outline" size={34} onClick={onClose} aria-label={isRTL ? 'إغلاق' : 'Close'} />
+        </div>
 
-            {/* Client Info Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-white/5 border border-white/10">
-                  <User className="h-6 w-6 text-[#2563EB]" />
-                </div>
-                <div>
-                  <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Full Name</p>
-                  <p className="text-lg font-light text-white/90">{client.fullName}</p>
-                </div>
-              </div>
+        {loading && <PageSpinner />}
 
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-white/5 border border-white/10">
-                  <Mail className="h-6 w-6 text-[#2563EB]" />
-                </div>
-                <div>
-                  <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Email</p>
-                  <p className="text-lg font-light text-white/90">{client.email}</p>
-                </div>
+        {!loading && (error || !client) && (
+          <Card padding="32px" style={{ textAlign: 'center', maxWidth: '420px', margin: '80px auto 0' }}>
+            <p style={{ fontSize: '13px', color: TK.textMuted, margin: '0 0 18px' }}>{error || (isRTL ? 'العميل غير موجود' : 'Client not found')}</p>
+            <Button variant="primary" onClick={onClose}>{isRTL ? 'إغلاق' : 'Close'}</Button>
+          </Card>
+        )}
+
+        {!loading && client && (
+          <div className="client-panel">
+            <Card padding="28px" style={{ marginBottom: '20px' }}>
+              <PageHeader
+                icon={User}
+                eyebrow={isRTL ? 'ملف العميل' : 'Client Profile'}
+                title={client.fullName || client.email}
+                subtitle={isRTL ? 'البيانات الكاملة وسجل المشاريع' : 'Complete client information and project history'}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5" style={{ marginTop: '4px' }}>
+                <InfoRow icon={User} label={isRTL ? 'الاسم الكامل' : 'Full Name'} value={client.fullName || '—'} />
+                <InfoRow icon={Mail} label={isRTL ? 'البريد الإلكتروني' : 'Email'} value={client.email} />
+                <InfoRow icon={Phone} label={isRTL ? 'رقم الهاتف' : 'Phone Number'} value={client.phoneNumber || 'N/A'} />
+                <InfoRow icon={Building} label={isRTL ? 'نوع العميل' : 'Client Type'} value={client.clientType || (isRTL ? 'فرد' : 'Individual')} />
+                {client.companyName && <InfoRow icon={Building} label={isRTL ? 'اسم الشركة' : 'Company Name'} value={client.companyName} />}
+                {client.companySize && <InfoRow icon={Users} label={isRTL ? 'حجم الشركة' : 'Company Size'} value={client.companySize.replace('-', ' - ')} />}
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-white/5 border border-white/10">
-                  <Phone className="h-6 w-6 text-[#2563EB]" />
-                </div>
-                <div>
-                  <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Phone Number</p>
-                  <p className="text-lg font-light text-white/90">{client.phoneNumber || 'N/A'}</p>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" style={{ marginTop: '28px', paddingTop: '24px', borderTop: `1px solid ${TK.borderSoft}` }}>
+                <MiniStat value={client.totalProjects || 0} label={isRTL ? 'إجمالي المشاريع' : 'Total Projects'} tone={TK.accent} />
+                <MiniStat value={client.projectsByStatus?.['in-progress'] || 0} label={isRTL ? 'قيد التنفيذ' : 'In Progress'} tone={TK.accent} />
+                <MiniStat value={client.projectsByStatus?.['near-completion'] || 0} label={isRTL ? 'قرب الإنجاز' : 'Near Completion'} tone={TK.amber} />
+                <MiniStat value={client.projectsByStatus?.delivered || 0} label={isRTL ? 'تم التسليم' : 'Delivered'} tone={TK.green} />
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-white/5 border border-white/10">
-                  <Building className="h-6 w-6 text-[#2563EB]" />
-                </div>
-                <div>
-                  <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Client Type</p>
-                  <p className="text-lg font-light text-white/90 capitalize">{client.clientType || 'Individual'}</p>
-                </div>
-              </div>
-
-              {client.companyName && (
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white/5 border border-white/10">
-                    <Building className="h-6 w-6 text-[#2563EB]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Company Name</p>
-                    <p className="text-lg font-light text-white/90">{client.companyName}</p>
-                  </div>
-                </div>
-              )}
-
-              {client.companySize && (
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white/5 border border-white/10">
-                    <Users className="h-6 w-6 text-[#2563EB]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-light text-white/50 mb-1 uppercase tracking-wide">Company Size</p>
-                    <p className="text-lg font-light text-white/90 capitalize">
-                      {client.companySize.replace('-', ' - ')}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/10">
-              <div>
-                <p className="text-3xl font-light text-[#2563EB] mb-1">{client.totalProjects || 0}</p>
-                <p className="text-xs font-light text-white/50 uppercase tracking-wide">Total Projects</p>
-              </div>
-              <div>
-                <p className="text-3xl font-light text-blue-400 mb-1">{client.projectsByStatus?.['in-progress'] || 0}</p>
-                <p className="text-xs font-light text-white/50 uppercase tracking-wide">In Progress</p>
-              </div>
-              <div>
-                <p className="text-3xl font-light text-yellow-400 mb-1">{client.projectsByStatus?.['near-completion'] || 0}</p>
-                <p className="text-xs font-light text-white/50 uppercase tracking-wide">Near Completion</p>
-              </div>
-              <div>
-                <p className="text-3xl font-light text-[#2563EB] mb-1">{client.projectsByStatus?.delivered || 0}</p>
-                <p className="text-xs font-light text-white/50 uppercase tracking-wide">Delivered</p>
-              </div>
-            </div>
-
-            {client.lastActivity && (
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <div className="flex items-center gap-2 text-white/50">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm font-light">
-                    Last Activity: {new Date(client.lastActivity).toLocaleString()}
+              {client.lastActivity && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '20px', paddingTop: '20px', borderTop: `1px solid ${TK.borderSoft}`, color: TK.textMuted }}>
+                  <Calendar style={{ width: '14px', height: '14px' }} />
+                  <span style={{ fontSize: '12px' }}>
+                    {isRTL ? 'آخر نشاط: ' : 'Last Activity: '}{new Date(client.lastActivity).toLocaleString()}
                   </span>
                 </div>
+              )}
+            </Card>
+
+            <Card padding="28px">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 700, color: TK.text, margin: 0, letterSpacing: '-0.01em' }}>{isRTL ? 'كل المشاريع' : 'All Projects'}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', color: TK.textMuted }}>
+                  <FolderKanban style={{ width: '15px', height: '15px' }} />
+                  <span style={{ fontSize: '12px' }}>{isRTL ? `${projects.length} مشروع` : `${projects.length} projects`}</span>
+                </div>
               </div>
-            )}
+
+              {projects.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {projects.map((project) => {
+                    const meta = statusMeta(project.status, project.progress || 0, isRTL);
+                    return (
+                      <Card key={project._id} hover padding="18px">
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <h4 style={{ fontSize: '14.5px', fontWeight: 600, color: TK.text, margin: '0 0 5px' }}>{project.title}</h4>
+                            <p style={{
+                              fontSize: '12px', color: TK.textMuted, margin: 0,
+                              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                            }}>{project.description}</p>
+                          </div>
+                          <meta.Icon style={{ width: '17px', height: '17px', color: STATUS_TONE[meta.tone].fg, flexShrink: 0 }} />
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                          <Badge tone={meta.tone} dot>{meta.label}</Badge>
+                          <span style={{ fontSize: '11.5px', color: TK.textLight }}>{project.progress || 0}% {isRTL ? 'مكتمل' : 'Complete'}</span>
+                        </div>
+
+                        {project.progress > 0 && (
+                          <div style={{ width: '100%', height: '6px', borderRadius: RADIUS.pill, background: TK.bgSubtle, border: `1px solid ${TK.borderSoft}`, overflow: 'hidden', marginBottom: '10px' }}>
+                            <div style={{ height: '100%', borderRadius: RADIUS.pill, width: `${project.progress}%`, background: TK.accent, transition: 'width 0.4s ease' }} />
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '11px', color: TK.textLight }}>
+                          <span>{isRTL ? 'المرحلة: ' : 'Phase: '}{project.phase}</span>
+                          {project.updatedAt && <span>{isRTL ? 'تحديث: ' : 'Updated: '}{new Date(project.updatedAt).toLocaleDateString()}</span>}
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p style={{ fontSize: '13px', color: TK.textMuted, margin: 0 }}>{isRTL ? 'لا توجد مشاريع.' : 'No projects found.'}</p>
+              )}
+            </Card>
           </div>
-
-          {/* Projects List */}
-          <div className="bg-white/5 border border-white/10 p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-light text-white/90">All Projects</h3>
-              <div className="flex items-center gap-2">
-                <FolderKanban className="h-5 w-5 text-white/60" />
-                <span className="text-sm font-light text-white/50">{projects.length} projects</span>
-              </div>
-            </div>
-
-            {projects.length > 0 ? (
-              <div className="space-y-4">
-                {projects.map((project) => (
-                  <div
-                    key={project._id}
-                    className="p-6 bg-white/5 border border-white/10 hover:border-[#2563EB]/50 transition-all duration-300"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h4 className="text-xl font-light text-white/90 mb-2">{project.title}</h4>
-                        <p className="text-sm font-light text-white/50 line-clamp-2">{project.description}</p>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        {getStatusIcon(project.status)}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className={`px-3 py-1 text-xs font-light tracking-wide uppercase border rounded ${
-                        project.status === 'cancelled'
-                          ? 'text- bg-[#e67e22]/20 border-[#e67e22]/30'
-                          : project.progress === 100
-                          ? 'text-[#2563EB] bg-[#2563EB]/20 border-[#2563EB]/30'
-                          : project.progress >= 80
-                          ? 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
-                          : project.progress > 0
-                          ? 'text-blue-400 bg-blue-500/20 border-blue-500/30'
-                          : 'text-white/60 bg-white/10 border-white/20'
-                      }`}>
-                        {getStatusText(project.progress || 0, project.status)}
-                      </span>
-                      <span className="text-xs font-light text-white/50">
-                        {project.progress || 0}% Complete
-                      </span>
-                    </div>
-
-                    {project.progress > 0 && (
-                      <div className="w-full bg-white/10 rounded-full h-2 mb-4">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            project.progress === 100
-                              ? 'bg-gradient-to-r from-[#2563EB] to-[#f4d03f]'
-                              : project.progress >= 80
-                              ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
-                              : 'bg-gradient-to-r from-blue-500 to-blue-400'
-                          }`}
-                          style={{ width: `${project.progress}%` }}
-                        ></div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-4 text-xs text-white/50">
-                      <span className="font-light">Phase: {project.phase}</span>
-                      {project.updatedAt && (
-                        <span className="font-light">
-                          Updated: {new Date(project.updatedAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-white/50 font-light">No projects found.</p>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default ClientProfilePanel;
-

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -12,7 +12,7 @@ import ProjectRequestForm from '../components/ProjectRequestForm';
 // Sections
 import HeroSection      from '../components/HeroSection';
 import TrustBar         from '../components/TrustBar';
-import Solutions        from '../components/Solutions';
+import IndustriesPreview from '../components/IndustriesPreview';
 import PortfolioSection from '../components/PortfolioSection';
 import WhyYANSY         from '../components/WhyYANSY';
 import Testimonials     from '../components/Testimonials';
@@ -23,6 +23,9 @@ import MetricsSection  from '../sections/MetricsSection';
 import ProcessSection  from '../sections/ProcessSection';
 import TechSection     from '../sections/TechSection';
 import ContactSection  from '../sections/ContactSection';
+
+// Below-the-fold and non-critical — kept out of the eager Home bundle
+const HomepageVideoShowcase = lazy(() => import('../components/HomepageVideoShowcase'));
 
 const Home = () => {
   const { t }               = useTranslation();
@@ -64,11 +67,16 @@ const Home = () => {
       {/* 01 — Hero: Who we are + What we build + Why trust us */}
       <HeroSection onStartProject={open} isRTL={isRTL} t={t} />
 
+      {/* 01.5 — Premium Video Showcase: cinematic product/brand film */}
+      <Suspense fallback={null}>
+        <HomepageVideoShowcase />
+      </Suspense>
+
       {/* 02 — Social Proof Strip: Stats + Industries */}
       <TrustBar />
 
-      {/* 03 — Services: What we specifically build */}
-      <Solutions isRTL={isRTL} onStartProject={open} />
+      {/* 03 — Industries: Who we build for (gateway into /industries) */}
+      <IndustriesPreview />
 
       {/* 04 — Portfolio: Real shipped work */}
       <PortfolioSection />

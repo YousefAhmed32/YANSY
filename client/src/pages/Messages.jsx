@@ -506,7 +506,7 @@ const Messages = () => {
 
     return (
       <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
+        flex: 1, flexDirection: 'column',
         display: isMobile && mobileView === 'list' ? 'none' : 'flex',
         minWidth: 0, height: '100%', background: TK.bg,
       }}>

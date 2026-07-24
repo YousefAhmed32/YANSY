@@ -41,7 +41,7 @@ const AddProject = () => {
     { value: '500-1000', label: t('projectForm.budgetOptions.500to1000'), icon: '🚀', color: 'from-purple-500/20 to-purple-600/5' },
     { value: '1000-3000', label: t('projectForm.budgetOptions.1000to3000'), icon: '⭐', color: 'from-yellow-500/20 to-yellow-600/5' },
     { value: '3000-10000', label: t('projectForm.budgetOptions.3000to10000'), icon: '💎', color: 'from-cyan-500/20 to-cyan-600/5' },
-    { value: '10000-plus', label: t('projectForm.budgetOptions.10000plus'), icon: '👑', color: 'from-[#2563EB]/20 to-[#f4d03f]/5' }
+    { value: '10000-plus', label: t('projectForm.budgetOptions.10000plus'), icon: '👑', color: 'from-[#2563EB]/20 to-[#60A5FA]/5' }
   ];
 
   const companySizeOptions = [
@@ -242,8 +242,8 @@ const AddProject = () => {
               <div className="absolute inset-0 rounded-full bg-[#2563EB]/10 animate-pulse" style={{ animationDelay: '0.5s' }} />
               
               {/* Main icon */}
-              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#2563EB] via-[#f4d03f] to-[#2563EB] flex items-center justify-center shadow-2xl shadow-[#2563EB]/50 animate-scale-in">
-                <Check className="w-14 h-14 text-black animate-check-draw" strokeWidth={3} />
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#2563EB] via-[#60A5FA] to-[#2563EB] flex items-center justify-center shadow-2xl shadow-[#2563EB]/50 animate-scale-in">
+                <Check className="w-14 h-14 text-white animate-check-draw" strokeWidth={3} />
               </div>
 
               {/* Sparkles around */}
@@ -378,8 +378,8 @@ const AddProject = () => {
             <div className="mb-8 flex justify-center">
               <div className="relative">
                 <div className="absolute inset-0 bg-[#2563EB]/20 blur-2xl rounded-full animate-pulse" />
-                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#f4d03f] flex items-center justify-center shadow-xl shadow-[#2563EB]/30 rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <Plus className="w-10 h-10 text-black" strokeWidth={2.5} />
+                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#60A5FA] flex items-center justify-center shadow-xl shadow-[#2563EB]/30 rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Plus className="w-10 h-10 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             </div>
@@ -400,7 +400,7 @@ const AddProject = () => {
           <div className="relative h-2 bg-white/5 rounded-full mb-8 overflow-hidden">
             <div 
               ref={progressBarRef}
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563EB] via-[#f4d03f] to-[#2563EB] rounded-full transition-all duration-500 shadow-lg shadow-[#2563EB]/50"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563EB] via-[#60A5FA] to-[#2563EB] rounded-full transition-all duration-500 shadow-lg shadow-[#2563EB]/50"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             >
               <div className="absolute inset-0 bg-white/30 animate-shimmer" />
@@ -415,7 +415,7 @@ const AddProject = () => {
                   ref={el => stepRefs.current[step - 1] = el}
                   className={`relative group w-14 h-14 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-500 ${
                     currentStep >= step
-                      ? 'bg-gradient-to-br from-[#2563EB] to-[#f4d03f] text-black scale-110 shadow-xl shadow-[#2563EB]/50'
+                      ? 'bg-gradient-to-br from-[#2563EB] to-[#60A5FA] text-white scale-110 shadow-xl shadow-[#2563EB]/50'
                       : 'bg-white/5 text-white/40 scale-100'
                   }`}
                 >
@@ -524,7 +524,7 @@ const AddProject = () => {
                         {/* Selection indicator */}
                         {formData.clientType === option.type && (
                           <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#2563EB] rounded-full flex items-center justify-center shadow-lg animate-scale-in">
-                            <Check className="w-5 h-5 text-black" strokeWidth={3} />
+                            <Check className="w-5 h-5 text-white" strokeWidth={3} />
                           </div>
                         )}
 
@@ -637,7 +637,7 @@ const AddProject = () => {
                           </div>
                           {formData.budgetRange === option.value && (
                             <div className="w-6 h-6 bg-[#2563EB] rounded-full flex items-center justify-center animate-scale-in">
-                              <Check className="w-4 h-4 text-black" strokeWidth={3} />
+                              <Check className="w-4 h-4 text-white" strokeWidth={3} />
                             </div>
                           )}
                         </div>
@@ -777,7 +777,7 @@ const AddProject = () => {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105"
+                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#60A5FA] text-white text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105"
                 >
                   <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   <span className="relative">{t('projectForm.navigation.next')}</span>
@@ -787,10 +787,10 @@ const AddProject = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#f4d03f] text-black text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="group relative overflow-hidden flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-[#2563EB] to-[#60A5FA] text-white text-sm font-medium tracking-widest uppercase transition-all rounded-xl shadow-lg shadow-[#2563EB]/30 hover:shadow-xl hover:shadow-[#2563EB]/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {loading && (
-                    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   )}
                   <span className="relative">
                     {loading ? t('projectForm.addProject.creating') : t('projectForm.navigation.create')}

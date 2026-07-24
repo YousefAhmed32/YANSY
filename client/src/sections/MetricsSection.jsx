@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 
@@ -23,36 +24,40 @@ const useCountUp = (end, duration = 1800, start = false) => {
 
 const METRICS = [
   {
-    rawNum: 50, prefix: '', suffix: '+',
-    labelEN: 'Projects\nDelivered',   labelAR: 'مشروع\nمُسلَّم',
-    subEN:   'Across 6+ industries worldwide',
-    subAR:   'في أكثر من 6 قطاعات حول العالم',
-    noteEN:  'Since 2020',
-    noteAR:  'منذ 2020',
+    rawNum: 3, prefix: '', suffix: 'x',
+    labelEN: 'Lead\nGeneration',      labelAR: 'زيادة\nالعملاء المحتملين',
+    subEN:   'NexusRealty — real estate platform',
+    subAR:   'NexusRealty — منصة عقارية',
+    noteEN:  'See the case study',
+    noteAR:  'شاهد دراسة الحالة',
+    caseStudySlug: 'nexusrealty',
   },
   {
-    rawNum: 98, prefix: '', suffix: '%',
-    labelEN: 'Client\nSatisfaction',  labelAR: 'رضا\nالعملاء',
-    subEN:   'Clients who return for a second project',
-    subAR:   'العملاء الذين يعودون لمشروع ثانٍ',
-    noteEN:  'Retention rate',
-    noteAR:  'معدل الاحتفاظ',
+    rawNum: 80, prefix: '-', suffix: '%',
+    labelEN: 'No-Show\nRate',         labelAR: 'انخفاض\nالغيابات',
+    subEN:   'BookEase — clinic booking system',
+    subAR:   'BookEase — نظام حجز عيادات',
+    noteEN:  'See the case study',
+    noteAR:  'شاهد دراسة الحالة',
+    caseStudySlug: 'bookease',
   },
   {
     rawNum: 40, prefix: '+', suffix: '%',
     labelEN: 'Conversion\nUplift',    labelAR: 'زيادة\nالتحويل',
-    subEN:   'Measured 90 days post-launch',
-    subAR:   'مقاساً خلال 90 يوماً بعد الإطلاق',
-    noteEN:  'Average across clients',
-    noteAR:  'متوسط عبر العملاء',
+    subEN:   'SprintStore — e-commerce rebuild',
+    subAR:   'SprintStore — إعادة بناء متجر إلكتروني',
+    noteEN:  'See the case study',
+    noteAR:  'شاهد دراسة الحالة',
+    caseStudySlug: 'sprintstore',
   },
   {
-    rawNum: 30, prefix: '', suffix: 'd',
-    labelEN: 'Average\nLaunch',       labelAR: 'متوسط\nالإطلاق',
-    subEN:   'From agreement to live deployment',
-    subAR:   'من الاتفاق حتى النشر على الإنتاج',
-    noteEN:  'Most projects',
-    noteAR:  'في معظم المشاريع',
+    rawNum: 35, prefix: '+', suffix: '%',
+    labelEN: 'Operational\nEfficiency', labelAR: 'كفاءة\nتشغيلية',
+    subEN:   'OpsFlow — manufacturing ERP',
+    subAR:   'OpsFlow — نظام ERP للتصنيع',
+    noteEN:  'See the case study',
+    noteAR:  'شاهد دراسة الحالة',
+    caseStudySlug: 'opsflow',
   },
 ];
 
@@ -68,7 +73,7 @@ const MetricCell = ({ metric, rtl, animate, index, visible }) => {
         transition: `opacity 0.65s ${index * 0.1}s cubic-bezier(0.16,1,0.3,1), transform 0.65s ${index * 0.1}s cubic-bezier(0.16,1,0.3,1)`,
       }}
     >
-      <div className="metric-num">
+      <div className="metric-num" dir="ltr">
         {metric.prefix}{animate ? num : 0}{metric.suffix}
       </div>
       <div className="metric-label">
@@ -77,10 +82,17 @@ const MetricCell = ({ metric, rtl, animate, index, visible }) => {
       <div className="metric-sub">
         {rtl ? metric.subAR : metric.subEN}
       </div>
-      <div className="metric-note">
-        <span className="metric-note-dot" aria-hidden />
-        {rtl ? metric.noteAR : metric.noteEN}
-      </div>
+      {metric.caseStudySlug ? (
+        <Link to={`/case-studies/${metric.caseStudySlug}`} className="metric-note" style={{ textDecoration: 'none' }}>
+          <span className="metric-note-dot" aria-hidden />
+          {rtl ? metric.noteAR : metric.noteEN}
+        </Link>
+      ) : (
+        <div className="metric-note">
+          <span className="metric-note-dot" aria-hidden />
+          {rtl ? metric.noteAR : metric.noteEN}
+        </div>
+      )}
     </div>
   );
 };
@@ -183,7 +195,9 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
           color: #5C6370;
           text-transform: uppercase;
           letter-spacing: 0.07em;
+          transition: color 0.18s;
         }
+        a.metric-note:hover { color: #2563EB; }
         [dir="rtl"] .metric-note { letter-spacing: 0; text-transform: none; }
         .metric-note-dot {
           width: 4px; height: 4px; border-radius: 50%;
@@ -194,46 +208,71 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
         {/* Section header */}
-        <div style={{
-          display: 'flex',
-          flexDirection: rtl ? 'column' : 'row',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: 'clamp(1.5rem, 3vw, 2rem)',
-          marginBottom: 'clamp(3rem, 6vw, 5rem)',
-          flexWrap: 'wrap',
-        }}>
-          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
-            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
-              {rtl ? 'النتائج' : 'Results'}
-            </span>
-            <h2 style={{
-              fontSize: 'var(--text-5xl)',
-              fontWeight: 800,
-              lineHeight: 1.0,
-              letterSpacing: rtl ? 0 : '-0.035em',
-              color: '#0D1117',
-              margin: 0,
-              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-              whiteSpace: 'pre-line',
-            }}>
-              {rtl ? 'أرقام لا تكذب.' : 'Numbers that\ndon\'t lie.'}
-            </h2>
-          </div>
-          <p style={{
-            fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-            color: '#5C6370',
-            lineHeight: 1.75,
-            maxWidth: 400,
-            margin: 0,
-            textAlign: rtl ? 'right' : 'left',
-            fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-          }}>
-            {rtl
-              ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
-              : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
-          </p>
-        </div>
+     <div
+  style={{
+    display: 'flex',
+    flexDirection: rtl ? 'column' : 'row',
+    alignItems: rtl ? 'stretch' : 'flex-end',
+    justifyContent: 'space-between',
+    gap: 'clamp(1.5rem, 3vw, 2rem)',
+    marginBottom: 'clamp(3rem, 6vw, 5rem)',
+    flexWrap: 'wrap',
+  }}
+>
+  <div
+    style={{
+      textAlign: rtl ? 'right' : 'left',
+      width: rtl ? '100%' : 'auto',
+      alignSelf: rtl ? 'stretch' : 'auto',
+    }}
+  >
+    <span
+      className="section-label"
+      style={{
+        marginBottom: 20,
+        display: 'inline-block',
+      }}
+    >
+      {rtl ? 'النتائج' : 'Results'}
+    </span>
+
+    <h2
+      style={{
+        fontSize: 'var(--text-5xl)',
+        fontWeight: 800,
+        lineHeight: 1,
+        letterSpacing: rtl ? 0 : '-0.035em',
+        color: '#0D1117',
+        margin: 0,
+        fontFamily: rtl
+          ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif"
+          : "'Inter',system-ui,sans-serif",
+        whiteSpace: 'pre-line',
+        textAlign: rtl ? 'right' : 'left',
+      }}
+    >
+      {rtl ? 'أرقام لا تكذب.' : "Numbers that\ndon't lie."}
+    </h2>
+  </div>
+
+  <p
+    style={{
+      fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
+      color: '#5C6370',
+      lineHeight: 1.75,
+      maxWidth: rtl ? '100%' : 400,
+      margin: 0,
+      textAlign: rtl ? 'right' : 'left',
+      fontFamily: rtl
+        ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif"
+        : "'Inter',system-ui,sans-serif",
+    }}
+  >
+    {rtl
+      ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
+      : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
+  </p>
+</div>
 
         {/* Metrics grid */}
         <div className="metrics-grid">

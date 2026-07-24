@@ -6,10 +6,10 @@
  *
  * Usage:
  *   useSEO({
- *     title: 'Services | YANSY Tech',
+ *     title: 'Portfolio | YANSY Tech',
  *     description: 'We build websites, e-commerce stores, and SaaS platforms.',
  *     keywords: 'web development, SaaS, e-commerce',
- *     canonical: 'https://yansytech.com/services',
+ *     canonical: 'https://yansytech.com/portfolio',
  *     schema: { "@context": "https://schema.org", "@type": "WebPage", ... },
  *   });
  */

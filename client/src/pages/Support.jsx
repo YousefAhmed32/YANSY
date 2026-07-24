@@ -255,7 +255,7 @@ const Support = () => {
 
       {/* ── Book a Meeting ── */}
       <div style={{
-        background: TK.surface, borderRadius: '16px', border: `1px solid ${TK.border}`,
+        borderRadius: '16px', border: `1px solid ${TK.border}`,
         padding: '24px', marginBottom: '28px',
         background: 'linear-gradient(135deg,rgba(37,99,235,0.03) 0%,rgba(255,255,255,1) 60%)',
       }}>

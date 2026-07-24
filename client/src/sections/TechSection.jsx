@@ -170,7 +170,7 @@ const TechSection = ({ sectionRef, isRTL }) => {
             <h2 style={{
               fontSize: 'var(--text-5xl)',
               fontWeight: 800,
-              lineHeight: 1.0,
+              lineHeight: 1.25,
               letterSpacing: rtl ? 0 : '-0.035em',
               color: '#0D1117',
               margin: '0 0 clamp(1.25rem, 2.5vw, 2rem)',

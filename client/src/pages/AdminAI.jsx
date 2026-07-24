@@ -2,36 +2,41 @@ import { useState, useEffect } from 'react';
 import { Sparkles, RefreshCw, AlertTriangle, TrendingUp, DollarSign, Zap, BarChart3 } from 'lucide-react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-};
+import { TK, PageHeader, Card, Button, StatCard, DataTable, SectionHead } from '../admin-ui';
 
 const PRIORITY_CFG = {
-  high:   { color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
-  medium: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  low:    { color: '#34d399', bg: 'rgba(52,211,153,0.1)' },
+  high:   { color: TK.red,   bg: TK.redBg },
+  medium: { color: TK.amber, bg: TK.amberBg },
+  low:    { color: TK.green, bg: TK.greenBg },
 };
 
 const FEATURE_LABELS = {
-  insight:         'Dashboard Insight',
-  brief:           'Brief Generator',
-  estimator:       'Estimator',
-  proposal:        'Proposal',
-  project_summary: 'Project Summary',
-  message_summary: 'Message Summary',
-  onboarding:      'Onboarding',
-  chat:            'Chat Widget',
-  admin_insights:  'Admin Insights',
+  en: {
+    insight:         'Dashboard Insight',
+    brief:           'Brief Generator',
+    estimator:       'Estimator',
+    proposal:        'Proposal',
+    project_summary: 'Project Summary',
+    message_summary: 'Message Summary',
+    onboarding:      'Onboarding',
+    chat:            'Chat Widget',
+    admin_insights:  'Admin Insights',
+  },
+  ar: {
+    insight:         'رؤية اللوحة',
+    brief:           'مولد الملخص',
+    estimator:       'مقدّر التكلفة',
+    proposal:        'العرض المقترح',
+    project_summary: 'ملخص المشروع',
+    message_summary: 'ملخص الرسائل',
+    onboarding:      'التهيئة',
+    chat:            'نافذة الدردشة',
+    admin_insights:  'رؤى الإدارة',
+  },
 };
 
 const AdminAI = () => {
-  const { dir } = useLanguage();
+  const { dir, isRTL, language } = useLanguage();
 
   const [insights,  setInsights]  = useState([]);
   const [usage,     setUsage]     = useState({ records: [], aggregates: {}, total: 0 });
@@ -77,73 +82,84 @@ const AdminAI = () => {
   const successCount = usage.aggregates?.successCount  || 0;
   const totalTokens  = (usage.aggregates?.totalInputTokens || 0) + (usage.aggregates?.totalOutputTokens || 0);
 
-  return (
-    <div dir={dir} style={{ minHeight: '100vh', background: TK.bg, color: TK.text, padding: '32px 32px 60px' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(37,99,235,0.25)', background: 'rgba(37,99,235,0.06)', marginBottom: '10px' }}>
-          <Sparkles style={{ width: '10px', height: '10px', color: TK.accent }} />
-          <span style={{ fontSize: '10px', fontWeight: 400, color: TK.accent, letterSpacing: '0.12em', textTransform: 'uppercase' }}>AI Control Center</span>
+  const usageColumns = [
+    {
+      key: 'user', label: language === 'ar' ? 'المستخدم' : 'User', width: '26%',
+      render: (rec) => (
+        <div>
+          <div style={{ fontSize: '12px', color: TK.text }}>{rec.user?.fullName || (language === 'ar' ? 'غير معروف' : 'Unknown')}</div>
+          <div style={{ fontSize: '10px', color: TK.textLight }}>{rec.user?.email}</div>
         </div>
-        <h1 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: TK.text, margin: 0, fontFamily: "'Inter',system-ui,sans-serif" }}>
-          AI Dashboard
-        </h1>
-        <p style={{ fontSize: '13px', color: TK.textMuted, marginTop: '6px' }}>Usage analytics, costs, and AI-generated platform insights.</p>
-      </div>
+      ),
+    },
+    {
+      key: 'feature', label: language === 'ar' ? 'الميزة' : 'Feature', width: '18%',
+      render: (rec) => <span style={{ fontSize: '11px', color: TK.textMuted }}>{FEATURE_LABELS[language === 'ar' ? 'ar' : 'en'][rec.feature] || rec.feature}</span>,
+    },
+    {
+      key: 'tokens', label: language === 'ar' ? 'الرموز' : 'Tokens', width: '14%',
+      render: (rec) => <span style={{ fontSize: '11px', color: TK.textMuted }}>{((rec.inputTokens || 0) + (rec.outputTokens || 0)).toLocaleString()}</span>,
+    },
+    {
+      key: 'cost', label: language === 'ar' ? 'التكلفة' : 'Cost', width: '14%',
+      render: (rec) => <span style={{ fontSize: '11px', color: TK.textMuted }}>${(rec.estimatedCostUSD || 0).toFixed(5)}</span>,
+    },
+    {
+      key: 'duration', label: language === 'ar' ? 'المدة' : 'Duration', width: '14%',
+      render: (rec) => <span style={{ fontSize: '11px', color: TK.textMuted }}>{rec.durationMs ? `${(rec.durationMs / 1000).toFixed(1)}s` : '—'}</span>,
+    },
+    {
+      key: 'status', label: language === 'ar' ? 'الحالة' : 'Status', width: '10%',
+      render: (rec) => <span style={{ fontSize: '10px', fontWeight: 600, color: rec.success ? TK.green : TK.red }}>{rec.success ? (language === 'ar' ? 'ناجح' : 'OK') : (language === 'ar' ? 'خطأ' : 'ERR')}</span>,
+    },
+  ];
+
+  return (
+    <div dir={dir} style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }}>
+
+      <PageHeader
+        icon={Sparkles}
+        eyebrow={language === 'ar' ? 'مركز تحكم الذكاء الاصطناعي' : 'AI Control Center'}
+        title={language === 'ar' ? 'لوحة الذكاء الاصطناعي' : 'AI Dashboard'}
+        subtitle={language === 'ar' ? 'تحليلات الاستخدام والتكاليف ورؤى المنصة المولدة بالذكاء الاصطناعي.' : 'Usage analytics, costs, and AI-generated platform insights.'}
+      />
 
       {/* Stats grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-        {[
-          { label: 'Total Requests', value: totalReqs.toLocaleString(), icon: Zap, color: '#a78bfa' },
-          { label: 'Success Rate',   value: totalReqs ? `${Math.round(successCount / totalReqs * 100)}%` : '—', icon: TrendingUp, color: '#34d399' },
-          { label: 'Total Tokens',   value: totalTokens > 1000 ? `${Math.round(totalTokens/1000)}k` : totalTokens.toString(), icon: BarChart3, color: '#60a5fa' },
-          { label: 'Total Cost',     value: `$${totalCost.toFixed(4)}`, icon: DollarSign, color: TK.accent },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} style={{ padding: '18px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '10px' }}>
-            <Icon style={{ width: '16px', height: '16px', color, marginBottom: '10px' }} />
-            <div style={{ fontSize: '24px', fontWeight: 600, color: TK.text, letterSpacing: '-0.02em' }}>{value}</div>
-            <div style={{ fontSize: '10px', color: TK.textMuted, marginTop: '4px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</div>
-          </div>
-        ))}
+        <StatCard icon={Zap} label={language === 'ar' ? 'إجمالي الطلبات' : 'Total Requests'} value={totalReqs.toLocaleString()} tone="purple" />
+        <StatCard icon={TrendingUp} label={language === 'ar' ? 'معدل النجاح' : 'Success Rate'} value={totalReqs ? `${Math.round(successCount / totalReqs * 100)}%` : '—'} tone="success" />
+        <StatCard icon={BarChart3} label={language === 'ar' ? 'إجمالي الرموز' : 'Total Tokens'} value={totalTokens > 1000 ? `${Math.round(totalTokens / 1000)}k` : totalTokens.toString()} tone="info" />
+        <StatCard icon={DollarSign} label={language === 'ar' ? 'إجمالي التكلفة' : 'Total Cost'} value={`$${totalCost.toFixed(4)}`} tone="info" />
       </div>
 
       {/* AI Insights from Claude */}
-      <div style={{ padding: '22px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px', marginBottom: '24px' }}>
+      <Card padding="22px" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles style={{ width: '14px', height: '14px', color: TK.accent }} />
-            <h2 style={{ fontSize: '11px', fontWeight: 400, color: TK.text, letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>
-              Platform Insights — Powered by Claude
+            <Sparkles style={{ width: '13px', height: '13px', color: TK.accent }} />
+            <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: 0 }}>
+              {language === 'ar' ? 'رؤى المنصة — مدعومة بواسطة Claude' : 'Platform Insights — Powered by Claude'}
             </h2>
           </div>
-          <button
-            onClick={fetchInsights}
-            disabled={insightLoading}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: '6px', color: TK.textMuted, fontSize: '10px', cursor: insightLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
-            onMouseEnter={e => { if (!insightLoading) { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; e.currentTarget.style.color = TK.accent; } }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = TK.border; e.currentTarget.style.color = TK.textMuted; }}
-          >
-            <RefreshCw style={{ width: '11px', height: '11px', animation: insightLoading ? 'spin 1s linear infinite' : 'none' }} />
-            Refresh
-          </button>
+          <Button variant="secondary" size="sm" icon={RefreshCw} onClick={fetchInsights} loading={insightLoading}>{language === 'ar' ? 'تحديث' : 'Refresh'}</Button>
         </div>
 
         {insightLoading && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px 0' }}>
-            <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: TK.accent, animation: 'spin 0.8s linear infinite' }} />
-            <span style={{ fontSize: '13px', color: TK.textMuted, fontStyle: 'italic' }}>Analyzing platform data with Claude…</span>
+            <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: `2px solid ${TK.accentBg}`, borderTopColor: TK.accent, animation: 'au-spin 0.8s linear infinite' }} />
+            <span style={{ fontSize: '13px', color: TK.textMuted, fontStyle: 'italic' }}>{language === 'ar' ? 'جارٍ تحليل بيانات المنصة باستخدام Claude…' : 'Analyzing platform data with Claude…'}</span>
           </div>
         )}
 
         {!insightLoading && aiError === 'not_configured' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px' }}>
-            <AlertTriangle style={{ width: '14px', height: '14px', color: '#f59e0b' }} />
-            <span style={{ fontSize: '12px', color: '#f59e0b' }}>AI not configured. Add ANTHROPIC_API_KEY to server .env to enable insights.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: TK.amberBg, border: `1px solid ${TK.amberBd}`, borderRadius: '8px' }}>
+            <AlertTriangle style={{ width: '14px', height: '14px', color: TK.amber }} />
+            <span style={{ fontSize: '12px', color: TK.amber }}>{language === 'ar' ? 'الذكاء الاصطناعي غير مُهيأ. أضف ANTHROPIC_API_KEY إلى ملف .env بالخادم لتفعيل الرؤى.' : 'AI not configured. Add ANTHROPIC_API_KEY to server .env to enable insights.'}</span>
           </div>
         )}
 
         {!insightLoading && aiError === 'failed' && (
-          <p style={{ fontSize: '12px', color: TK.textMuted }}>Failed to generate insights. <button onClick={fetchInsights} style={{ background: 'none', border: 'none', color: TK.accent, cursor: 'pointer', fontSize: '12px' }}>Retry</button></p>
+          <p style={{ fontSize: '12px', color: TK.textMuted }}>{language === 'ar' ? 'فشل توليد الرؤى.' : 'Failed to generate insights.'} <button onClick={fetchInsights} style={{ background: 'none', border: 'none', color: TK.accent, cursor: 'pointer', fontSize: '12px' }}>{language === 'ar' ? 'إعادة المحاولة' : 'Retry'}</button></p>
         )}
 
         {!insightLoading && insights.length > 0 && (
@@ -151,12 +167,12 @@ const AdminAI = () => {
             {insights.map((ins, i) => {
               const cfg = PRIORITY_CFG[ins.priority] || PRIORITY_CFG.medium;
               return (
-                <div key={i} style={{ padding: '16px', background: 'rgba(0,0,0,0.02)', border: `1px solid ${TK.border}`, borderRadius: '8px', borderLeft: `3px solid ${cfg.color}` }}>
+                <div key={i} style={{ padding: '16px', background: TK.bgSubtle, border: `1px solid ${TK.border}`, borderRadius: '8px', borderLeft: `3px solid ${cfg.color}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 400, color: TK.text }}>{ins.title}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: TK.text }}>{ins.title}</span>
                     <span style={{ padding: '1px 7px', borderRadius: '8px', fontSize: '9px', background: cfg.bg, color: cfg.color, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{ins.priority}</span>
                   </div>
-                  <p style={{ fontSize: '12px', fontWeight: 300, color: TK.textMuted, margin: '0 0 8px', lineHeight: 1.6 }}>{ins.insight}</p>
+                  <p style={{ fontSize: '12px', color: TK.textMuted, margin: '0 0 8px', lineHeight: 1.6 }}>{ins.insight}</p>
                   {ins.action && (
                     <div style={{ fontSize: '11px', color: TK.accent }}>→ {ins.action}</div>
                   )}
@@ -165,57 +181,22 @@ const AdminAI = () => {
             })}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Usage log */}
-      <div style={{ padding: '22px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <BarChart3 style={{ width: '14px', height: '14px', color: TK.accent }} />
-          <h2 style={{ fontSize: '11px', fontWeight: 400, color: TK.text, letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>
-            Usage Log ({usage.total?.toLocaleString() || 0} records)
-          </h2>
-        </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '24px' }}>
-            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: TK.accent, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
-          </div>
-        ) : (
-          <>
-            <div style={{ overflowX: 'auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 0.8fr 0.8fr 0.8fr 0.6fr', padding: '8px 12px', fontSize: '9px', fontWeight: 400, color: TK.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', borderBottom: `1px solid ${TK.border}` }}>
-                <span>User</span><span>Feature</span><span>Tokens</span><span>Cost</span><span>Duration</span><span>Status</span>
-              </div>
-              {usage.records.map(rec => (
-                <div key={rec._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 0.8fr 0.8fr 0.8fr 0.6fr', padding: '9px 12px', alignItems: 'center', borderBottom: `1px solid rgba(0,0,0,0.03)` }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <div>
-                    <div style={{ fontSize: '11px', color: TK.text }}>{rec.user?.fullName || 'Unknown'}</div>
-                    <div style={{ fontSize: '9px', color: TK.textMuted }}>{rec.user?.email}</div>
-                  </div>
-                  <span style={{ fontSize: '10px', color: TK.textMuted }}>{FEATURE_LABELS[rec.feature] || rec.feature}</span>
-                  <span style={{ fontSize: '10px', color: TK.textMuted }}>{((rec.inputTokens || 0) + (rec.outputTokens || 0)).toLocaleString()}</span>
-                  <span style={{ fontSize: '10px', color: TK.textMuted }}>${(rec.estimatedCostUSD || 0).toFixed(5)}</span>
-                  <span style={{ fontSize: '10px', color: TK.textMuted }}>{rec.durationMs ? `${(rec.durationMs / 1000).toFixed(1)}s` : '—'}</span>
-                  <span style={{ fontSize: '9px', color: rec.success ? '#34d399' : '#f87171' }}>{rec.success ? 'OK' : 'ERR'}</span>
-                </div>
-              ))}
-            </div>
-
-            {usage.totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
-                <button onClick={() => fetchUsage(page - 1)} disabled={page <= 1} style={{ padding: '5px 12px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '6px', color: TK.textMuted, fontSize: '11px', cursor: page <= 1 ? 'not-allowed' : 'pointer', opacity: page <= 1 ? 0.4 : 1 }}>Previous</button>
-                <span style={{ padding: '5px 10px', fontSize: '11px', color: TK.textMuted }}>Page {page} of {usage.totalPages}</span>
-                <button onClick={() => fetchUsage(page + 1)} disabled={page >= usage.totalPages} style={{ padding: '5px 12px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '6px', color: TK.textMuted, fontSize: '11px', cursor: page >= usage.totalPages ? 'not-allowed' : 'pointer', opacity: page >= usage.totalPages ? 0.4 : 1 }}>Next</button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <SectionHead icon={BarChart3} title={language === 'ar' ? `سجل الاستخدام (${usage.total?.toLocaleString() || 0} سجل)` : `Usage Log (${usage.total?.toLocaleString() || 0} records)`} />
+      <DataTable
+        columns={usageColumns}
+        rows={usage.records}
+        getRowId={(r) => r._id}
+        loading={loading}
+        emptyIcon={BarChart3}
+        emptyTitle={language === 'ar' ? 'لا توجد سجلات استخدام' : 'No usage records'}
+        isRTL={isRTL}
+        page={page}
+        totalPages={usage.totalPages || 1}
+        onPageChange={(p) => fetchUsage(p)}
+      />
     </div>
   );
 };

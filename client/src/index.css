@@ -34,7 +34,7 @@
   --text-3xl:      clamp(1.5rem, 2.5vw, 2rem);
   --text-4xl:      clamp(2rem, 3.5vw, 2.75rem);
   --text-5xl:      clamp(2.5rem, 5vw, 4rem);
-  --text-hero:     clamp(3.5rem, 7.5vw, 6.5rem);
+  --text-hero:     clamp(2.75rem, 4.5vw, 3.75rem);
   --text-display:  clamp(4rem, 9vw, 8rem);
 
   /* Colors — pure light only */

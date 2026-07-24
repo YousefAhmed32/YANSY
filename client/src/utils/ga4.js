@@ -67,3 +67,18 @@ export const trackScrollDepth = (depth) => {
 export const trackSearch = (term) => {
   gtag('event', 'search', { search_term: term });
 };
+
+export const trackStartProjectChoice = (choice) => {
+  gtag('event', 'start_project_choice', {
+    event_category: 'conversion',
+    choice, // 'whatsapp' | 'form'
+  });
+};
+
+export const trackFormStep = (step, totalSteps) => {
+  gtag('event', 'project_form_step', {
+    event_category: 'engagement',
+    step,
+    total_steps: totalSteps,
+  });
+};

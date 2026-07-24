@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -54,17 +54,11 @@ const Header = ({ onStartProject }) => {
 
   useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
 
-  const scrollTo = useCallback(id => {
-    setMobileMenuOpen(false);
-    const el = document.getElementById(id);
-    if (el) window.scrollTo({ top: el.offsetTop - 72, behavior: 'smooth' });
-  }, []);
-
   const NAV = [
-    { labelKey: 'landing.nav.solutions', def: isRTL ? 'خدماتنا' : 'Services',  action: () => scrollTo('solutions') },
-    { labelKey: 'landing.nav.portfolio', def: isRTL ? 'أعمالنا' : 'Work',      href: '/portfolio' },
-    { labelKey: 'landing.nav.process',   def: isRTL ? 'كيف نعمل' : 'Process',  action: () => scrollTo('process') },
-    { labelKey: 'landing.nav.contact',   def: isRTL ? 'تواصل'   : 'Contact',   action: () => scrollTo('contact') },
+    { labelKey: 'landing.nav.portfolio',  def: isRTL ? 'أعمالنا' : 'Portfolio',   href: '/portfolio' },
+    { labelKey: 'landing.nav.industries', def: isRTL ? 'القطاعات' : 'Industries', href: '/industries' },
+    // { labelKey: 'landing.nav.about',      def: isRTL ? 'من نحن' : 'About',        href: '/about' },
+    { labelKey: 'landing.nav.contact',    def: isRTL ? 'تواصل'   : 'Contact',     href: '/contact' },
   ];
 
   return (
@@ -292,6 +286,7 @@ const Header = ({ onStartProject }) => {
               {[
                 ...NAV,
                 { labelKey: 'landing.nav.pricing', def: isRTL ? 'الأسعار' : 'Pricing', href: '/pricing' },
+                { labelKey: 'landing.nav.blog',    def: isRTL ? 'المدونة' : 'Blog',    href: '/blog' },
               ].map((item, i) => {
                 const styles = {
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',

@@ -134,7 +134,7 @@ const FileUpload = ({ projectId, onUploaded, onFilesUploaded, multiple = false }
           <button
             onClick={handleUpload}
             disabled={files.length === 0 || uploading}
-            className="px-4 py-2 bg-[#2563EB] text-black hover:bg-[#f4d03f] transition-colors text-xs font-light tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors text-xs font-light tracking-wide uppercase disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Upload {files.length} {files.length === 1 ? 'File' : 'Files'}
           </button>

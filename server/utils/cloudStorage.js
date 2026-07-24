@@ -26,13 +26,14 @@ const getCloudinary = () => {
   }
 };
 
-const uploadToCloudinary = async (fileBuffer, filename, mimeType) => {
+const uploadToCloudinary = async (fileBuffer, filename, mimeType, options = {}) => {
   const cloudinary = getCloudinary();
   if (!cloudinary) throw new Error('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env');
 
-  const resourceType = mimeType.startsWith('image/') ? 'image'
+  const resourceType = options.resourceType
+    || (mimeType.startsWith('image/') ? 'image'
     : mimeType === 'application/pdf' ? 'raw'
-    : 'auto';
+    : 'auto');
 
   const publicId = `yansy/${uuidv4()}-${path.basename(filename, path.extname(filename))}`;
 
@@ -41,8 +42,9 @@ const uploadToCloudinary = async (fileBuffer, filename, mimeType) => {
       {
         public_id:     publicId,
         resource_type: resourceType,
-        folder:        'yansy',
-        tags:          ['yansy-platform'],
+        folder:        options.folder || 'yansy',
+        tags:          options.tags || ['yansy-platform'],
+        colors:        resourceType === 'image',
       },
       (error, result) => {
         if (error) return reject(error);
@@ -50,6 +52,10 @@ const uploadToCloudinary = async (fileBuffer, filename, mimeType) => {
           url:      result.secure_url,
           cloudId:  result.public_id,
           provider: 'cloudinary',
+          width:    result.width,
+          height:   result.height,
+          // Cloudinary returns colors sorted by prevalence — first entry is the dominant color
+          dominantColor: Array.isArray(result.colors) && result.colors[0] ? result.colors[0][0] : undefined,
         });
       }
     );
@@ -83,9 +89,12 @@ const uploadToLocal = async (fileBuffer, filename, mimeType) => {
   const filePath   = pathM.join(uploadsDir, uniqueName);
   fs.writeFileSync(filePath, fileBuffer);
 
-  const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+  // Store a relative path, not a host:port baked in at upload time — this is dev-only storage
+  // and the server's host/port can change (restarts, LAN access, tunnels). The frontend resolves
+  // this against whatever API origin it's actually configured to talk to (see MEDIA_ORIGIN in
+  // client/src/utils/api.js), so the URL stays correct regardless of where it was created.
   return {
-    url:      `${baseUrl}/uploads/files/${uniqueName}`,
+    url:      `/uploads/files/${uniqueName}`,
     cloudId:  uniqueName,
     provider: 'local',
   };
@@ -102,13 +111,13 @@ const deleteFromLocal = async (cloudId) => {
 
 // ── Main API ──────────────────────────────────────────────────────────────────
 
-const uploadToCloud = async (fileBuffer, filename, mimeType) => {
+const uploadToCloud = async (fileBuffer, filename, mimeType, options = {}) => {
   const provider = process.env.CLOUD_PROVIDER || 'cloudinary';
 
   if (provider === 'cloudinary' || provider === 'auto') {
     // Try Cloudinary; fall back to local in development
     try {
-      return await uploadToCloudinary(fileBuffer, filename, mimeType);
+      return await uploadToCloudinary(fileBuffer, filename, mimeType, options);
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
         console.warn('[cloudStorage] Cloudinary failed, using local fallback:', err.message);

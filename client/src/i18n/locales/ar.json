@@ -298,14 +298,14 @@
   },
   "messages": {
     "title": "الدعم",
-    "inbox": "صندوق الدعم",
+    "inbox": "صندوق الوارد",
     "compose": "تواصل مع الدعم",
     "send": "إرسال",
     "noMessages": "لا رسائل بعد",
     "newMessage": "محادثة جديدة",
     "reply": "رد",
     "typeMessage": "اكتب رسالتك…",
-    "selectThread": "اختر محادثة",
+    "selectThread": "اختر محادثة من القائمة",
     "createThread": "تواصل مع الدعم",
     "emptyTitle": "مركز الدعم",
     "emptyBody": "هل تحتاج مساعدة؟ فريقنا هنا لك. ابدأ محادثة وسنرد في أقرب وقت.",
@@ -348,7 +348,6 @@
     "noConversationsYet": "لا محادثات بعد",
     "noConversationsDesc": "هل لديك سؤال؟ راسل فريقنا — نحن هنا للمساعدة.",
     "contactBtn": "تواصل مع الفريق",
-    "inbox": "صندوق الوارد",
     "unread": "غير مقروء",
     "all": "الكل",
     "urgent": "عاجل",
@@ -366,7 +365,6 @@
     "noNotes": "لا ملاحظات داخلية بعد.",
     "noThreads": "لا محادثات بعد",
     "noThreadsDesc": "ستظهر محادثات العملاء هنا.",
-    "selectThread": "اختر محادثة من القائمة",
     "replyAge": "وقت الرد",
     "urgentBadge": "عاجل",
     "searchPlaceholder": "ابحث في المحادثات...",
@@ -526,7 +524,11 @@
   "landing": {
     "nav": {
       "platform": "المنصة",
-      "solutions": "الحلول",
+      "portfolio": "أعمالنا",
+      "industries": "القطاعات",
+      "about": "من نحن",
+      "pricing": "الأسعار",
+      "blog": "المدونة",
       "features": "المميزات",
       "contact": "تواصل معنا",
       "getStarted": "ابدأ مشروعك",
@@ -779,6 +781,16 @@
       "whatsapp": "واتساب",
       "copyright": "© 2025 YANSY. جميع الحقوق محفوظة.",
       "secure": "آمن ومشفّر"
+    },
+    "videoShowcase": {
+      "play": "تشغيل الفيديو",
+      "pause": "إيقاف الفيديو",
+      "mute": "كتم الصوت",
+      "unmute": "تفعيل الصوت",
+      "fullscreen": "ملء الشاشة",
+      "exitFullscreen": "الخروج من ملء الشاشة",
+      "loading": "جارٍ التحميل",
+      "watch": "شاهد"
     }
   },
   "feedback": {
@@ -883,6 +895,12 @@
     },
     "steps": {
       "step": "الخطوة {{step}} من {{total}}",
+      "names": {
+        "projectType": "نوع المشروع",
+        "idea": "فكرتك",
+        "details": "التفاصيل",
+        "contact": "تواصل معنا"
+      },
       "projectType": {
         "title": "ما نوع مشروعك؟",
         "error": "اختر نوع المشروع للمتابعة",
@@ -1022,6 +1040,7 @@
     },
     "navigation": {
       "back": "رجوع",
+      "backToOptions": "رجوع للخيارات",
       "next": "متابعة",
       "submit": "أرسل طلبي",
       "create": "إنشاء المشروع"
@@ -1029,6 +1048,41 @@
     "errors": {
       "submitFailed": "حدث خطأ ما، يرجى المحاولة مجدداً.",
       "createFailed": "تعذّر إنشاء المشروع، يرجى المحاولة مجدداً."
+    },
+    "decision": {
+      "title": "كيف تحب تبدأ؟",
+      "subtitle": "اختر الطريقة الأسهل بالنسبة لك — كلاهما يوصلك لفريقنا مباشرة.",
+      "whatsapp": {
+        "title": "تواصل عبر واتساب",
+        "description": "تحدث مباشرة مع فريقنا واحصل على رد سريع.",
+        "responseTime": "غالباً نرد خلال دقائق",
+        "benefits": ["رد فوري", "تتحدث مع شخص حقيقي", "بدون نماذج تعبئة"]
+      },
+      "form": {
+        "title": "أرسل طلب مشروع",
+        "description": "شاركنا تفاصيل مشروعك واحصل على عرض منظم.",
+        "responseTime": "يستغرق حوالي دقيقتين",
+        "benefits": ["عرض منظم واضح", "لا يضيع أي تفصيل", "يمكنك متابعته لاحقاً"]
+      }
+    },
+    "whatsappBrief": {
+      "title": "تفاصيل سريعة أولاً",
+      "subtitle": "هذا يساعد فريقنا يستعد قبل ما تبدأ الحديث — كل ما تحت غير إلزامي عدا اسمك.",
+      "nameLabel": "اسمك",
+      "namePlaceholder": "الاسم الكامل",
+      "nameError": "سنحتاج اسمك لنبدأ الحديث",
+      "projectTypeLabel": "نوع المشروع",
+      "budgetLabel": "نطاق الميزانية",
+      "timelineLabel": "الجدول الزمني",
+      "optional": "اختياري",
+      "continueButton": "متابعة عبر واتساب",
+      "redirecting": "جارٍ فتح واتساب…",
+      "redirectingDesc": "فتحنا محادثة برسالتك جاهزة للإرسال.",
+      "messageGreeting": "مرحباً يانسي تك! أنا {{name}}.",
+      "messageProjectType": "نوع المشروع",
+      "messageBudget": "الميزانية",
+      "messageTimeline": "الجدول الزمني",
+      "messageClosing": "أرغب في مناقشة مشروعي."
     }
   },
   "onboarding": {

@@ -79,5 +79,11 @@ api.interceptors.response.use(
   }
 );
 
+// ─── Media origin ──────────────────────────────────────────────────────────────
+// Local (non-Cloudinary) media assets are stored as relative paths (e.g. "/uploads/files/x.png")
+// so they aren't frozen to whatever host/port the backend happened to be running on at upload
+// time. This is the origin they get resolved against at render time — see utils/media.js.
+const MEDIA_ORIGIN = API_URL.replace(/\/api\/?$/, '');
+
 export default api;
-export { API_URL };
+export { API_URL, MEDIA_ORIGIN };

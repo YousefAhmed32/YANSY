@@ -4,6 +4,16 @@
  */
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useSelector } from 'react-redux';
+import {
+  Sparkles, RefreshCw, MessageSquare, Target, Zap, Ticket, AlertTriangle, TrendingUp,
+  LayoutDashboard, Calendar, CalendarDays, Star, Percent, Inbox, User, Ghost,
+  BarChart3, ChevronRight, X,
+} from 'lucide-react';
+import {
+  TK, FONT, STATUS_TONE, PageHeader, StatCard, Badge, Card, SectionHead, Tabs, DataTable,
+  Modal, Select, SearchInput, Button, IconButton, Spinner,
+} from '../admin-ui';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API = () =>
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
@@ -17,76 +27,87 @@ const ah = (token) => ({
 const fmt = (d) => new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
-// ── Color maps ────────────────────────────────────────────────────────────────
-const P_CLR = {
-  low:      { bg: 'rgba(100,200,100,.1)',  bd: 'rgba(100,200,100,.3)',  tx: '#64c864' },
-  medium:   { bg: 'rgba(220,180,50,.1)',   bd: 'rgba(220,180,50,.3)',   tx: '#dcc832' },
-  high:     { bg: 'rgba(235,125,105,.1)',  bd: 'rgba(235,125,105,.3)',  tx: '#eb7d69' },
-  critical: { bg: 'rgba(220,38,38,.12)',   bd: 'rgba(220,38,38,.35)',   tx: '#ef4444' },
-};
-const STATUS_CLR = {
-  new:           { bg: 'rgba(110,175,255,.1)',  tx: '#6eafff' },
-  contacted:     { bg: 'rgba(160,145,235,.1)',  tx: '#a091eb' },
-  proposal_sent: { bg: 'rgba(37,99,235,.1)',   tx: '#2563EB' },
-  won:           { bg: 'rgba(34,197,94,.1)',    tx: '#22c55e' },
-  lost:          { bg: 'rgba(239,68,68,.1)',    tx: '#ef4444' },
-  open:          { bg: 'rgba(110,175,255,.1)',  tx: '#6eafff' },
-  pending:       { bg: 'rgba(220,180,50,.1)',   tx: '#dcc832' },
-  in_progress:   { bg: 'rgba(160,145,235,.1)',  tx: '#a091eb' },
-  resolved:      { bg: 'rgba(70,200,150,.1)',   tx: '#46c896' },
-  closed:        { bg: 'rgba(255,255,255,.05)', tx: 'rgba(255,255,255,.4)' },
-};
-const SENT_CLR = { positive: '#22c55e', neutral: 'rgba(255,255,255,.45)', frustrated: '#f59e0b', urgent: '#ef4444' };
+// ── Tone mapping (business status/priority/intent → admin-ui STATUS_TONE) ────
+const priorityTone = (p) => ({ low: 'success', medium: 'warning', high: 'danger', critical: 'danger' }[p] || 'neutral');
+const statusTone   = (s) => ({ new: 'info', contacted: 'purple', proposal_sent: 'info', won: 'success', lost: 'danger', open: 'info', pending: 'warning', in_progress: 'purple', resolved: 'success', closed: 'neutral' }[s] || 'neutral');
+const intentTone   = (i) => ({ lead: 'success', support: 'info', inquiry: 'purple', complaint: 'danger', other: 'neutral' }[i] || 'neutral');
+
+// Sentiment stays content-level (emoji + color), not a chrome badge.
+const SENT_CLR = { positive: TK.green, neutral: TK.textMuted, frustrated: TK.amber, urgent: TK.red };
 const SENT_ICO = { positive: '😊', neutral: '😐', frustrated: '😤', urgent: '🚨' };
-const INT_CLR  = { lead: '#22c55e', support: '#6eafff', inquiry: '#a091eb', complaint: '#ef4444', other: 'rgba(255,255,255,.3)' };
 
-// ── Shared primitives ─────────────────────────────────────────────────────────
-const Badge = ({ children, bg, tx, bd }) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: bg || 'rgba(255,255,255,.06)', color: tx || 'rgba(255,255,255,.6)', border: `1px solid ${bd || 'rgba(255,255,255,.1)'}` }}>{children}</span>
-);
+const toOpts = (arr) => arr.map(([value, label]) => ({ value, label }));
 
-const StatCard = ({ icon, label, value, sub, color = '#2563EB', alert, onClick }) => (
-  <div onClick={onClick} style={{ background: alert ? 'rgba(220,38,38,.07)' : 'rgba(255,255,255,.03)', border: `1px solid ${alert ? 'rgba(220,38,38,.2)' : 'rgba(255,255,255,.06)'}`, borderRadius: 14, padding: '18px 20px', flex: '1 1 150px', minWidth: 140, cursor: onClick ? 'pointer' : 'default', transition: 'border-color .2s' }}>
-    <div style={{ fontSize: 20, marginBottom: 8 }}>{icon}</div>
-    <div style={{ fontSize: 28, fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value ?? '—'}</div>
-    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 5 }}>{label}</div>
-    {sub && <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.3)', marginTop: 3 }}>{sub}</div>}
-  </div>
-);
-
-const Spinner = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
-    <div style={{ width: 30, height: 30, borderRadius: '50%', border: '2px solid rgba(37,99,235,.1)', borderTopColor: '#2563EB', animation: 'spin .7s linear infinite' }} />
-  </div>
-);
-
-const Empty = ({ text = 'No data found.' }) => (
-  <div style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,.25)', fontSize: 14 }}>{text}</div>
-);
-
-const Pager = ({ page, total, perPage, onChange }) => {
-  const pages = Math.ceil(total / perPage);
-  if (pages <= 1) return null;
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 20 }}>
-      <PBtn disabled={page <= 1}     onClick={() => onChange(page - 1)} label="← Prev" />
-      <span style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', padding: '0 8px' }}>{page} / {pages} ({total})</span>
-      <PBtn disabled={page >= pages} onClick={() => onChange(page + 1)} label="Next →" />
-    </div>
-  );
+// ── Bilingual label maps (EN/AR) for enum-like business values ───────────────
+const STATUS_LABEL = {
+  new:           { en: 'New',            ar: 'جديد' },
+  contacted:     { en: 'Contacted',      ar: 'تم التواصل' },
+  proposal_sent: { en: 'Proposal Sent',  ar: 'تم إرسال العرض' },
+  won:           { en: 'Won',            ar: 'تم الفوز' },
+  lost:          { en: 'Lost',           ar: 'خسر' },
+  open:          { en: 'Open',           ar: 'مفتوحة' },
+  pending:       { en: 'Pending',        ar: 'قيد الانتظار' },
+  in_progress:   { en: 'In Progress',    ar: 'قيد التنفيذ' },
+  resolved:      { en: 'Resolved',       ar: 'تم الحل' },
+  closed:        { en: 'Closed',         ar: 'مغلقة' },
 };
-const PBtn = ({ disabled, onClick, label }) => (
-  <button disabled={disabled} onClick={onClick} style={{ padding: '7px 14px', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, color: disabled ? 'rgba(255,255,255,.2)' : '#fff', cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 12 }}>{label}</button>
-);
+const PRIORITY_LABEL = {
+  low:      { en: 'Low',      ar: 'منخفضة' },
+  medium:   { en: 'Medium',   ar: 'متوسطة' },
+  high:     { en: 'High',     ar: 'عالية' },
+  critical: { en: 'Critical', ar: 'حرجة' },
+};
+const USERTYPE_LABEL = {
+  registered: { en: 'Registered', ar: 'مسجل' },
+  guest:      { en: 'Guest',      ar: 'زائر' },
+};
+const INTENT_LABEL = {
+  lead:      { en: 'Lead',      ar: 'عميل محتمل' },
+  support:   { en: 'Support',   ar: 'دعم' },
+  inquiry:   { en: 'Inquiry',   ar: 'استفسار' },
+  complaint: { en: 'Complaint', ar: 'شكوى' },
+  other:     { en: 'Other',     ar: 'أخرى' },
+};
+const SENTIMENT_LABEL = {
+  positive:   { en: 'Positive',   ar: 'إيجابي' },
+  neutral:    { en: 'Neutral',    ar: 'محايد' },
+  frustrated: { en: 'Frustrated', ar: 'محبَط' },
+  urgent:     { en: 'Urgent',     ar: 'عاجل' },
+};
+const FIELD_LABEL = {
+  name:        { en: 'Name',         ar: 'الاسم' },
+  phone:       { en: 'Phone',        ar: 'الهاتف' },
+  email:       { en: 'Email',        ar: 'البريد الإلكتروني' },
+  company:     { en: 'Company',      ar: 'الشركة' },
+  project:     { en: 'Project',      ar: 'المشروع' },
+  projectType: { en: 'Project Type', ar: 'نوع المشروع' },
+  timeline:    { en: 'Timeline',     ar: 'الجدول الزمني' },
+  features:    { en: 'Features',     ar: 'المزايا' },
+  business:    { en: 'Business',     ar: 'النشاط التجاري' },
+};
 
+// L(map, key, language, fallback) — looks up a bilingual label, falling back to the raw key/value.
+const L = (map, key, language, fallback) => (map[key] ? (language === 'ar' ? map[key].ar : map[key].en) : (fallback ?? key));
+
+const statusEntries = (kind, language) => {
+  const keys = kind === 'ticket'
+    ? ['open', 'pending', 'in_progress', 'resolved', 'closed']
+    : ['new', 'contacted', 'proposal_sent', 'won', 'lost'];
+  return keys.map(k => [k, L(STATUS_LABEL, k, language)]);
+};
+const priorityEntries = (language) => ['low', 'medium', 'high', 'critical'].map(k => [k, L(PRIORITY_LABEL, k, language)]);
+const userTypeEntries = (language) => ['registered', 'guest'].map(k => [k, L(USERTYPE_LABEL, k, language)]);
+const anonVisitor = (language) => (language === 'ar' ? 'زائر مجهول' : 'Anonymous Visitor');
+
+// ── Shared small presentational pieces ────────────────────────────────────────
 const ScoreBar = ({ score, size = 64 }) => {
-  const color = score >= 70 ? '#22c55e' : score >= 40 ? '#2563EB' : 'rgba(255,255,255,.3)';
+  const color = score >= 70 ? TK.green : score >= 40 ? TK.accent : TK.textLight;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: size, height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ width: size, height: '4px', background: TK.borderSoft, borderRadius: '2px', overflow: 'hidden' }}>
         <div style={{ width: `${score}%`, height: '100%', background: color, transition: 'width .6s ease' }} />
       </div>
-      <span style={{ fontSize: 10, color, fontFamily: 'monospace', fontWeight: 700, minWidth: 22 }}>{score}</span>
+      <span style={{ fontSize: '10px', color, fontFamily: 'monospace', fontWeight: 700, minWidth: '22px' }}>{score}</span>
     </div>
   );
 };
@@ -95,19 +116,37 @@ const FieldGrid = ({ fields, cols = 2 }) => (
   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '6px 16px' }}>
     {fields.filter(([, v]) => v).map(([label, val]) => (
       <div key={label}>
-        <p style={{ margin: 0, fontSize: 9.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</p>
-        <p style={{ margin: 0, fontSize: 12.5, color: 'rgba(255,255,255,.85)', wordBreak: 'break-word' }}>{val}</p>
+        <p style={{ margin: 0, fontSize: '9.5px', color: TK.textLight, textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</p>
+        <p style={{ margin: 0, fontSize: '12.5px', color: TK.text, wordBreak: 'break-word' }}>{val}</p>
       </div>
     ))}
   </div>
 );
 
-// ── Inline select helpers ─────────────────────────────────────────────────────
-const selSty = { background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#fff', padding: '8px 10px', fontSize: 13, outline: 'none', width: '100%', cursor: 'pointer' };
-const inpSty = { background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, color: '#fff', padding: '8px 12px', fontSize: 12.5, outline: 'none' };
+const inpSty = { background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '9px', color: TK.text, padding: '8px 12px', fontSize: '12.5px', outline: 'none', fontFamily: 'inherit' };
+
+const Section = ({ label, children }) => (
+  <div style={{ marginBottom: '18px' }}>
+    <SectionHead title={label} />
+    {children}
+  </div>
+);
+
+const ModalHeader = ({ title, sub, onClose, children }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '22px', gap: '12px' }}>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '5px', flexWrap: 'wrap' }}>
+        {children}
+      </div>
+      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: TK.text, lineHeight: 1.3 }}>{title}</h3>
+      {sub && <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: TK.textLight, fontFamily: 'monospace' }}>{sub}</p>}
+    </div>
+    <IconButton icon={X} size={28} onClick={onClose} />
+  </div>
+);
 
 // ── Conversation Transcript Panel ─────────────────────────────────────────────
-const ConvPanel = memo(({ conv, token, onClose, onUpdate }) => {
+const ConvPanel = memo(({ conv, token, language, onClose, onUpdate }) => {
   const [note,   setNote]   = useState(conv.adminNotes || '');
   const [saving, setSaving] = useState(false);
 
@@ -126,41 +165,47 @@ const ConvPanel = memo(({ conv, token, onClose, onUpdate }) => {
   };
 
   return (
-    <Modal onClose={onClose} maxWidth={680}>
-      <ModalHeader title={conv.lead?.name || 'Anonymous Visitor'} sub={fmt(conv.createdAt)} onClose={onClose}>
-        <Badge bg={STATUS_CLR[conv.primaryIntent]?.bg} tx={INT_CLR[conv.primaryIntent]}>{conv.primaryIntent}</Badge>
-        {conv.leadScore > 0 && <Badge bg="rgba(37,99,235,.1)" tx="#2563EB" bd="rgba(37,99,235,.2)">Score {conv.leadScore}</Badge>}
-        {conv.userType === 'registered' && <Badge bg="rgba(160,145,235,.12)" tx="#a091eb">Registered</Badge>}
+    <Modal open onClose={onClose} width="680px">
+      <ModalHeader title={conv.lead?.name || anonVisitor(language)} sub={fmt(conv.createdAt)} onClose={onClose}>
+        <Badge tone={intentTone(conv.primaryIntent)}>{L(INTENT_LABEL, conv.primaryIntent, language)}</Badge>
+        {conv.leadScore > 0 && <Badge tone="info">{language === 'ar' ? 'النقاط' : 'Score'} {conv.leadScore}</Badge>}
+        {conv.userType === 'registered' && <Badge tone="purple">{L(USERTYPE_LABEL, 'registered', language)}</Badge>}
       </ModalHeader>
 
       {conv.lead?.detected && (
-        <Section label="Lead Information">
-          <div style={{ background: 'rgba(34,197,94,.04)', border: '1px solid rgba(34,197,94,.12)', borderRadius: 10, padding: '12px 16px' }}>
+        <Section label={language === 'ar' ? 'بيانات العميل المحتمل' : 'Lead Information'}>
+          <div style={{ background: TK.greenBg, border: `1px solid ${TK.greenBd}`, borderRadius: '10px', padding: '12px 16px' }}>
             <FieldGrid fields={[
-              ['Name',     conv.lead.name],
-              ['Phone',    conv.lead.phone],
-              ['Email',    conv.lead.email],
-              ['Company',  conv.lead.business],
-              ['Project',  conv.lead.projectType],
-              ['Timeline', conv.lead.timeline],
-              ['Features', Array.isArray(conv.lead.features) ? conv.lead.features.join(', ') : conv.lead.features],
+              [L(FIELD_LABEL, 'name', language),     conv.lead.name],
+              [L(FIELD_LABEL, 'phone', language),    conv.lead.phone],
+              [L(FIELD_LABEL, 'email', language),    conv.lead.email],
+              [L(FIELD_LABEL, 'company', language),  conv.lead.business],
+              [L(FIELD_LABEL, 'project', language),  conv.lead.projectType],
+              [L(FIELD_LABEL, 'timeline', language), conv.lead.timeline],
+              [L(FIELD_LABEL, 'features', language), Array.isArray(conv.lead.features) ? conv.lead.features.join(', ') : conv.lead.features],
             ]} />
           </div>
         </Section>
       )}
 
       {conv.conversationSummary && (
-        <Section label="AI Summary">
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.7)', lineHeight: 1.6, background: 'rgba(255,255,255,.02)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.05)' }}>{conv.conversationSummary}</p>
+        <Section label={language === 'ar' ? 'ملخص الذكاء الاصطناعي' : 'AI Summary'}>
+          <p style={{ margin: 0, fontSize: '13px', color: TK.textMuted, lineHeight: 1.6, background: TK.bgSubtle, padding: '10px 14px', borderRadius: '8px', border: `1px solid ${TK.borderSoft}` }}>{conv.conversationSummary}</p>
         </Section>
       )}
 
-      <Section label={`Full Conversation (${conv.messages?.length || 0} messages)`}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 340, overflowY: 'auto', paddingRight: 4 }}>
+      <Section label={language === 'ar' ? `المحادثة الكاملة (${conv.messages?.length || 0} رسالة)` : `Full Conversation (${conv.messages?.length || 0} messages)`}>
+        <div className="au-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '7px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
           {(conv.messages || []).map((m, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-              <div style={{ maxWidth: '82%', padding: '9px 12px', fontSize: 12.5, lineHeight: 1.6, borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? 'linear-gradient(135deg,rgba(37,99,235,.15),rgba(37,99,235,.08))' : 'rgba(255,255,255,.04)', border: m.role === 'user' ? '1px solid rgba(37,99,235,.2)' : '1px solid rgba(255,255,255,.05)', color: 'rgba(255,255,255,.85)' }}>
-                <span style={{ fontSize: 9.5, color: m.role === 'user' ? 'rgba(37,99,235,.6)' : 'rgba(255,255,255,.3)', display: 'block', marginBottom: 3 }}>{m.role === 'user' ? 'Visitor' : 'YANSY AI'} · {m.timestamp ? fmt(m.timestamp) : ''}</span>
+              <div style={{
+                maxWidth: '82%', padding: '9px 12px', fontSize: '12.5px', lineHeight: 1.6,
+                borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
+                background: m.role === 'user' ? TK.accentBg : TK.bgSubtle,
+                border: `1px solid ${m.role === 'user' ? TK.accentBd : TK.borderSoft}`,
+                color: TK.text,
+              }}>
+                <span style={{ fontSize: '9.5px', color: m.role === 'user' ? TK.accent : TK.textLight, display: 'block', marginBottom: '3px' }}>{m.role === 'user' ? (language === 'ar' ? 'زائر' : 'Visitor') : 'YANSY AI'} · {m.timestamp ? fmt(m.timestamp) : ''}</span>
                 {m.content}
               </div>
             </div>
@@ -168,10 +213,10 @@ const ConvPanel = memo(({ conv, token, onClose, onUpdate }) => {
         </div>
       </Section>
 
-      <Section label="Admin Notes">
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Add internal notes..." rows={3}
-          style={{ ...inpSty, width: '100%', resize: 'vertical', fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
-        <SaveBtn onClick={saveNote} saving={saving} />
+      <Section label={language === 'ar' ? 'ملاحظات الإدارة' : 'Admin Notes'}>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={language === 'ar' ? 'أضف ملاحظات داخلية...' : 'Add internal notes...'} rows={3}
+          style={{ ...inpSty, width: '100%', resize: 'vertical', marginBottom: '10px', boxSizing: 'border-box' }} />
+        <Button variant="primary" style={{ width: '100%' }} loading={saving} onClick={saveNote}>{language === 'ar' ? 'حفظ' : 'Save'}</Button>
       </Section>
     </Modal>
   );
@@ -179,7 +224,7 @@ const ConvPanel = memo(({ conv, token, onClose, onUpdate }) => {
 ConvPanel.displayName = 'ConvPanel';
 
 // ── Request Detail Panel ──────────────────────────────────────────────────────
-const RequestPanel = memo(({ req, conv, token, onClose, onUpdate }) => {
+const RequestPanel = memo(({ req, conv, token, language, onClose, onUpdate }) => {
   const [status,   setStatus]   = useState(req.status);
   const [priority, setPriority] = useState(req.priority);
   const [note,     setNote]     = useState('');
@@ -194,91 +239,85 @@ const RequestPanel = memo(({ req, conv, token, onClose, onUpdate }) => {
     } finally { setSaving(false); }
   };
 
-  const pc = P_CLR[priority] || P_CLR.medium;
-  const sc = STATUS_CLR[status] || STATUS_CLR.new;
-
   return (
-    <Modal onClose={onClose} maxWidth={700}>
+    <Modal open onClose={onClose} width="700px">
       <ModalHeader title={req.name} sub={`${req.requestCode} · ${fmtDate(req.createdAt)}`} onClose={onClose}>
-        <Badge bg={sc.bg} tx={sc.tx}>{status?.replace('_', ' ').toUpperCase()}</Badge>
-        <Badge bg={pc.bg} tx={pc.tx} bd={pc.bd}>{priority?.toUpperCase()}</Badge>
-        {req.leadScore > 0 && <Badge bg="rgba(37,99,235,.1)" tx="#2563EB">Score {req.leadScore}</Badge>}
+        <Badge tone={statusTone(status)}>{L(STATUS_LABEL, status, language, status?.replace('_', ' '))}</Badge>
+        <Badge tone={priorityTone(priority)}>{L(PRIORITY_LABEL, priority, language)}</Badge>
+        {req.leadScore > 0 && <Badge tone="info">{language === 'ar' ? 'النقاط' : 'Score'} {req.leadScore}</Badge>}
       </ModalHeader>
 
       {/* Contact + Project */}
-      <Section label="Lead Information">
-        <div style={{ background: 'rgba(34,197,94,.04)', border: '1px solid rgba(34,197,94,.12)', borderRadius: 10, padding: '12px 16px' }}>
+      <Section label={language === 'ar' ? 'بيانات العميل المحتمل' : 'Lead Information'}>
+        <div style={{ background: TK.greenBg, border: `1px solid ${TK.greenBd}`, borderRadius: '10px', padding: '12px 16px' }}>
           <FieldGrid fields={[
-            ['Name',         req.name],
-            ['Phone',        req.phone],
-            ['Email',        req.email],
-            ['Company',      req.company],
-            ['Project Type', req.projectType],
-            ['Timeline',     req.timeline],
-            ['Features',     req.features],
-            ['Business',     req.business],
+            [L(FIELD_LABEL, 'name', language),        req.name],
+            [L(FIELD_LABEL, 'phone', language),       req.phone],
+            [L(FIELD_LABEL, 'email', language),       req.email],
+            [L(FIELD_LABEL, 'company', language),     req.company],
+            [L(FIELD_LABEL, 'projectType', language), req.projectType],
+            [L(FIELD_LABEL, 'timeline', language),    req.timeline],
+            [L(FIELD_LABEL, 'features', language),    req.features],
+            [L(FIELD_LABEL, 'business', language),    req.business],
           ]} />
         </div>
       </Section>
 
       {req.requirementsSummary && (
-        <Section label="Requirements Summary">
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.7)', lineHeight: 1.6, background: 'rgba(255,255,255,.02)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.05)' }}>{req.requirementsSummary}</p>
+        <Section label={language === 'ar' ? 'ملخص المتطلبات' : 'Requirements Summary'}>
+          <p style={{ margin: 0, fontSize: '13px', color: TK.textMuted, lineHeight: 1.6, background: TK.bgSubtle, padding: '10px 14px', borderRadius: '8px', border: `1px solid ${TK.borderSoft}` }}>{req.requirementsSummary}</p>
         </Section>
       )}
 
       {req.aiRecommendation && (
-        <Section label="AI Recommendation">
-          <div style={{ background: 'rgba(37,99,235,.05)', border: '1px solid rgba(37,99,235,.15)', borderRadius: 10, padding: '12px 16px', display: 'flex', gap: 10 }}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>🤖</span>
-            <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.6 }}>{req.aiRecommendation}</p>
+        <Section label={language === 'ar' ? 'توصية الذكاء الاصطناعي' : 'AI Recommendation'}>
+          <div style={{ background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: '10px', padding: '12px 16px', display: 'flex', gap: '10px' }}>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>🤖</span>
+            <p style={{ margin: 0, fontSize: '13px', color: TK.text, lineHeight: 1.6 }}>{req.aiRecommendation}</p>
           </div>
         </Section>
       )}
 
       {conv && (
-        <Section label="Linked Conversation">
-          <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '11px 15px' }}>
-            {conv.conversationSummary && <p style={{ margin: '0 0 8px', fontSize: 12.5, color: 'rgba(255,255,255,.65)', lineHeight: 1.6 }}>{conv.conversationSummary}</p>}
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {conv.leadScore > 0 && <span style={{ fontSize: 11, color: '#2563EB' }}>Lead Score: <strong>{conv.leadScore}/100</strong></span>}
-              {conv.sentiment   && <span style={{ fontSize: 11, color: SENT_CLR[conv.sentiment] }}>{SENT_ICO[conv.sentiment]} {conv.sentiment}</span>}
+        <Section label={language === 'ar' ? 'المحادثة المرتبطة' : 'Linked Conversation'}>
+          <div style={{ background: TK.bgSubtle, border: `1px solid ${TK.borderSoft}`, borderRadius: '10px', padding: '11px 15px' }}>
+            {conv.conversationSummary && <p style={{ margin: '0 0 8px', fontSize: '12.5px', color: TK.textMuted, lineHeight: 1.6 }}>{conv.conversationSummary}</p>}
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {conv.leadScore > 0 && <span style={{ fontSize: '11px', color: TK.accent }}>{language === 'ar' ? 'نقاط العميل' : 'Lead Score'}: <strong>{conv.leadScore}/100</strong></span>}
+              {conv.sentiment   && <span style={{ fontSize: '11px', color: SENT_CLR[conv.sentiment] }}>{SENT_ICO[conv.sentiment]} {L(SENTIMENT_LABEL, conv.sentiment, language)}</span>}
             </div>
           </div>
         </Section>
       )}
 
       {/* Controls */}
-      <Section label="Update Status">
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-          {[
-            { label: 'Status',   val: status,   set: setStatus,   opts: [['new','New'],['contacted','Contacted'],['proposal_sent','Proposal Sent'],['won','Won'],['lost','Lost']] },
-            { label: 'Priority', val: priority, set: setPriority, opts: [['low','Low'],['medium','Medium'],['high','High'],['critical','Critical']] },
-          ].map(({ label, val, set, opts }) => (
-            <div key={label} style={{ flex: 1, minWidth: 120 }}>
-              <label style={{ display: 'block', fontSize: 10.5, color: 'rgba(255,255,255,.3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '.07em' }}>{label}</label>
-              <select value={val} onChange={e => set(e.target.value)} style={selSty}>
-                {opts.map(([v, l]) => <option key={v} value={v} style={{ background: '#0a0a12' }}>{l}</option>)}
-              </select>
-            </div>
-          ))}
+      <Section label={language === 'ar' ? 'تحديث الحالة' : 'Update Status'}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '120px' }}>
+            <label style={{ display: 'block', fontSize: '10.5px', color: TK.textMuted, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '.07em' }}>{language === 'ar' ? 'الحالة' : 'Status'}</label>
+            <Select value={status} onChange={e => setStatus(e.target.value)} options={toOpts(statusEntries('request', language))} />
+          </div>
+          <div style={{ flex: 1, minWidth: '120px' }}>
+            <label style={{ display: 'block', fontSize: '10.5px', color: TK.textMuted, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '.07em' }}>{language === 'ar' ? 'الأولوية' : 'Priority'}</label>
+            <Select value={priority} onChange={e => setPriority(e.target.value)} options={toOpts(priorityEntries(language))} />
+          </div>
         </div>
 
         {/* Notes history */}
         {req.notes?.length > 0 && (
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: '12px' }}>
             {req.notes.map((n, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 8, padding: '8px 12px', marginBottom: 6 }}>
-                <p style={{ margin: '0 0 3px', fontSize: 12, color: 'rgba(255,255,255,.7)' }}>{n.content}</p>
-                <p style={{ margin: 0, fontSize: 10, color: 'rgba(255,255,255,.3)' }}>{n.addedBy?.fullName || 'Admin'} · {fmtDate(n.addedAt)}</p>
+              <div key={i} style={{ background: TK.bgSubtle, border: `1px solid ${TK.borderSoft}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '6px' }}>
+                <p style={{ margin: '0 0 3px', fontSize: '12px', color: TK.text }}>{n.content}</p>
+                <p style={{ margin: 0, fontSize: '10px', color: TK.textLight }}>{n.addedBy?.fullName || (language === 'ar' ? 'المشرف' : 'Admin')} · {fmtDate(n.addedAt)}</p>
               </div>
             ))}
           </div>
         )}
 
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Add a note (e.g. Called customer, sent proposal)..." rows={3}
-          style={{ ...inpSty, width: '100%', resize: 'vertical', fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
-        <SaveBtn onClick={save} saving={saving} label="Save Changes" />
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={language === 'ar' ? 'أضف ملاحظة (مثال: تم الاتصال بالعميل، تم إرسال العرض)...' : 'Add a note (e.g. Called customer, sent proposal)...'} rows={3}
+          style={{ ...inpSty, width: '100%', resize: 'vertical', marginBottom: '10px', boxSizing: 'border-box' }} />
+        <Button variant="primary" style={{ width: '100%' }} loading={saving} onClick={save}>{language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}</Button>
       </Section>
     </Modal>
   );
@@ -286,7 +325,7 @@ const RequestPanel = memo(({ req, conv, token, onClose, onUpdate }) => {
 RequestPanel.displayName = 'RequestPanel';
 
 // ── Ticket Panel ──────────────────────────────────────────────────────────────
-const TicketPanel = memo(({ ticket, conv, token, onClose, onUpdate }) => {
+const TicketPanel = memo(({ ticket, conv, token, language, onClose, onUpdate }) => {
   const [note,     setNote]     = useState('');
   const [status,   setStatus]   = useState(ticket.status);
   const [priority, setPriority] = useState(ticket.priority);
@@ -302,129 +341,86 @@ const TicketPanel = memo(({ ticket, conv, token, onClose, onUpdate }) => {
   };
 
   return (
-    <Modal onClose={onClose} maxWidth={680}>
+    <Modal open onClose={onClose} width="680px">
       <ModalHeader title={ticket.subject} sub={ticket.ticketId} onClose={onClose}>
-        <Badge bg={STATUS_CLR[status]?.bg} tx={STATUS_CLR[status]?.tx}>{status?.replace('_',' ').toUpperCase()}</Badge>
-        <Badge bg={P_CLR[priority]?.bg} tx={P_CLR[priority]?.tx} bd={P_CLR[priority]?.bd}>{priority?.toUpperCase()}</Badge>
+        <Badge tone={statusTone(status)}>{L(STATUS_LABEL, status, language, status?.replace('_',' '))}</Badge>
+        <Badge tone={priorityTone(priority)}>{L(PRIORITY_LABEL, priority, language)}</Badge>
       </ModalHeader>
 
-      <Section label="Customer">
-        <FieldGrid fields={[['Name', ticket.customer?.name], ['Email', ticket.customer?.email], ['Phone', ticket.customer?.phone]]} />
+      <Section label={language === 'ar' ? 'العميل' : 'Customer'}>
+        <FieldGrid fields={[
+          [L(FIELD_LABEL, 'name', language),  ticket.customer?.name],
+          [L(FIELD_LABEL, 'email', language), ticket.customer?.email],
+          [L(FIELD_LABEL, 'phone', language), ticket.customer?.phone],
+        ]} />
       </Section>
 
       {conv?.conversationSummary && (
-        <Section label="AI Insights">
-          <div style={{ background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, padding: '11px 15px' }}>
-            <p style={{ margin: '0 0 6px', fontSize: 12.5, color: 'rgba(255,255,255,.7)', lineHeight: 1.6 }}>{conv.conversationSummary}</p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {conv.leadScore > 0 && <span style={{ fontSize: 11, color: '#2563EB' }}>Score: <strong>{conv.leadScore}</strong></span>}
-              {conv.sentiment  && <span style={{ fontSize: 11, color: SENT_CLR[conv.sentiment] }}>{SENT_ICO[conv.sentiment]} {conv.sentiment}</span>}
+        <Section label={language === 'ar' ? 'رؤى الذكاء الاصطناعي' : 'AI Insights'}>
+          <div style={{ background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: '10px', padding: '11px 15px' }}>
+            <p style={{ margin: '0 0 6px', fontSize: '12.5px', color: TK.textMuted, lineHeight: 1.6 }}>{conv.conversationSummary}</p>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {conv.leadScore > 0 && <span style={{ fontSize: '11px', color: TK.accent }}>{language === 'ar' ? 'النقاط' : 'Score'}: <strong>{conv.leadScore}</strong></span>}
+              {conv.sentiment  && <span style={{ fontSize: '11px', color: SENT_CLR[conv.sentiment] }}>{SENT_ICO[conv.sentiment]} {L(SENTIMENT_LABEL, conv.sentiment, language)}</span>}
             </div>
           </div>
         </Section>
       )}
 
       {ticket.conversationSnapshot?.length > 0 && (
-        <Section label="Conversation Snapshot">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 240, overflowY: 'auto' }}>
+        <Section label={language === 'ar' ? 'لقطة من المحادثة' : 'Conversation Snapshot'}>
+          <div className="au-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '7px', maxHeight: '240px', overflowY: 'auto' }}>
             {ticket.conversationSnapshot.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                <div style={{ maxWidth: '80%', padding: '8px 12px', fontSize: 12, borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? 'rgba(37,99,235,.12)' : 'rgba(255,255,255,.04)', color: 'rgba(255,255,255,.8)' }}>{m.content}</div>
+                <div style={{ maxWidth: '80%', padding: '8px 12px', fontSize: '12px', borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? TK.accentBg : TK.bgSubtle, color: TK.text }}>{m.content}</div>
               </div>
             ))}
           </div>
         </Section>
       )}
 
-      <Section label="Update">
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-          {[
-            { label: 'Status',   val: status,   set: setStatus,   opts: [['open','Open'],['pending','Pending'],['in_progress','In Progress'],['resolved','Resolved'],['closed','Closed']] },
-            { label: 'Priority', val: priority, set: setPriority, opts: [['low','Low'],['medium','Medium'],['high','High'],['critical','Critical']] },
-          ].map(({ label, val, set, opts }) => (
-            <div key={label} style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: 10.5, color: 'rgba(255,255,255,.3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '.07em' }}>{label}</label>
-              <select value={val} onChange={e => set(e.target.value)} style={selSty}>
-                {opts.map(([v, l]) => <option key={v} value={v} style={{ background: '#0a0a12' }}>{l}</option>)}
-              </select>
-            </div>
-          ))}
+      <Section label={language === 'ar' ? 'تحديث' : 'Update'}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: '10.5px', color: TK.textMuted, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '.07em' }}>{language === 'ar' ? 'الحالة' : 'Status'}</label>
+            <Select value={status} onChange={e => setStatus(e.target.value)} options={toOpts(statusEntries('ticket', language))} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: '10.5px', color: TK.textMuted, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '.07em' }}>{language === 'ar' ? 'الأولوية' : 'Priority'}</label>
+            <Select value={priority} onChange={e => setPriority(e.target.value)} options={toOpts(priorityEntries(language))} />
+          </div>
         </div>
         {ticket.notes?.length > 0 && (
-          <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: '10px' }}>
             {ticket.notes.map((n, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 8, padding: '8px 12px', marginBottom: 6 }}>
-                <p style={{ margin: '0 0 2px', fontSize: 12, color: 'rgba(255,255,255,.7)' }}>{n.content}</p>
-                <p style={{ margin: 0, fontSize: 10, color: 'rgba(255,255,255,.3)' }}>{n.addedBy?.fullName || 'Admin'} · {fmtDate(n.addedAt)}</p>
+              <div key={i} style={{ background: TK.bgSubtle, border: `1px solid ${TK.borderSoft}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '6px' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '12px', color: TK.text }}>{n.content}</p>
+                <p style={{ margin: 0, fontSize: '10px', color: TK.textLight }}>{n.addedBy?.fullName || (language === 'ar' ? 'المشرف' : 'Admin')} · {fmtDate(n.addedAt)}</p>
               </div>
             ))}
           </div>
         )}
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Add a note..." rows={3}
-          style={{ ...inpSty, width: '100%', resize: 'vertical', fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
-        <SaveBtn onClick={save} saving={saving} />
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={language === 'ar' ? 'أضف ملاحظة...' : 'Add a note...'} rows={3}
+          style={{ ...inpSty, width: '100%', resize: 'vertical', marginBottom: '10px', boxSizing: 'border-box' }} />
+        <Button variant="primary" style={{ width: '100%' }} loading={saving} onClick={save}>{language === 'ar' ? 'حفظ' : 'Save'}</Button>
       </Section>
     </Modal>
   );
 });
 TicketPanel.displayName = 'TicketPanel';
 
-// ── Modal shell ───────────────────────────────────────────────────────────────
-const Modal = ({ children, onClose, maxWidth = 640 }) => (
-  <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,.74)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
-    <div style={{ background: '#06060b', border: '1px solid rgba(37,99,235,.12)', borderRadius: 18, width: '100%', maxWidth, maxHeight: '92vh', overflowY: 'auto', padding: 28 }} onClick={e => e.stopPropagation()}>
-      {children}
-    </div>
-  </div>
-);
-
-const ModalHeader = ({ title, sub, onClose, children }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22, gap: 12 }}>
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5, flexWrap: 'wrap' }}>
-        {children}
-      </div>
-      <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#fff', lineHeight: 1.3 }}>{title}</h3>
-      {sub && <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'rgba(255,255,255,.35)', fontFamily: 'monospace' }}>{sub}</p>}
-    </div>
-    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.3)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 }}>×</button>
-  </div>
-);
-
-const Section = ({ label, children }) => (
-  <div style={{ marginBottom: 18 }}>
-    <p style={{ margin: '0 0 8px', fontSize: 10.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em' }}>{label}</p>
-    {children}
-  </div>
-);
-
-const SaveBtn = ({ onClick, saving, label = 'Save' }) => (
-  <button onClick={onClick} disabled={saving} style={{ width: '100%', padding: '11px', background: saving ? 'rgba(37,99,235,.3)' : '#2563EB', border: 'none', borderRadius: 10, color: '#000', fontSize: 13, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', transition: 'all .2s' }}>
-    {saving ? 'Saving...' : label}
-  </button>
-);
-
-// ── Search / Filter bar ───────────────────────────────────────────────────────
+// ── Filter bar wrapper ─────────────────────────────────────────────────────────
 const FilterBar = ({ children }) => (
-  <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+  <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
     {children}
   </div>
-);
-
-const SearchInput = ({ value, onChange, placeholder = 'Search...' }) => (
-  <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-    style={{ ...inpSty, flex: '1 1 180px', minWidth: 140 }} />
-);
-
-const FilterSelect = ({ value, onChange, opts }) => (
-  <select value={value} onChange={e => onChange(e.target.value)} style={{ ...inpSty, cursor: 'pointer', minWidth: 110, paddingRight: 8 }}>
-    {opts.map(([v, l]) => <option key={v} value={v} style={{ background: '#0a0a12' }}>{l}</option>)}
-  </select>
 );
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const AdminSupportAI = () => {
   const token = useSelector(s => s.auth?.token);
+  const { language, isRTL } = useLanguage();
+  const font = FONT(isRTL);
 
   const [tab,           setTab]           = useState('overview');
   const [analytics,     setAnalytics]     = useState(null);
@@ -551,252 +547,298 @@ const AdminSupportAI = () => {
   };
 
   // ── Tab config ────────────────────────────────────────────────────────────
-  const tabs = [
-    { key: 'overview',       label: '📊 Overview' },
-    { key: 'conversations',  label: `💬 Chats${analytics?.unreadCount > 0 ? ` (${analytics.unreadCount})` : ''}` },
-    { key: 'leads',          label: `🎯 Leads${analytics?.leadsTotal > 0 ? ` (${analytics.leadsTotal})` : ''}` },
-    { key: 'requests',       label: `⚡ Requests${reqTotal > 0 || analytics?.requestsTotal > 0 ? ` (${reqTotal || analytics?.requestsTotal || 0})` : ''}` },
-    { key: 'tickets',        label: `🎫 Tickets${analytics?.ticketsOpen > 0 ? ` (${analytics.ticketsOpen})` : ''}` },
-    { key: 'escalations',    label: `🚨 Escalations${analytics?.escalationsTotal > 0 ? ` (${analytics.escalationsTotal})` : ''}` },
-    { key: 'analytics',      label: '📈 Analytics' },
+  const reqTabCount = reqTotal || analytics?.requestsTotal || 0;
+  const tabItems = [
+    { value: 'overview',      label: language === 'ar' ? 'نظرة عامة' : 'Overview',    icon: LayoutDashboard },
+    { value: 'conversations', label: language === 'ar' ? 'المحادثات' : 'Chats',       icon: MessageSquare, count: analytics?.unreadCount > 0 ? analytics.unreadCount : undefined },
+    { value: 'leads',         label: language === 'ar' ? 'العملاء المحتملون' : 'Leads', icon: Target,      count: analytics?.leadsTotal > 0 ? analytics.leadsTotal : undefined },
+    { value: 'requests',      label: language === 'ar' ? 'الطلبات' : 'Requests',      icon: Zap,           count: reqTabCount > 0 ? reqTabCount : undefined },
+    { value: 'tickets',       label: language === 'ar' ? 'التذاكر' : 'Tickets',       icon: Ticket,        count: analytics?.ticketsOpen > 0 ? analytics.ticketsOpen : undefined },
+    { value: 'escalations',   label: language === 'ar' ? 'التصعيدات' : 'Escalations', icon: AlertTriangle, count: analytics?.escalationsTotal > 0 ? analytics.escalationsTotal : undefined },
+    { value: 'analytics',     label: language === 'ar' ? 'التحليلات' : 'Analytics',   icon: TrendingUp },
   ];
 
-  const tabSty = (a) => ({
-    padding: '8px 16px', fontSize: 12.5, fontWeight: a ? 600 : 400,
-    background: a ? 'rgba(37,99,235,.1)' : 'transparent',
-    border: a ? '1px solid rgba(37,99,235,.22)' : '1px solid transparent',
-    borderRadius: 9, color: a ? '#2563EB' : 'rgba(255,255,255,.5)',
-    cursor: 'pointer', transition: 'all .2s', whiteSpace: 'nowrap',
-  });
-
-  // ── Row components ─────────────────────────────────────────────────────────
-  const ConvRow = ({ c }) => (
-    <div onClick={() => openConv(c)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,.02)', border: `1px solid ${c.isRead ? 'rgba(255,255,255,.05)' : 'rgba(37,99,235,.15)'}`, borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
-      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.isRead ? 'transparent' : '#2563EB', flexShrink: 0, border: c.isRead ? '1px solid rgba(255,255,255,.1)' : 'none' }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lead?.name || 'Anonymous Visitor'}</span>
-          {c.userType === 'registered' && <Badge bg="rgba(160,145,235,.12)" tx="#a091eb">VIP</Badge>}
-          <Badge bg={(INT_CLR[c.primaryIntent] || 'rgba(255,255,255,.2)') + '18'} tx={INT_CLR[c.primaryIntent] || 'rgba(255,255,255,.5)'}>{c.primaryIntent}</Badge>
-        </div>
-        <p style={{ margin: 0, fontSize: 11.5, color: 'rgba(255,255,255,.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {c.messages?.[c.messages.length - 1]?.content?.slice(0, 80) || 'No messages'}
-        </p>
-      </div>
-      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        {c.leadScore > 0 && <ScoreBar score={c.leadScore} />}
-        <p style={{ margin: '4px 0 0', fontSize: 10.5, color: 'rgba(255,255,255,.3)' }}>{fmt(c.updatedAt || c.createdAt)}</p>
-      </div>
-    </div>
-  );
-
-  const LeadRow = ({ l }) => (
-    <div onClick={() => openConv(l)} style={{ padding: '13px 14px', background: 'rgba(255,255,255,.02)', border: '1px solid rgba(34,197,94,.1)', borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 600, color: '#fff' }}>{l.lead?.name || 'Unknown'}</span>
-            {l.userType === 'registered' && <Badge bg="rgba(160,145,235,.12)" tx="#a091eb">Registered</Badge>}
-            {l.requestId && <Badge bg="rgba(37,99,235,.08)" tx="rgba(37,99,235,.7)">Request</Badge>}
+  // ── DataTable column definitions ─────────────────────────────────────────
+  const convColumns = [
+    {
+      key: 'visitor', label: language === 'ar' ? 'الزائر' : 'Visitor', width: '32%',
+      render: (c) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0, background: c.isRead ? 'transparent' : TK.accent, border: c.isRead ? `1px solid ${TK.border}` : 'none' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12.5px', fontWeight: 600, color: TK.text }}>{c.lead?.name || anonVisitor(language)}</span>
+            {c.userType === 'registered' && <Badge tone="purple">{language === 'ar' ? 'عميل مميز' : 'VIP'}</Badge>}
+            <Badge tone={intentTone(c.primaryIntent)}>{L(INTENT_LABEL, c.primaryIntent, language)}</Badge>
           </div>
-          <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,.4)' }}>{l.lead?.phone || l.lead?.email || 'No contact info'}</p>
         </div>
-        <ScoreBar score={l.leadScore || 0} />
-      </div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {l.lead?.projectType && <Badge bg="rgba(37,99,235,.07)" tx="rgba(37,99,235,.8)">{l.lead.projectType}</Badge>}
-        {l.lead?.timeline    && <Badge bg="rgba(255,255,255,.04)" tx="rgba(255,255,255,.5)">⏱ {l.lead.timeline}</Badge>}
-        {l.sentiment         && <span style={{ fontSize: 11, color: SENT_CLR[l.sentiment] }}>{SENT_ICO[l.sentiment]} {l.sentiment}</span>}
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.3)' }}>{fmtDate(l.createdAt)}</span>
-      </div>
-      {l.lead?.requirementsSummary && (
-        <p style={{ margin: '8px 0 0', fontSize: 11.5, color: 'rgba(255,255,255,.5)', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.lead.requirementsSummary}</p>
-      )}
-    </div>
-  );
+      ),
+    },
+    {
+      key: 'message', label: language === 'ar' ? 'آخر رسالة' : 'Last Message', width: '28%',
+      render: (c) => (
+        <span style={{ fontSize: '11.5px', color: TK.textMuted, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '260px' }}>
+          {c.messages?.[c.messages.length - 1]?.content?.slice(0, 80) || (language === 'ar' ? 'لا توجد رسائل' : 'No messages')}
+        </span>
+      ),
+    },
+    { key: 'score',   label: language === 'ar' ? 'النقاط' : 'Score',   width: '15%', render: (c) => c.leadScore > 0 ? <ScoreBar score={c.leadScore} /> : <span style={{ fontSize: '11px', color: TK.textLight }}>—</span> },
+    { key: 'updated', label: language === 'ar' ? 'آخر تحديث' : 'Updated', width: '15%', render: (c) => <span style={{ fontSize: '11px', color: TK.textLight }}>{fmt(c.updatedAt || c.createdAt)}</span> },
+  ];
 
-  const ReqRow = ({ r }) => {
-    const sc = STATUS_CLR[r.status] || STATUS_CLR.new;
-    const pc = P_CLR[r.priority]    || P_CLR.medium;
-    return (
-      <div onClick={() => openReq(r)} style={{ padding: '13px 14px', background: 'rgba(255,255,255,.02)', border: `1px solid ${r.isRead ? 'rgba(255,255,255,.06)' : 'rgba(37,99,235,.18)'}`, borderRadius: 10, cursor: 'pointer', transition: 'background .15s', marginBottom: 7 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-              <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: '#2563EB', fontWeight: 600 }}>{r.requestCode}</span>
-              <Badge bg={sc.bg} tx={sc.tx}>{r.status?.replace('_',' ').toUpperCase()}</Badge>
-              <Badge bg={pc.bg} tx={pc.tx} bd={pc.bd}>{r.priority?.toUpperCase()}</Badge>
-              {!r.isRead && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563EB', display: 'inline-block' }} />}
-            </div>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{r.name}</span>
+  const leadColumns = [
+    {
+      key: 'lead', label: language === 'ar' ? 'العميل المحتمل' : 'Lead', width: '28%',
+      render: (l) => (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12.5px', fontWeight: 600, color: TK.text }}>{l.lead?.name || (language === 'ar' ? 'غير معروف' : 'Unknown')}</span>
+            {l.userType === 'registered' && <Badge tone="purple">{L(USERTYPE_LABEL, 'registered', language)}</Badge>}
+            {l.requestId && <Badge tone="info">{language === 'ar' ? 'طلب' : 'Request'}</Badge>}
           </div>
-          <ScoreBar score={r.leadScore || 0} />
+          <div style={{ fontSize: '11px', color: TK.textMuted, marginTop: '2px' }}>{l.lead?.phone || l.lead?.email || (language === 'ar' ? 'لا توجد بيانات تواصل' : 'No contact info')}</div>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-          {r.phone && <span style={{ fontSize: 11, color: 'rgba(255,255,255,.55)' }}>📞 {r.phone}</span>}
-          {r.email && <span style={{ fontSize: 11, color: 'rgba(255,255,255,.55)' }}>✉ {r.email}</span>}
+      ),
+    },
+    {
+      key: 'project', label: language === 'ar' ? 'المشروع' : 'Project', width: '22%',
+      render: (l) => (
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {l.lead?.projectType && <Badge tone="info">{l.lead.projectType}</Badge>}
+          {l.lead?.timeline    && <Badge tone="neutral">{l.lead.timeline}</Badge>}
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {r.projectType && <Badge bg="rgba(37,99,235,.07)" tx="rgba(37,99,235,.8)">{r.projectType}</Badge>}
-          {r.timeline    && <Badge bg="rgba(255,255,255,.04)" tx="rgba(255,255,255,.5)">⏱ {r.timeline}</Badge>}
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginLeft: 'auto' }}>{fmtDate(r.createdAt)}</span>
-        </div>
-        {r.aiRecommendation && (
-          <p style={{ margin: '7px 0 0', fontSize: 11, color: 'rgba(37,99,235,.6)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🤖 {r.aiRecommendation}</p>
-        )}
-      </div>
-    );
-  };
+      ),
+    },
+    {
+      key: 'sentiment', label: language === 'ar' ? 'الحالة الشعورية' : 'Sentiment', width: '15%',
+      render: (l) => l.sentiment ? <span style={{ fontSize: '11.5px', color: SENT_CLR[l.sentiment] }}>{SENT_ICO[l.sentiment]} {L(SENTIMENT_LABEL, l.sentiment, language)}</span> : <span style={{ fontSize: '11px', color: TK.textLight }}>—</span>,
+    },
+    { key: 'score',   label: language === 'ar' ? 'النقاط' : 'Score',   width: '15%', render: (l) => <ScoreBar score={l.leadScore || 0} /> },
+    { key: 'created', label: language === 'ar' ? 'تاريخ الإنشاء' : 'Created', width: '20%', render: (l) => <span style={{ fontSize: '11px', color: TK.textLight }}>{fmtDate(l.createdAt)}</span> },
+  ];
 
-  const TickRow = ({ t }) => {
-    const sc = STATUS_CLR[t.status] || STATUS_CLR.open;
-    const pc = P_CLR[t.priority]    || P_CLR.medium;
-    return (
-      <div onClick={() => openTicket(t)} style={{ padding: '12px 14px', background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, cursor: 'pointer', marginBottom: 7 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-          <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: '#6eafff', fontWeight: 600 }}>{t.ticketId}</span>
-          <Badge bg={sc.bg} tx={sc.tx}>{t.status?.replace('_',' ').toUpperCase()}</Badge>
-          <Badge bg={pc.bg} tx={pc.tx} bd={pc.bd}>{t.priority?.toUpperCase()}</Badge>
+  const reqColumns = [
+    {
+      key: 'request', label: language === 'ar' ? 'الطلب' : 'Request', width: '34%',
+      render: (r) => (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '3px' }}>
+            <span style={{ fontSize: '10.5px', fontFamily: 'monospace', color: TK.accent, fontWeight: 600 }}>{r.requestCode}</span>
+            <Badge tone={statusTone(r.status)}>{L(STATUS_LABEL, r.status, language, r.status?.replace('_', ' '))}</Badge>
+            <Badge tone={priorityTone(r.priority)}>{L(PRIORITY_LABEL, r.priority, language)}</Badge>
+            {!r.isRead && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: TK.accent, display: 'inline-block' }} />}
+          </div>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: TK.text }}>{r.name}</span>
         </div>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: '#fff', marginBottom: 4 }}>{t.subject}</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.45)' }}>{t.customer?.name || 'Anonymous'}</span>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,.25)', marginLeft: 'auto' }}>{fmtDate(t.createdAt)}</span>
+      ),
+    },
+    {
+      key: 'contact', label: language === 'ar' ? 'التواصل' : 'Contact', width: '19%',
+      render: (r) => (
+        <div style={{ fontSize: '11px', color: TK.textMuted, lineHeight: 1.6 }}>
+          {r.phone && <div>{r.phone}</div>}
+          {r.email && <div>{r.email}</div>}
         </div>
-      </div>
-    );
-  };
+      ),
+    },
+    {
+      key: 'project', label: language === 'ar' ? 'المشروع' : 'Project', width: '19%',
+      render: (r) => (
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {r.projectType && <Badge tone="info">{r.projectType}</Badge>}
+          {r.timeline    && <Badge tone="neutral">{r.timeline}</Badge>}
+        </div>
+      ),
+    },
+    { key: 'score',   label: language === 'ar' ? 'النقاط' : 'Score',   width: '13%', render: (r) => <ScoreBar score={r.leadScore || 0} /> },
+    { key: 'created', label: language === 'ar' ? 'تاريخ الإنشاء' : 'Created', width: '15%', render: (r) => <span style={{ fontSize: '11px', color: TK.textLight }}>{fmtDate(r.createdAt)}</span> },
+  ];
+
+  const tickColumns = [
+    {
+      key: 'ticket', label: language === 'ar' ? 'التذكرة' : 'Ticket', width: '45%',
+      render: (t) => (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '10.5px', fontFamily: 'monospace', color: TK.accent, fontWeight: 600 }}>{t.ticketId}</span>
+            <Badge tone={statusTone(t.status)}>{L(STATUS_LABEL, t.status, language, t.status?.replace('_', ' '))}</Badge>
+            <Badge tone={priorityTone(t.priority)}>{L(PRIORITY_LABEL, t.priority, language)}</Badge>
+          </div>
+          <span style={{ fontSize: '13px', fontWeight: 500, color: TK.text }}>{t.subject}</span>
+        </div>
+      ),
+    },
+    { key: 'customer', label: language === 'ar' ? 'العميل' : 'Customer', width: '30%', render: (t) => <span style={{ fontSize: '11.5px', color: TK.textMuted }}>{t.customer?.name || (language === 'ar' ? 'مجهول' : 'Anonymous')}</span> },
+    { key: 'created',  label: language === 'ar' ? 'تاريخ الإنشاء' : 'Created',  width: '25%', render: (t) => <span style={{ fontSize: '11px', color: TK.textLight }}>{fmtDate(t.createdAt)}</span> },
+  ];
+
+  const escColumns = [
+    {
+      key: 'visitor', label: language === 'ar' ? 'الزائر' : 'Visitor', width: '30%',
+      render: (e) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertTriangle style={{ width: '14px', height: '14px', color: TK.red, flexShrink: 0 }} />
+          <span style={{ fontSize: '12.5px', fontWeight: 600, color: TK.text }}>{e.lead?.name || anonVisitor(language)}</span>
+          <Badge tone="danger">{L(PRIORITY_LABEL, e.escalation?.priority || 'high', language)}</Badge>
+        </div>
+      ),
+    },
+    { key: 'reason',  label: language === 'ar' ? 'السبب' : 'Reason',  width: '45%', render: (e) => <span style={{ fontSize: '12px', color: TK.red }}>{e.escalation?.reason || (language === 'ar' ? 'محادثة مُصعَّدة' : 'Escalated conversation')}</span> },
+    { key: 'flagged', label: language === 'ar' ? 'تاريخ التصعيد' : 'Flagged', width: '25%', render: (e) => <span style={{ fontSize: '11px', color: TK.textLight }}>{e.escalation?.flaggedAt ? fmt(e.escalation.flaggedAt) : (language === 'ar' ? 'غير معروف' : 'Unknown')}</span> },
+  ];
+
+  const analyticsTiles = [
+    { label: language === 'ar' ? 'إجمالي المحادثات' : 'Total Conversations', value: analytics?.totalConversations ?? 0, icon: MessageSquare, tone: 'info' },
+    { label: language === 'ar' ? 'محادثات اليوم' : 'Conversations Today', value: analytics?.convToday         ?? 0, icon: Calendar,       tone: 'purple' },
+    { label: language === 'ar' ? 'هذا الأسبوع' : 'This Week',           value: analytics?.convWeek          ?? 0, icon: CalendarDays,   tone: 'info' },
+    { label: language === 'ar' ? 'إجمالي العملاء المحتملين' : 'Total Leads', value: analytics?.leadsTotal   ?? 0, icon: Target,         tone: 'success' },
+    { label: language === 'ar' ? 'عملاء هذا الشهر' : 'Leads This Month',    value: analytics?.leadsMonth    ?? 0, icon: BarChart3,      tone: 'success' },
+    { label: language === 'ar' ? 'عملاء هذا الأسبوع' : 'Leads This Week',   value: analytics?.leadsWeek      ?? 0, icon: TrendingUp,     tone: 'success' },
+    { label: language === 'ar' ? 'متوسط نقاط العملاء' : 'Avg Lead Score',   value: analytics?.avgLeadScore   ?? 0, icon: Star,           tone: 'info' },
+    { label: language === 'ar' ? 'معدل التحويل' : 'Conversion Rate',    value: `${analytics?.conversionRate ?? 0}%`, icon: Percent,     tone: 'info' },
+    { label: language === 'ar' ? 'التذاكر المفتوحة' : 'Open Tickets',   value: analytics?.ticketsOpen       ?? 0, icon: Ticket,         tone: 'info' },
+    { label: language === 'ar' ? 'إجمالي التذاكر' : 'Total Tickets',    value: analytics?.ticketsTotal      ?? 0, icon: Ticket,         tone: 'info' },
+    { label: language === 'ar' ? 'التصعيدات' : 'Escalations',          value: analytics?.escalationsTotal  ?? 0, icon: AlertTriangle,  tone: 'danger' },
+    { label: language === 'ar' ? 'غير مقروء' : 'Unread',                value: analytics?.unreadCount       ?? 0, icon: Inbox,          tone: 'info' },
+  ];
+
+  const quickNav = [
+    { label: language === 'ar' ? 'عرض جميع المحادثات' : 'View All Conversations', tab: 'conversations', icon: MessageSquare },
+    { label: language === 'ar' ? 'العملاء المؤهلون' : 'Qualified Leads',        tab: 'leads',         icon: Target },
+    { label: language === 'ar' ? 'طلبات الذكاء الاصطناعي' : 'AI Requests',      tab: 'requests',       icon: Zap },
+    { label: language === 'ar' ? 'تذاكر الدعم' : 'Support Tickets',             tab: 'tickets',        icon: Ticket },
+    { label: language === 'ar' ? 'التصعيدات' : 'Escalations',                   tab: 'escalations',    icon: AlertTriangle },
+    { label: language === 'ar' ? 'التحليلات' : 'Analytics',                     tab: 'analytics',      icon: TrendingUp },
+  ];
 
   return (
-    <div style={{ padding: '28px 24px', maxWidth: 1280, margin: '0 auto', color: '#fff', fontFamily: "'Inter',system-ui,sans-serif" }}>
-      <style>{`
-        @keyframes spin { to { transform:rotate(360deg) } }
-        select option { background:#0a0a12; }
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: rgba(37,99,235,.2); border-radius:2px; }
-      `}</style>
+    <div dir={isRTL ? 'rtl' : 'ltr'} style={{ padding: '28px 24px 60px', maxWidth: '1400px', margin: '0 auto', fontFamily: font, background: TK.bg, minHeight: '100vh', direction: isRTL ? 'rtl' : 'ltr' }}>
 
-      {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(37,99,235,.1)', border: '1px solid rgba(37,99,235,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>✦</div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: '-.02em' }}>AI Center</h1>
-            <p style={{ margin: 0, fontSize: 11.5, color: 'rgba(255,255,255,.4)' }}>Conversations · Leads · Requests · Tickets · Analytics</p>
-          </div>
-        </div>
-        <button onClick={fetchAnalytics} style={{ padding: '8px 16px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 9, color: 'rgba(255,255,255,.6)', cursor: 'pointer', fontSize: 12 }}>↻ Refresh</button>
-      </div>
+      <PageHeader
+        icon={Sparkles}
+        eyebrow={language === 'ar' ? 'لوحة التحكم' : 'Admin Panel'}
+        title={language === 'ar' ? 'مركز الذكاء الاصطناعي' : 'AI Center'}
+        subtitle={language === 'ar' ? 'المحادثات · العملاء المحتملون · الطلبات · التذاكر · التحليلات' : 'Conversations · Leads · Requests · Tickets · Analytics'}
+        actions={<Button variant="secondary" icon={RefreshCw} onClick={fetchAnalytics}>{language === 'ar' ? 'تحديث' : 'Refresh'}</Button>}
+      />
 
       {/* Stats grid */}
       {!anaLoading && analytics && (
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-          <StatCard icon="💬" label="Total Chats"      value={analytics.totalConversations} sub={`${analytics.convToday ?? 0} today · ${analytics.convWeek ?? 0} this week`} />
-          <StatCard icon="🎯" label="Leads Captured"   value={analytics.leadsTotal}         sub={`${analytics.leadsWeek ?? 0} this week · avg score ${analytics.avgLeadScore ?? 0}`} color="#22c55e"  onClick={() => setTab('leads')} />
-          <StatCard icon="⚡" label="AI Requests"      value={reqTotal || '0'}              sub="auto-qualified"                  color="#2563EB"   onClick={() => setTab('requests')} />
-          <StatCard icon="🎫" label="Open Tickets"     value={analytics.ticketsOpen}        sub={`${analytics.ticketsTotal} total`} color="#6eafff" onClick={() => setTab('tickets')} />
-          <StatCard icon="📈" label="Conversion Rate"  value={`${analytics.conversionRate ?? 0}%`} sub="visitors → leads" color="#a091eb" />
-          {analytics.escalationsTotal > 0 && <StatCard icon="🚨" label="Escalations"  value={analytics.escalationsTotal} sub="needs attention" color="#ef4444" alert onClick={() => setTab('escalations')} />}
-          {analytics.unreadCount > 0      && <StatCard icon="📬" label="Unread"        value={analytics.unreadCount}       sub="conversations"  color="#2563EB" onClick={() => setTab('conversations')} />}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+          <StatCard icon={MessageSquare} label={language === 'ar' ? 'إجمالي المحادثات' : 'Total Chats'}     value={analytics.totalConversations} sub={language === 'ar' ? `${analytics.convToday ?? 0} اليوم · ${analytics.convWeek ?? 0} هذا الأسبوع` : `${analytics.convToday ?? 0} today · ${analytics.convWeek ?? 0} this week`} tone="info" />
+          <div onClick={() => setTab('leads')} style={{ cursor: 'pointer' }}>
+            <StatCard icon={Target} label={language === 'ar' ? 'العملاء المكتسبون' : 'Leads Captured'} value={analytics.leadsTotal} sub={language === 'ar' ? `${analytics.leadsWeek ?? 0} هذا الأسبوع · متوسط النقاط ${analytics.avgLeadScore ?? 0}` : `${analytics.leadsWeek ?? 0} this week · avg score ${analytics.avgLeadScore ?? 0}`} tone="success" />
+          </div>
+          <div onClick={() => setTab('requests')} style={{ cursor: 'pointer' }}>
+            <StatCard icon={Zap} label={language === 'ar' ? 'طلبات الذكاء الاصطناعي' : 'AI Requests'} value={reqTotal || 0} sub={language === 'ar' ? 'مؤهل تلقائياً' : 'Auto-qualified'} tone="info" />
+          </div>
+          <div onClick={() => setTab('tickets')} style={{ cursor: 'pointer' }}>
+            <StatCard icon={Ticket} label={language === 'ar' ? 'التذاكر المفتوحة' : 'Open Tickets'} value={analytics.ticketsOpen} sub={language === 'ar' ? `${analytics.ticketsTotal} إجمالي` : `${analytics.ticketsTotal} total`} tone="info" />
+          </div>
+          <StatCard icon={TrendingUp} label={language === 'ar' ? 'معدل التحويل' : 'Conversion Rate'} value={`${analytics.conversionRate ?? 0}%`} sub={language === 'ar' ? 'زوار ← عملاء محتملون' : 'Visitors → leads'} tone="purple" />
+          {analytics.escalationsTotal > 0 && (
+            <div onClick={() => setTab('escalations')} style={{ cursor: 'pointer' }}>
+              <StatCard icon={AlertTriangle} label={language === 'ar' ? 'التصعيدات' : 'Escalations'} value={analytics.escalationsTotal} sub={language === 'ar' ? 'تحتاج إلى اهتمام' : 'Needs attention'} tone="danger" />
+            </div>
+          )}
+          {analytics.unreadCount > 0 && (
+            <div onClick={() => setTab('conversations')} style={{ cursor: 'pointer' }}>
+              <StatCard icon={Inbox} label={language === 'ar' ? 'غير مقروء' : 'Unread'} value={analytics.unreadCount} sub={language === 'ar' ? 'محادثات' : 'Conversations'} tone="info" />
+            </div>
+          )}
         </div>
       )}
 
       {/* Registered / Guest split */}
       {analytics && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 160, background: 'rgba(160,145,235,.05)', border: '1px solid rgba(160,145,235,.13)', borderRadius: 12, padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 22 }}>👤</span>
-            <div>
-              <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#a091eb' }}>{analytics.registeredConvs ?? 0}</p>
-              <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,.4)' }}>Registered</p>
-            </div>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 160px' }}>
+            <StatCard icon={User} label={L(USERTYPE_LABEL, 'registered', language)} value={analytics.registeredConvs ?? 0} tone="purple" />
           </div>
-          <div style={{ flex: 1, minWidth: 160, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 22 }}>👻</span>
-            <div>
-              <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'rgba(255,255,255,.65)' }}>{analytics.guestConvs ?? 0}</p>
-              <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,.4)' }}>Guests</p>
-            </div>
+          <div style={{ flex: '1 1 160px' }}>
+            <StatCard icon={Ghost} label={language === 'ar' ? 'زوار' : 'Guests'} value={analytics.guestConvs ?? 0} tone="neutral" />
           </div>
           {analytics.sentiment && (
-            <div style={{ flex: 3, minWidth: 220, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, padding: '13px 18px' }}>
-              <p style={{ margin: '0 0 8px', fontSize: 10, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.07em' }}>Sentiment Breakdown</p>
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <Card style={{ flex: '3 1 220px' }}>
+              <SectionHead title={language === 'ar' ? 'توزيع الحالة الشعورية' : 'Sentiment Breakdown'} />
+              <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
                 {Object.entries(analytics.sentiment).filter(([, v]) => v > 0).map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ fontSize: 13 }}>{SENT_ICO[k]}</span>
-                    <span style={{ fontSize: 12.5, color: SENT_CLR[k] || '#fff', fontWeight: 600 }}>{v}</span>
-                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,.3)' }}>{k}</span>
+                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '14px' }}>{SENT_ICO[k]}</span>
+                    <span style={{ fontSize: '13px', color: SENT_CLR[k] || TK.text, fontWeight: 600 }}>{v}</span>
+                    <span style={{ fontSize: '10.5px', color: TK.textMuted }}>{L(SENTIMENT_LABEL, k, language)}</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           )}
         </div>
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 7, marginBottom: 22, flexWrap: 'wrap', borderBottom: '1px solid rgba(255,255,255,.06)', paddingBottom: 14 }}>
-        {tabs.map(t => <button key={t.key} onClick={() => setTab(t.key)} style={tabSty(tab === t.key)}>{t.label}</button>)}
+      <div style={{ marginBottom: '22px' }}>
+        <Tabs value={tab} onChange={setTab} items={tabItems} />
       </div>
 
       {/* ══════ OVERVIEW ══════ */}
       {tab === 'overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
           {/* Intent breakdown */}
           {analytics?.intent && (
-            <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 14, padding: '18px 20px' }}>
-              <p style={{ margin: '0 0 14px', fontSize: 11, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.07em' }}>Intent Breakdown</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Object.entries(analytics.intent).filter(([, v]) => v > 0).map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 11, color: INT_CLR[k] || '#fff', minWidth: 60 }}>{k}</span>
-                    <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,.05)', borderRadius: 3 }}>
-                      <div style={{ width: `${(v / analytics.totalConversations) * 100}%`, height: '100%', background: INT_CLR[k] || '#fff', borderRadius: 3, transition: 'width .6s ease' }} />
+            <Card>
+              <SectionHead title={language === 'ar' ? 'توزيع الغرض' : 'Intent Breakdown'} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {Object.entries(analytics.intent).filter(([, v]) => v > 0).map(([k, v]) => {
+                  const fg = STATUS_TONE[intentTone(k)]?.fg || TK.text;
+                  return (
+                    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '11px', color: fg, minWidth: '60px' }}>{L(INTENT_LABEL, k, language)}</span>
+                      <div style={{ flex: 1, height: '6px', background: TK.borderSoft, borderRadius: '3px' }}>
+                        <div style={{ width: `${(v / analytics.totalConversations) * 100}%`, height: '100%', background: fg, borderRadius: '3px', transition: 'width .6s ease' }} />
+                      </div>
+                      <span style={{ fontSize: '11px', color: TK.textMuted, minWidth: '22px', textAlign: 'right' }}>{v}</span>
                     </div>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', minWidth: 22, textAlign: 'right' }}>{v}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            </div>
+            </Card>
           )}
 
           {/* Quick actions */}
-          <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 14, padding: '18px 20px' }}>
-            <p style={{ margin: '0 0 14px', fontSize: 11, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.07em' }}>Quick Navigation</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                { label: '💬 View All Conversations', tab: 'conversations' },
-                { label: '🎯 Qualified Leads',         tab: 'leads' },
-                { label: '⚡ AI Requests',             tab: 'requests' },
-                { label: '🎫 Support Tickets',         tab: 'tickets' },
-                { label: '🚨 Escalations',             tab: 'escalations' },
-                { label: '📈 Analytics',               tab: 'analytics' },
-              ].map(({ label, tab: t }) => (
-                <button key={t} onClick={() => setTab(t)} style={{ textAlign: 'left', padding: '9px 13px', background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 9, color: 'rgba(255,255,255,.7)', cursor: 'pointer', fontSize: 12.5, transition: 'background .15s' }}>
-                  {label}
-                </button>
+          <Card>
+            <SectionHead title={language === 'ar' ? 'التنقل السريع' : 'Quick Navigation'} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+              {quickNav.map(({ label, tab: tgt, icon: Icon }) => (
+                <div
+                  key={tgt}
+                  onClick={() => setTab(tgt)}
+                  className="au-row"
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', border: `1px solid ${TK.border}`, borderRadius: '9px', cursor: 'pointer' }}
+                >
+                  <Icon style={{ width: '14px', height: '14px', color: TK.textMuted, flexShrink: 0 }} />
+                  <span style={{ fontSize: '12.5px', color: TK.text, flex: 1 }}>{label}</span>
+                  <ChevronRight style={{ width: '13px', height: '13px', color: TK.textLight }} />
+                </div>
               ))}
             </div>
-          </div>
+          </Card>
 
           {/* Recent requests preview */}
-          <div style={{ background: 'rgba(37,99,235,.03)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 14, padding: '18px 20px', gridColumn: 'span 1' }}>
-            <p style={{ margin: '0 0 14px', fontSize: 11, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.07em' }}>AI Request Pipeline</p>
+          <Card style={{ background: TK.accentBg, borderColor: TK.accentBd }}>
+            <SectionHead title={language === 'ar' ? 'مسار طلبات الذكاء الاصطناعي' : 'AI Request Pipeline'} />
             {analytics ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[['new','New'],['contacted','Contacted'],['proposal_sent','Proposal Sent'],['won','Won ✓'],['lost','Lost']].map(([s, l]) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {['new','contacted','proposal_sent','won','lost'].map((s) => (
                   <div key={s} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 12, color: STATUS_CLR[s]?.tx || 'rgba(255,255,255,.5)' }}>{l}</span>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>—</span>
+                    <span style={{ fontSize: '12px', color: STATUS_TONE[statusTone(s)]?.fg || TK.textMuted }}>{L(STATUS_LABEL, s, language)}{s === 'won' ? ' ✓' : ''}</span>
+                    <span style={{ fontSize: '11px', color: TK.textLight }}>—</span>
                   </div>
                 ))}
-                <button onClick={() => { setTab('requests'); fetchRequests(1, {}); }} style={{ marginTop: 6, padding: '8px 13px', background: 'rgba(37,99,235,.08)', border: '1px solid rgba(37,99,235,.18)', borderRadius: 8, color: '#2563EB', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                  View All Requests →
-                </button>
+                <Button variant="secondary" style={{ marginTop: '6px' }} onClick={() => { setTab('requests'); fetchRequests(1, {}); }}>
+                  {language === 'ar' ? '← عرض جميع الطلبات' : 'View All Requests →'}
+                </Button>
               </div>
             ) : <Spinner />}
-          </div>
+          </Card>
         </div>
       )}
 
@@ -804,14 +846,25 @@ const AdminSupportAI = () => {
       {tab === 'conversations' && (
         <div>
           <FilterBar>
-            <SearchInput value={convF.search}    onChange={v => cf('search', v)}    placeholder="Search name, email, phone..." />
-            <FilterSelect value={convF.intent}   onChange={v => cf('intent', v)}    opts={[['','All Intents'],['lead','Lead'],['support','Support'],['inquiry','Inquiry'],['complaint','Complaint']]} />
-            <FilterSelect value={convF.sentiment} onChange={v => cf('sentiment', v)} opts={[['','All Sentiments'],['positive','Positive'],['neutral','Neutral'],['frustrated','Frustrated'],['urgent','Urgent']]} />
-            <FilterSelect value={convF.hasLead}  onChange={v => cf('hasLead', v)}   opts={[['','All'],['true','Has Lead']]} />
-            <FilterSelect value={convF.userType} onChange={v => cf('userType', v)}  opts={[['','All Users'],['registered','Registered'],['guest','Guest']]} />
+            <SearchInput value={convF.search} onChange={e => cf('search', e.target.value)} onClear={() => cf('search', '')} placeholder={language === 'ar' ? 'ابحث بالاسم، البريد، الهاتف…' : 'Search name, email, phone…'} />
+            <Select value={convF.intent}    onChange={e => cf('intent', e.target.value)}    options={toOpts([['', language === 'ar' ? 'كل الأغراض' : 'All Intents'], ...['lead','support','inquiry','complaint'].map(k => [k, L(INTENT_LABEL, k, language)])])} style={{ minWidth: '140px' }} />
+            <Select value={convF.sentiment} onChange={e => cf('sentiment', e.target.value)} options={toOpts([['', language === 'ar' ? 'كل الحالات الشعورية' : 'All Sentiments'], ...['positive','neutral','frustrated','urgent'].map(k => [k, L(SENTIMENT_LABEL, k, language)])])} style={{ minWidth: '150px' }} />
+            <Select value={convF.hasLead}   onChange={e => cf('hasLead', e.target.value)}   options={toOpts([['', language === 'ar' ? 'الكل' : 'All'],['true', language === 'ar' ? 'لديه عميل محتمل' : 'Has Lead']])} style={{ minWidth: '110px' }} />
+            <Select value={convF.userType}  onChange={e => cf('userType', e.target.value)}  options={toOpts([['', language === 'ar' ? 'كل المستخدمين' : 'All Users'], ...userTypeEntries(language)])} style={{ minWidth: '130px' }} />
           </FilterBar>
-          {loading ? <Spinner /> : conversations.length ? conversations.map(c => <ConvRow key={c._id} c={c} />) : <Empty />}
-          <Pager page={convPage} total={convTotal} perPage={PER} onChange={p => { setConvPage(p); fetchConversations(p, convF); }} />
+          <DataTable
+            columns={convColumns}
+            rows={conversations}
+            loading={loading}
+            getRowId={c => c._id}
+            onRowClick={openConv}
+            emptyIcon={MessageSquare}
+            emptyTitle={language === 'ar' ? 'لا توجد محادثات' : 'No conversations found'}
+            page={convPage}
+            totalPages={Math.max(1, Math.ceil(convTotal / PER))}
+            onPageChange={p => { setConvPage(p); fetchConversations(p, convF); }}
+            footer={language === 'ar' ? `عرض ${conversations.length} من ${convTotal} محادثة` : `Showing ${conversations.length} of ${convTotal} conversations`}
+          />
         </div>
       )}
 
@@ -819,29 +872,56 @@ const AdminSupportAI = () => {
       {tab === 'leads' && (
         <div>
           <FilterBar>
-            <SearchInput value={leadF.search}   onChange={v => lf('search', v)}   placeholder="Search name, phone, email..." />
-            <FilterSelect value={leadF.userType} onChange={v => lf('userType', v)} opts={[['','All Users'],['registered','Registered'],['guest','Guest']]} />
-            <FilterSelect value={leadF.minScore} onChange={v => lf('minScore', v)} opts={[['','Any Score'],['80','Score 80+'],['60','Score 60+'],['40','Score 40+']]} />
+            <SearchInput value={leadF.search} onChange={e => lf('search', e.target.value)} onClear={() => lf('search', '')} placeholder={language === 'ar' ? 'ابحث بالاسم، الهاتف، البريد…' : 'Search name, phone, email…'} />
+            <Select value={leadF.userType} onChange={e => lf('userType', e.target.value)} options={toOpts([['', language === 'ar' ? 'كل المستخدمين' : 'All Users'], ...userTypeEntries(language)])} style={{ minWidth: '130px' }} />
+            <Select value={leadF.minScore} onChange={e => lf('minScore', e.target.value)} options={toOpts([['', language === 'ar' ? 'أي نقاط' : 'Any Score'],['80', language === 'ar' ? 'نقاط 80+' : 'Score 80+'],['60', language === 'ar' ? 'نقاط 60+' : 'Score 60+'],['40', language === 'ar' ? 'نقاط 40+' : 'Score 40+']])} style={{ minWidth: '130px' }} />
           </FilterBar>
-          {loading ? <Spinner /> : leads.length ? leads.map(l => <LeadRow key={l._id} l={l} />) : <Empty text="No qualified leads yet. Leads are created when a visitor completes the AI qualification." />}
-          <Pager page={leadPage} total={leadTotal} perPage={PER} onChange={p => { setLeadPage(p); fetchLeads(p, leadF); }} />
+          <DataTable
+            columns={leadColumns}
+            rows={leads}
+            loading={loading}
+            getRowId={l => l._id}
+            onRowClick={openConv}
+            emptyIcon={Target}
+            emptyTitle={language === 'ar' ? 'لا يوجد عملاء محتملون مؤهلون بعد' : 'No qualified leads yet'}
+            emptySubtitle={language === 'ar' ? 'يتم إنشاء العملاء المحتملين عندما يكمل الزائر تأهيل الذكاء الاصطناعي.' : 'Leads are created when a visitor completes the AI qualification.'}
+            page={leadPage}
+            totalPages={Math.max(1, Math.ceil(leadTotal / PER))}
+            onPageChange={p => { setLeadPage(p); fetchLeads(p, leadF); }}
+            footer={language === 'ar' ? `عرض ${leads.length} من ${leadTotal} عميل محتمل` : `Showing ${leads.length} of ${leadTotal} leads`}
+          />
         </div>
       )}
 
       {/* ══════ REQUESTS ══════ */}
       {tab === 'requests' && (
         <div>
-          <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, fontSize: 12, color: 'rgba(37,99,235,.8)' }}>
-            ⚡ AI Requests are automatically created when the AI qualifies a lead (name + contact + project type collected). Click any request to manage it.
+          <div style={{ marginBottom: '16px', padding: '10px 14px', background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: '10px', fontSize: '12px', color: TK.accent, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Zap style={{ width: '13px', height: '13px', flexShrink: 0 }} />
+            {language === 'ar'
+              ? 'يتم إنشاء طلبات الذكاء الاصطناعي تلقائياً عندما يؤهل الذكاء الاصطناعي عميلاً محتملاً (بعد جمع الاسم وبيانات التواصل ونوع المشروع). انقر على أي طلب لإدارته.'
+              : 'AI Requests are automatically created when the AI qualifies a lead (name + contact + project type collected). Click any request to manage it.'}
           </div>
           <FilterBar>
-            <SearchInput value={reqF.search}    onChange={v => rf('search', v)}    placeholder="Search name, email, code..." />
-            <FilterSelect value={reqF.status}   onChange={v => rf('status', v)}    opts={[['','All Status'],['new','New'],['contacted','Contacted'],['proposal_sent','Proposal Sent'],['won','Won'],['lost','Lost']]} />
-            <FilterSelect value={reqF.priority} onChange={v => rf('priority', v)}  opts={[['','All Priority'],['critical','Critical'],['high','High'],['medium','Medium'],['low','Low']]} />
-            <FilterSelect value={reqF.userType} onChange={v => rf('userType', v)}  opts={[['','All Users'],['registered','Registered'],['guest','Guest']]} />
+            <SearchInput value={reqF.search} onChange={e => rf('search', e.target.value)} onClear={() => rf('search', '')} placeholder={language === 'ar' ? 'ابحث بالاسم، البريد، الرمز…' : 'Search name, email, code…'} />
+            <Select value={reqF.status}   onChange={e => rf('status', e.target.value)}   options={toOpts([['', language === 'ar' ? 'كل الحالات' : 'All Status'], ...statusEntries('request', language)])} style={{ minWidth: '140px' }} />
+            <Select value={reqF.priority} onChange={e => rf('priority', e.target.value)} options={toOpts([['', language === 'ar' ? 'كل الأولويات' : 'All Priority'], ...priorityEntries(language)])} style={{ minWidth: '140px' }} />
+            <Select value={reqF.userType} onChange={e => rf('userType', e.target.value)} options={toOpts([['', language === 'ar' ? 'كل المستخدمين' : 'All Users'], ...userTypeEntries(language)])} style={{ minWidth: '130px' }} />
           </FilterBar>
-          {loading ? <Spinner /> : requests.length ? requests.map(r => <ReqRow key={r._id} r={r} />) : <Empty text="No AI requests yet. Requests are auto-created when a visitor completes qualification. Make sure AI has collected: name + (phone or email) + project type." />}
-          <Pager page={reqPage} total={reqTotal} perPage={PER} onChange={p => { setReqPage(p); fetchRequests(p, reqF); }} />
+          <DataTable
+            columns={reqColumns}
+            rows={requests}
+            loading={loading}
+            getRowId={r => r._id}
+            onRowClick={openReq}
+            emptyIcon={Zap}
+            emptyTitle={language === 'ar' ? 'لا توجد طلبات ذكاء اصطناعي بعد' : 'No AI requests yet'}
+            emptySubtitle={language === 'ar' ? 'يتم إنشاء الطلبات تلقائياً عندما يكمل الزائر التأهيل (الاسم + الهاتف/البريد + نوع المشروع).' : 'Requests are auto-created when a visitor completes qualification (name + phone/email + project type).'}
+            page={reqPage}
+            totalPages={Math.max(1, Math.ceil(reqTotal / PER))}
+            onPageChange={p => { setReqPage(p); fetchRequests(p, reqF); }}
+            footer={language === 'ar' ? `عرض ${requests.length} من ${reqTotal} طلب` : `Showing ${requests.length} of ${reqTotal} requests`}
+          />
         </div>
       )}
 
@@ -849,64 +929,59 @@ const AdminSupportAI = () => {
       {tab === 'tickets' && (
         <div>
           <FilterBar>
-            <SearchInput value={tickF.search}    onChange={v => tf('search', v)}    placeholder="Search ticket, subject, name..." />
-            <FilterSelect value={tickF.status}   onChange={v => tf('status', v)}    opts={[['','All Status'],['open','Open'],['pending','Pending'],['in_progress','In Progress'],['resolved','Resolved'],['closed','Closed']]} />
-            <FilterSelect value={tickF.priority} onChange={v => tf('priority', v)}  opts={[['','All Priority'],['critical','Critical'],['high','High'],['medium','Medium'],['low','Low']]} />
-            <FilterSelect value={tickF.userType} onChange={v => tf('userType', v)}  opts={[['','All Users'],['registered','Registered'],['guest','Guest']]} />
+            <SearchInput value={tickF.search} onChange={e => tf('search', e.target.value)} onClear={() => tf('search', '')} placeholder={language === 'ar' ? 'ابحث بالتذكرة، الموضوع، الاسم…' : 'Search ticket, subject, name…'} />
+            <Select value={tickF.status}   onChange={e => tf('status', e.target.value)}   options={toOpts([['', language === 'ar' ? 'كل الحالات' : 'All Status'], ...statusEntries('ticket', language)])} style={{ minWidth: '150px' }} />
+            <Select value={tickF.priority} onChange={e => tf('priority', e.target.value)} options={toOpts([['', language === 'ar' ? 'كل الأولويات' : 'All Priority'], ...priorityEntries(language)])} style={{ minWidth: '140px' }} />
+            <Select value={tickF.userType} onChange={e => tf('userType', e.target.value)} options={toOpts([['', language === 'ar' ? 'كل المستخدمين' : 'All Users'], ...userTypeEntries(language)])} style={{ minWidth: '130px' }} />
           </FilterBar>
-          {loading ? <Spinner /> : tickets.length ? tickets.map(t => <TickRow key={t._id} t={t} />) : <Empty />}
-          <Pager page={tickPage} total={tickTotal} perPage={PER} onChange={p => { setTickPage(p); fetchTickets(p, tickF); }} />
+          <DataTable
+            columns={tickColumns}
+            rows={tickets}
+            loading={loading}
+            getRowId={t => t._id}
+            onRowClick={openTicket}
+            emptyIcon={Ticket}
+            emptyTitle={language === 'ar' ? 'لا توجد تذاكر' : 'No tickets found'}
+            page={tickPage}
+            totalPages={Math.max(1, Math.ceil(tickTotal / PER))}
+            onPageChange={p => { setTickPage(p); fetchTickets(p, tickF); }}
+            footer={language === 'ar' ? `عرض ${tickets.length} من ${tickTotal} تذكرة` : `Showing ${tickets.length} of ${tickTotal} tickets`}
+          />
         </div>
       )}
 
       {/* ══════ ESCALATIONS ══════ */}
       {tab === 'escalations' && (
         <div>
-          {loading ? <Spinner /> : escalations.length ? escalations.map(e => (
-            <div key={e._id} onClick={() => openConv(e)} style={{ padding: '14px 16px', background: 'rgba(220,38,38,.05)', border: '1px solid rgba(220,38,38,.2)', borderRadius: 10, cursor: 'pointer', marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 6 }}>
-                <span style={{ fontSize: 16 }}>🚨</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{e.lead?.name || 'Anonymous Visitor'}</span>
-                <Badge bg="rgba(220,38,38,.12)" tx="#ef4444" bd="rgba(220,38,38,.3)">{e.escalation?.priority?.toUpperCase() || 'HIGH'}</Badge>
-              </div>
-              <p style={{ margin: '0 0 6px', fontSize: 12.5, color: '#ef4444' }}>{e.escalation?.reason || 'Escalated conversation'}</p>
-              <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,.35)' }}>Flagged: {e.escalation?.flaggedAt ? fmt(e.escalation.flaggedAt) : 'Unknown'}</p>
-            </div>
-          )) : <Empty text="No escalations." />}
-          <Pager page={escPage} total={escTotal} perPage={PER} onChange={p => { setEscPage(p); fetchEscalations(p); }} />
+          <DataTable
+            columns={escColumns}
+            rows={escalations}
+            loading={loading}
+            getRowId={e => e._id}
+            onRowClick={openConv}
+            emptyIcon={AlertTriangle}
+            emptyTitle={language === 'ar' ? 'لا توجد تصعيدات' : 'No escalations'}
+            page={escPage}
+            totalPages={Math.max(1, Math.ceil(escTotal / PER))}
+            onPageChange={p => { setEscPage(p); fetchEscalations(p); }}
+            footer={language === 'ar' ? `عرض ${escalations.length} من ${escTotal} تصعيد` : `Showing ${escalations.length} of ${escTotal} escalations`}
+          />
         </div>
       )}
 
       {/* ══════ ANALYTICS ══════ */}
       {tab === 'analytics' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-          {[
-            { label: 'Total Conversations',   value: analytics?.totalConversations ?? 0,  icon: '💬', color: '#fff' },
-            { label: 'Conversations Today',   value: analytics?.convToday         ?? 0,  icon: '📅', color: '#a091eb' },
-            { label: 'This Week',             value: analytics?.convWeek          ?? 0,  icon: '📆', color: '#6eafff' },
-            { label: 'Total Leads',           value: analytics?.leadsTotal        ?? 0,  icon: '🎯', color: '#22c55e' },
-            { label: 'Leads This Month',      value: analytics?.leadsMonth        ?? 0,  icon: '📊', color: '#22c55e' },
-            { label: 'Leads This Week',       value: analytics?.leadsWeek         ?? 0,  icon: '📈', color: '#22c55e' },
-            { label: 'Avg Lead Score',        value: analytics?.avgLeadScore      ?? 0,  icon: '⭐', color: '#2563EB' },
-            { label: 'Conversion Rate',       value: `${analytics?.conversionRate ?? 0}%`, icon: '📉', color: '#2563EB' },
-            { label: 'Open Tickets',          value: analytics?.ticketsOpen       ?? 0,  icon: '🎫', color: '#6eafff' },
-            { label: 'Total Tickets',         value: analytics?.ticketsTotal      ?? 0,  icon: '🎫', color: '#6eafff' },
-            { label: 'Escalations',           value: analytics?.escalationsTotal  ?? 0,  icon: '🚨', color: '#ef4444' },
-            { label: 'Unread',                value: analytics?.unreadCount       ?? 0,  icon: '📬', color: '#2563EB' },
-          ].map(({ label, value, icon, color }) => (
-            <div key={label} style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 12, padding: '16px 18px' }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
-              <div style={{ fontSize: 26, fontWeight: 700, color, letterSpacing: '-.02em', lineHeight: 1 }}>{value}</div>
-              <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.45)', marginTop: 5 }}>{label}</div>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+          {analyticsTiles.map(({ label, value, icon, tone }) => (
+            <StatCard key={label} icon={icon} label={label} value={value} tone={tone} />
           ))}
         </div>
       )}
 
       {/* ══════ PANELS ══════ */}
-      {selConv   && <ConvPanel    conv={selConv}   token={token} onClose={() => setSelConv(null)}   onUpdate={updated => setConversations(p => p.map(c => c._id === updated._id ? updated : c))} />}
-      {selReq    && <RequestPanel req={selReq}     conv={selReqConv} token={token} onClose={() => { setSelReq(null); setSelReqConv(null); }} onUpdate={updated => setRequests(p => p.map(r => r._id === updated._id ? updated : r))} />}
-      {selTicket && <TicketPanel  ticket={selTicket} conv={tickConv} token={token} onClose={() => { setSelTicket(null); setTickConv(null); }} onUpdate={updated => setTickets(p => p.map(t => t._id === updated._id ? updated : t))} />}
+      {selConv   && <ConvPanel    conv={selConv}   token={token} language={language} onClose={() => setSelConv(null)}   onUpdate={updated => setConversations(p => p.map(c => c._id === updated._id ? updated : c))} />}
+      {selReq    && <RequestPanel req={selReq}     conv={selReqConv} token={token} language={language} onClose={() => { setSelReq(null); setSelReqConv(null); }} onUpdate={updated => setRequests(p => p.map(r => r._id === updated._id ? updated : r))} />}
+      {selTicket && <TicketPanel  ticket={selTicket} conv={tickConv} token={token} language={language} onClose={() => { setSelTicket(null); setTickConv(null); }} onUpdate={updated => setTickets(p => p.map(t => t._id === updated._id ? updated : t))} />}
     </div>
   );
 };

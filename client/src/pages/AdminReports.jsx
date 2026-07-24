@@ -1,39 +1,44 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Flag, CheckCircle, Clock, Eye, Trash2,
-  RefreshCw, Filter, ChevronRight, Shield, MessageSquare,
+  Flag, CheckCircle, Clock, Eye, X,
+  RefreshCw, ChevronRight, Shield, MessageSquare,
   FolderKanban, Users
 } from 'lucide-react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import { timeAgo } from '../utils/time';
+import {
+  TK, RADIUS, STATUS_TONE, FONT, PageHeader, StatCard, Card,
+  Button, IconButton, Badge, FilterPills, DataTable, ConfirmDialog,
+} from '../admin-ui';
 
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-  hoverBg:   'rgba(0,0,0,0.02)',
+const TYPE_LABELS_EN = {
+  abuse:                 'Abuse',
+  spam:                  'Spam',
+  fraud:                 'Fraud',
+  harassment:            'Harassment',
+  inappropriate_content: 'Inappropriate',
+  other:                 'Other',
+};
+const TYPE_LABELS_AR = {
+  abuse:                 'إساءة',
+  spam:                  'رسائل مزعجة',
+  fraud:                 'احتيال',
+  harassment:            'تحرش',
+  inappropriate_content: 'محتوى غير لائق',
+  other:                 'أخرى',
+};
+const getTypeLabels = (language) => (language === 'ar' ? TYPE_LABELS_AR : TYPE_LABELS_EN);
+const TYPE_TONE = {
+  abuse: 'danger', spam: 'warning', fraud: 'warning',
+  harassment: 'purple', inappropriate_content: 'info', other: 'neutral',
 };
 
-const TYPE_CONFIG = {
-  abuse:                 { label: 'Abuse',          color: '#f87171', bg: 'rgba(248,113,113,0.12)' },
-  spam:                  { label: 'Spam',           color: '#fb923c', bg: 'rgba(251,146,60,0.12)'  },
-  fraud:                 { label: 'Fraud',          color: '#f59e0b', bg: 'rgba(245,158,11,0.12)'  },
-  harassment:            { label: 'Harassment',     color: '#e879f9', bg: 'rgba(232,121,249,0.12)' },
-  inappropriate_content: { label: 'Inappropriate',  color: '#60a5fa', bg: 'rgba(96,165,250,0.12)'  },
-  other:                 { label: 'Other',          color: '#94a3b8', bg: 'rgba(148,163,184,0.12)' },
-};
-
-const STATUS_CONFIG = {
-  pending:      { label: 'Pending',      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)'  },
-  under_review: { label: 'Under Review', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)'  },
-  resolved:     { label: 'Resolved',     color: '#34d399', bg: 'rgba(52,211,153,0.1)'  },
-  dismissed:    { label: 'Dismissed',    color: '#94a3b8', bg: 'rgba(148,163,184,0.1)' },
-};
+const STATUS_LABELS_EN = { pending: 'Pending', under_review: 'Under Review', resolved: 'Resolved', dismissed: 'Dismissed' };
+const STATUS_LABELS_AR = { pending: 'قيد الانتظار', under_review: 'قيد المراجعة', resolved: 'تم الحل', dismissed: 'مرفوض' };
+const getStatusLabels = (language) => (language === 'ar' ? STATUS_LABELS_AR : STATUS_LABELS_EN);
+const STATUS_TONE_MAP = { pending: 'warning', under_review: 'info', resolved: 'success', dismissed: 'neutral' };
 
 const TARGET_ICONS = {
   user:    Users,
@@ -42,16 +47,20 @@ const TARGET_ICONS = {
 };
 
 const AdminReports = () => {
-  const { dir, language } = useLanguage();
+  const { dir, language, isRTL } = useLanguage();
+  const font = FONT(isRTL);
 
-  const [reports,  setReports]  = useState([]);
-  const [stats,    setStats]    = useState(null);
-  const [loading,  setLoading]  = useState(true);
-  const [filter,   setFilter]   = useState('all');
-  const [selected, setSelected] = useState(null);
-  const [page,     setPage]     = useState(1);
-  const [total,    setTotal]    = useState(0);
+  const [reports,        setReports]        = useState([]);
+  const [stats,          setStats]          = useState(null);
+  const [loading,        setLoading]        = useState(true);
+  const [filter,         setFilter]         = useState('all');
+  const [selected,       setSelected]       = useState(null);
+  const [page,           setPage]           = useState(1);
+  const [total,          setTotal]          = useState(0);
+  const [deleteConfirm,  setDeleteConfirm]  = useState(null);
+  const [deleting,       setDeleting]       = useState(false);
   const LIMIT = 15;
+  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -65,8 +74,8 @@ const AdminReports = () => {
       setReports(rRes.data.reports || []);
       setTotal(rRes.data.total || 0);
       setStats(sRes.data);
-    } catch (err) {
-      toast.error('Failed to load reports');
+    } catch {
+      toast.error(language === 'ar' ? 'فشل تحميل البلاغات' : 'Failed to load reports');
     } finally {
       setLoading(false);
     }
@@ -77,227 +86,212 @@ const AdminReports = () => {
   const updateStatus = async (reportId, status) => {
     try {
       await api.patch(`/reports/${reportId}`, { status });
-      toast.success(`Report marked as ${STATUS_CONFIG[status]?.label || status}`);
+      const statusLabels = getStatusLabels(language);
+      toast.success(language === 'ar' ? `تم تعليم البلاغ كـ ${statusLabels[status] || status}` : `Report marked as ${statusLabels[status] || status}`);
       fetchReports();
       setSelected(null);
     } catch {
-      toast.error('Failed to update report');
+      toast.error(language === 'ar' ? 'فشل تحديث البلاغ' : 'Failed to update report');
     }
   };
 
-  const deleteReport = async (reportId) => {
-    if (!confirm('Delete this report permanently?')) return;
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await api.delete(`/reports/${reportId}`);
-      toast.success('Report deleted');
-      fetchReports();
+      setDeleting(true);
+      await api.delete(`/reports/${deleteConfirm}`);
+      toast.success(language === 'ar' ? 'تم حذف البلاغ' : 'Report deleted');
+      setDeleteConfirm(null);
       setSelected(null);
+      fetchReports();
     } catch {
-      toast.error('Failed to delete report');
+      toast.error(language === 'ar' ? 'فشل حذف البلاغ' : 'Failed to delete report');
+    } finally {
+      setDeleting(false);
     }
   };
+
+  const typeLabels = getTypeLabels(language);
+  const statusLabels = getStatusLabels(language);
 
   const statCards = [
-    { label: 'Total Reports',  value: stats?.total        || 0, color: TK.accent,  icon: Flag },
-    { label: 'Pending',        value: stats?.pending       || 0, color: '#f59e0b',  icon: Clock },
-    { label: 'Under Review',   value: stats?.underReview   || 0, color: '#60a5fa',  icon: Eye },
-    { label: 'Resolved',       value: stats?.resolved      || 0, color: '#34d399',  icon: CheckCircle },
+    { label: language === 'ar' ? 'إجمالي البلاغات' : 'Total Reports',  value: stats?.total       || 0, tone: 'info',    icon: Flag },
+    { label: language === 'ar' ? 'قيد الانتظار' : 'Pending',        value: stats?.pending      || 0, tone: 'warning', icon: Clock },
+    { label: language === 'ar' ? 'قيد المراجعة' : 'Under Review',   value: stats?.underReview  || 0, tone: 'purple',  icon: Eye },
+    { label: language === 'ar' ? 'تم الحل' : 'Resolved',       value: stats?.resolved     || 0, tone: 'success', icon: CheckCircle },
+  ];
+
+  const columns = [
+    {
+      key: 'type', label: language === 'ar' ? 'النوع' : 'Type', width: '10%',
+      render: (r) => <Badge tone={TYPE_TONE[r.type] || 'neutral'}>{typeLabels[r.type] || r.type}</Badge>,
+    },
+    {
+      key: 'targetType', label: language === 'ar' ? 'الهدف' : 'Target', width: '12%',
+      render: (r) => {
+        const TargetIcon = TARGET_ICONS[r.targetType] || Flag;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <TargetIcon style={{ width: '12px', height: '12px', color: TK.textMuted }} />
+            <span style={{ fontSize: '11px', color: TK.textMuted, textTransform: 'capitalize' }}>{r.targetType}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'reporter', label: language === 'ar' ? 'المُبلِغ' : 'Reporter', width: '18%',
+      render: (r) => (
+        <div>
+          <div style={{ fontSize: '12px', color: TK.text }}>{r.reporter?.fullName || r.reporter?.email || (language === 'ar' ? 'غير معروف' : 'Unknown')}</div>
+          <div style={{ fontSize: '10px', color: TK.textMuted }}>{r.reporter?.email}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'description', label: language === 'ar' ? 'الوصف' : 'Description', width: '26%',
+      render: (r) => (
+        <div style={{ fontSize: '11px', color: TK.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '220px' }}>
+          {r.description}
+        </div>
+      ),
+    },
+    {
+      key: 'status', label: language === 'ar' ? 'الحالة' : 'Status', width: '12%',
+      render: (r) => <Badge tone={STATUS_TONE_MAP[r.status] || 'warning'} dot>{statusLabels[r.status] || r.status}</Badge>,
+    },
+    {
+      key: 'createdAt', label: language === 'ar' ? 'التاريخ' : 'Date', width: '12%',
+      render: (r) => <span style={{ fontSize: '10px', color: TK.textMuted }}>{timeAgo(r.createdAt, language)}</span>,
+    },
+    {
+      key: 'chevron', label: '', width: '4%', align: 'right',
+      render: () => <ChevronRight style={{ width: '12px', height: '12px', color: TK.textLight }} />,
+    },
   ];
 
   return (
-    <div dir={dir} style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(37,99,235,0.25)', background: 'rgba(37,99,235,0.06)', marginBottom: 10 }}>
-          <Shield style={{ width: 10, height: 10, color: TK.accent }} />
-          <span style={{ fontSize: 10, fontWeight: 400, color: TK.accent, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Trust &amp; Safety</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <h1 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: TK.text, margin: 0, fontFamily: "'Inter',system-ui,sans-serif" }}>
-            Reports &amp; Moderation
-          </h1>
-          <button
-            onClick={fetchReports}
-            disabled={loading}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: 8, color: TK.textMuted, fontSize: 11, cursor: 'pointer', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; e.currentTarget.style.color = TK.accent; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = TK.border; e.currentTarget.style.color = TK.textMuted; }}
-          >
-            <RefreshCw style={{ width: 13, height: 13, animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-            Refresh
-          </button>
-        </div>
-      </div>
+    <div dir={dir} style={{ minHeight: '100vh', background: TK.bg, fontFamily: font, padding: '32px 32px 60px' }}>
+      <PageHeader
+        icon={Shield}
+        eyebrow={language === 'ar' ? 'الثقة والسلامة' : 'Trust & Safety'}
+        title={language === 'ar' ? 'البلاغات والإشراف' : 'Reports & Moderation'}
+        actions={<Button variant="secondary" icon={RefreshCw} onClick={fetchReports} loading={loading}>{language === 'ar' ? 'تحديث' : 'Refresh'}</Button>}
+      />
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 28 }}>
-        {statCards.map(({ label, value, color, icon: Icon }) => (
-          <div key={label} style={{ padding: '18px 20px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 8, background: `${color}15`, border: `1px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-              <Icon style={{ width: 15, height: 15, color }} />
-            </div>
-            <div style={{ fontSize: 26, fontWeight: 600, color: TK.text, lineHeight: 1 }}>{value}</div>
-            <div style={{ fontSize: 10, color: TK.textMuted, marginTop: 4, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</div>
-          </div>
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '28px' }}>
+        {statCards.map((s) => <StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} tone={s.tone} />)}
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {['all', 'pending', 'under_review', 'resolved', 'dismissed'].map(f => (
-          <button
-            key={f}
-            onClick={() => { setFilter(f); setPage(1); }}
-            style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${filter === f ? TK.accent : TK.border}`, background: filter === f ? 'rgba(37,99,235,0.1)' : 'transparent', color: filter === f ? TK.accent : TK.textMuted, fontSize: 11, fontWeight: filter === f ? 400 : 300, letterSpacing: '0.08em', textTransform: 'capitalize', cursor: 'pointer', transition: 'all 0.2s' }}
-          >
-            {f === 'all' ? 'All Reports' : STATUS_CONFIG[f]?.label || f}
-          </button>
-        ))}
+      <div style={{ marginBottom: '20px' }}>
+        <FilterPills
+          value={filter}
+          onChange={(f) => { setFilter(f); setPage(1); }}
+          options={[
+            { value: 'all', label: language === 'ar' ? 'كل البلاغات' : 'All Reports' },
+            { value: 'pending', label: statusLabels.pending },
+            { value: 'under_review', label: statusLabels.under_review },
+            { value: 'resolved', label: statusLabels.resolved },
+            { value: 'dismissed', label: statusLabels.dismissed },
+          ]}
+        />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: '20px' }}>
         {/* Report list */}
-        <div style={{ background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: 12, overflow: 'hidden' }}>
-          {loading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 60 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: TK.accent, animation: 'spin 0.8s linear infinite' }} />
-            </div>
-          ) : reports.length === 0 ? (
-            <div style={{ padding: 60, textAlign: 'center' }}>
-              <Flag style={{ width: 28, height: 28, color: TK.textMuted, margin: '0 auto 10px', opacity: 0.4 }} />
-              <p style={{ fontSize: 13, color: TK.textMuted, fontWeight: 300 }}>No reports found</p>
-            </div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${TK.border}` }}>
-                  {['Type', 'Target', 'Reporter', 'Description', 'Status', 'Date', ''].map(h => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 400 }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {reports.map(r => {
-                  const typeCfg   = TYPE_CONFIG[r.type] || TYPE_CONFIG.other;
-                  const statusCfg = STATUS_CONFIG[r.status] || STATUS_CONFIG.pending;
-                  const TargetIcon = TARGET_ICONS[r.targetType] || Flag;
-                  return (
-                    <tr
-                      key={r._id}
-                      onClick={() => setSelected(selected?._id === r._id ? null : r)}
-                      style={{ borderBottom: `1px solid ${TK.border}`, cursor: 'pointer', background: selected?._id === r._id ? 'rgba(37,99,235,0.04)' : 'transparent', transition: 'background 0.15s' }}
-                      onMouseEnter={e => { if (selected?._id !== r._id) e.currentTarget.style.background = TK.hoverBg; }}
-                      onMouseLeave={e => { if (selected?._id !== r._id) e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, background: typeCfg.bg, color: typeCfg.color, border: `1px solid ${typeCfg.color}30`, fontWeight: 300 }}>
-                          {typeCfg.label}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <TargetIcon style={{ width: 12, height: 12, color: TK.textMuted }} />
-                          <span style={{ fontSize: 11, color: TK.textMuted, fontWeight: 300, textTransform: 'capitalize' }}>{r.targetType}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontSize: 12, color: TK.text, fontWeight: 300 }}>{r.reporter?.fullName || r.reporter?.email || 'Unknown'}</div>
-                        <div style={{ fontSize: 10, color: TK.textMuted }}>{r.reporter?.email}</div>
-                      </td>
-                      <td style={{ padding: '12px 16px', maxWidth: 220 }}>
-                        <div style={{ fontSize: 11, color: TK.textMuted, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {r.description}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 10, background: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.color}30`, fontWeight: 300 }}>
-                          {statusCfg.label}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: 10, color: TK.textMuted }}>{timeAgo(r.createdAt, language)}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <ChevronRight style={{ width: 12, height: 12, color: TK.textMuted }} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-
-          {/* Pagination */}
-          {total > LIMIT && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '16px 0', borderTop: `1px solid ${TK.border}` }}>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '5px 12px', borderRadius: 5, border: `1px solid ${TK.border}`, background: 'transparent', color: TK.textMuted, cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: 11 }}>Prev</button>
-              <span style={{ fontSize: 11, color: TK.textMuted, padding: '5px 8px' }}>{page} / {Math.ceil(total / LIMIT)}</span>
-              <button onClick={() => setPage(p => p + 1)} disabled={page >= Math.ceil(total / LIMIT)} style={{ padding: '5px 12px', borderRadius: 5, border: `1px solid ${TK.border}`, background: 'transparent', color: TK.textMuted, cursor: page >= Math.ceil(total / LIMIT) ? 'not-allowed' : 'pointer', fontSize: 11 }}>Next</button>
-            </div>
-          )}
-        </div>
+        <DataTable
+          columns={columns}
+          rows={reports}
+          loading={loading}
+          emptyIcon={Flag}
+          emptyTitle={language === 'ar' ? 'لا توجد بلاغات' : 'No reports found'}
+          isRTL={isRTL}
+          onRowClick={(r) => setSelected(selected?._id === r._id ? null : r)}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          footer={language === 'ar' ? `عرض ${reports.length} من ${total} بلاغ` : `Showing ${reports.length} of ${total} reports`}
+        />
 
         {/* Detail Panel */}
         {selected && (
-          <div style={{ background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: 12, padding: 24, alignSelf: 'start' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 300, color: TK.text, margin: 0 }}>Report Details</h3>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textMuted, padding: 2, fontSize: 16 }}>✕</button>
+          <Card style={{ alignSelf: 'start' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: TK.text, margin: 0 }}>{language === 'ar' ? 'تفاصيل البلاغ' : 'Report Details'}</h3>
+              <IconButton icon={X} size={28} onClick={() => setSelected(null)} title={language === 'ar' ? 'إغلاق' : 'Close'} />
             </div>
 
             {[
-              { label: 'Type',      value: TYPE_CONFIG[selected.type]?.label || selected.type },
-              { label: 'Target',    value: `${selected.targetType} — ${selected.targetId}` },
-              { label: 'Reporter',  value: selected.reporter?.fullName || selected.reporter?.email },
-              { label: 'Status',    value: STATUS_CONFIG[selected.status]?.label || selected.status },
-              { label: 'Submitted', value: new Date(selected.createdAt).toLocaleString() },
-            ].map(({ label, value }) => (
-              <div key={label} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 9, color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>{label}</div>
-                <div style={{ fontSize: 12, color: TK.text, fontWeight: 300 }}>{value}</div>
+              { key: 'type',      label: language === 'ar' ? 'النوع' : 'Type',      value: typeLabels[selected.type] || selected.type },
+              { key: 'target',    label: language === 'ar' ? 'الهدف' : 'Target',    value: `${selected.targetType} — ${selected.targetId}` },
+              { key: 'reporter',  label: language === 'ar' ? 'المُبلِغ' : 'Reporter',  value: selected.reporter?.fullName || selected.reporter?.email },
+              { key: 'status',    label: language === 'ar' ? 'الحالة' : 'Status',    value: statusLabels[selected.status] || selected.status },
+              { key: 'submitted', label: language === 'ar' ? 'تاريخ الإرسال' : 'Submitted', value: new Date(selected.createdAt).toLocaleString() },
+            ].map(({ key, label, value }) => (
+              <div key={key} style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '9px', color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '3px' }}>{label}</div>
+                <div style={{ fontSize: '12px', color: TK.text }}>{value}</div>
               </div>
             ))}
 
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 9, color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>Description</div>
-              <p style={{ fontSize: 12, color: TK.text, fontWeight: 300, lineHeight: 1.7, margin: 0, padding: 12, background: 'rgba(0,0,0,0.03)', borderRadius: 6, border: `1px solid ${TK.border}` }}>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '9px', color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>{language === 'ar' ? 'الوصف' : 'Description'}</div>
+              <p style={{ fontSize: '12px', color: TK.text, lineHeight: 1.7, margin: 0, padding: '12px', background: TK.bgSubtle, borderRadius: RADIUS.md, border: `1px solid ${TK.border}` }}>
                 {selected.description}
               </p>
             </div>
 
             {selected.adminNotes && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 9, color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>Admin Notes</div>
-                <p style={{ fontSize: 12, color: TK.textMuted, fontWeight: 300, lineHeight: 1.7, margin: 0 }}>{selected.adminNotes}</p>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '9px', color: TK.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>{language === 'ar' ? 'ملاحظات الإدارة' : 'Admin Notes'}</div>
+                <p style={{ fontSize: '12px', color: TK.textMuted, lineHeight: 1.7, margin: 0 }}>{selected.adminNotes}</p>
               </div>
             )}
 
             {/* Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {selected.status !== 'under_review' && (
-                <button onClick={() => updateStatus(selected._id, 'under_review')} style={{ padding: '9px 16px', borderRadius: 6, border: '1px solid rgba(96,165,250,0.4)', background: 'rgba(96,165,250,0.08)', color: '#60a5fa', fontSize: 11, cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Mark Under Review
+                <button
+                  onClick={() => updateStatus(selected._id, 'under_review')}
+                  style={{ padding: '9px 16px', borderRadius: RADIUS.md, border: `1px solid ${STATUS_TONE.info.bd}`, background: STATUS_TONE.info.bg, color: STATUS_TONE.info.fg, fontSize: '11px', cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'inherit' }}
+                >
+                  {language === 'ar' ? 'وضع علامة قيد المراجعة' : 'Mark Under Review'}
                 </button>
               )}
               {selected.status !== 'resolved' && (
-                <button onClick={() => updateStatus(selected._id, 'resolved')} style={{ padding: '9px 16px', borderRadius: 6, border: '1px solid rgba(52,211,153,0.4)', background: 'rgba(52,211,153,0.08)', color: '#34d399', fontSize: 11, cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Mark Resolved
+                <button
+                  onClick={() => updateStatus(selected._id, 'resolved')}
+                  style={{ padding: '9px 16px', borderRadius: RADIUS.md, border: `1px solid ${STATUS_TONE.success.bd}`, background: STATUS_TONE.success.bg, color: STATUS_TONE.success.fg, fontSize: '11px', cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'inherit' }}
+                >
+                  {language === 'ar' ? 'وضع علامة تم الحل' : 'Mark Resolved'}
                 </button>
               )}
               {selected.status !== 'dismissed' && (
-                <button onClick={() => updateStatus(selected._id, 'dismissed')} style={{ padding: '9px 16px', borderRadius: 6, border: `1px solid rgba(148,163,184,0.3)`, background: 'transparent', color: TK.textMuted, fontSize: 11, cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Dismiss
+                <button
+                  onClick={() => updateStatus(selected._id, 'dismissed')}
+                  style={{ padding: '9px 16px', borderRadius: RADIUS.md, border: `1px solid ${TK.border}`, background: 'transparent', color: TK.textMuted, fontSize: '11px', cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'inherit' }}
+                >
+                  {language === 'ar' ? 'رفض' : 'Dismiss'}
                 </button>
               )}
-              <button onClick={() => deleteReport(selected._id)} style={{ padding: '9px 16px', borderRadius: 6, border: '1px solid rgba(248,113,113,0.3)', background: 'transparent', color: '#f87171', fontSize: 11, cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                Delete Report
-              </button>
+              <Button variant="danger" onClick={() => setDeleteConfirm(selected._id)} style={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '11px' }}>
+                {language === 'ar' ? 'حذف البلاغ' : 'Delete Report'}
+              </Button>
             </div>
-          </div>
+          </Card>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        title={language === 'ar' ? 'حذف البلاغ؟' : 'Delete report?'}
+        description={language === 'ar' ? 'لا يمكن التراجع عن هذا الإجراء. سيتم حذف البلاغ نهائياً.' : 'This action cannot be undone. The report will be permanently removed.'}
+        confirmLabel={language === 'ar' ? 'حذف' : 'Delete'}
+      />
     </div>
   );
 };

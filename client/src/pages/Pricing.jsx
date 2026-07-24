@@ -4,33 +4,39 @@ import { Check, X, Zap, Crown, Star, ArrowLeft } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import api from '../utils/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+
+const FONT_EN = "'Inter',system-ui,sans-serif";
+const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
 
 const FEATURE_LABELS = {
-  maxProjects:       'Projects',
-  maxStorageGb:      'Storage',
-  maxTeamMembers:    'Team members',
-  aiFeatures:        'AI features',
-  invoicing:         'Client invoicing',
-  advancedAnalytics: 'Advanced analytics',
-  prioritySupport:   'Priority support',
-  apiAccess:         'API access',
-  customBranding:    'Custom branding',
-  whiteLabel:        'White-label',
-  sso:               'Single Sign-On (SSO)',
+  maxProjects:       { en: 'Projects', ar: 'المشاريع' },
+  maxStorageGb:      { en: 'Storage', ar: 'مساحة التخزين' },
+  maxTeamMembers:    { en: 'Team members', ar: 'أعضاء الفريق' },
+  aiFeatures:        { en: 'AI features', ar: 'ميزات الذكاء الاصطناعي' },
+  invoicing:         { en: 'Client invoicing', ar: 'فوترة العملاء' },
+  advancedAnalytics: { en: 'Advanced analytics', ar: 'تحليلات متقدمة' },
+  prioritySupport:   { en: 'Priority support', ar: 'دعم ذو أولوية' },
+  apiAccess:         { en: 'API access', ar: 'وصول للواجهة البرمجية' },
+  customBranding:    { en: 'Custom branding', ar: 'هوية بصرية مخصصة' },
+  whiteLabel:        { en: 'White-label', ar: 'علامة بيضاء' },
+  sso:               { en: 'Single Sign-On (SSO)', ar: 'تسجيل دخول موحّد (SSO)' },
 };
 
 const PLAN_ICONS = { FREE: Star, PROFESSIONAL: Zap, ENTERPRISE: Crown };
 
-const formatValue = (key, value) => {
+const formatValue = (key, value, isRTL) => {
   if (key === 'maxProjects' || key === 'maxTeamMembers') {
-    return value === -1 ? 'Unlimited' : String(value);
+    return value === -1 ? (isRTL ? 'غير محدود' : 'Unlimited') : String(value);
   }
-  if (key === 'maxStorageGb') return value === -1 ? 'Unlimited' : `${value} GB`;
+  if (key === 'maxStorageGb') return value === -1 ? (isRTL ? 'غير محدود' : 'Unlimited') : (isRTL ? `${value} جيجابايت` : `${value} GB`);
   return null; // boolean — shown as check/x
 };
 
 const Pricing = () => {
   const { isDark } = useTheme();
+  const { isRTL }  = useLanguage();
+  const font       = isRTL ? FONT_AR : FONT_EN;
   const navigate   = useNavigate();
   const { isAuthenticated } = useSelector(s => s.auth);
   const [plans,     setPlans]     = useState([]);
@@ -81,7 +87,7 @@ const Pricing = () => {
   const featureKeys = Object.keys(FEATURE_LABELS);
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, color: textMain, padding: '60px 24px 80px' }}>
+    <div dir={isRTL ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: bg, color: textMain, padding: '60px 24px 80px', fontFamily: font }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         {/* Back link */}
         <Link
@@ -90,8 +96,8 @@ const Pricing = () => {
           onMouseEnter={e => { e.currentTarget.style.color = gold; }}
           onMouseLeave={e => { e.currentTarget.style.color = textMuted; }}
         >
-          <ArrowLeft style={{ width: '13px', height: '13px' }} />
-          Back to home
+          <ArrowLeft style={{ width: '13px', height: '13px', transform: isRTL ? 'scaleX(-1)' : 'none' }} />
+          {isRTL ? 'العودة للرئيسية' : 'Back to home'}
         </Link>
 
         {/* Header */}
@@ -103,20 +109,22 @@ const Pricing = () => {
             marginBottom: '16px',
           }}>
             <Zap style={{ width: '10px', height: '10px', color: gold }} />
-            <span style={{ fontSize: '10px', fontWeight: 400, color: gold, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              Simple Pricing
+            <span style={{ fontSize: '10px', fontWeight: 400, color: gold, letterSpacing: isRTL ? 0 : '0.14em', textTransform: isRTL ? 'none' : 'uppercase' }}>
+              {isRTL ? 'أسعار بسيطة' : 'Simple Pricing'}
             </span>
           </div>
 
           <h1 style={{
             fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 700,
-            letterSpacing: '-0.03em', color: textMain, margin: '0 0 16px',
-            fontFamily: "'Inter',system-ui,sans-serif",
+            letterSpacing: isRTL ? 0 : '-0.03em', color: textMain, margin: '0 0 16px',
+            fontFamily: font,
           }}>
-            Choose your plan
+            {isRTL ? 'اختر باقتك' : 'Choose your plan'}
           </h1>
           <p style={{ fontSize: '15px', fontWeight: 300, color: textMuted, maxWidth: '480px', margin: '0 auto 32px', lineHeight: 1.6 }}>
-            Start free. Scale when ready. New users get a 14-day Professional trial — no credit card required.
+            {isRTL
+              ? 'ابدأ مجانًا. توسّع عندما تكون جاهزًا. المستخدمون الجدد يحصلون على تجربة مجانية 14 يومًا للباقة الاحترافية — بلا بطاقة ائتمان.'
+              : 'Start free. Scale when ready. New users get a 14-day Professional trial — no credit card required.'}
           </p>
 
           {/* Billing toggle */}
@@ -131,11 +139,11 @@ const Pricing = () => {
                   border: 'none', borderRadius: '7px',
                   color: billing === cycle ? '#000' : textMuted,
                   fontSize: '12px', fontWeight: billing === cycle ? 600 : 300,
-                  letterSpacing: '0.06em', textTransform: 'capitalize',
-                  cursor: 'pointer', transition: 'all 0.2s',
+                  letterSpacing: isRTL ? 0 : '0.06em', textTransform: isRTL ? 'none' : 'capitalize',
+                  cursor: 'pointer', transition: 'all 0.2s', fontFamily: font,
                 }}
               >
-                {cycle === 'annual' ? 'Annual (save 20–33%)' : 'Monthly'}
+                {cycle === 'annual' ? (isRTL ? 'سنوي (وفّر 20-33٪)' : 'Annual (save 20–33%)') : (isRTL ? 'شهري' : 'Monthly')}
               </button>
             ))}
           </div>
@@ -149,7 +157,7 @@ const Pricing = () => {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '60px' }}>
-            {plans.map((plan, idx) => {
+            {plans.map((plan) => {
               const Icon        = PLAN_ICONS[plan.name] || Star;
               const isPro       = plan.name === 'PROFESSIONAL';
               const saving      = annualSavingPct(plan);
@@ -175,10 +183,10 @@ const Pricing = () => {
                       position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
                       background: gold, color: '#000',
                       padding: '3px 14px', borderRadius: '20px',
-                      fontSize: '9px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
+                      fontSize: '9px', fontWeight: 700, letterSpacing: isRTL ? 0 : '0.14em', textTransform: isRTL ? 'none' : 'uppercase',
                       whiteSpace: 'nowrap',
                     }}>
-                      Most Popular
+                      {isRTL ? 'الأكثر شيوعًا' : 'Most Popular'}
                     </div>
                   )}
 
@@ -206,18 +214,18 @@ const Pricing = () => {
                       </span>
                       {!isFree && (
                         <span style={{ fontSize: '13px', color: textMuted, fontWeight: 300 }}>
-                          / month
+                          {isRTL ? '/ شهر' : '/ month'}
                         </span>
                       )}
                     </div>
                     {billing === 'annual' && saving > 0 && !isFree && (
                       <div style={{ fontSize: '11px', color: '#34d399', marginTop: '4px' }}>
-                        Save {saving}% annually
+                        {isRTL ? `وفّر ${saving}٪ سنويًا` : `Save ${saving}% annually`}
                       </div>
                     )}
                     {plan.trialDays > 0 && (
                       <div style={{ fontSize: '11px', color: gold, marginTop: '4px' }}>
-                        {plan.trialDays}-day free trial included
+                        {isRTL ? `تجربة مجانية ${plan.trialDays} يومًا مُضمَّنة` : `${plan.trialDays}-day free trial included`}
                       </div>
                     )}
                   </div>
@@ -232,8 +240,8 @@ const Pricing = () => {
                       borderRadius: '8px',
                       color: isPro ? '#000' : textMain,
                       fontSize: '12px', fontWeight: isPro ? 600 : 300,
-                      letterSpacing: '0.1em', textTransform: 'uppercase',
-                      cursor: 'pointer', transition: 'all 0.2s',
+                      letterSpacing: isRTL ? 0 : '0.1em', textTransform: isRTL ? 'none' : 'uppercase',
+                      cursor: 'pointer', transition: 'all 0.2s', fontFamily: font,
                       marginBottom: '28px',
                     }}
                     onMouseEnter={e => {
@@ -246,16 +254,16 @@ const Pricing = () => {
                       e.currentTarget.style.opacity = '1';
                     }}
                   >
-                    {isFree ? 'Get Started Free' : isPro ? 'Start Free Trial' : 'Contact Sales'}
+                    {isFree ? (isRTL ? 'ابدأ مجانًا' : 'Get Started Free') : isPro ? (isRTL ? 'ابدأ التجربة المجانية' : 'Start Free Trial') : (isRTL ? 'تواصل مع المبيعات' : 'Contact Sales')}
                   </button>
 
                   {/* Features */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {featureKeys.map(key => {
                       const val = plan.features?.[key];
-                      const formatted = formatValue(key, val);
+                      const formatted = formatValue(key, val, isRTL);
                       return (
-                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
                           {formatted !== null ? (
                             <span style={{ width: '16px', fontSize: '11px', color: gold, fontWeight: 500, flexShrink: 0 }}>
                               {formatted}
@@ -266,7 +274,7 @@ const Pricing = () => {
                             <X style={{ width: '14px', height: '14px', color: isDark ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.2)', flexShrink: 0 }} />
                           )}
                           <span style={{ fontSize: '12px', fontWeight: 300, color: val !== false ? textMain : textMuted }}>
-                            {FEATURE_LABELS[key]}
+                            {isRTL ? FEATURE_LABELS[key].ar : FEATURE_LABELS[key].en}
                           </span>
                         </div>
                       );
@@ -281,10 +289,10 @@ const Pricing = () => {
         {/* FAQ bottom */}
         <div style={{ textAlign: 'center', padding: '40px 0', borderTop: `1px solid ${border}` }}>
           <p style={{ fontSize: '14px', fontWeight: 300, color: textMuted, marginBottom: '8px' }}>
-            Questions? We're here to help.
+            {isRTL ? 'لديك أسئلة؟ نحن هنا للمساعدة.' : "Questions? We're here to help."}
           </p>
           <Link to="/feedback" style={{ fontSize: '13px', color: gold, textDecoration: 'none' }}>
-            Contact our team →
+            {isRTL ? '← تواصل مع فريقنا' : 'Contact our team →'}
           </Link>
         </div>
       </div>

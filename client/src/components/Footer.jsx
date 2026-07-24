@@ -29,13 +29,13 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-const SocialLink = ({ href, icon: Icon, label, hoverColor }) => (
+const SocialLink = (props) => (
   <a
-    href={href}
+    href={props.href}
     target="_blank"
     rel="noopener noreferrer"
-    aria-label={label}
-    title={label}
+    aria-label={props.label}
+    title={props.label}
     style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       width: 32, height: 32, borderRadius: '8px',
@@ -44,7 +44,7 @@ const SocialLink = ({ href, icon: Icon, label, hoverColor }) => (
       transition: 'border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s',
     }}
     onMouseEnter={e => {
-      e.currentTarget.style.color = hoverColor;
+      e.currentTarget.style.color = props.hoverColor;
       e.currentTarget.style.borderColor = '#C9CDD6';
       e.currentTarget.style.background = '#FAFAFA';
       e.currentTarget.style.transform = 'translateY(-1px)';
@@ -56,7 +56,7 @@ const SocialLink = ({ href, icon: Icon, label, hoverColor }) => (
       e.currentTarget.style.transform = 'translateY(0)';
     }}
   >
-    <Icon />
+    <props.icon />
   </a>
 );
 
@@ -77,7 +77,8 @@ const FooterLink = ({ to, label }) => (
   </li>
 );
 
-const CopyableRow = ({ icon: Icon, value, href, label }) => {
+const CopyableRow = ({ icon, value, href, label }) => {
+  const RowIcon = icon;
   const [copied, setCopied] = useState(false);
   const handleCopy = useCallback(async e => {
     e.preventDefault();
@@ -113,7 +114,7 @@ const CopyableRow = ({ icon: Icon, value, href, label }) => {
         tabIndex={-1}
         style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#374151', textDecoration: 'none', fontSize: 12.5 }}
       >
-        <Icon style={{ width: 13, height: 13, color: '#9BA3AE', flexShrink: 0 }} />
+        <RowIcon style={{ width: 13, height: 13, color: '#9BA3AE', flexShrink: 0 }} />
         <span>{value}</span>
       </a>
       <span style={{ fontSize: 10.5, fontWeight: 700, color: copied ? '#16a34a' : '#9BA3AE', flexShrink: 0, letterSpacing: '0.04em' }}>
@@ -131,23 +132,17 @@ const Footer = () => {
   const whatsappUrl = `https://api.whatsapp.com/send/?phone=201090385390&text=${whatsappMessage}&type=phone_number&app_absent=0`;
 
   const LINKS = {
-    services: [
-      { label: isRTL ? 'مواقع احترافية'  : 'Professional Websites',  to: '/services/web-development' },
-      { label: isRTL ? 'منصات SaaS'       : 'SaaS Platforms',         to: '/services/saas-development' },
-      { label: isRTL ? 'متاجر إلكترونية' : 'E-commerce Stores',      to: '/services/ecommerce-development' },
-      { label: isRTL ? 'تطبيقات موبايل'  : 'Mobile Apps',            to: '/services/mobile-app-development' },
-      { label: isRTL ? 'أتمتة العمليات'  : 'Process Automation',     to: '/services/enterprise-software' },
-      { label: isRTL ? 'أنظمة حجز ذكية' : 'Booking Systems',        to: '/services' },
-    ],
     resources: [
       { label: isRTL ? 'دراسات الحالة' : 'Case Studies', to: '/case-studies' },
       { label: isRTL ? 'معرض الأعمال'  : 'Portfolio',    to: '/portfolio' },
+      { label: isRTL ? 'القطاعات'      : 'Industries',   to: '/industries' },
       { label: isRTL ? 'المدونة'        : 'Blog',         to: '/blog' },
       { label: isRTL ? 'الأسعار'       : 'Pricing',      to: '/pricing' },
     ],
     company: [
-      { label: isRTL ? 'عن الشركة'    : 'About Us',       to: '/#about' },
-      { label: isRTL ? 'تواصل معنا'   : 'Contact',        to: '/#contact' },
+      // { label: isRTL ? 'من نحن'       : 'About',          to: '/about' },
+      { label: isRTL ? 'لماذا YANSY'  : 'Why YANSY',      to: '/why-yansy' },
+      { label: isRTL ? 'تواصل معنا'   : 'Contact',        to: '/contact' },
       { label: isRTL ? 'بوابة العملاء' : 'Client Portal', to: '/login' },
     ],
   };
@@ -238,21 +233,6 @@ const Footer = () => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
             gap: 'clamp(2rem, 4vw, 3rem)',
           }}>
-            {/* Services */}
-            <div>
-              <h3 style={{
-                fontSize: 10, fontWeight: 800, color: '#0D1117',
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-                marginBottom: 18,
-                textAlign: isRTL ? 'right' : 'left',
-              }}>
-                {isRTL ? 'خدماتنا' : 'Services'}
-              </h3>
-              <ul style={{ padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10, textAlign: isRTL ? 'right' : 'left' }}>
-                {LINKS.services.map((l, i) => <FooterLink key={i} to={l.to} label={l.label} />)}
-              </ul>
-            </div>
-
             {/* Resources */}
             <div>
               <h3 style={{

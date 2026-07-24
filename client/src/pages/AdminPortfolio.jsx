@@ -1,436 +1,375 @@
-import { useState, useEffect, useRef } from 'react';
-import { Plus, Edit2, Trash2, Eye, EyeOff, Star, StarOff, ExternalLink, X, Upload, Loader } from 'lucide-react';
-import api from '../utils/api';
-const API_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
+  import { useState, useEffect, useCallback, useRef } from 'react';
+  import { useNavigate } from 'react-router-dom';
+  import {
+    Plus, Edit2, Trash2, Eye, EyeOff, Star, StarOff, ExternalLink,
+    GripVertical, Archive, CheckSquare, Square, Images, ImageOff,
+  } from 'lucide-react';
+  import toast from 'react-hot-toast';
+  import api from '../utils/api';
+  import { mediaSrc } from '../utils/media';
+  import { CATEGORIES, categoryLabel } from '../utils/portfolioTaxonomy';
+  import { useLanguage } from '../contexts/LanguageContext';
+  import {
+    TK, RADIUS, PageHeader, Card, Badge, Button, IconButton,
+    SearchInput, Select, Tabs, ConfirmDialog, Spinner, EmptyState,
+  } from '../admin-ui';
 
+  const getStatusTabs = (language) => [
+    { value: 'all',       label: language === 'ar' ? 'الكل' : 'All' },
+    { value: 'published', label: language === 'ar' ? 'منشور' : 'Published' },
+    { value: 'draft',     label: language === 'ar' ? 'مسودة' : 'Draft' },
+    { value: 'archived',  label: language === 'ar' ? 'مؤرشف' : 'Archived' },
+  ];
 
-const CATEGORIES = ['E-commerce', 'Medical', 'Real Estate', 'Restaurants & Food', 'SaaS / Platforms', 'Educational', 'Other'];
+  const STATUS_TONE = { published: 'success', draft: 'neutral', archived: 'warning' };
 
-// ── Empty form state ────────────────────────────────────────────────────────
-const emptyForm = {
-  title: '', titleAr: '', category: 'E-commerce',
-  description: '', descriptionAr: '',
-  liveUrl: '', tags: '', order: 0,
-  featured: false, isPublished: true,
-};
+  const Divider = () => <span aria-hidden style={{ width: '1px', height: '18px', background: TK.border, margin: '0 2px', flexShrink: 0 }} />;
 
-// ── Image preview helper ────────────────────────────────────────────────────
-const Thumb = ({ src, onRemove, label }) => (
-  <div className="relative group aspect-video bg-white/5 border border-white/10 overflow-hidden">
-    {src
-      ? <img src={src} alt={label} className="w-full h-full object-cover" />
-      : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">{label}</div>}
-    {onRemove && src && (
-      <button onClick={onRemove}
-        className="absolute top-1 right-1 w-5 h-5 bg-black/70 text-white/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <X className="w-3 h-3" />
-      </button>
-    )}
-  </div>
-);
-
-// ── Main Component ──────────────────────────────────────────────────────────
-const AdminPortfolio = () => {
-  const [projects, setProjects]       = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [saving, setSaving]           = useState(false);
-  const [showForm, setShowForm]       = useState(false);
-  const [editId, setEditId]           = useState(null);
-  const [form, setForm]               = useState(emptyForm);
-  const [coverFile, setCoverFile]     = useState(null);
-  const [coverPreview, setCoverPreview] = useState('');
-  const [imageFiles, setImageFiles]   = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [deleteId, setDeleteId]       = useState(null);
-  const [toast, setToast]             = useState(null);
-  const listRef = useRef(null);
-
-  // ── Fetch ────────────────────────────────────────────────────────────────
-  const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      const { data } = await api.get('/portfolio/admin/all');
-      setProjects(data.projects || []);
-    } catch { showToast('Failed to load projects', 'error'); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchProjects(); }, []);
-
-
-  // ── Toast ────────────────────────────────────────────────────────────────
-  const showToast = (msg, type = 'success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
-
-  // ── Form helpers ─────────────────────────────────────────────────────────
-  const openAdd = () => {
-    setEditId(null);
-    setForm(emptyForm);
-    setCoverFile(null); setCoverPreview('');
-    setImageFiles([]); setImagePreviews([]);
-    setShowForm(true);
-  };
-
-  const openEdit = (p) => {
-    setEditId(p._id);
-  
-    setForm({
-      title: p.title || '',
-      titleAr: p.titleAr || '',
-      category: p.category || 'E-commerce',
-      description: p.description || '',
-      descriptionAr: p.descriptionAr || '',
-      liveUrl: p.liveUrl || '',
-      tags: (p.tags || []).join(', '),
-      order: p.order || 0,
-      featured: p.featured,
-      isPublished: p.isPublished,
-    });
-  
-    setCoverFile(null);
-  
-    // 🔥 الحل هنا
-    setCoverPreview(
-      p.coverImage
-        ? `${API_URL_IMAGE}/api/portfolio/image/${p.coverImage}`
-        : ''
-    );
-  
-    setImageFiles([]);
-  
-    setImagePreviews(
-      (p.images || []).map(
-        (img) => `${API_URL_IMAGE}/api/portfolio/image/${img}`
-      )
-    );
-  
-    setShowForm(true);
-  };
-
-  const handleCover = (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    setCoverFile(f);
-    setCoverPreview(URL.createObjectURL(f));
-  };
-
-  const handleImages = (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-    setImageFiles(files);
-    setImagePreviews(files.map((f) => URL.createObjectURL(f)));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!coverPreview && !coverFile) return showToast('Cover image required', 'error');
-
-    setSaving(true);
-    try {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-      if (coverFile) fd.append('coverImage', coverFile);
-      imageFiles.forEach((f) => fd.append('images', f));
-
-      if (editId) {
-        await api.put(`/portfolio/${editId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-        showToast('Project updated ✓');
-      } else {
-        await api.post('/portfolio', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-        showToast('Project created ✓');
-      }
-      setShowForm(false);
-      fetchProjects();
-    } catch (err) {
-      showToast(err?.response?.data?.error || 'Save failed', 'error');
-    } finally { setSaving(false); }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/portfolio/${id}`);
-      setDeleteId(null);
-      showToast('Deleted ✓');
-      fetchProjects();
-    } catch { showToast('Delete failed', 'error'); }
-  };
-
-  const toggleField = async (id, field, val) => {
-    try {
-      const fd = new FormData();
-      fd.append(field, String(!val));
-      await api.put(`/portfolio/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      fetchProjects();
-    } catch { showToast('Update failed', 'error'); }
-  };
-
-  // ── Render ───────────────────────────────────────────────────────────────
-  return (
-    <div className="space-y-8 px-4 py-8">
-
-      {/* Toast */}
-      {toast && (
-        <div className={`fixed top-6 right-6 z-[999] px-6 py-3 text-sm font-light tracking-wide border transition-all
-          ${toast.type === 'error' ? 'bg-red-950 border-red-800 text-red-300' : 'bg-[#2563EB]/10 border-[#2563EB]/40 text-[#2563EB]'}`}>
-          {toast.msg}
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight text-white/90">Portfolio</h1>
-          <p className="text-white/40 font-light mt-1">{projects.length} projects</p>
-        </div>
-        <button onClick={openAdd}
-          className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] text-black text-xs font-light tracking-widest uppercase hover:bg-[#c4a030] transition-colors active:scale-95">
-          <Plus className="w-4 h-4" /> Add Project
-        </button>
+  const Thumb = ({ project, language }) => {
+    const [errored, setErrored] = useState(false);
+    const showImage = project.coverImage?.url && !errored;
+    return (
+      <div style={{ position: 'relative', width: '92px', height: '64px', flexShrink: 0, borderRadius: RADIUS.md, overflow: 'hidden', background: TK.bgSubtle, border: `1px solid ${TK.borderSoft}` }}>
+        {showImage ? (
+          <img
+            src={mediaSrc(project.coverImage)}
+            alt={project.title}
+            onError={() => setErrored(true)}
+            loading="lazy"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', color: TK.textLight }}>
+            <ImageOff style={{ width: '15px', height: '15px', opacity: 0.6 }} />
+            <span style={{ fontSize: '8px', letterSpacing: '0.02em' }}>{language === 'ar' ? 'لا توجد صورة' : 'No image'}</span>
+          </div>
+        )}
+        {project.featured && (
+          <span
+            title={language === 'ar' ? 'مميز' : 'Featured'}
+            style={{
+              position: 'absolute', top: '4px', insetInlineStart: '4px',
+              width: '18px', height: '18px', borderRadius: RADIUS.pill,
+              background: 'rgba(13,17,23,0.55)', backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Star style={{ width: '10px', height: '10px', color: '#FBBF24', fill: '#FBBF24' }} />
+          </span>
+        )}
       </div>
+    );
+  };
 
-      {/* Projects Table */}
-      {loading ? (
-        <div className="flex items-center justify-center h-40">
-          <div className="w-8 h-8 border border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
+  const STATUS_LABEL_AR = { published: 'منشور', draft: 'مسودة', archived: 'مؤرشف' };
+  const statusDisplayLabel = (status, language) => (language === 'ar' ? (STATUS_LABEL_AR[status] || status) : status);
+
+  const AdminPortfolio = () => {
+    const navigate = useNavigate();
+    const { language } = useLanguage();
+    const [projects, setProjects]       = useState([]);
+    const [loading, setLoading]         = useState(true);
+    const [statusCounts, setStatusCounts] = useState({ draft: 0, published: 0, archived: 0 });
+    const [status, setStatus]           = useState('all');
+    const [category, setCategory]       = useState('All');
+    const [searchInput, setSearchInput] = useState('');
+    const [search, setSearch]           = useState('');
+    const [page, setPage]               = useState(1);
+    const [pages, setPages]             = useState(1);
+    const [total, setTotal]             = useState(0);
+    const [selected, setSelected]       = useState(new Set());
+    const [deleteId, setDeleteId]       = useState(null);
+    const [deleting, setDeleting]       = useState(false);
+    const [bulkAction, setBulkAction]   = useState(null);
+    const [bulkBusy, setBulkBusy]       = useState(false);
+    const dragItem  = useRef(null);
+    const dragOver  = useRef(null);
+
+    const fetchProjects = useCallback(async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get('/portfolio/admin', {
+          params: { status, ...(category !== 'All' && { category }), ...(search && { search }), page, limit: 20 },
+        });
+        setProjects(data.projects || []);
+        setStatusCounts(data.statusCounts || { draft: 0, published: 0, archived: 0 });
+        setPages(data.pages || 1);
+        setTotal(data.total || 0);
+      } catch {
+        toast.error(language === 'ar' ? 'فشل تحميل المشاريع' : 'Failed to load projects');
+      } finally {
+        setLoading(false);
+      }
+    }, [status, category, search, page]);
+
+    useEffect(() => { fetchProjects(); }, [fetchProjects]);
+
+    useEffect(() => {
+      const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(1); }, 350);
+      return () => clearTimeout(t);
+    }, [searchInput]);
+
+    useEffect(() => { setPage(1); }, [status, category]);
+    useEffect(() => { setSelected(new Set()); }, [status, category, search, page]);
+
+    const canReorder = status === 'all' && category === 'All' && !search;
+
+    // ── Selection ────────────────────────────────────────────────────────────
+    const toggleSelect = (id) => {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      });
+    };
+    const toggleSelectAll = () => {
+      setSelected((prev) => (prev.size === projects.length ? new Set() : new Set(projects.map((p) => p._id))));
+    };
+
+    // ── Row actions ──────────────────────────────────────────────────────────
+    const toggleFeatured = async (p) => {
+      try {
+        await api.put(`/portfolio/admin/${p._id}`, { featured: !p.featured });
+        fetchProjects();
+      } catch { toast.error(language === 'ar' ? 'فشل التحديث' : 'Update failed'); }
+    };
+
+    const setProjectStatus = async (id, newStatus) => {
+      try {
+        await api.patch(`/portfolio/admin/${id}/status`, { status: newStatus });
+        toast.success(language === 'ar' ? `تم التعليم كـ ${statusDisplayLabel(newStatus, language)}` : `Marked as ${newStatus}`);
+        fetchProjects();
+      } catch { toast.error(language === 'ar' ? 'فشل التحديث' : 'Update failed'); }
+    };
+
+    const confirmDeleteProject = async () => {
+      if (!deleteId) return;
+      try {
+        setDeleting(true);
+        await api.delete(`/portfolio/admin/${deleteId}`);
+        setDeleteId(null);
+        toast.success(language === 'ar' ? 'تم الحذف' : 'Deleted');
+        fetchProjects();
+      } catch {
+        toast.error(language === 'ar' ? 'فشل الحذف' : 'Delete failed');
+      } finally {
+        setDeleting(false);
+      }
+    };
+
+    const runBulkAction = async (action) => {
+      try {
+        if (action === 'delete') setBulkBusy(true);
+        await api.post('/portfolio/admin/bulk', { ids: [...selected], action });
+        toast.success(language === 'ar' ? `تم تحديث ${selected.size} مشروع` : `${selected.size} project(s) updated`);
+        setSelected(new Set());
+        setBulkAction(null);
+        fetchProjects();
+      } catch {
+        toast.error(language === 'ar' ? 'فشل الإجراء الجماعي' : 'Bulk action failed');
+      } finally {
+        if (action === 'delete') setBulkBusy(false);
+      }
+    };
+
+    // ── Drag reorder ─────────────────────────────────────────────────────────
+    const handleDrop = async () => {
+      if (dragItem.current === null || dragOver.current === null || dragItem.current === dragOver.current) return;
+      const reordered = [...projects];
+      const [moved] = reordered.splice(dragItem.current, 1);
+      reordered.splice(dragOver.current, 0, moved);
+      setProjects(reordered);
+      dragItem.current = null;
+      dragOver.current = null;
+
+      try {
+        await api.patch('/portfolio/admin/reorder', {
+          items: reordered.map((p, i) => ({ id: p._id, order: i })),
+        });
+      } catch { toast.error(language === 'ar' ? 'فشل إعادة الترتيب' : 'Reorder failed'); }
+    };
+
+    return (
+      <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }}>
+      <div style={{ maxWidth: '1440px', margin: '0 auto', minWidth: 0 }}>
+        <PageHeader
+          icon={Images}
+          eyebrow={language === 'ar' ? 'إدارة معرض الأعمال' : 'Portfolio Manager'}
+          title={language === 'ar' ? 'معرض الأعمال' : 'Portfolio'}
+          subtitle={language === 'ar' ? `${total} مشروع` : `${total} project${total !== 1 ? 's' : ''}`}
+          actions={<Button variant="primary" icon={Plus} onClick={() => navigate('/app/admin/portfolio/new')}>{language === 'ar' ? 'إضافة مشروع' : 'Add Project'}</Button>}
+        />
+
+        {/* Status tabs */}
+        <div style={{ marginBottom: '18px' }}>
+          <Tabs
+            value={status}
+            onChange={setStatus}
+            items={getStatusTabs(language).map(tab => ({ value: tab.value, label: tab.label, count: tab.value !== 'all' ? (statusCounts[tab.value] ?? 0) : undefined }))}
+          />
         </div>
-      ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-60 border border-white/10 text-white/30">
-          <p className="text-lg font-light mb-4">No portfolio projects yet</p>
-          <button onClick={openAdd} className="text-[#2563EB] text-sm underline underline-offset-4">Add your first project</button>
+
+        {/* Filters */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
+          <SearchInput
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onClear={() => setSearchInput('')}
+            placeholder={language === 'ar' ? 'ابحث في المشاريع...' : 'Search projects...'}
+            style={{ flex: 'none', width: '260px' }}
+          />
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            options={[{ value: 'All', label: language === 'ar' ? 'كل الفئات' : 'All categories' }, ...CATEGORIES.map(c => ({ value: c, label: categoryLabel(c, language) }))]}
+          />
+          {canReorder && <span style={{ fontSize: '10px', color: TK.textLight, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{language === 'ar' ? 'اسحب الصفوف لإعادة الترتيب' : 'Drag rows to reorder'}</span>}
         </div>
-      ) : (
-        <div ref={listRef} className="space-y-3">
-          {projects.map((p) => (
-            <div key={p._id}
-              className="flex items-center gap-4 p-4 bg-white/[0.03] border border-white/10 hover:border-white/20 transition-colors">
-              {/* Cover thumb */}
-              <div className="w-20 h-14 flex-shrink-0 overflow-hidden bg-white/5">
-  {p.coverImage ? (
-    <img
-      src={`${API_URL_IMAGE}/api/portfolio/image/${p.coverImage}`}
-      alt={p.title}
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">
-      No img
-    </div>
-  )}
-</div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-white/90 font-light truncate">{p.title}</h3>
-                  <span className="text-[10px] px-2 py-0.5 border border-[#2563EB]/30 text-[#2563EB]/70 tracking-wide">{p.category}</span>
-                  {p.featured && <span className="text-[10px] px-2 py-0.5 bg-[#2563EB]/10 text-[#2563EB] tracking-wide">Featured</span>}
-                  {!p.isPublished && <span className="text-[10px] px-2 py-0.5 bg-white/5 text-white/30 tracking-wide">Draft</span>}
-                </div>
-                <p className="text-white/30 text-xs mt-1 truncate">{p.description}</p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {/* Featured toggle */}
-                <button onClick={() => toggleField(p._id, 'featured', p.featured)}
-                  title={p.featured ? 'Unfeature' : 'Feature'}
-                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-[#2563EB] transition-colors">
-                  {p.featured ? <Star className="w-4 h-4 fill-[#2563EB] text-[#2563EB]" /> : <StarOff className="w-4 h-4" />}
-                </button>
-
-                {/* Published toggle */}
-                <button onClick={() => toggleField(p._id, 'isPublished', p.isPublished)}
-                  title={p.isPublished ? 'Unpublish' : 'Publish'}
-                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors">
-                  {p.isPublished ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
-
-                {/* Live link */}
-                {p.liveUrl && (
-                  <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
-                    className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors">
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-
-                {/* Edit */}
-                <button onClick={() => openEdit(p)}
-                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-[#2563EB] transition-colors">
-                  <Edit2 className="w-4 h-4" />
-                </button>
-
-                {/* Delete */}
-                <button onClick={() => setDeleteId(p._id)}
-                  className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-red-400 transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+        {/* Bulk action bar */}
+        {selected.size > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: RADIUS.md, marginBottom: '16px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: TK.accent, fontWeight: 500 }}>{language === 'ar' ? `${selected.size} محدد` : `${selected.size} selected`}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+              <Button size="sm" variant="secondary" onClick={() => runBulkAction('published')}>{language === 'ar' ? 'نشر' : 'Publish'}</Button>
+              <Button size="sm" variant="secondary" onClick={() => runBulkAction('draft')}>{language === 'ar' ? 'مسودة' : 'Draft'}</Button>
+              <Button size="sm" variant="secondary" onClick={() => runBulkAction('archived')}>{language === 'ar' ? 'أرشفة' : 'Archive'}</Button>
+              <Button size="sm" variant="danger" onClick={() => setBulkAction('delete')}>{language === 'ar' ? 'حذف' : 'Delete'}</Button>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* ── Add / Edit Form Modal ─────────────────────────────────────────── */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/80 backdrop-blur-sm p-4 pt-8">
-          <div className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 p-8 relative">
-            <button onClick={() => setShowForm(false)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors">
-              <X className="w-5 h-5" />
+        {/* List */}
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
+            <Spinner />
+          </div>
+        ) : projects.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={Images}
+              title={language === 'ar' ? 'لا توجد مشاريع مطابقة لهذه الفلاتر' : 'No projects match these filters'}
+              action={<Button variant="primary" icon={Plus} onClick={() => navigate('/app/admin/portfolio/new')}>{language === 'ar' ? 'أضف أول مشروع' : 'Add your first project'}</Button>}
+            />
+          </Card>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button
+              onClick={toggleSelectAll}
+              style={{ display: 'flex', alignItems: 'center', gap: '7px', background: 'none', border: 'none', cursor: 'pointer', color: TK.textMuted, fontSize: '11px', fontFamily: 'inherit', padding: '2px 0', alignSelf: 'flex-start' }}
+            >
+              {selected.size === projects.length ? <CheckSquare style={{ width: '14px', height: '14px', color: TK.accent }} /> : <Square style={{ width: '14px', height: '14px' }} />}
+              {language === 'ar' ? 'تحديد الكل' : 'Select all'}
             </button>
 
-            <h2 className="text-2xl font-light text-white/90 mb-8">
-              {editId ? 'Edit Project' : 'New Portfolio Project'}
-            </h2>
+            {projects.map((p, i) => {
+              const isSelected = selected.has(p._id);
+              return (
+              <Card
+                key={p._id}
+                hover
+                padding="10px 14px"
+                draggable={canReorder}
+                onDragStart={() => (dragItem.current = i)}
+                onDragEnter={() => (dragOver.current = i)}
+                onDragEnd={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0,
+                  background: isSelected ? TK.accentBg : TK.surface,
+                  borderColor: isSelected ? TK.accentBd : TK.border,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                  {canReorder && <GripVertical style={{ width: '15px', height: '15px', color: TK.textLight, cursor: 'grab' }} />}
+                  <button onClick={() => toggleSelect(p._id)} aria-label={isSelected ? (language === 'ar' ? 'إلغاء التحديد' : 'Deselect') : (language === 'ar' ? 'تحديد' : 'Select')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textMuted, display: 'flex' }}>
+                    {isSelected ? <CheckSquare style={{ width: '15px', height: '15px', color: TK.accent }} /> : <Square style={{ width: '15px', height: '15px' }} />}
+                  </button>
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+                <Thumb project={p} language={language} />
 
-              {/* Row: title + titleAr */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Title (EN) *</label>
-                  <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
-                    placeholder="Project name" />
-                </div>
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Title (AR)</label>
-                  <input value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} dir="rtl"
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
-                    placeholder="اسم المشروع" />
-                </div>
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Category *</label>
-              <select required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-  className="w-full bg-[#0a0a0a] border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors">
-  {CATEGORIES.map((c) => (
-    <option key={c} value={c} className="bg-[#0a0a0a] text-white/90">{c}</option>
-  ))}
-</select>
-              </div>
-
-              {/* Description */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Description (EN) *</label>
-                  <textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20 resize-none"
-                    placeholder="Project description..." />
-                </div>
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Description (AR)</label>
-                  <textarea rows={4} value={form.descriptionAr} onChange={(e) => setForm({ ...form, descriptionAr: e.target.value })} dir="rtl"
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20 resize-none"
-                    placeholder="وصف المشروع..." />
-                </div>
-              </div>
-
-              {/* Live URL + Tags */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Live URL</label>
-                  <input type="url" value={form.liveUrl} onChange={(e) => setForm({ ...form, liveUrl: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
-                    placeholder="https://..." />
-                </div>
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Tags (comma separated)</label>
-                  <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors placeholder-white/20"
-                    placeholder="React, Node.js, MongoDB" />
-                </div>
-              </div>
-
-              {/* Order + Toggles */}
-              <div className="flex flex-wrap items-center gap-6">
-                <div>
-                  <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Display Order</label>
-                  <input type="number" min={0} value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })}
-                    className="w-24 bg-white/5 border border-white/10 text-white/90 text-sm font-light px-4 py-3 focus:border-[#2563EB]/50 focus:outline-none transition-colors" />
-                </div>
-                <label className="flex items-center gap-3 cursor-pointer mt-4">
-                  <div onClick={() => setForm({ ...form, featured: !form.featured })}
-                    className={`w-10 h-5 rounded-full transition-colors ${form.featured ? 'bg-[#2563EB]' : 'bg-white/10'}`}>
-                    <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${form.featured ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                    <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: TK.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: '0 1 auto' }}>{p.title}</h3>
                   </div>
-                  <span className="text-xs text-white/50 uppercase tracking-widest">Featured (show in Home)</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer mt-4">
-                  <div onClick={() => setForm({ ...form, isPublished: !form.isPublished })}
-                    className={`w-10 h-5 rounded-full transition-colors ${form.isPublished ? 'bg-[#2563EB]' : 'bg-white/10'}`}>
-                    <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${form.isPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '5px' }}>
+                    <Badge tone="info">{categoryLabel(p.category, language)}</Badge>
+                    <Badge tone={STATUS_TONE[p.status] || 'neutral'} dot>{statusDisplayLabel(p.status, language)}</Badge>
+                    {p.featured && <Badge tone="purple">{language === 'ar' ? 'مميز' : 'Featured'}</Badge>}
+                    {p.viewCount > 0 && <span style={{ fontSize: '10px', color: TK.textLight }}>{language === 'ar' ? `${p.viewCount} مشاهدة` : `${p.viewCount} views`}</span>}
                   </div>
-                  <span className="text-xs text-white/50 uppercase tracking-widest">Published</span>
-                </label>
-              </div>
-
-              {/* Cover Image */}
-              <div>
-                <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Cover Image *</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Thumb src={coverPreview} label="Cover" />
-                  <label className="flex flex-col items-center justify-center aspect-video border border-dashed border-white/20 hover:border-[#2563EB]/40 cursor-pointer transition-colors">
-                    <Upload className="w-5 h-5 text-white/30 mb-2" />
-                    <span className="text-xs text-white/30">Upload cover</span>
-                    <input type="file" accept="image/*" onChange={handleCover} className="hidden" />
-                  </label>
+                  <p style={{
+                    fontSize: '11.5px', color: TK.textMuted, margin: '5px 0 0', minWidth: 0,
+                    display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden', wordBreak: 'break-word',
+                  }}>{p.description}</p>
                 </div>
-              </div>
 
-              {/* Gallery Images */}
-              <div>
-                <label className="block text-xs text-white/40 tracking-widest uppercase mb-2">Gallery Images (up to 5)</label>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Thumb key={i} src={imagePreviews[i]} label={`#${i + 1}`} />
-                  ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                  <IconButton icon={p.featured ? Star : StarOff} size={30} onClick={() => toggleFeatured(p)} title={p.featured ? (language === 'ar' ? 'إلغاء التمييز' : 'Unfeature') : (language === 'ar' ? 'تمييز' : 'Feature')} style={p.featured ? { color: TK.accent } : undefined} />
+                  <IconButton icon={p.status === 'published' ? Eye : EyeOff} size={30} onClick={() => setProjectStatus(p._id, p.status === 'published' ? 'draft' : 'published')} title={p.status === 'published' ? (language === 'ar' ? 'إلغاء النشر' : 'Unpublish') : (language === 'ar' ? 'نشر' : 'Publish')} />
+                  <IconButton icon={Archive} size={30} onClick={() => setProjectStatus(p._id, p.status === 'archived' ? 'draft' : 'archived')} title={p.status === 'archived' ? (language === 'ar' ? 'إلغاء الأرشفة' : 'Unarchive') : (language === 'ar' ? 'أرشفة' : 'Archive')} />
+
+                  <Divider />
+
+                  {p.liveUrl && (
+                    <a
+                      href={p.liveUrl} target="_blank" rel="noopener noreferrer" title={language === 'ar' ? 'فتح الموقع المباشر' : 'Open live site'}
+                      className="au-icon-btn"
+                      style={{ width: '30px', height: '30px', borderRadius: RADIUS.md, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TK.textMuted, flexShrink: 0 }}
+                    >
+                      <ExternalLink style={{ width: '14px', height: '14px' }} />
+                    </a>
+                  )}
+                  <IconButton icon={Edit2} size={30} onClick={() => navigate(`/app/admin/portfolio/${p._id}/edit`)} title={language === 'ar' ? 'تعديل' : 'Edit'} />
+
+                  <Divider />
+
+                  <IconButton
+                    icon={Trash2} size={30} onClick={() => setDeleteId(p._id)}
+                    title={language === 'ar' ? 'حذف' : 'Delete'}
+                    style={{ color: TK.textMuted }}
+                    className="au-icon-btn au-icon-btn-danger"
+                  />
                 </div>
-                <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-white/20 hover:border-[#2563EB]/40 cursor-pointer transition-colors text-xs text-white/40">
-                  <Upload className="w-4 h-4" /> Select up to 5 images
-                  <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
-                </label>
+              </Card>
+              );
+            })}
+
+            {/* Pagination */}
+            {pages > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', paddingTop: '14px' }}>
+                <Button size="sm" variant="ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>{language === 'ar' ? 'السابق' : 'Prev'}</Button>
+                <span style={{ fontSize: '11.5px', color: TK.textMuted }}>{page} / {pages}</span>
+                <Button size="sm" variant="ghost" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>{language === 'ar' ? 'التالي' : 'Next'}</Button>
               </div>
-
-              {/* Submit */}
-              <div className="flex gap-4 pt-4 border-t border-white/10">
-                <button type="submit" disabled={saving}
-                  className="flex items-center gap-2 px-8 py-3 bg-[#2563EB] text-black text-xs font-light tracking-widest uppercase hover:bg-[#c4a030] transition-colors disabled:opacity-50 active:scale-95">
-                  {saving ? <><Loader className="w-4 h-4 animate-spin" /> Saving...</> : editId ? 'Update Project' : 'Create Project'}
-                </button>
-                <button type="button" onClick={() => setShowForm(false)}
-                  className="px-8 py-3 border border-white/10 text-white/50 text-xs font-light tracking-widest uppercase hover:border-white/30 transition-colors">
-                  Cancel
-                </button>
-              </div>
-            </form>
+            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Delete Confirm ────────────────────────────────────────────────── */}
-      {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 p-8 text-center">
-            <p className="text-white/70 font-light mb-6">Delete this project? This can't be undone.</p>
-            <div className="flex gap-4 justify-center">
-              <button onClick={() => handleDelete(deleteId)}
-                className="px-6 py-2.5 bg-red-900/60 border border-red-800/50 text-red-300 text-xs tracking-widest uppercase hover:bg-red-900 transition-colors">
-                Delete
-              </button>
-              <button onClick={() => setDeleteId(null)}
-                className="px-6 py-2.5 border border-white/10 text-white/50 text-xs tracking-widest uppercase hover:border-white/30 transition-colors">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        <ConfirmDialog
+          open={!!deleteId}
+          onClose={() => setDeleteId(null)}
+          onConfirm={confirmDeleteProject}
+          loading={deleting}
+          title={language === 'ar' ? 'حذف هذا المشروع؟' : 'Delete this project?'}
+          description={language === 'ar' ? 'لا يمكن التراجع عن هذا الإجراء.' : 'This action cannot be undone.'}
+          confirmLabel={language === 'ar' ? 'حذف' : 'Delete'}
+        />
 
-export default AdminPortfolio;
+        <ConfirmDialog
+          open={bulkAction === 'delete'}
+          onClose={() => setBulkAction(null)}
+          onConfirm={() => runBulkAction('delete')}
+          loading={bulkBusy}
+          title={language === 'ar' ? `حذف ${selected.size} مشروع؟` : `Delete ${selected.size} project(s)?`}
+          description={language === 'ar' ? 'لا يمكن التراجع عن هذا الإجراء.' : 'This action cannot be undone.'}
+          confirmLabel={language === 'ar' ? 'حذف' : 'Delete'}
+        />
+      </div>
+      </div>
+    );
+  };
+
+  export default AdminPortfolio;

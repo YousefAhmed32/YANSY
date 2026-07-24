@@ -196,7 +196,7 @@ const Blog = () => {
                   data-card
                   style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#000'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
                 >
                   <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: '#F6F7F9' }}>
                     <img src={post.image} alt={post.title} loading="lazy"

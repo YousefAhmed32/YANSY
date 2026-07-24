@@ -328,7 +328,7 @@ const FeedbackForm = () => {
               disabled={loading || !allRatingsComplete}
               className={`
                 px-8 py-4 border border-[#2563EB] text-[#2563EB] text-sm font-light tracking-widest uppercase
-                hover:bg-[#2563EB] hover:text-black transition-all duration-500
+                hover:bg-[#2563EB] hover:text-white transition-all duration-500
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#2563EB]
                 flex items-center gap-3
               `}

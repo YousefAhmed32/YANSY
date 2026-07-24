@@ -96,7 +96,7 @@ const ProjectRequests = () => {
     completed: {
       label: t('projectRequests.completed', 'Completed'),
       icon: CheckCircle,
-      color: 'text-gold bg-gold/10 border-gold/30',
+      color: 'text-[#2563EB] bg-[#2563EB]/10 border-[#2563EB]/30',
     },
   };
 
@@ -190,7 +190,7 @@ const ProjectRequests = () => {
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className={`w-full px-3 py-2.5 rounded-sm ${inputBg} border-b ${borderLight} font-light focus:outline-none focus:border-gold transition-colors duration-300 text-sm`}
+        className={`w-full px-3 py-2.5 rounded-sm ${inputBg} border-b ${borderLight} font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-300 text-sm`}
       >
         {children}
       </select>
@@ -218,7 +218,7 @@ const ProjectRequests = () => {
   if (loading && requests.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className={`w-10 h-10 border-2 ${isDark ? 'border-gold/30 border-t-gold' : 'border-gold/50 border-t-gold'} rounded-full animate-spin`} />
+        <div className={`w-10 h-10 border-2 ${isDark ? 'border-[#2563EB]/30 border-t-[#2563EB]' : 'border-[#2563EB]/50 border-t-[#2563EB]'} rounded-full animate-spin`} />
       </div>
     );
   }
@@ -261,7 +261,7 @@ const ProjectRequests = () => {
           />
           <StatCard
             icon={CheckCircle}
-            iconClass="bg-gold/20 border-gold/30 text-gold"
+            iconClass="bg-[#2563EB]/20 border-[#2563EB]/30 text-[#2563EB]"
             label={t('projectRequests.completed', 'Completed')}
             value={stats.byStatus?.completed || 0}
           />
@@ -288,7 +288,7 @@ const ProjectRequests = () => {
                       {projectTypeLabels[type] || type}
                     </span>
                     <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <div className={`h-1.5 rounded-full bg-gold/40`} style={{ width: `${Math.max(20, (count / (stats.total || 1)) * 120)}px` }} />
+                      <div className={`h-1.5 rounded-full bg-[#2563EB]/40`} style={{ width: `${Math.max(20, (count / (stats.total || 1)) * 120)}px` }} />
                       <span className={`text-sm font-light ${textClass} w-6 text-right`}>{count}</span>
                     </div>
                   </div>
@@ -487,7 +487,7 @@ const ProjectRequests = () => {
                           href={request.referenceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-gold hover:underline"
+                          className="inline-flex items-center gap-1 text-[#2563EB] hover:underline"
                           onClick={e => e.stopPropagation()}
                         >
                           <Globe className="w-3 h-3" />
@@ -527,7 +527,7 @@ const ProjectRequests = () => {
                               href={request.referenceUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gold text-sm font-light hover:underline break-all"
+                              className="text-[#2563EB] text-sm font-light hover:underline break-all"
                             >
                               {request.referenceUrl}
                             </a>
@@ -563,7 +563,7 @@ const ProjectRequests = () => {
                   <div className={`flex flex-col items-end gap-2 flex-shrink-0 ${isRTL ? 'items-start' : ''}`}>
                     <button
                       onClick={() => setExpandedRequest(expandedRequest === request._id ? null : request._id)}
-                      className={`p-2 ${textMuted} hover:text-gold transition-colors duration-300`}
+                      className={`p-2 ${textMuted} hover:text-[#2563EB] transition-colors duration-300`}
                     >
                       {expandedRequest === request._id
                         ? <ChevronUp className="w-4 h-4" />
@@ -571,7 +571,7 @@ const ProjectRequests = () => {
                     </button>
                     <button
                       onClick={() => openStatusModal(request)}
-                      className="px-4 py-2 border border-gold text-gold text-xs font-light tracking-widest uppercase hover:bg-gold hover:text-black transition-all duration-500 whitespace-nowrap"
+                      className="px-4 py-2 border border-[#2563EB] text-[#2563EB] text-xs font-light tracking-widest uppercase hover:bg-[#2563EB] hover:text-white transition-all duration-500 whitespace-nowrap"
                     >
                       {t('projectRequests.updateStatus', 'Update')}
                     </button>
@@ -594,7 +594,7 @@ const ProjectRequests = () => {
               </h3>
               <button
                 onClick={() => { setShowStatusModal(false); setSelectedRequest(null); setStatusUpdate({ status: '', adminNotes: '' }); }}
-                className={`p-2 ${textMuted} hover:text-gold transition-colors duration-300`}
+                className={`p-2 ${textMuted} hover:text-[#2563EB] transition-colors duration-300`}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -608,7 +608,7 @@ const ProjectRequests = () => {
                 <select
                   value={statusUpdate.status}
                   onChange={e => setStatusUpdate(p => ({ ...p, status: e.target.value }))}
-                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-gold transition-colors duration-300`}
+                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-300`}
                 >
                   <option value="new">{t('projectRequests.new', 'New')}</option>
                   <option value="in-progress">{t('projectRequests.inProgress', 'In Progress')}</option>
@@ -624,7 +624,7 @@ const ProjectRequests = () => {
                   value={statusUpdate.adminNotes}
                   onChange={e => setStatusUpdate(p => ({ ...p, adminNotes: e.target.value }))}
                   rows={4}
-                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} ${isDark ? 'placeholder-white/30' : 'placeholder-gray-400'} font-light focus:outline-none focus:border-gold transition-colors duration-300 resize-none`}
+                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} ${isDark ? 'placeholder-white/30' : 'placeholder-gray-400'} font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-300 resize-none`}
                   placeholder={t('projectRequests.addNotes', 'Add notes about this request...')}
                 />
               </div>
@@ -633,13 +633,13 @@ const ProjectRequests = () => {
             <div className={`flex gap-3 mt-7 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => { setShowStatusModal(false); setSelectedRequest(null); setStatusUpdate({ status: '', adminNotes: '' }); }}
-                className={`flex-1 px-4 py-3 border ${borderLight} ${textMuted} text-xs font-light tracking-widest uppercase hover:border-gold transition-all duration-300`}
+                className={`flex-1 px-4 py-3 border ${borderLight} ${textMuted} text-xs font-light tracking-widest uppercase hover:border-[#2563EB] transition-all duration-300`}
               >
                 {t('common.cancel', 'Cancel')}
               </button>
               <button
                 onClick={handleStatusUpdate}
-                className="flex-1 px-4 py-3 border border-gold text-gold text-xs font-light tracking-widest uppercase hover:bg-gold hover:text-black transition-all duration-500"
+                className="flex-1 px-4 py-3 border border-[#2563EB] text-[#2563EB] text-xs font-light tracking-widest uppercase hover:bg-[#2563EB] hover:text-white transition-all duration-500"
               >
                 {t('projectRequests.update', 'Update')}
               </button>

@@ -298,14 +298,14 @@
   },
   "messages": {
     "title": "Support",
-    "inbox": "Support Inbox",
+    "inbox": "Inbox",
     "compose": "Contact Support",
     "send": "Send",
     "noMessages": "No messages yet",
     "newMessage": "New Conversation",
     "reply": "Reply",
     "typeMessage": "Type your message…",
-    "selectThread": "Select a conversation",
+    "selectThread": "Select a conversation from the list",
     "createThread": "Contact Support",
     "emptyTitle": "Welcome to Support",
     "emptyBody": "Need help? Our team is here for you. Start a conversation and we'll respond as soon as possible.",
@@ -348,7 +348,6 @@
     "noConversationsYet": "No conversations yet",
     "noConversationsDesc": "Have a question? Message our team — we're here to help.",
     "contactBtn": "Message the Team",
-    "inbox": "Inbox",
     "unread": "Unread",
     "all": "All",
     "urgent": "Urgent",
@@ -366,7 +365,6 @@
     "noNotes": "No internal notes yet.",
     "noThreads": "No conversations yet",
     "noThreadsDesc": "Conversations from clients will appear here.",
-    "selectThread": "Select a conversation from the list",
     "replyAge": "Reply time",
     "urgentBadge": "Urgent",
     "searchPlaceholder": "Search conversations...",
@@ -526,7 +524,11 @@
   "landing": {
     "nav": {
       "platform": "Platform",
-      "solutions": "Solutions",
+      "portfolio": "Portfolio",
+      "industries": "Industries",
+      "about": "About",
+      "pricing": "Pricing",
+      "blog": "Blog",
       "features": "Features",
       "contact": "Contact",
       "getStarted": "Start a Project",
@@ -779,6 +781,16 @@
       "whatsapp": "WhatsApp Support",
       "copyright": "© 2025 YANSY. All rights reserved.",
       "secure": "Secure & Encrypted"
+    },
+    "videoShowcase": {
+      "play": "Play video",
+      "pause": "Pause video",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "loading": "Loading",
+      "watch": "Watch"
     }
   },
   "feedback": {
@@ -883,6 +895,12 @@
     },
     "steps": {
       "step": "Step {{step}} of {{total}}",
+      "names": {
+        "projectType": "Project Type",
+        "idea": "Your Idea",
+        "details": "Details",
+        "contact": "Contact"
+      },
       "projectType": {
         "title": "What kind of project is this?",
         "error": "Please select a project type to continue",
@@ -1022,6 +1040,7 @@
     },
     "navigation": {
       "back": "Back",
+      "backToOptions": "Back to options",
       "next": "Continue",
       "submit": "Send My Request",
       "create": "Create Project"
@@ -1029,6 +1048,41 @@
     "errors": {
       "submitFailed": "Something went wrong. Please try again.",
       "createFailed": "Couldn't create the project. Please try again."
+    },
+    "decision": {
+      "title": "How would you like to start?",
+      "subtitle": "Pick whichever feels easiest — both reach our team directly.",
+      "whatsapp": {
+        "title": "Continue on WhatsApp",
+        "description": "Talk directly with our team and get a quick response.",
+        "responseTime": "Usually replies in minutes",
+        "benefits": ["Instant reply", "Talk to a real person", "No forms to fill"]
+      },
+      "form": {
+        "title": "Submit a Project Request",
+        "description": "Share your project details and receive a structured proposal.",
+        "responseTime": "Takes about 2 minutes",
+        "benefits": ["A structured proposal", "Nothing gets lost", "Track it anytime"]
+      }
+    },
+    "whatsappBrief": {
+      "title": "Quick details first",
+      "subtitle": "This helps our team prep before you say hi — everything below is optional except your name.",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Full name",
+      "nameError": "We'll need your name to say hi",
+      "projectTypeLabel": "Project type",
+      "budgetLabel": "Budget range",
+      "timelineLabel": "Timeline",
+      "optional": "optional",
+      "continueButton": "Continue on WhatsApp",
+      "redirecting": "Opening WhatsApp…",
+      "redirectingDesc": "We've opened a chat with your message ready to send.",
+      "messageGreeting": "Hi YANSY Tech! I'm {{name}}.",
+      "messageProjectType": "Project type",
+      "messageBudget": "Budget",
+      "messageTimeline": "Timeline",
+      "messageClosing": "I'd like to discuss my project."
     }
   },
   "onboarding": {

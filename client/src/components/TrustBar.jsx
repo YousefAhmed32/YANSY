@@ -14,13 +14,9 @@ const STATS_AR = [
   { num: '4+',   label: 'سنوات خبرة',            sub: 'منذ 2020' },
 ];
 
-const INDUSTRIES_EN = ['E-commerce', 'Healthcare', 'SaaS & Tech', 'Enterprise', 'EdTech', 'Real Estate', 'Fintech', 'Hospitality'];
-const INDUSTRIES_AR = ['التجارة الإلكترونية', 'الرعاية الصحية', 'SaaS والتقنية', 'المؤسسات', 'التعليم الإلكتروني', 'العقارات', 'التقنية المالية', 'الضيافة'];
-
 const TrustBar = () => {
   const { isRTL } = useLanguage();
   const stats = isRTL ? STATS_AR : STATS_EN;
-  const industries = isRTL ? INDUSTRIES_AR : INDUSTRIES_EN;
 
   return (
     <section
@@ -36,7 +32,6 @@ const TrustBar = () => {
         .trustbar-stats {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          border-bottom: 1px solid #E8EBF0;
         }
         @media (max-width: 640px) {
           .trustbar-stats { grid-template-columns: repeat(2, 1fr); }
@@ -75,40 +70,6 @@ const TrustBar = () => {
           color: #9BA3AE;
           font-weight: 500;
         }
-        .trustbar-industries {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: clamp(1rem, 2vw, 1.25rem) clamp(1.25rem, 5vw, 3rem);
-        }
-        .trustbar-industry-label {
-          font-size: 10px;
-          font-weight: 700;
-          color: #9BA3AE;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          margin-inline-end: 4px;
-        }
-        [dir="rtl"] .trustbar-industry-label {
-          letter-spacing: 0;
-          text-transform: none;
-        }
-        .trustbar-industry-pill {
-          font-size: 11.5px;
-          font-weight: 600;
-          color: #5C6370;
-          background: #FFFFFF;
-          border: 1px solid #E8EBF0;
-          padding: 4px 12px;
-          border-radius: 100px;
-          transition: border-color 0.18s, color 0.18s;
-        }
-        .trustbar-industry-pill:hover {
-          border-color: #C9CDD6;
-          color: #0D1117;
-        }
       `}</style>
 
       {/* Stats row */}
@@ -120,16 +81,6 @@ const TrustBar = () => {
               <div className="trustbar-stat-label">{s.label}</div>
               <div className="trustbar-stat-sub">{s.sub}</div>
             </div>
-          ))}
-        </div>
-
-        {/* Industries row */}
-        <div className="trustbar-industries">
-          <span className="trustbar-industry-label">
-            {isRTL ? 'قطاعات:' : 'Industries:'}
-          </span>
-          {industries.map((ind, i) => (
-            <span key={i} className="trustbar-industry-pill">{ind}</span>
           ))}
         </div>
       </div>

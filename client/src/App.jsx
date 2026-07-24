@@ -8,6 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Toast from './components/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageTransition from './components/PageTransition';
+import IntroOverlay from './components/IntroOverlay';
 import { trackPageView } from './utils/ga4';
 
 import './i18n/config';
@@ -21,8 +22,10 @@ const Layout          = lazy(() => import('./components/Layout'));
 const Login           = lazy(() => import('./pages/Login'));
 const Register        = lazy(() => import('./pages/Register'));
 const Portfolio       = lazy(() => import('./pages/Portfolio'));
-const Services        = lazy(() => import('./pages/Services'));
-const ServiceDetail   = lazy(() => import('./pages/ServiceDetail'));
+const Industries      = lazy(() => import('./pages/Industries'));
+const WhyYansyPage    = lazy(() => import('./pages/WhyYansyPage'));
+const About           = lazy(() => import('./pages/About'));
+const ContactPage     = lazy(() => import('./pages/ContactPage'));
 const CaseStudies     = lazy(() => import('./pages/CaseStudies'));
 const CaseStudyDetail = lazy(() => import('./pages/CaseStudyDetail'));
 const Blog            = lazy(() => import('./pages/Blog'));
@@ -39,6 +42,10 @@ const AdminUsers      = lazy(() => import('./pages/AdminUsers'));
 const ProjectRequests = lazy(() => import('./pages/ProjectRequests'));
 const AdminFeedback   = lazy(() => import('./pages/AdminFeedback'));
 const AdminPortfolio  = lazy(() => import('./pages/AdminPortfolio'));
+const PortfolioWizard = lazy(() => import('./pages/PortfolioWizard'));
+const AdminIntro      = lazy(() => import('./pages/AdminIntro'));
+const AdminHomepageVideo = lazy(() => import('./pages/AdminHomepageVideo'));
+const AdminStartProject  = lazy(() => import('./pages/AdminStartProject'));
 const Profile         = lazy(() => import('./pages/Profile'));
 const Settings        = lazy(() => import('./pages/Settings'));
 const ForgotPassword  = lazy(() => import('./pages/ForgotPassword'));
@@ -124,14 +131,18 @@ const AnimatedRoutes = () => {
           {/* ── Public — wrapped in PageTransition for cinematic navigation ── */}
           <Route path="/"          element={<PageTransition><Home /></PageTransition>} />
           <Route path="/home"      element={<PageTransition><Home /></PageTransition>} />
-          <Route path="/services"  element={<PageTransition><Services /></PageTransition>} />
-          <Route path="/services/:slug" element={<PageTransition><ServiceDetail /></PageTransition>} />
           <Route path="/case-studies" element={<PageTransition><CaseStudies /></PageTransition>} />
           <Route path="/case-studies/:slug" element={<PageTransition><CaseStudyDetail /></PageTransition>} />
           <Route path="/blog"  element={<PageTransition><Blog /></PageTransition>} />
           <Route path="/blog/:slug" element={<PageTransition><BlogPost /></PageTransition>} />
           <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
           <Route path="/portfolio/:id" element={<PageTransition><PortfolioDetail /></PageTransition>} />
+          <Route path="/industries" element={<PageTransition><Industries /></PageTransition>} />
+          <Route path="/why-yansy" element={<PageTransition><WhyYansyPage /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+          {/* /process retired — its content lives on the homepage and inside the Contact page's process timeline */}
+          <Route path="/process" element={<Navigate to="/contact" replace />} />
           <Route path="/feedback"  element={<PageTransition><FeedbackForm /></PageTransition>} />
           <Route path="/pricing"   element={<PageTransition><Pricing /></PageTransition>} />
 
@@ -191,6 +202,26 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/portfolio"
               element={<ProtectedRoute requireAdmin><AdminPortfolio /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/portfolio/new"
+              element={<ProtectedRoute requireAdmin><PortfolioWizard /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/portfolio/:id/edit"
+              element={<ProtectedRoute requireAdmin><PortfolioWizard /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/intro"
+              element={<ProtectedRoute requireAdmin><AdminIntro /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/homepage-video"
+              element={<ProtectedRoute requireAdmin><AdminHomepageVideo /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/start-project"
+              element={<ProtectedRoute requireAdmin><AdminStartProject /></ProtectedRoute>}
             />
             <Route
               path="admin/audit"
@@ -278,6 +309,8 @@ function App() {
         <ErrorBoundary>
           <AnimatedRoutes />
         </ErrorBoundary>
+        {/* Cinematic opening sequence — home route only, renders nothing when ineligible */}
+        <IntroOverlay />
       </BrowserRouter>
     </>
   );

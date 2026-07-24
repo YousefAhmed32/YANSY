@@ -202,7 +202,7 @@ const BlogPost = () => {
             <div>
               <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 500, color: '#0D1117', marginBottom: 2 }}>YANSY TECH Team</div>
               <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: 'rgba(0,0,0,0.4)' }}>
-                Premium Digital Product Studio · <Link to="/services" style={{ color: 'rgba(37,99,235,0.6)', textDecoration: 'none' }}>View Our Services</Link>
+                Premium Digital Product Studio · <Link to="/portfolio" style={{ color: 'rgba(37,99,235,0.6)', textDecoration: 'none' }}>View Our Work</Link>
               </div>
             </div>
           </div>
@@ -223,7 +223,7 @@ const BlogPost = () => {
                     <Link key={p.slug} to={`/blog/${p.slug}`}
                       style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s', padding: 'clamp(1.25rem,3vw,2rem)' }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#000'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                         <span style={{ padding: '3px 10px', border: `1px solid ${color}25`, background: `${color}08`, color, fontFamily: "'Inter', sans-serif", fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
@@ -253,11 +253,11 @@ const BlogPost = () => {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 10,
                   padding: '16px 40px', background: '#2563EB', border: '2px solid #2563EB',
-                  color: '#000', fontFamily: "'Inter', sans-serif",
+                  color: '#FFFFFF', fontFamily: "'Inter', sans-serif",
                   fontSize: 10, fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase',
                   cursor: 'pointer', transition: 'background 0.3s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#c4a030'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; }}
               >
                 Start a Project <ArrowUpRight size={14} aria-hidden />

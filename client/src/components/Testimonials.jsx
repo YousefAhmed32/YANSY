@@ -5,44 +5,50 @@ import { useLanguage } from '../contexts/LanguageContext';
 const STATIC = [
   {
     _id: 'st1', initials: 'AR',
-    name: 'Ahmed Al-Rashidi', role: 'Founder, NexusCommerce',
-    projectTitle: 'E-commerce Platform',
+    name: 'Ahmed Al-Rashidi', role: 'Founder, NexusCommerce', roleAR: 'المؤسس، NexusCommerce',
+    projectTitle: 'E-commerce Platform', projectTitleAR: 'منصة تجارة إلكترونية',
     reviewText: 'YANSY built our entire online store from scratch in 3 weeks. Sales increased 40% in the first 90 days. Their attention to performance and UX was remarkable — no other vendor came close.',
+    reviewTextAR: 'YANSY بنوا متجرنا الإلكتروني بالكامل من الصفر في 3 أسابيع. المبيعات زادت 40٪ في أول 90 يوماً. اهتمامهم بالأداء وتجربة المستخدم كان استثنائياً — لا أحد اقترب من مستواهم.',
     rating: 5,
   },
   {
     _id: 'st2', initials: 'SM',
-    name: 'Sarah Mohamed', role: 'Director, MedCare Clinics',
-    projectTitle: 'Medical Booking System',
+    name: 'Sarah Mohamed', role: 'Director, MedCare Clinics', roleAR: 'مديرة، عيادات MedCare',
+    projectTitle: 'Medical Booking System', projectTitleAR: 'نظام حجز طبي',
     reviewText: 'Outstanding delivery. A complete clinic management system, on time and within budget. No-shows dropped by 80% after launch. Communication throughout was proactive, never reactive.',
+    reviewTextAR: 'تسليم استثنائي. نظام كامل لإدارة العيادة، في الموعد وضمن الميزانية. الغيابات انخفضت 80٪ بعد الإطلاق. التواصل طوال المشروع كان استباقياً، لا رد فعل فقط.',
     rating: 5,
   },
   {
     _id: 'st3', initials: 'KA',
-    name: 'Khalid Al-Thani', role: 'CTO, Vault Analytics',
-    projectTitle: 'SaaS Dashboard',
+    name: 'Khalid Al-Thani', role: 'CTO, Vault Analytics', roleAR: 'المدير التقني، Vault Analytics',
+    projectTitle: 'SaaS Dashboard', projectTitleAR: 'لوحة تحكم SaaS',
     reviewText: 'They transformed our complex data pipeline into a beautiful, usable dashboard. Our non-technical leadership team actually uses it now — which was the entire goal. Exceptional work.',
+    reviewTextAR: 'حوّلوا بيانات معقدة إلى لوحة تحكم جميلة وسهلة الاستخدام. فريق الإدارة غير التقني يستخدمها فعلياً الآن — وهذا كان الهدف بالضبط. عمل استثنائي.',
     rating: 5,
   },
   {
     _id: 'st4', initials: 'LI',
-    name: 'Layla Ibrahim', role: 'CEO, AcademyEdge',
-    projectTitle: 'Educational Platform',
+    name: 'Layla Ibrahim', role: 'CEO, AcademyEdge', roleAR: 'الرئيس التنفيذي، AcademyEdge',
+    projectTitle: 'Educational Platform', projectTitleAR: 'منصة تعليمية',
     reviewText: 'We launched our online academy with YANSY and student enrollment doubled within the first month. The platform saved us thousands in recurring SaaS fees. Worth every dirham.',
+    reviewTextAR: 'أطلقنا أكاديميتنا الإلكترونية مع YANSY وتضاعف عدد الطلاب المسجلين خلال أول شهر. المنصة وفّرت علينا آلاف الجنيهات من رسوم الاشتراك الشهرية. تستحق كل جنيه.',
     rating: 5,
   },
   {
     _id: 'st5', initials: 'OF',
-    name: 'Omar Faris', role: 'VP Sales, GrowthCRM',
-    projectTitle: 'CRM System',
+    name: 'Omar Faris', role: 'VP Sales, GrowthCRM', roleAR: 'نائب المبيعات، GrowthCRM',
+    projectTitle: 'CRM System', projectTitleAR: 'نظام CRM',
     reviewText: 'The CRM YANSY built completely changed how we manage clients. Follow-ups are automated, response times improved dramatically. ROI was visible within 60 days of launch.',
+    reviewTextAR: 'نظام CRM الذي بنته YANSY غيّر بالكامل طريقة إدارتنا للعملاء. المتابعات أصبحت آلية، وأوقات الاستجابة تحسّنت بشكل كبير. العائد على الاستثمار ظهر خلال 60 يوماً من الإطلاق.',
     rating: 5,
   },
   {
     _id: 'st6', initials: 'NS',
-    name: 'Nora Al-Sayed', role: 'Brand Director',
-    projectTitle: 'Corporate Website',
+    name: 'Nora Al-Sayed', role: 'Brand Director', roleAR: 'مديرة العلامة التجارية',
+    projectTitle: 'Corporate Website', projectTitleAR: 'موقع شركة',
     reviewText: 'From concept to launch in three weeks. The design is stunning, performance is exceptional. Multiple clients mentioned the website before even asking about our services.',
+    reviewTextAR: 'من الفكرة إلى الإطلاق في ثلاثة أسابيع. التصميم مذهل والأداء استثنائي. عملاء كثيرون ذكروا الموقع قبل حتى أن يسألوا عن خدماتنا.',
     rating: 5,
   },
 ];
@@ -118,21 +124,21 @@ const TestimonialCard = ({ t, idx, visible, delay }) => {
           padding: '3px 9px', borderRadius: '100px',
           whiteSpace: 'nowrap',
         }}>
-          {t.projectTitle}
+          {isRTL ? (t.projectTitleAR || t.projectTitle) : t.projectTitle}
         </span>
       </div>
 
       {/* Quote */}
       <p style={{
         fontSize: 'clamp(0.875rem, 1vw, 0.9375rem)',
-        lineHeight: 1.75,
+        lineHeight: isRTL ? 1.9 : 1.75,
         color: '#374151',
         margin: 0,
         flex: 1,
-        fontFamily: "'Inter', system-ui, sans-serif",
-        fontStyle: 'italic',
+        fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter', system-ui, sans-serif",
+        fontStyle: isRTL ? 'normal' : 'italic',
       }}>
-        "{t.reviewText}"
+        "{isRTL ? (t.reviewTextAR || t.reviewText) : t.reviewText}"
       </p>
 
       {/* Author */}
@@ -150,7 +156,7 @@ const TestimonialCard = ({ t, idx, visible, delay }) => {
             {t.name}
           </div>
           <div style={{ fontSize: 12, color: '#9BA3AE', lineHeight: 1.3 }}>
-            {t.role}
+            {isRTL ? (t.roleAR || t.role) : t.role}
           </div>
         </div>
       </div>
