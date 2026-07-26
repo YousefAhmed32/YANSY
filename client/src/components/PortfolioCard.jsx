@@ -45,7 +45,7 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
         {/* Badges */}
         <div className={`absolute top-3 flex flex-wrap gap-1.5 ${isRTL ? 'right-3' : 'left-3'}`}>
           <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 text-[#0D1117] tracking-wide">
-            {project.category}
+            {categoryLabel(project.category, isRTL ? 'ar' : 'en')}
           </span>
           {project.industry && (
             <span className="hidden sm:inline text-[10px] font-semibold px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white tracking-wide">

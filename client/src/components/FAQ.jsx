@@ -59,6 +59,20 @@ const FAQS = [
     answerEN: 'Primarily React, Next.js, Node.js, and PostgreSQL/MongoDB. For enterprise systems we use microservices architecture. We choose the right stack for your specific project — not just the trendy one.',
     answerAR: 'بشكل أساسي React وNext.js وNode.js وPostgreSQL/MongoDB. للأنظمة المؤسسية نستخدم بنية الخدمات الصغيرة. نختار التقنية المناسبة لمشروعك تحديداً.',
   },
+  {
+    id: 'results',
+    questionEN: 'Will this actually bring me customers, or just look good?',
+    questionAR: 'هل سيجلب لي هذا عملاء فعلاً، أم مجرد شكل جميل؟',
+    answerEN: 'Design without infrastructure is decoration. Every site we ship ships with server-side rendering, structured data, and clean semantic markup — the technical foundation Google actually indexes — plus fast load times, since speed is a ranking factor and a conversion factor. We can\'t guarantee a keyword ranking (no honest agency can), but we can guarantee the site is built so nothing technical is holding your traffic or your leads back.',
+    answerAR: 'التصميم بدون بنية تحتية مجرد ديكور. كل موقع نُسلّمه مبني بعرض من جهة الخادم وبيانات منظّمة وهيكل دلالي نظيف — الأساس التقني الذي تفهرسه جوجل فعلياً — مع أوقات تحميل سريعة، لأن السرعة عامل ترتيب وعامل تحويل معاً. لا يمكننا ضمان ترتيب كلمة مفتاحية معينة (ولا تستطيع أي وكالة صادقة ذلك)، لكن نضمن ألا يكون هناك أي عائق تقني يمنع وصول الزيارات أو العملاء إليك.',
+  },
+  {
+    id: 'scale',
+    questionEN: 'Can I add more features later, or am I locked into v1?',
+    questionAR: 'هل يمكنني إضافة ميزات لاحقاً، أم أنا مقيّد بالنسخة الأولى؟',
+    answerEN: 'You own the codebase and it\'s built on standard architecture from day one — no proprietary framework, no page-builder lock-in. Most clients come back to add features as they grow (a booking module, a second language, a mobile app) and we scope those as separate, smaller engagements. Nothing about how we build forces a rebuild to add functionality later.',
+    answerAR: 'تملك قاعدة الكود وهي مبنية على بنية قياسية منذ اليوم الأول — بدون إطار عمل خاص أو قفل داخل أداة بناء صفحات. معظم عملائنا يعودون لإضافة ميزات مع نمو أعمالهم (نظام حجز، لغة ثانية، تطبيق جوال) ونحدد نطاق ذلك كمشاريع أصغر منفصلة. لا شيء في طريقة بنائنا يفرض إعادة بناء كاملة لإضافة وظيفة لاحقاً.',
+  },
 ];
 
 const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
@@ -180,13 +194,20 @@ const FAQ = ({ onStartProject }) => {
         @media (max-width: 900px) {
           .faq-layout { grid-template-columns: 1fr; }
         }
+        /* Sticky only makes sense in the two-column desktop layout — below 900px
+           the header stacks above the questions, and a lingering sticky position
+           would pin the title/CTA/trust-note block over the accordion while scrolling. */
+        .faq-header-col { position: sticky; top: 80px; }
+        @media (max-width: 900px) {
+          .faq-header-col { position: static; }
+        }
       `}</style>
 
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div className="faq-layout">
 
-          {/* Left: header — sticky on desktop */}
-          <div style={{ textAlign: isRTL ? 'right' : 'left', position: 'sticky', top: 80 }}>
+          {/* Left: header — sticky on desktop only (see .faq-header-col) */}
+          <div className="faq-header-col" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
               {isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
             </span>

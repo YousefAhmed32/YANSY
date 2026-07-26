@@ -46,16 +46,41 @@ const Skeleton = () => (
 );
 
 /* ── Lightbox ─────────────────────────────────────────────────────────────── */
-const Lightbox = ({ images, active, onClose, onPrev, onNext }) => {
+const Lightbox = ({ images, active, onClose, onPrev, onNext, isRTL, title }) => {
+  const closeBtnRef = useRef(null);
+  const triggerElRef = useRef(null);
+
+  // Focus the close button on open, restore focus to whatever triggered
+  // the lightbox on close — matches the same pattern used by ProjectRequestForm.
+  useEffect(() => {
+    triggerElRef.current = document.activeElement;
+    closeBtnRef.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      triggerElRef.current?.focus?.();
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft')  onPrev();
       if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'Tab') {
+        // Single focusable set (close/prev/next) — keep Tab cycling inside the dialog.
+        const nodes = Array.from(document.querySelectorAll('[data-lightbox] button'));
+        if (!nodes.length) return;
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, onPrev, onNext]);
+  }, [onClose, onPrev, onNext, isRTL]);
 
   // Preload neighboring images so prev/next feel instant
   useEffect(() => {
@@ -68,27 +93,29 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext }) => {
 
   return (
     <div
+      data-lightbox
       className="fixed inset-0 z-[200] flex items-center justify-center bg-white/95"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Image lightbox"
+      aria-label={isRTL ? 'معرض الصور بملء الشاشة' : 'Image lightbox'}
     >
       <button
+        ref={closeBtnRef}
         onClick={onClose}
         className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all z-10"
-        aria-label="Close"
+        aria-label={isRTL ? 'إغلاق' : 'Close'}
       >
         <X className="w-4 h-4" />
       </button>
 
-      <span className="absolute top-5 left-5 text-[10px] tracking-widest uppercase text-[#9CA3AF] z-10">
+      <span className="absolute top-5 left-5 text-[10px] tracking-widest uppercase text-[#6B7280] z-10">
         {active + 1} / {images.length}
       </span>
 
       <img
         src={mediaSrc(images[active])}
-        alt=""
+        alt={title ? `${title} — ${active + 1}/${images.length}` : ''}
         className="max-w-[92vw] max-h-[88vh] object-contain"
         onClick={(e) => e.stopPropagation()}
       />
@@ -98,14 +125,14 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext }) => {
           <button
             onClick={(e) => { e.stopPropagation(); onPrev(); }}
             className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all"
-            aria-label="Previous image"
+            aria-label={isRTL ? 'الصورة السابقة' : 'Previous image'}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onNext(); }}
             className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all"
-            aria-label="Next image"
+            aria-label={isRTL ? 'الصورة التالية' : 'Next image'}
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -211,7 +238,7 @@ const TestimonialSection = ({ testimonial, isRTL }) => {
             )}
             <div className={isRTL ? 'text-right' : 'text-left'}>
               {testimonial.author && <p className="text-sm font-semibold text-[#0D1117]">{testimonial.author}</p>}
-              {role && <p className="text-xs text-[#9CA3AF]">{role}</p>}
+              {role && <p className="text-xs text-[#6B7280]">{role}</p>}
             </div>
           </div>
         )}
@@ -235,8 +262,8 @@ const PortfolioDetail = () => {
   const heroImgRef   = useRef(null);
 
   useSEO({
-    title       : project ? `${project.title} — Case Study` : 'Portfolio',
-    description : project?.description?.slice(0, 155) || 'View our portfolio case studies.',
+    title       : project ? `${project.title} — ${isRTL ? 'دراسة حالة' : 'Case Study'} | YANSY TECH` : (isRTL ? 'المحفظة | يانسي تك' : 'Portfolio | YANSY TECH'),
+    description : project?.description?.slice(0, 155) || (isRTL ? 'استعرض دراسات حالة أعمالنا.' : 'View our portfolio case studies.'),
     canonical   : `https://yansytech.com/portfolio/${project?.slug || id}`,
     ogImage     : mediaSrc(project?.coverImage),
   });
@@ -302,7 +329,7 @@ const PortfolioDetail = () => {
   if (!project) return (
     <div className="bg-white text-[#0D1117] min-h-screen flex items-center justify-center" dir={dir}>
       <div className="text-center">
-        <p className="text-[#9CA3AF] font-light mb-6">{isRTL ? 'المشروع غير موجود' : 'Project not found'}</p>
+        <p className="text-[#6B7280] font-light mb-6">{isRTL ? 'المشروع غير موجود' : 'Project not found'}</p>
         <Link to="/portfolio" className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 rounded-full px-6 py-3 hover:bg-[#2563EB]/08 transition-all">
           {isRTL ? '← العودة للمحفظة' : '← Back to Portfolio'}
         </Link>
@@ -353,7 +380,7 @@ const PortfolioDetail = () => {
           </Link>
 
           <p data-fade style={{ opacity: 0, fontSize: 10, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(37,99,235,0.65)', marginBottom: 12, fontWeight: 300 }}>
-            {project.category}{project.industry ? ` · ${project.industry}` : ''}
+            {categoryLabel(project.category, isRTL ? 'ar' : 'en')}{project.industry ? ` · ${project.industry}` : ''}
           </p>
 
           <h1 data-fade style={{ opacity: 0, fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 700, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#FFFFFF', maxWidth: 720 }}>
@@ -376,7 +403,7 @@ const PortfolioDetail = () => {
       <div style={{ borderTop: '1px solid #E8EBF0', borderBottom: '1px solid #E8EBF0', background: 'rgba(0,0,0,0.015)', padding: '18px clamp(16px,5vw,64px)' }}>
         <div className="max-w-5xl mx-auto" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px 40px', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px 40px' }}>
-            <MetaField label={isRTL ? 'التصنيف' : 'Category'} value={project.category} />
+            <MetaField label={isRTL ? 'التصنيف' : 'Category'} value={categoryLabel(project.category, isRTL ? 'ar' : 'en')} />
             {project.duration && <MetaField label={isRTL ? 'المدة' : 'Duration'} value={project.duration} />}
             {project.teamSize && <MetaField label={isRTL ? 'الفريق' : 'Team'} value={project.teamSize} />}
             {project.year && <MetaField label={isRTL ? 'السنة' : 'Year'} value={String(project.year)} />}
@@ -445,7 +472,7 @@ const PortfolioDetail = () => {
       <Footer />
 
       {lightbox && (
-        <Lightbox images={allImages} active={activeImg} onClose={() => setLightbox(false)} onPrev={prev} onNext={next} />
+        <Lightbox images={allImages} active={activeImg} onClose={() => setLightbox(false)} onPrev={prev} onNext={next} isRTL={isRTL} title={title} />
       )}
       <ProjectRequestForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>
@@ -455,7 +482,7 @@ const PortfolioDetail = () => {
 /* ── Meta field ───────────────────────────────────────────────────────────── */
 const MetaField = ({ label, value }) => (
   <div>
-    <p style={{ fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.25)', marginBottom: 3, fontWeight: 300 }}>{label}</p>
+    <p style={{ fontSize: 9, letterSpacing: '0.32em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.45)', marginBottom: 3, fontWeight: 500 }}>{label}</p>
     <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.7)', fontWeight: 300 }}>{value}</p>
   </div>
 );
@@ -495,7 +522,7 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
           <p style={{ fontSize: 9, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(37,99,235,0.55)', fontWeight: 300, margin: 0 }}>
             {isRTL ? 'معرض الصور' : 'Project Gallery'}
           </p>
-          <span style={{ marginLeft: 'auto', fontSize: 10, color: 'rgba(0,0,0,0.18)', fontWeight: 300 }}>{activeImg + 1} / {images.length}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 10, color: 'rgba(0,0,0,0.45)', fontWeight: 500 }}>{activeImg + 1} / {images.length}</span>
         </div>
 
         <div
@@ -504,7 +531,7 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
           onClick={onOpenLightbox}
           role="button" tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenLightbox(); }}
-          aria-label="Open fullscreen image"
+          aria-label={isRTL ? 'فتح الصورة بملء الشاشة' : 'Open fullscreen image'}
         >
           <ProgressiveImage
             asset={images[activeImg]}
@@ -520,10 +547,10 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
 
           {images.length > 1 && (
             <>
-              <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/85 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label="Previous">
+              <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/85 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة السابقة' : 'Previous'}>
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/85 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label="Next">
+              <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/85 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة التالية' : 'Next'}>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </>
@@ -537,7 +564,7 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
                 key={i}
                 onClick={() => setActiveImg(i)}
                 style={{ aspectRatio: '16/9', overflow: 'hidden', border: `1px solid ${i === activeImg ? '#2563EB' : 'rgba(0,0,0,0.04)'}`, opacity: i === activeImg ? 1 : 0.5, transition: 'all 0.25s', cursor: 'pointer', background: 'none', padding: 0, borderRadius: 8 }}
-                aria-label={`View image ${i + 1}`}
+                aria-label={isRTL ? `عرض الصورة ${i + 1}` : `View image ${i + 1}`}
                 aria-pressed={i === activeImg}
                 onMouseEnter={(e) => { if (i !== activeImg) e.currentTarget.style.opacity = '0.8'; }}
                 onMouseLeave={(e) => { if (i !== activeImg) e.currentTarget.style.opacity = '0.5'; }}
@@ -553,7 +580,7 @@ const GallerySection = ({ images, activeImg, setActiveImg, onOpenLightbox, onPre
 };
 
 /* ── CTA Section ─────────────────────────────────────────────────────────── */
-const CTASection = ({ project, title, isRTL, onStartProject }) => {
+const CTASection = ({ title, isRTL, onStartProject }) => {
   const ref = useRef(null);
   useReveal(ref, 0);
   const waMsg = encodeURIComponent(

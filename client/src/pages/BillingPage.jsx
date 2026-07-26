@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   CreditCard, Zap, Crown, Star, Check, X, AlertTriangle,
   Clock, ChevronRight, RefreshCw, FileText, ExternalLink,
@@ -308,14 +308,6 @@ const BillingPage = () => {
             })}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '16px' }}>
-            <Link to="/pricing" style={{ fontSize: '11px', color: textMuted, textDecoration: 'none' }}
-              onMouseEnter={e => { e.currentTarget.style.color = gold; }}
-              onMouseLeave={e => { e.currentTarget.style.color = textMuted; }}
-            >
-              View full plan comparison →
-            </Link>
-          </div>
         </div>
       )}
 

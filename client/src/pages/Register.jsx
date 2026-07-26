@@ -4,8 +4,19 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSEO } from '../hooks/useSEO';
 import { register, googleLogin, clearError } from '../store/authSlice';
-import { Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Check, AlertCircle, MessageCircle } from 'lucide-react';
+import { validatePhone } from '../utils/phone';
+
+const WHATSAPP_NUMBER = '201090385390';
+
+const PHONE_ERROR_COPY = {
+  empty:         { key: 'register.phoneNumberErrorEmpty', fallback: 'Please enter a phone number so we can reach you.' },
+  invalid_chars: { key: 'register.phoneNumberErrorChars',  fallback: 'That number has letters or symbols in it — keep only digits, spaces, dashes, or a leading +.' },
+  too_short:     { key: 'register.phoneNumberErrorShort',  fallback: 'That number looks too short — double-check the digits.' },
+  too_long:      { key: 'register.phoneNumberErrorLong',   fallback: 'That number looks too long — check for extra digits.' },
+};
 
 const GoogleIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
@@ -103,6 +114,14 @@ const Register = () => {
   const { isRTL, dir } = useLanguage();
   const { isAuthenticated, loading, error } = useSelector((s) => s.auth);
 
+  useSEO({
+    title: isRTL ? 'إنشاء حساب | يانسي تك' : 'Create Account | YANSY TECH',
+    description: isRTL
+      ? 'أنشئ حسابك في بوابة عملاء يانسي تك لمتابعة مشروعك، والفواتير، والتواصل مع فريقك مباشرة.'
+      : 'Create your YANSY TECH client portal account to track your project, invoices, and message your team directly.',
+    canonical: 'https://yansytech.com/register',
+  });
+
   const [form, setForm] = useState({
     fullName: '', email: '', phoneNumber: '', password: '',
     brandName: '', companyName: '',
@@ -111,10 +130,23 @@ const Register = () => {
   const [localError, setLocalError]     = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const [focused, setFocused]           = useState(null);
+  const [fieldErrors, setFieldErrors]   = useState({});
+  const [phoneAttempts, setPhoneAttempts] = useState(0);
+  const [phoneBypass, setPhoneBypass]     = useState(false);
 
   const formRef    = useRef(null);
   const submitting = useRef(false);
   const set = (key) => (e) => setForm(p => ({ ...p, [key]: e.target.value }));
+  const setPhone = (e) => {
+    setForm(p => ({ ...p, phoneNumber: e.target.value }));
+    setFieldErrors(p => ({ ...p, phoneNumber: undefined }));
+    setPhoneBypass(false);
+  };
+
+  const whatsappFallbackUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    isRTL ? 'مرحباً، أواجه مشكلة في إدخال رقم هاتفي أثناء التسجيل. هل يمكنكم مساعدتي؟'
+          : "Hi, I'm having trouble entering my phone number while signing up. Can you help?"
+  )}`;
 
   useEffect(() => { if (isAuthenticated) navigate('/app/dashboard'); }, [isAuthenticated, navigate]);
   useEffect(() => { dispatch(clearError()); }, [dispatch]);
@@ -133,10 +165,22 @@ const Register = () => {
     e.preventDefault();
     if (submitting.current || loading) return;
     setLocalError('');
+    setFieldErrors(p => ({ ...p, phoneNumber: undefined }));
     const { fullName, email, phoneNumber, password, brandName, companyName } = form;
     if (!fullName.trim())                              { setLocalError(t('register.fullNameRequired', 'Full name is required.')); return; }
     if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) { setLocalError(t('auth.invalidEmail', 'Please enter a valid email address.')); return; }
-    if (!phoneNumber.trim())                           { setLocalError(t('register.phoneRequired', 'Phone number is required.')); return; }
+
+    if (!phoneBypass) {
+      const phoneCheck = validatePhone(phoneNumber);
+      if (!phoneCheck.valid) {
+        const copy = PHONE_ERROR_COPY[phoneCheck.reason] || PHONE_ERROR_COPY.empty;
+        setFieldErrors(p => ({ ...p, phoneNumber: t(copy.key, copy.fallback) }));
+        setPhoneAttempts(a => a + 1);
+        shakeForm();
+        return;
+      }
+    }
+
     if (!password)                                     { setLocalError(t('auth.passwordRequired', 'Password is required.')); return; }
     if (password.length < 6)                           { setLocalError(t('register.passwordMinLength', 'Password must be at least 6 characters.')); return; }
     if (!brandName.trim() && !companyName.trim())      { setLocalError(t('register.brandOrCompanyRequired', 'Please enter a brand name or company name.')); return; }
@@ -171,7 +215,10 @@ const Register = () => {
   }, [t]);
 
   const triggerGoogleLogin = useGoogleLogin({ onSuccess: handleGoogleSuccess, onError: handleGoogleError, flow: 'auth-code' });
-  const isDisabled = loading || submitting.current || googleLoading;
+  // `submitting` ref is only read inside the handleSubmit event handler (a synchronous
+  // double-submit guard) — reading `.current` here during render is a react-hooks/refs
+  // violation; `loading` (Redux thunk pending state) already covers the disabled state.
+  const isDisabled = loading || googleLoading;
 
   const inputStyle = (name) => ({
     width: '100%', padding: '11px 14px',
@@ -280,9 +327,51 @@ const Register = () => {
 
               <div>
                 <label htmlFor="phoneNumber" style={labelStyle}>{t('register.phoneNumber', 'Phone / WhatsApp')} *</label>
-                <input id="phoneNumber" type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} required disabled={isDisabled}
+                <input id="phoneNumber" type="tel" value={form.phoneNumber} onChange={setPhone} required disabled={isDisabled}
                   onFocus={() => setFocused('phoneNumber')} onBlur={() => setFocused(null)}
-                  placeholder="+20 123 456 7890" style={inputStyle('phoneNumber')} />
+                  aria-invalid={!!fieldErrors.phoneNumber}
+                  placeholder="+20 123 456 7890"
+                  style={{
+                    ...inputStyle('phoneNumber'),
+                    border: `1px solid ${fieldErrors.phoneNumber ? '#EF4444' : (focused === 'phoneNumber' ? '#2563EB' : '#E8EBF0')}`,
+                  }} />
+                {fieldErrors.phoneNumber && (
+                  <p role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '12px', color: '#DC2626', margin: '6px 0 0', lineHeight: 1.5 }}>
+                    <AlertCircle style={{ width: '13px', height: '13px', flexShrink: 0, marginTop: '1px' }} />
+                    {fieldErrors.phoneNumber}
+                  </p>
+                )}
+                {phoneAttempts >= 2 && !phoneBypass && (
+                  <div style={{
+                    marginTop: '10px', padding: '12px 14px', borderRadius: '10px',
+                    background: '#F6F7F9', border: '1px solid #E8EBF0',
+                  }}>
+                    <p style={{ fontSize: '12px', color: '#374151', margin: '0 0 8px', fontWeight: 500 }}>
+                      {isRTL ? 'ما زال الرقم مرفوضاً؟ يمكنك المتابعة بطريقة أخرى:' : "Still not working? Here's another way forward:"}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <button type="button"
+                        onClick={() => { setPhoneBypass(true); setFieldErrors(p => ({ ...p, phoneNumber: undefined })); }}
+                        style={{
+                          padding: '7px 12px', borderRadius: '7px', border: '1px solid #C9CDD6',
+                          background: '#FFFFFF', color: '#0D1117', fontSize: '12px', fontWeight: 500,
+                          cursor: 'pointer', fontFamily: 'inherit',
+                        }}>
+                        {isRTL ? 'المتابعة بهذا الرقم' : 'Continue with this number'}
+                      </button>
+                      <a href={whatsappFallbackUrl} target="_blank" rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px',
+                          padding: '7px 12px', borderRadius: '7px', border: '1px solid rgba(37,211,102,0.3)',
+                          background: 'rgba(37,211,102,0.06)', color: '#16a34a', fontSize: '12px', fontWeight: 500,
+                          textDecoration: 'none',
+                        }}>
+                        <MessageCircle style={{ width: '13px', height: '13px' }} />
+                        {isRTL ? 'راسلنا على واتساب' : 'Message us on WhatsApp'}
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

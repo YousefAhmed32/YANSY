@@ -57,7 +57,7 @@ const Header = ({ onStartProject }) => {
   const NAV = [
     { labelKey: 'landing.nav.portfolio',  def: isRTL ? 'أعمالنا' : 'Portfolio',   href: '/portfolio' },
     { labelKey: 'landing.nav.industries', def: isRTL ? 'القطاعات' : 'Industries', href: '/industries' },
-    // { labelKey: 'landing.nav.about',      def: isRTL ? 'من نحن' : 'About',        href: '/about' },
+    { labelKey: 'landing.nav.blog',       def: isRTL ? 'المدونة' : 'Blog',        href: '/blog' },
     { labelKey: 'landing.nav.contact',    def: isRTL ? 'تواصل'   : 'Contact',     href: '/contact' },
   ];
 
@@ -142,6 +142,8 @@ const Header = ({ onStartProject }) => {
             <img
               src="/assets/image/logo/logo-2.png"
               alt="YANSY"
+              width={90}
+              height={60}
               style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
             />
           </Link>
@@ -153,17 +155,11 @@ const Header = ({ onStartProject }) => {
             aria-label="Main navigation"
             style={{ alignItems: 'center', gap: '36px' }}
           >
-            {NAV.map((item, i) =>
-              item.href ? (
-                <Link key={i} to={item.href} className="ynav-link">
-                  {t(item.labelKey, item.def)}
-                </Link>
-              ) : (
-                <button key={i} onClick={item.action} className="ynav-link">
-                  {t(item.labelKey, item.def)}
-                </button>
-              )
-            )}
+            {NAV.map((item, i) => (
+              <Link key={i} to={item.href} className="ynav-link">
+                {t(item.labelKey, item.def)}
+              </Link>
+            ))}
           </nav>
 
           {/* Desktop right */}
@@ -172,28 +168,14 @@ const Header = ({ onStartProject }) => {
             <div style={{ width: '1px', height: '16px', background: '#E8EBF0', margin: '0 4px' }} aria-hidden />
 
             {isAuthenticated ? (
-              <>
-                <Link
-                  to="/app/dashboard"
-                  style={{
-                    fontSize: '13px', fontWeight: 500, color: '#5C6370',
-                    textDecoration: 'none', padding: '4px 8px',
-                    transition: 'color 0.18s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#0D1117'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#5C6370'}
-                >
-                  {t('dashboard.title', 'Dashboard')}
-                </Link>
-                <Link
-                  to="/app/dashboard"
-                  className="btn-primary"
-                  style={{ fontSize: '12.5px', padding: '8px 18px', textDecoration: 'none' }}
-                >
-                  {t('common.goToApp', 'Go to App')}
-                  <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
-                </Link>
-              </>
+              <Link
+                to="/app/dashboard"
+                className="btn-primary"
+                style={{ fontSize: '12.5px', padding: '8px 18px', textDecoration: 'none' }}
+              >
+                {t('common.goToApp', 'Go to App')}
+                <ArrowUpRight style={{ width: 13, height: 13 }} aria-hidden />
+              </Link>
             ) : (
               <>
                 <Link
@@ -283,11 +265,7 @@ const Header = ({ onStartProject }) => {
 
             {/* Nav items */}
             <nav aria-label="Mobile navigation" style={{ marginBottom: '36px' }}>
-              {[
-                ...NAV,
-                { labelKey: 'landing.nav.pricing', def: isRTL ? 'الأسعار' : 'Pricing', href: '/pricing' },
-                { labelKey: 'landing.nav.blog',    def: isRTL ? 'المدونة' : 'Blog',    href: '/blog' },
-              ].map((item, i) => {
+              {NAV.map((item, i) => {
                 const styles = {
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '18px 0', borderBottom: '1px solid #F0F2F5',
@@ -296,7 +274,7 @@ const Header = ({ onStartProject }) => {
                   fontSize: 'clamp(1.25rem, 5vw, 1.625rem)', fontWeight: 700,
                   letterSpacing: '-0.025em', textAlign: isRTL ? 'right' : 'left',
                 };
-                return item.href ? (
+                return (
                   <Link
                     key={i}
                     ref={i === 0 ? firstFocRef : null}
@@ -307,16 +285,6 @@ const Header = ({ onStartProject }) => {
                     <span>{t(item.labelKey, item.def)}</span>
                     <ArrowUpRight style={{ width: 18, height: 18, color: '#9BA3AE', flexShrink: 0 }} aria-hidden />
                   </Link>
-                ) : (
-                  <button
-                    key={i}
-                    ref={i === 0 ? firstFocRef : null}
-                    onClick={item.action}
-                    style={{ ...styles, paddingInline: 0 }}
-                  >
-                    <span>{t(item.labelKey, item.def)}</span>
-                    <ArrowUpRight style={{ width: 18, height: 18, color: '#9BA3AE', flexShrink: 0 }} aria-hidden />
-                  </button>
                 );
               })}
             </nav>
@@ -324,7 +292,7 @@ const Header = ({ onStartProject }) => {
             {/* Utilities */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '28px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', flex: 1, border: '1px solid #E8EBF0', borderRadius: '10px' }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#9BA3AE', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#5C6370', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   {isRTL ? 'اللغة' : 'Lang'}
                 </span>
                 <LanguageSelector />
@@ -416,7 +384,7 @@ const Header = ({ onStartProject }) => {
               marginTop: '36px', paddingTop: '20px', borderTop: '1px solid #F0F2F5',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <p style={{ fontSize: '11.5px', color: '#9BA3AE', margin: 0 }}>© 2025 YANSY Tech</p>
+              <p style={{ fontSize: '11.5px', color: '#6B7280', margin: 0 }}>© 2025 YANSY Tech</p>
               <div style={{ display: 'flex', gap: '4px' }} aria-hidden>
                 {[1, 0.5, 0.25].map((o, i) => (
                   <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: '#2563EB', opacity: o }} />

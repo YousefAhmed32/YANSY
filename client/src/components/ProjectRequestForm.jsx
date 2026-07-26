@@ -11,6 +11,20 @@ import api from '../utils/api';
 import { gsap } from 'gsap';
 import { PROJECT_TYPES, FEATURE_TAGS, BUDGET_OPTIONS, TIMELINE_OPTIONS, COMPANY_SIZE_OPTIONS } from '../constants/projectOptions';
 import { trackStartProjectChoice, trackFormStep, trackWhatsAppClick, trackContactForm } from '../utils/ga4';
+import { validatePhone } from '../utils/phone';
+
+const PHONE_REASON_KEYS = {
+  empty:         'projectForm.steps.contact.phoneNumberErrorEmpty',
+  invalid_chars: 'projectForm.steps.contact.phoneNumberErrorChars',
+  too_short:     'projectForm.steps.contact.phoneNumberErrorShort',
+  too_long:      'projectForm.steps.contact.phoneNumberErrorLong',
+};
+const PHONE_REASON_FALLBACK = {
+  empty:         'Please enter your phone number so we can reach you.',
+  invalid_chars: 'That number has letters or symbols in it — keep only digits, spaces, dashes, or a leading +.',
+  too_short:     'That number looks too short — double-check the digits.',
+  too_long:      'That number looks too long — check for extra digits.',
+};
 
 /* ═══════════════════════════════════════════════════════════════
    YANSY — Start Your Project flow (v4, Minimal Tech White)
@@ -90,6 +104,8 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
   const [errors,      setErrors]      = useState({});
   const [tagsOpen,    setTagsOpen]    = useState(false);
   const [charCount,   setCharCount]   = useState(0);
+  const [phoneAttempts, setPhoneAttempts] = useState(0);
+  const [phoneBypass,   setPhoneBypass]   = useState(false);
   const [form, setForm] = useState({
     projectType: '', projectDescription: '', referenceUrl: '', tags: [],
     budgetRange: '', timeline: '', clientType: '',
@@ -135,6 +151,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
       setForm({ projectType:'',projectDescription:'',referenceUrl:'',tags:[],
         budgetRange:'',timeline:'',clientType:'',fullName:'',phoneNumber:'',
         email:'',companyName:'',companySize:'', });
+      setPhoneAttempts(0); setPhoneBypass(false);
       setWaForm({ name: '', projectType: '', budgetRange: '', timeline: '' });
       setWaErrors({}); setWaRedirecting(false);
       firedDecisionView.current = false;
@@ -272,6 +289,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
   const set = useCallback((field, value) => {
     setForm(p => ({ ...p, [field]: value }));
     setErrors(p => ({ ...p, [field]: undefined }));
+    if (field === 'phoneNumber') setPhoneBypass(false);
   }, []);
 
   const toggleTag = useCallback((key) => {
@@ -349,8 +367,13 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
     if (s === 4) {
       if (!form.fullName || form.fullName.trim().length < 2)
         e.fullName = t('projectForm.steps.contact.fullNameError');
-      if (!form.phoneNumber || form.phoneNumber.trim().length < 5)
-        e.phoneNumber = t('projectForm.steps.contact.phoneNumberError');
+      if (!phoneBypass) {
+        const phoneCheck = validatePhone(form.phoneNumber);
+        if (!phoneCheck.valid) {
+          const reason = PHONE_REASON_KEYS[phoneCheck.reason] ? phoneCheck.reason : 'empty';
+          e.phoneNumber = t(PHONE_REASON_KEYS[reason], PHONE_REASON_FALLBACK[reason]);
+        }
+      }
       if (form.email && !/^\S+@\S+\.\S+$/.test(form.email))
         e.email = t('projectForm.steps.contact.emailError');
       if (form.clientType === 'company') {
@@ -368,6 +391,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
     const e = validate(step);
     if (!Object.keys(e).length) setStep(p => Math.min(p + 1, TOTAL));
     else {
+      if (e.phoneNumber) setPhoneAttempts(a => a + 1);
       const first = scrollRef.current?.querySelector('[data-error]');
       if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -381,7 +405,10 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
   const submit = async (ev) => {
     ev.preventDefault();
     const e = validate(4);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) {
+      if (e.phoneNumber) setPhoneAttempts(a => a + 1);
+      return;
+    }
     setLoading(true);
     try {
       await api.post('/project-requests/submit', form);
@@ -674,11 +701,11 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                   </p>
 
                   <div className="mb-5">
-                    <label className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
+                    <label htmlFor="sp-wa-name" className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
                       👤 {t('projectForm.whatsappBrief.nameLabel')}
                       <span style={{ color: T.danger, fontSize: 12 }}>*</span>
                     </label>
-                    <input ref={firstInputRef} type="text" autoComplete="name"
+                    <input id="sp-wa-name" ref={firstInputRef} type="text" autoComplete="name"
                       value={waForm.name} onChange={(e) => setWa('name', e.target.value)}
                       className={`${inputCls} sp-input rounded-lg`}
                       style={{ borderColor: waErrors.name ? T.danger : T.border, color: T.text }}
@@ -820,7 +847,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                 {step === 2 && (
                   <div className="space-y-5">
                     <div>
-                      <label className="flex items-center justify-between mb-2.5">
+                      <label htmlFor="sp-project-description" className="flex items-center justify-between mb-2.5">
                         <span className="flex items-center gap-2 font-medium" style={{ fontSize: 'clamp(.95rem,3vw,1.1rem)', color: T.text }}>
                           <Sparkles style={{ width: 15, height: 15, color: T.accent, flexShrink: 0 }} />
                           {t('projectForm.steps.projectDescription.title')}
@@ -836,6 +863,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           style={{ width: `${charPct}%`, background: charOk ? '#22C55E' : T.accentMuted }} />
                       </div>
                       <textarea
+                        id="sp-project-description"
                         ref={firstInputRef}
                         value={form.projectDescription}
                         onChange={(e) => set('projectDescription', e.target.value)}
@@ -847,13 +875,13 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     </div>
 
                     <div>
-                      <label className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.textSecondary }}>
+                      <label htmlFor="sp-reference-url" className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.textSecondary }}>
                         <LinkIcon style={{ width: 13, height: 13, color: T.accent, flexShrink: 0 }} />
                         {t('projectForm.steps.reference.title')}
                         <span style={{ color: T.textTertiary, fontSize: 11 }}>({t('projectForm.steps.reference.optional')})</span>
                       </label>
                       <div className="relative">
-                        <input type="url" value={form.referenceUrl}
+                        <input id="sp-reference-url" type="url" value={form.referenceUrl}
                           onChange={(e) => set('referenceUrl', e.target.value)}
                           className={`${inputCls} sp-input rounded-lg`}
                           style={{ borderColor: T.border, color: T.text, paddingInlineEnd: form.referenceUrl ? 40 : undefined }}
@@ -1016,12 +1044,12 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                 {step === 4 && (
                   <div className="space-y-4">
                     <div>
-                      <label className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
+                      <label htmlFor="sp-full-name" className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
                         👤 {t('projectForm.steps.contact.fullName')}
                         <span style={{ color: T.danger, fontSize: 12 }}>*</span>
                       </label>
                       <div className="relative">
-                        <input ref={firstInputRef} type="text" autoComplete="name"
+                        <input id="sp-full-name" ref={firstInputRef} type="text" autoComplete="name"
                           value={form.fullName} onChange={(e) => set('fullName', e.target.value)}
                           className={`${inputCls} sp-input rounded-lg`}
                           style={{ borderColor: errors.fullName ? T.danger : T.border, color: T.text, paddingInlineEnd: form.fullName ? 40 : undefined }}
@@ -1034,13 +1062,13 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     </div>
 
                     <div>
-                      <label className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
+                      <label htmlFor="sp-phone-number" className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
                         <Phone style={{ width: 13, height: 13, color: T.accent, flexShrink: 0 }} />
                         {t('projectForm.steps.contact.phoneNumber')}
                         <span style={{ color: T.danger, fontSize: 12 }}>*</span>
                       </label>
                       <div className="relative">
-                        <input type="tel" autoComplete="tel"
+                        <input id="sp-phone-number" type="tel" autoComplete="tel"
                           value={form.phoneNumber} onChange={(e) => set('phoneNumber', e.target.value)}
                           className={`${inputCls} sp-input rounded-lg`}
                           style={{ borderColor: errors.phoneNumber ? T.danger : T.border, color: T.text, paddingInlineEnd: form.phoneNumber ? 40 : undefined }}
@@ -1050,16 +1078,37 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                         )}
                       </div>
                       {errors.phoneNumber && <div data-error><FieldError msg={errors.phoneNumber} /></div>}
+                      {phoneAttempts >= 2 && !phoneBypass && (
+                        <div className="mt-2.5 p-3 rounded-lg" style={{ background: T.subtle, border: `1px solid ${T.border}` }}>
+                          <p className="mb-2 font-medium" style={{ fontSize: 12, color: T.textSecondary }}>
+                            {t('projectForm.steps.contact.phoneTrouble', "Still having trouble? Here's another way forward:")}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <button type="button"
+                              onClick={() => { setPhoneBypass(true); setErrors(p => ({ ...p, phoneNumber: undefined })); }}
+                              className="px-3 py-1.5 rounded-md font-medium"
+                              style={{ border: `1px solid ${T.borderStrong}`, background: '#fff', color: T.text, fontSize: 12, cursor: 'pointer' }}>
+                              {t('projectForm.steps.contact.phoneContinueAnyway', 'Continue with this number')}
+                            </button>
+                            <button type="button" onClick={chooseWhatsApp}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium"
+                              style={{ border: '1px solid rgba(37,211,102,0.3)', background: 'rgba(37,211,102,0.06)', color: '#16a34a', fontSize: 12, cursor: 'pointer' }}>
+                              <MessageCircle style={{ width: 13, height: 13 }} />
+                              {t('projectForm.steps.contact.phoneUseWhatsapp', 'Switch to WhatsApp instead')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>
-                      <label className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
+                      <label htmlFor="sp-email" className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
                         <Mail style={{ width: 13, height: 13, color: T.accent, flexShrink: 0 }} />
                         {t('projectForm.steps.contact.email')}
                         <span style={{ fontSize: 11, color: T.textTertiary }}>({t('projectForm.steps.contact.emailOptional')})</span>
                       </label>
                       <div className="relative">
-                        <input type="email" autoComplete="email"
+                        <input id="sp-email" type="email" autoComplete="email"
                           value={form.email} onChange={(e) => set('email', e.target.value)}
                           className={`${inputCls} sp-input rounded-lg`}
                           style={{ borderColor: errors.email ? T.danger : T.border, color: T.text }}
@@ -1074,13 +1123,13 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     {form.clientType === 'company' && (
                       <>
                         <div>
-                          <label className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
+                          <label htmlFor="sp-company-name" className="flex items-center gap-2 mb-2 font-medium" style={{ fontSize: 13, color: T.text }}>
                             <Building2 style={{ width: 13, height: 13, color: T.accent, flexShrink: 0 }} />
                             {t('projectForm.steps.contact.companyName')}
                             <span style={{ color: T.danger, fontSize: 12 }}>*</span>
                           </label>
                           <div className="relative">
-                            <input type="text" autoComplete="organization"
+                            <input id="sp-company-name" type="text" autoComplete="organization"
                               value={form.companyName} onChange={(e) => set('companyName', e.target.value)}
                               className={`${inputCls} sp-input rounded-lg`}
                               style={{ borderColor: errors.companyName ? T.danger : T.border, color: T.text }}

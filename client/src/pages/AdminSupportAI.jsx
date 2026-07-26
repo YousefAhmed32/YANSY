@@ -7,11 +7,11 @@ import { useSelector } from 'react-redux';
 import {
   Sparkles, RefreshCw, MessageSquare, Target, Zap, Ticket, AlertTriangle, TrendingUp,
   LayoutDashboard, Calendar, CalendarDays, Star, Percent, Inbox, User, Ghost,
-  BarChart3, ChevronRight, X,
+  BarChart3, ChevronRight, X, Settings, Save, MessageCircle,
 } from 'lucide-react';
 import {
   TK, FONT, STATUS_TONE, PageHeader, StatCard, Badge, Card, SectionHead, Tabs, DataTable,
-  Modal, Select, SearchInput, Button, IconButton, Spinner,
+  Modal, Select, SearchInput, Button, IconButton, Spinner, TextInput, TextArea, Switch,
 } from '../admin-ui';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -37,6 +37,14 @@ const SENT_CLR = { positive: TK.green, neutral: TK.textMuted, frustrated: TK.amb
 const SENT_ICO = { positive: '😊', neutral: '😐', frustrated: '😤', urgent: '🚨' };
 
 const toOpts = (arr) => arr.map(([value, label]) => ({ value, label }));
+
+// Cost Profile presets — a starting point admins can apply then fine-tune;
+// the individually-toggled flags below always win, this just bulk-sets them.
+const COST_PROFILE_PRESETS = {
+  economy:  { visionEnabled: false, fileAnalysisEnabled: false, documentGenerationEnabled: false, streamingEnabled: false, memoryEnabled: true, longContextEnabled: false, deepReasoningEnabled: false, voiceEnabled: false, ragEnabled: true },
+  balanced: { visionEnabled: true,  fileAnalysisEnabled: true,  documentGenerationEnabled: true,  streamingEnabled: true,  memoryEnabled: true, longContextEnabled: true,  deepReasoningEnabled: false, voiceEnabled: true,  ragEnabled: true },
+  premium:  { visionEnabled: true,  fileAnalysisEnabled: true,  documentGenerationEnabled: true,  streamingEnabled: true,  memoryEnabled: true, longContextEnabled: true,  deepReasoningEnabled: true,  voiceEnabled: true,  ragEnabled: true },
+};
 
 // ── Bilingual label maps (EN/AR) for enum-like business values ───────────────
 const STATUS_LABEL = {
@@ -147,6 +155,7 @@ const ModalHeader = ({ title, sub, onClose, children }) => (
 
 // ── Conversation Transcript Panel ─────────────────────────────────────────────
 const ConvPanel = memo(({ conv, token, language, onClose, onUpdate }) => {
+  const isRTL = language === 'ar';
   const [note,   setNote]   = useState(conv.adminNotes || '');
   const [saving, setSaving] = useState(false);
 
@@ -195,9 +204,9 @@ const ConvPanel = memo(({ conv, token, language, onClose, onUpdate }) => {
       )}
 
       <Section label={language === 'ar' ? `المحادثة الكاملة (${conv.messages?.length || 0} رسالة)` : `Full Conversation (${conv.messages?.length || 0} messages)`}>
-        <div className="au-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '7px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
+        <div className="au-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '7px', maxHeight: '340px', overflowY: 'auto', paddingInlineEnd: '4px' }}>
           {(conv.messages || []).map((m, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? (isRTL ? 'flex-start' : 'flex-end') : (isRTL ? 'flex-end' : 'flex-start') }}>
               <div style={{
                 maxWidth: '82%', padding: '9px 12px', fontSize: '12.5px', lineHeight: 1.6,
                 borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
@@ -326,6 +335,7 @@ RequestPanel.displayName = 'RequestPanel';
 
 // ── Ticket Panel ──────────────────────────────────────────────────────────────
 const TicketPanel = memo(({ ticket, conv, token, language, onClose, onUpdate }) => {
+  const isRTL = language === 'ar';
   const [note,     setNote]     = useState('');
   const [status,   setStatus]   = useState(ticket.status);
   const [priority, setPriority] = useState(ticket.priority);
@@ -371,7 +381,7 @@ const TicketPanel = memo(({ ticket, conv, token, language, onClose, onUpdate }) 
         <Section label={language === 'ar' ? 'لقطة من المحادثة' : 'Conversation Snapshot'}>
           <div className="au-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '7px', maxHeight: '240px', overflowY: 'auto' }}>
             {ticket.conversationSnapshot.map((m, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? (isRTL ? 'flex-start' : 'flex-end') : (isRTL ? 'flex-end' : 'flex-start') }}>
                 <div style={{ maxWidth: '80%', padding: '8px 12px', fontSize: '12px', borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? TK.accentBg : TK.bgSubtle, color: TK.text }}>{m.content}</div>
               </div>
             ))}
@@ -425,6 +435,8 @@ const AdminSupportAI = () => {
   const [tab,           setTab]           = useState('overview');
   const [analytics,     setAnalytics]     = useState(null);
   const [anaLoading,    setAnaLoading]    = useState(true);
+  const [costAnalytics, setCostAnalytics] = useState(null);
+  const [costLoading,   setCostLoading]   = useState(false);
   const [loading,       setLoading]       = useState(false);
 
   // Data
@@ -461,6 +473,18 @@ const AdminSupportAI = () => {
   const [selTicket, setSelTicket] = useState(null);
   const [tickConv,  setTickConv]  = useState(null);
 
+  // AI consultant configuration (SystemSettings, category 'ai_chat')
+  const [chatSettings,        setChatSettings]        = useState(null);
+  const [chatSettingsLoading, setChatSettingsLoading]  = useState(false);
+  const [chatSettingsSaving,  setChatSettingsSaving]   = useState(false);
+  const [chatSettingsSaved,   setChatSettingsSaved]    = useState(false);
+
+  // RAG knowledge base
+  const [knowledgeDocs,    setKnowledgeDocs]    = useState(null);
+  const [knowledgeLoading, setKnowledgeLoading]  = useState(false);
+  const [knowledgeSaving,  setKnowledgeSaving]   = useState(false);
+  const [newDoc,           setNewDoc]           = useState({ title: '', content: '', category: 'faq' });
+
   const timer = useRef(null);
   const PER   = 15;
 
@@ -471,6 +495,14 @@ const AdminSupportAI = () => {
       const r = await fetch(`${API()}/support/admin/analytics`, { headers: ah(token) });
       setAnalytics(await r.json());
     } catch {} finally { setAnaLoading(false); }
+  }, [token]);
+
+  const fetchCostAnalytics = useCallback(async () => {
+    setCostLoading(true);
+    try {
+      const r = await fetch(`${API()}/support/admin/cost-analytics`, { headers: ah(token) });
+      setCostAnalytics(await r.json());
+    } catch {} finally { setCostLoading(false); }
   }, [token]);
 
   const mkFetch = (url, setData, setTotal) => async (page = 1, f = {}) => {
@@ -490,8 +522,82 @@ const AdminSupportAI = () => {
   const fetchTickets       = useCallback(mkFetch('admin/tickets',       setTickets,       setTickTotal), [token]); // eslint-disable-line
   const fetchEscalations   = useCallback(mkFetch('admin/escalations',   setEscalations,   setEscTotal),  [token]); // eslint-disable-line
 
+  // ── AI consultant configuration ──────────────────────────────────────────
+  const fetchChatSettings = useCallback(async () => {
+    setChatSettingsLoading(true);
+    try {
+      const r = await fetch(`${API()}/admin/settings?category=ai_chat`, { headers: ah(token) });
+      const d = await r.json();
+      const flat = {};
+      (d.settings || []).forEach(s => { flat[s.key] = s.value; });
+      setChatSettings(flat);
+    } catch {} finally { setChatSettingsLoading(false); }
+  }, [token]);
+
+  const saveChatSettings = useCallback(async () => {
+    if (!chatSettings) return;
+    setChatSettingsSaving(true);
+    setChatSettingsSaved(false);
+    try {
+      const updates = Object.entries(chatSettings).map(([key, value]) => ({ key, value }));
+      await fetch(`${API()}/admin/settings`, {
+        method: 'PATCH', headers: ah(token), body: JSON.stringify({ updates }),
+      });
+      setChatSettingsSaved(true);
+      setTimeout(() => setChatSettingsSaved(false), 2500);
+    } catch {} finally { setChatSettingsSaving(false); }
+  }, [chatSettings, token]);
+
+  const setChatField = (key, value) => setChatSettings(prev => ({ ...prev, [key]: value }));
+
+  const applyCostProfile = (profile) => {
+    const preset = COST_PROFILE_PRESETS[profile];
+    setChatSettings(prev => ({
+      ...prev,
+      'aiChat.costProfile': profile,
+      ...Object.fromEntries(Object.entries(preset).map(([k, v]) => [`aiChat.${k}`, v])),
+    }));
+  };
+
+  // ── RAG knowledge base ──────────────────────────────────────────────────────
+  const fetchKnowledge = useCallback(async () => {
+    setKnowledgeLoading(true);
+    try {
+      const r = await fetch(`${API()}/support/admin/knowledge`, { headers: ah(token) });
+      const d = await r.json();
+      setKnowledgeDocs(d.docs || []);
+    } catch {} finally { setKnowledgeLoading(false); }
+  }, [token]);
+
+  const createKnowledgeDoc = useCallback(async () => {
+    if (!newDoc.title.trim() || !newDoc.content.trim()) return;
+    setKnowledgeSaving(true);
+    try {
+      const r = await fetch(`${API()}/support/admin/knowledge`, { method: 'POST', headers: ah(token), body: JSON.stringify(newDoc) });
+      const d = await r.json();
+      if (d.doc) { setKnowledgeDocs(prev => [d.doc, ...(prev || [])]); setNewDoc({ title: '', content: '', category: 'faq' }); }
+    } catch {} finally { setKnowledgeSaving(false); }
+  }, [newDoc, token]);
+
+  const toggleKnowledgeDoc = useCallback(async (doc) => {
+    setKnowledgeDocs(prev => prev.map(d => d._id === doc._id ? { ...d, isActive: !d.isActive } : d));
+    try {
+      await fetch(`${API()}/support/admin/knowledge/${doc._id}`, { method: 'PATCH', headers: ah(token), body: JSON.stringify({ isActive: !doc.isActive }) });
+    } catch {}
+  }, [token]);
+
+  const deleteKnowledgeDoc = useCallback(async (id) => {
+    setKnowledgeDocs(prev => prev.filter(d => d._id !== id));
+    try {
+      await fetch(`${API()}/support/admin/knowledge/${id}`, { method: 'DELETE', headers: ah(token) });
+    } catch {}
+  }, [token]);
+
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
+  useEffect(() => { if (tab === 'config' && !chatSettings) fetchChatSettings(); }, [tab, chatSettings, fetchChatSettings]);
+  useEffect(() => { if (tab === 'config' && knowledgeDocs === null) fetchKnowledge(); }, [tab, knowledgeDocs, fetchKnowledge]);
+  useEffect(() => { if (tab === 'cost' && !costAnalytics) fetchCostAnalytics(); }, [tab, costAnalytics, fetchCostAnalytics]);
 
   useEffect(() => {
     if (tab === 'conversations') fetchConversations(convPage, convF);
@@ -556,6 +662,8 @@ const AdminSupportAI = () => {
     { value: 'tickets',       label: language === 'ar' ? 'التذاكر' : 'Tickets',       icon: Ticket,        count: analytics?.ticketsOpen > 0 ? analytics.ticketsOpen : undefined },
     { value: 'escalations',   label: language === 'ar' ? 'التصعيدات' : 'Escalations', icon: AlertTriangle, count: analytics?.escalationsTotal > 0 ? analytics.escalationsTotal : undefined },
     { value: 'analytics',     label: language === 'ar' ? 'التحليلات' : 'Analytics',   icon: TrendingUp },
+    { value: 'cost',          label: language === 'ar' ? 'التكلفة' : 'Cost',          icon: Percent },
+    { value: 'config',        label: language === 'ar' ? 'الإعدادات' : 'Configuration', icon: Settings },
   ];
 
   // ── DataTable column definitions ─────────────────────────────────────────
@@ -976,6 +1084,218 @@ const AdminSupportAI = () => {
             <StatCard key={label} icon={icon} label={label} value={value} tone={tone} />
           ))}
         </div>
+      )}
+
+      {/* ══════ CONFIGURATION ══════ */}
+      {tab === 'config' && (
+        chatSettingsLoading || !chatSettings ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}><Spinner /></div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '860px' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <p style={{ fontSize: '12.5px', color: TK.textMuted, margin: 0, maxWidth: '520px', lineHeight: 1.6 }}>
+                {language === 'ar'
+                  ? 'يتحكم هذا القسم في شخصية وسلوك مستشار YANSY AI على الموقع العام — بدون الحاجة لتعديل الكود. التغييرات تنعكس خلال دقيقة تقريباً.'
+                  : "Controls YANSY AI's personality and behavior on the public site — no code changes needed. Edits take effect within about a minute."}
+              </p>
+              <Button variant="primary" icon={chatSettingsSaved ? undefined : Save} onClick={saveChatSettings} loading={chatSettingsSaving}>
+                {chatSettingsSaved ? (language === 'ar' ? '✓ تم الحفظ' : '✓ Saved') : (language === 'ar' ? 'حفظ التغييرات' : 'Save changes')}
+              </Button>
+            </div>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'رسالة الترحيب' : 'Welcome Message'} subtitle={language === 'ar' ? 'أول رسالة يراها الزائر عند فتح المحادثة' : 'The first message a visitor sees when opening the chat'} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: TK.textMuted, display: 'block', marginBottom: '6px' }}>English</label>
+                  <TextArea rows={4} value={chatSettings['aiChat.welcomeMessageEn'] || ''} onChange={e => setChatField('aiChat.welcomeMessageEn', e.target.value)} dir="ltr" />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: TK.textMuted, display: 'block', marginBottom: '6px' }}>العربية</label>
+                  <TextArea rows={4} value={chatSettings['aiChat.welcomeMessageAr'] || ''} onChange={e => setChatField('aiChat.welcomeMessageAr', e.target.value)} dir="rtl" />
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'الشخصية والنبرة' : 'Personality & Tone'} subtitle={language === 'ar' ? 'كيف يتحدث المستشار — يُضاف إلى تعليمات النظام الأساسية' : "How the consultant speaks — appended to the base system instructions"} />
+              <TextInput value={chatSettings['aiChat.tone'] || ''} onChange={e => setChatField('aiChat.tone', e.target.value)} placeholder="confident, warm, senior-consultant..." />
+            </Card>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'تعليمات إضافية' : 'Additional Instructions'} subtitle={language === 'ar' ? 'سياق مؤقت — عروض موسمية، تركيز حملة، إلخ' : 'Temporary context — seasonal offers, campaign focus, etc.'} />
+              <TextArea rows={3} value={chatSettings['aiChat.systemPromptAddendum'] || ''} onChange={e => setChatField('aiChat.systemPromptAddendum', e.target.value)} placeholder={language === 'ar' ? 'اختياري' : 'Optional'} />
+            </Card>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              <Card>
+                <SectionHead title={language === 'ar' ? 'درجة الحرارة' : 'Temperature'} subtitle={language === 'ar' ? '0 = دقيق، 1 = إبداعي' : '0 = precise, 1 = creative'} />
+                <TextInput type="number" min="0" max="1" step="0.05" value={chatSettings['aiChat.temperature'] ?? 0.75} onChange={e => setChatField('aiChat.temperature', parseFloat(e.target.value))} />
+              </Card>
+              <Card>
+                <SectionHead title={language === 'ar' ? 'نموذج مخصص' : 'Model Override'} subtitle={language === 'ar' ? 'اتركه فارغاً لاستخدام الإعداد الافتراضي' : 'Leave blank to use the server default'} />
+                <TextInput value={chatSettings['aiChat.model'] || ''} onChange={e => setChatField('aiChat.model', e.target.value)} placeholder="gpt-4o-mini" dir="ltr" />
+              </Card>
+            </div>
+
+            <Card>
+              <SectionHead icon={MessageCircle} title={language === 'ar' ? 'قالب تسليم واتساب' : 'WhatsApp Handoff Template'} subtitle={language === 'ar' ? 'استخدم {{brief}} كعنصر نائب لملخص المشروع المُولَّد تلقائياً' : 'Use {{brief}} as the placeholder for the auto-generated project brief'} />
+              <TextArea rows={4} value={chatSettings['aiChat.whatsappTemplate'] || ''} onChange={e => setChatField('aiChat.whatsappTemplate', e.target.value)} dir="ltr" />
+            </Card>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              <Card>
+                <SectionHead title={language === 'ar' ? 'المحادثة الصوتية' : 'Voice Conversation'} subtitle={language === 'ar' ? 'السماح بالتحدث والاستماع في الودجت العام' : 'Allow speaking/listening in the public widget'} />
+                <Switch checked={chatSettings['aiChat.voiceEnabled'] !== false} onChange={v => setChatField('aiChat.voiceEnabled', v)} label={language === 'ar' ? 'مفعّل' : 'Enabled'} />
+                {chatSettings['aiChat.voiceEnabled'] !== false && (
+                  <div style={{ marginTop: '10px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: TK.textMuted, display: 'block', marginBottom: '6px' }}>{language === 'ar' ? 'الصوت' : 'TTS Voice'}</label>
+                    <Select value={chatSettings['aiChat.voice'] || 'alloy'} onChange={e => setChatField('aiChat.voice', e.target.value)}
+                      options={toOpts([['alloy', 'Alloy'], ['verse', 'Verse'], ['echo', 'Echo'], ['ember', 'Ember'], ['sage', 'Sage']])} />
+                  </div>
+                )}
+              </Card>
+              <Card>
+                <SectionHead title={language === 'ar' ? 'الاستناد لقاعدة المعرفة' : 'Knowledge Grounding (RAG)'} subtitle={language === 'ar' ? 'استخدام قاعدة المعرفة أدناه بدلاً من الافتراضات' : 'Ground answers in the knowledge base below instead of assumptions'} />
+                <Switch checked={chatSettings['aiChat.ragEnabled'] !== false} onChange={v => setChatField('aiChat.ragEnabled', v)} label={language === 'ar' ? 'مفعّل' : 'Enabled'} />
+              </Card>
+            </div>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'قاعدة المعرفة' : 'Knowledge Base'} subtitle={language === 'ar' ? 'حقائق حقيقية عن الشركة — الخدمات، الأسعار، الأسئلة الشائعة، السياسات — يستند إليها المستشار بدلاً من الاختلاق' : 'Real company facts — services, pricing, FAQs, policies — the consultant grounds answers in these instead of inventing them'} />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: '10px', marginBottom: '10px' }}>
+                <TextInput value={newDoc.title} onChange={e => setNewDoc(d => ({ ...d, title: e.target.value }))} placeholder={language === 'ar' ? 'العنوان (مثال: سياسة الاسترجاع)' : 'Title (e.g. Refund Policy)'} />
+                <Select value={newDoc.category} onChange={e => setNewDoc(d => ({ ...d, category: e.target.value }))}
+                  options={toOpts([['services', language === 'ar' ? 'الخدمات' : 'Services'], ['pricing', language === 'ar' ? 'الأسعار' : 'Pricing'], ['faq', 'FAQ'], ['case-study', language === 'ar' ? 'دراسة حالة' : 'Case Study'], ['policy', language === 'ar' ? 'سياسة' : 'Policy'], ['brand', language === 'ar' ? 'الهوية' : 'Brand'], ['other', language === 'ar' ? 'أخرى' : 'Other']])} />
+              </div>
+              <TextArea rows={3} value={newDoc.content} onChange={e => setNewDoc(d => ({ ...d, content: e.target.value }))} placeholder={language === 'ar' ? 'المحتوى الفعلي — سيتم استخدامه كحقيقة موثوقة' : 'The actual fact — this gets used as ground truth'} style={{ marginBottom: '10px' }} />
+              <Button variant="secondary" onClick={createKnowledgeDoc} loading={knowledgeSaving} disabled={!newDoc.title.trim() || !newDoc.content.trim()}>
+                {language === 'ar' ? '+ إضافة' : '+ Add entry'}
+              </Button>
+
+              <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {knowledgeLoading && <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}><Spinner /></div>}
+                {!knowledgeLoading && knowledgeDocs?.length === 0 && (
+                  <p style={{ fontSize: '12px', color: TK.textLight, textAlign: 'center', padding: '16px 0' }}>
+                    {language === 'ar' ? 'لا توجد إدخالات بعد' : 'No knowledge entries yet'}
+                  </p>
+                )}
+                {knowledgeDocs?.map(doc => (
+                  <div key={doc._id} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', border: `1px solid ${TK.border}`, borderRadius: '10px', opacity: doc.isActive ? 1 : 0.5 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                        <Badge tone="neutral">{doc.category}</Badge>
+                        <p style={{ margin: 0, fontSize: '12.5px', fontWeight: 600, color: TK.text }}>{doc.title}</p>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.5px', color: TK.textMuted, lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{doc.content}</p>
+                    </div>
+                    <Switch checked={doc.isActive} onChange={() => toggleKnowledgeDoc(doc)} />
+                    <IconButton icon={X} onClick={() => deleteKnowledgeDoc(doc._id)} title={language === 'ar' ? 'حذف' : 'Delete'} />
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'ملف التكلفة' : 'Cost Profile'} subtitle={language === 'ar' ? 'إعداد سريع لكل القدرات المكلفة — يمكن تعديل كل واحدة يدوياً بعده' : 'Bulk-sets every expensive capability — each can still be fine-tuned individually below'} />
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                {['economy', 'balanced', 'premium'].map(p => {
+                  const active = (chatSettings['aiChat.costProfile'] || 'balanced') === p;
+                  return (
+                    <button key={p} onClick={() => applyCostProfile(p)} style={{
+                      padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer',
+                      border: `1px solid ${active ? TK.accent : TK.border}`, background: active ? TK.accent : TK.surface, color: active ? '#FFFFFF' : TK.text,
+                    }}>
+                      {p === 'economy' ? (language === 'ar' ? 'اقتصادي' : 'Economy') : p === 'balanced' ? (language === 'ar' ? 'متوازن' : 'Balanced') : (language === 'ar' ? 'مميز' : 'Premium')}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px 20px' }}>
+                <Switch checked={chatSettings['aiChat.visionEnabled'] !== false} onChange={v => setChatField('aiChat.visionEnabled', v)} label={language === 'ar' ? 'تحليل الصور (Vision)' : 'Vision (image analysis)'} />
+                <Switch checked={chatSettings['aiChat.fileAnalysisEnabled'] !== false} onChange={v => setChatField('aiChat.fileAnalysisEnabled', v)} label={language === 'ar' ? 'تحليل الملفات (PDF/Word)' : 'File Analysis (PDF/Word)'} />
+                <Switch checked={chatSettings['aiChat.documentGenerationEnabled'] !== false} onChange={v => setChatField('aiChat.documentGenerationEnabled', v)} label={language === 'ar' ? 'إنشاء وثيقة المشروع' : 'Document Generation'} />
+                <Switch checked={chatSettings['aiChat.streamingEnabled'] !== false} onChange={v => setChatField('aiChat.streamingEnabled', v)} label={language === 'ar' ? 'الردود المتدفقة' : 'Streaming Replies'} />
+                <Switch checked={chatSettings['aiChat.memoryEnabled'] !== false} onChange={v => setChatField('aiChat.memoryEnabled', v)} label={language === 'ar' ? 'الذاكرة / استئناف المستخدم' : 'Memory / Resume'} />
+                <Switch checked={chatSettings['aiChat.longContextEnabled'] !== false} onChange={v => setChatField('aiChat.longContextEnabled', v)} label={language === 'ar' ? 'سياق طويل' : 'Long Context'} />
+                <Switch checked={chatSettings['aiChat.deepReasoningEnabled'] !== false} onChange={v => setChatField('aiChat.deepReasoningEnabled', v)} label={language === 'ar' ? 'تفكير عميق' : 'Deep Reasoning'} />
+              </div>
+            </Card>
+
+          </div>
+        )
+      )}
+
+      {/* ══════ COST ANALYTICS ══════ */}
+      {tab === 'cost' && (
+        costLoading || !costAnalytics ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}><Spinner /></div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+            {!costAnalytics.pricingConfigured && (
+              <div style={{ padding: '12px 14px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', fontSize: '12px', color: '#92400E' }}>
+                {language === 'ar'
+                  ? 'لم يتم ضبط جدول الأسعار بعد — كل التكاليف أدناه تظهر $0. اضبط aiChat.pricingTable في الإعدادات بأسعار حقيقية من فاتورة OpenAI.'
+                  : 'No pricing rates configured yet — all cost figures below show $0. Set aiChat.pricingTable in Configuration with real rates from your OpenAI billing dashboard.'}
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              <StatCard icon={TrendingUp} label={language === 'ar' ? 'إجمالي التكلفة' : 'Total Cost'} value={`$${costAnalytics.totalCostUSD.toFixed(2)}`} />
+              <StatCard icon={Calendar} label={language === 'ar' ? 'اليوم' : 'Today'} value={`$${costAnalytics.today.costUSD.toFixed(2)}`} />
+              <StatCard icon={CalendarDays} label={language === 'ar' ? 'هذا الشهر' : 'This Month'} value={`$${costAnalytics.thisMonth.costUSD.toFixed(2)}`} />
+              <StatCard icon={Target} label={language === 'ar' ? 'تكلفة لكل عميل مؤهل' : 'Cost / Qualified Lead'} value={costAnalytics.costPerQualifiedLeadUSD != null ? `$${costAnalytics.costPerQualifiedLeadUSD.toFixed(4)}` : '—'} />
+              <StatCard icon={Zap} label={language === 'ar' ? 'إجمالي الطلبات' : 'Total AI Calls'} value={costAnalytics.totalCalls} />
+              <StatCard icon={BarChart3} label={language === 'ar' ? 'إجمالي التوكنز' : 'Total Tokens'} value={(costAnalytics.totalInputTokens + costAnalytics.totalOutputTokens).toLocaleString()} />
+            </div>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'التكلفة حسب الميزة' : 'Cost by Feature'} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {costAnalytics.byFeature.length === 0 && <p style={{ fontSize: '12px', color: TK.textLight }}>{language === 'ar' ? 'لا توجد بيانات بعد' : 'No data yet'}</p>}
+                {costAnalytics.byFeature.map(f => (
+                  <div key={f.feature} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', border: `1px solid ${TK.border}`, borderRadius: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: TK.text, textTransform: 'capitalize' }}>{f.feature.replace('_', ' ')}</span>
+                    <span style={{ fontSize: '11px', color: TK.textMuted }}>{f.calls} calls · {f.tokens.toLocaleString()} tokens</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: TK.accent }}>${f.costUSD.toFixed(4)}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'التكلفة حسب النموذج' : 'Cost by Model'} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {costAnalytics.byModel.length === 0 && <p style={{ fontSize: '12px', color: TK.textLight }}>{language === 'ar' ? 'لا توجد بيانات بعد' : 'No data yet'}</p>}
+                {costAnalytics.byModel.map(m => (
+                  <div key={m.model} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', border: `1px solid ${TK.border}`, borderRadius: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: TK.text, fontFamily: 'monospace' }}>{m.model}</span>
+                    <span style={{ fontSize: '11px', color: TK.textMuted }}>{m.calls} calls · {m.tokens.toLocaleString()} tokens</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: TK.accent }}>${m.costUSD.toFixed(4)}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card>
+              <SectionHead title={language === 'ar' ? 'الاتجاه اليومي (14 يوم)' : 'Daily Trend (14 days)'} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {costAnalytics.dailyTrend.length === 0 && <p style={{ fontSize: '12px', color: TK.textLight }}>{language === 'ar' ? 'لا توجد بيانات بعد' : 'No data yet'}</p>}
+                {costAnalytics.dailyTrend.map(d => (
+                  <div key={d.date} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11.5px', padding: '4px 2px' }}>
+                    <span style={{ color: TK.textMuted }}>{d.date}</span>
+                    <span style={{ color: TK.textMuted }}>{d.calls} calls</span>
+                    <span style={{ fontWeight: 600, color: TK.text }}>${d.costUSD.toFixed(4)}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+          </div>
+        )
       )}
 
       {/* ══════ PANELS ══════ */}

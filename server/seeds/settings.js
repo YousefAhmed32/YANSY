@@ -47,6 +47,29 @@ const DEFAULT_SETTINGS = [
   // ── Files ────────────────────────────────────────────────────────────────
   { key: 'files.maxSizeMb',         value: 10,    type: 'number', category: 'files', label: 'Max Upload Size (MB)',  isPublic: true  },
   { key: 'files.allowedTypes',      value: 'jpeg,jpg,png,gif,pdf,doc,docx,xls,xlsx,zip', type: 'string', category: 'files', label: 'Allowed File Types', isPublic: true },
+
+  // ── AI Sales Consultant (public chat widget) ────────────────────────────
+  { key: 'aiChat.welcomeMessageEn',   value: "Hi, I'm YANSY's solution consultant. Tell me a bit about what you're building — or what's not working with what you have — and I'll help you shape it into a clear plan.", type: 'string', category: 'ai_chat', label: 'Welcome Message (EN)', isPublic: false },
+  { key: 'aiChat.welcomeMessageAr',   value: 'أهلاً، أنا مستشار الحلول لدى يانسي. احكِ لي باختصار عمّا تريد بناءه — أو المشكلة في اللي عندك حالياً — وهساعدك تحوّلها لخطة واضحة.', type: 'string', category: 'ai_chat', label: 'Welcome Message (AR)', isPublic: false },
+  { key: 'aiChat.tone',               value: 'confident, warm, senior-consultant — never robotic, never salesy', type: 'string', category: 'ai_chat', label: 'Brand Tone / Personality', isPublic: false },
+  { key: 'aiChat.temperature',        value: 0.75, type: 'number', category: 'ai_chat', label: 'Model Temperature (0-1)', isPublic: false },
+  { key: 'aiChat.model',              value: '',   type: 'string', category: 'ai_chat', label: 'Model Override (blank = use OPENAI_MODEL env default)', isPublic: false },
+  { key: 'aiChat.systemPromptAddendum', value: '', type: 'string', category: 'ai_chat', label: 'Extra System Prompt Instructions', description: 'Appended to the base consultant prompt — use for temporary campaign focus, seasonal offers, etc.', isPublic: false },
+  { key: 'aiChat.whatsappTemplate',   value: "Hi YANSY 👋 I've been chatting with your AI consultant. Here's my project brief:\n\n{{brief}}\n\nI'd like to continue with your team.", type: 'string', category: 'ai_chat', label: 'WhatsApp Handoff Template', description: 'Use {{brief}} as the placeholder for the auto-generated project brief.', isPublic: false },
+  { key: 'aiChat.voiceEnabled',       value: true, type: 'boolean', category: 'ai_chat', label: 'Enable Voice Conversation', isPublic: false },
+  { key: 'aiChat.voice',              value: 'alloy', type: 'string', category: 'ai_chat', label: 'TTS Voice (alloy, verse, echo, ember, sage)', isPublic: false },
+  { key: 'aiChat.ragEnabled',         value: true, type: 'boolean', category: 'ai_chat', label: 'Ground answers in Knowledge Base (RAG)', isPublic: false },
+
+  // ── Cost Profiles — every expensive capability individually toggleable ──
+  { key: 'aiChat.costProfile',              value: 'balanced', type: 'string',  category: 'ai_chat', label: 'Cost Profile (economy / balanced / premium)', isPublic: false },
+  { key: 'aiChat.visionEnabled',             value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable Image/Vision Analysis', isPublic: false },
+  { key: 'aiChat.fileAnalysisEnabled',       value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable PDF/Word Document Analysis', isPublic: false },
+  { key: 'aiChat.documentGenerationEnabled', value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable Full Project Document Generation', isPublic: false },
+  { key: 'aiChat.streamingEnabled',          value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable Streaming Replies', isPublic: false },
+  { key: 'aiChat.memoryEnabled',             value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable Conversation Memory / Returning-User Resume', isPublic: false },
+  { key: 'aiChat.longContextEnabled',        value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable Long Conversation History (more input tokens/turn)', isPublic: false },
+  { key: 'aiChat.deepReasoningEnabled',      value: true,  type: 'boolean', category: 'ai_chat', label: 'Enable Deep Reasoning (larger reply token budget)', isPublic: false },
+  { key: 'aiChat.pricingTable',              value: {},    type: 'json',    category: 'ai_chat', label: 'Model Pricing Table ($/1M tokens)', description: 'JSON: {"<model>": {"input": <$/1M input tokens>, "output": <$/1M output tokens>}}. Cost analytics show $0 until real rates are set here — confirm against your OpenAI billing dashboard.', isPublic: false },
 ];
 
 const seedSettings = async () => {

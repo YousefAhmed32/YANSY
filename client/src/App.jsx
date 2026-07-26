@@ -24,7 +24,6 @@ const Register        = lazy(() => import('./pages/Register'));
 const Portfolio       = lazy(() => import('./pages/Portfolio'));
 const Industries      = lazy(() => import('./pages/Industries'));
 const WhyYansyPage    = lazy(() => import('./pages/WhyYansyPage'));
-const About           = lazy(() => import('./pages/About'));
 const ContactPage     = lazy(() => import('./pages/ContactPage'));
 const CaseStudies     = lazy(() => import('./pages/CaseStudies'));
 const CaseStudyDetail = lazy(() => import('./pages/CaseStudyDetail'));
@@ -53,7 +52,6 @@ const ResetPassword   = lazy(() => import('./pages/ResetPassword'));
 const Invoices        = lazy(() => import('./pages/Invoices'));
 const AdminAuditLog   = lazy(() => import('./pages/AdminAuditLog'));
 const NotFound        = lazy(() => import('./pages/NotFound'));
-const Pricing         = lazy(() => import('./pages/Pricing'));
 const BillingPage     = lazy(() => import('./pages/BillingPage'));
 const Support         = lazy(() => import('./pages/Support'));
 const Payments        = lazy(() => import('./pages/Payments'));
@@ -139,12 +137,11 @@ const AnimatedRoutes = () => {
           <Route path="/portfolio/:id" element={<PageTransition><PortfolioDetail /></PageTransition>} />
           <Route path="/industries" element={<PageTransition><Industries /></PageTransition>} />
           <Route path="/why-yansy" element={<PageTransition><WhyYansyPage /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
           {/* /process retired — its content lives on the homepage and inside the Contact page's process timeline */}
-          <Route path="/process" element={<Navigate to="/contact" replace />} />
+          <Route path="/process"  element={<Navigate to="/contact" replace />} />
+          <Route path="/pricing"  element={<Navigate to="/contact" replace />} />
           <Route path="/feedback"  element={<PageTransition><FeedbackForm /></PageTransition>} />
-          <Route path="/pricing"   element={<PageTransition><Pricing /></PageTransition>} />
 
           {/* ── Auth — no transition, instant ── */}
           <Route path="/login"           element={<Login />} />

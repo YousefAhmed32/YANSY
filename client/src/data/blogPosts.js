@@ -1,16 +1,20 @@
 /* ═══════════════════════════════════════════════════════════════
    YANSY TECH — Blog Posts Data (30 articles)
    SEO and AI-search optimized content.
-   TODO: Add real author photos and replace stock images.
+   Visuals are rendered via <BlogVisual> (generated on-brand placeholder,
+   keyed off `icon`/color below) — no stock photography, per project rule.
+   Article body copy is English-only; full bilingual translation of all
+   30 long-form posts is a dedicated content project, tracked separately
+   from this UI/structure pass.
    ═══════════════════════════════════════════════════════════════ */
 
 export const CATEGORIES = [
-  { slug: 'web-development',    label: 'Web Development',    color: '#2563EB' },
-  { slug: 'saas',               label: 'SaaS',               color: '#6366f1' },
-  { slug: 'product-design',     label: 'Product Design',     color: '#ec4899' },
-  { slug: 'ecommerce',          label: 'E-Commerce',         color: '#10b981' },
-  { slug: 'startup-growth',     label: 'Startup Growth',     color: '#f59e0b' },
-  { slug: 'business-automation',label: 'Business Automation',color: '#8b5cf6' },
+  { slug: 'web-development',     label: 'Web Development',     labelAr: 'تطوير الويب',        color: '#2563EB', icon: 'code' },
+  { slug: 'saas',                label: 'SaaS',                 labelAr: 'برمجيات SaaS',        color: '#6366f1', icon: 'layers' },
+  { slug: 'product-design',      label: 'Product Design',       labelAr: 'تصميم المنتج',       color: '#ec4899', icon: 'design' },
+  { slug: 'ecommerce',           label: 'E-Commerce',           labelAr: 'التجارة الإلكترونية', color: '#10b981', icon: 'cart' },
+  { slug: 'startup-growth',      label: 'Startup Growth',       labelAr: 'نمو الشركات الناشئة', color: '#f59e0b', icon: 'growth' },
+  { slug: 'business-automation', label: 'Business Automation',  labelAr: 'أتمتة الأعمال',       color: '#8b5cf6', icon: 'automation' },
 ];
 
 export const BLOG_POSTS = [
@@ -23,8 +27,6 @@ export const BLOG_POSTS = [
     tags: ['React', 'Performance', 'Best Practices', 'Next.js'],
     readTime: 12,
     publishDate: '2025-04-15',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
     excerpt: 'After building 50+ production React applications, we\'ve developed a set of non-negotiable practices that separate fast, maintainable apps from slow, unmaintainable ones. This is our complete engineering playbook.',
     content: [
       {
@@ -67,8 +69,6 @@ export const BLOG_POSTS = [
     tags: ['Next.js', 'React', 'SSR', 'Architecture'],
     readTime: 9,
     publishDate: '2025-03-22',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?w=800&q=80',
     excerpt: 'The React vs Next.js question comes up in every project. The answer is almost never obvious — it depends on your rendering requirements, SEO needs, and team experience. Here\'s the framework we use to decide.',
     content: [
       {
@@ -107,8 +107,6 @@ export const BLOG_POSTS = [
     tags: ['Performance', 'Core Web Vitals', 'LCP', 'CLS', 'SEO'],
     readTime: 15,
     publishDate: '2025-02-10',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
     excerpt: 'Core Web Vitals are now a confirmed Google ranking factor. This guide covers every optimization technique we use to achieve 90+ Lighthouse scores — from image formats to server-side rendering strategies.',
     content: [
       {
@@ -147,8 +145,6 @@ export const BLOG_POSTS = [
     tags: ['Pricing', 'Budget', 'Business', 'Strategy'],
     readTime: 8,
     publishDate: '2025-01-18',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
     excerpt: 'Website quotes vary wildly — from $500 to $50,000 for what sounds like the same project. Understanding why, and what you\'re actually getting at each price point, is essential before signing any contract.',
     content: [
       {
@@ -179,8 +175,6 @@ export const BLOG_POSTS = [
     tags: ['Agency', 'Hiring', 'Due Diligence', 'Business'],
     readTime: 10,
     publishDate: '2024-12-05',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80',
     excerpt: 'Choosing the wrong development agency is expensive. These 12 questions, asked before signing any contract, will help you identify whether an agency can actually deliver what they\'re promising.',
     content: [
       {
@@ -215,8 +209,6 @@ export const BLOG_POSTS = [
     tags: ['PWA', 'Mobile', 'React Native', 'Native Apps'],
     readTime: 11,
     publishDate: '2024-11-20',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
     excerpt: 'PWAs promise app-like experiences without app store distribution. Native apps promise the best performance and access to device features. For most businesses, the right answer involves understanding the tradeoffs precisely.',
     content: [
       {
@@ -248,8 +240,6 @@ export const BLOG_POSTS = [
     tags: ['SaaS', 'MVP', 'Startup', 'Product'],
     readTime: 14,
     publishDate: '2025-05-01',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80',
     excerpt: 'The definition of an MVP has been corrupted by misuse. This guide restores its original meaning and provides a practical framework for scoping, building, and launching an MVP that actually validates your business hypothesis.',
     content: [
       {
@@ -288,8 +278,6 @@ export const BLOG_POSTS = [
     tags: ['Architecture', 'Multi-Tenancy', 'Database', 'Security'],
     readTime: 13,
     publishDate: '2025-04-08',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
     excerpt: 'Multi-tenancy is one of the most consequential architecture decisions in SaaS development. Get it wrong early and you face an expensive rewrite. This guide covers the three main patterns and how to choose.',
     content: [
       {
@@ -324,8 +312,6 @@ export const BLOG_POSTS = [
     tags: ['Pricing', 'SaaS', 'Revenue', 'Business Strategy'],
     readTime: 11,
     publishDate: '2025-03-14',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
     excerpt: 'SaaS pricing is part art, part science, and mostly misunderstood. This guide covers the four main pricing models, how to set your initial prices, and how to optimize for revenue expansion.',
     content: [
       {
@@ -356,8 +342,6 @@ export const BLOG_POSTS = [
     tags: ['Authentication', 'Security', 'JWT', 'OAuth', 'SSO'],
     readTime: 12,
     publishDate: '2025-02-27',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&q=80',
     excerpt: 'Authentication is one of the most security-critical components in any SaaS product. This guide covers the three main approaches, their security tradeoffs, and our implementation recommendations.',
     content: [
       {
@@ -392,8 +376,6 @@ export const BLOG_POSTS = [
     tags: ['Metrics', 'Analytics', 'MRR', 'Churn', 'LTV'],
     readTime: 9,
     publishDate: '2025-01-30',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=800&q=80',
     excerpt: 'Most SaaS founders track vanity metrics — signups, page views, social followers. The metrics that predict business health are fewer and more specific. Here\'s the dashboard that matters.',
     content: [
       {
@@ -424,8 +406,6 @@ export const BLOG_POSTS = [
     tags: ['PMF', 'Startup', 'Product Strategy', 'Validation'],
     readTime: 13,
     publishDate: '2024-12-18',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
     excerpt: 'Product-market fit is the moment your product resonates so strongly with a market that growth becomes organic. Getting there requires a specific process of validation, iteration, and measurement. Here\'s the roadmap.',
     content: [
       {
@@ -461,8 +441,6 @@ export const BLOG_POSTS = [
     tags: ['Design System', 'UI Design', 'Component Library', 'Scalability'],
     readTime: 10,
     publishDate: '2025-04-22',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=800&q=80',
     excerpt: 'Design systems are not a luxury for large companies. Any product with more than one designer or developer needs a shared design language. Without it, inconsistency compounds until the product becomes difficult to use and expensive to maintain.',
     content: [
       {
@@ -493,8 +471,6 @@ export const BLOG_POSTS = [
     tags: ['UX Research', 'User Testing', 'Startups', 'Product'],
     readTime: 9,
     publishDate: '2025-03-31',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1606868306217-dbf5046868d2?w=800&q=80',
     excerpt: 'Big company UX research has a 6-month research cycle with a team of researchers. Early-stage startups need a faster approach that still generates actionable insights. Here are the methods that provide the highest signal-to-effort ratio.',
     content: [
       {
@@ -529,8 +505,6 @@ export const BLOG_POSTS = [
     tags: ['Mobile Design', 'Responsive', 'UX', 'Best Practices'],
     readTime: 8,
     publishDate: '2025-02-15',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
     excerpt: 'More than 60% of web traffic is now mobile. Yet most design processes still start with a desktop canvas and adapt down. Mobile-first design inverts this and produces better products on every screen size.',
     content: [
       {
@@ -561,8 +535,6 @@ export const BLOG_POSTS = [
     tags: ['CRO', 'Conversion', 'UX', 'Landing Pages'],
     readTime: 11,
     publishDate: '2025-01-25',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
     excerpt: 'Most CRO advice focuses on button colors and headlines. The real leverage is in information architecture, trust signals, and reducing friction in user flows. Here\'s how we approach CRO through UX design.',
     content: [
       {
@@ -593,8 +565,6 @@ export const BLOG_POSTS = [
     tags: ['Process', 'Design', 'YANSY TECH', 'Behind the Scenes'],
     readTime: 7,
     publishDate: '2024-11-08',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80',
     excerpt: 'Behind the scenes of how YANSY TECH designs digital products — from first user interview to final developer handoff.',
     content: [
       {
@@ -626,8 +596,6 @@ export const BLOG_POSTS = [
     tags: ['E-Commerce', 'SEO', 'Technical SEO', 'Google Shopping'],
     readTime: 14,
     publishDate: '2025-05-10',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
     excerpt: 'E-commerce stores have unique SEO challenges: faceted navigation creating duplicate content, product pages with thin content, category pages competing with product pages. This complete technical audit checklist covers everything.',
     content: [
       {
@@ -658,8 +626,6 @@ export const BLOG_POSTS = [
     tags: ['Headless Commerce', 'E-Commerce Architecture', 'Next.js', 'Shopify'],
     readTime: 10,
     publishDate: '2025-04-05',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80',
     excerpt: 'Headless commerce separates the frontend experience from the backend commerce engine. The flexibility is significant — but so is the complexity. This guide helps you decide if headless is right for your brand.',
     content: [
       {
@@ -690,8 +656,6 @@ export const BLOG_POSTS = [
     tags: ['Conversion', 'Cart Abandonment', 'E-Commerce CRO'],
     readTime: 9,
     publishDate: '2025-03-05',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
     excerpt: 'The average e-commerce cart abandonment rate is 70%. Not a single digit — seventy percent. The stores winning this battle are using specific, testable strategies. Here are the 12 that move the needle.',
     content: [
       {
@@ -722,8 +686,6 @@ export const BLOG_POSTS = [
     tags: ['E-Commerce', 'Conversion', 'UX', 'Development'],
     readTime: 12,
     publishDate: '2025-02-03',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80',
     excerpt: 'Building an e-commerce store that consistently converts is an engineering problem, not just a design problem. This guide covers the technical and UX decisions that drive measurable conversion improvements.',
     content: [
       {
@@ -754,8 +716,6 @@ export const BLOG_POSTS = [
     tags: ['Multi-Currency', 'Internationalization', 'E-Commerce', 'i18n'],
     readTime: 10,
     publishDate: '2024-12-30',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80',
     excerpt: 'Selling to multiple countries requires more than translating your homepage. Currency conversion, payment routing, tax compliance, shipping rules, and right-to-left language support each have technical implications.',
     content: [
       {
@@ -787,8 +747,6 @@ export const BLOG_POSTS = [
     tags: ['Digital Transformation', 'SME', 'Business Growth', 'Strategy'],
     readTime: 11,
     publishDate: '2025-04-28',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
     excerpt: '"Digital transformation" has become a buzzword that means everything and nothing. For SMEs, it should mean one thing: using technology to grow revenue or reduce costs. Here\'s the practical starting framework.',
     content: [
       {
@@ -819,8 +777,6 @@ export const BLOG_POSTS = [
     tags: ['Team Building', 'Hiring', 'Startup', 'Technology'],
     readTime: 10,
     publishDate: '2025-03-18',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80',
     excerpt: 'Non-technical founders building technology products face a fundamental challenge: how do you evaluate and manage people whose expertise you don\'t share? Here\'s the practical playbook.',
     content: [
       {
@@ -851,8 +807,6 @@ export const BLOG_POSTS = [
     tags: ['Software Quality', 'Technical Debt', 'Business', 'ROI'],
     readTime: 9,
     publishDate: '2025-02-20',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80',
     excerpt: 'Cheap software development decisions compound into expensive business problems. This is the full accounting of what technical debt actually costs — and why investing in quality upfront pays off.',
     content: [
       {
@@ -883,8 +837,6 @@ export const BLOG_POSTS = [
     tags: ['Agile', 'Scrum', 'Project Management', 'Startup'],
     readTime: 8,
     publishDate: '2024-12-15',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&q=80',
     excerpt: 'Agile is both overused and misunderstood. For non-technical founders, understanding the basics of how modern software teams work makes you a better client, partner, and product leader.',
     content: [
       {
@@ -916,8 +868,6 @@ export const BLOG_POSTS = [
     tags: ['Automation', 'Business Processes', 'No-Code', 'Digital Operations'],
     readTime: 12,
     publishDate: '2025-05-05',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&q=80',
     excerpt: 'Business process automation has become accessible at every scale. This framework helps you identify which processes to automate first, choose the right tools, and measure the actual business impact.',
     content: [
       {
@@ -948,8 +898,6 @@ export const BLOG_POSTS = [
     tags: ['Booking System', 'Software', 'Build vs Buy', 'Scheduling'],
     readTime: 9,
     publishDate: '2025-04-14',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80',
     excerpt: 'Calendly, Acuity, and Booksy solve 80% of booking needs. The remaining 20% requires custom development. Knowing which side of that line your business is on saves significant time and money.',
     content: [
       {
@@ -980,8 +928,6 @@ export const BLOG_POSTS = [
     tags: ['CRM', 'Custom Software', 'Sales', 'Business Automation'],
     readTime: 10,
     publishDate: '2025-03-10',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=800&q=80',
     excerpt: 'Salesforce, HubSpot, and Pipedrive are excellent. Most businesses should use one of them. Some businesses, with specific requirements, are better served by a custom CRM. Here\'s the clear framework for deciding.',
     content: [
       {
@@ -1012,8 +958,6 @@ export const BLOG_POSTS = [
     tags: ['API', 'Integration', 'No-Code', 'Automation'],
     readTime: 8,
     publishDate: '2024-11-28',
-    // TODO: Replace with real YANSYTECH asset
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
     excerpt: 'Every business runs on multiple software tools that don\'t talk to each other. API integration — whether through no-code platforms or custom development — eliminates the manual data entry that wastes hours every week.',
     content: [
       {

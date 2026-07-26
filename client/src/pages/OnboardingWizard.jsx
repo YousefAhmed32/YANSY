@@ -5,6 +5,14 @@ import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import api from '../utils/api';
 import { getMe } from '../store/authSlice';
 import { useLanguage } from '../contexts/LanguageContext';
+import { validatePhone } from '../utils/phone';
+
+const PHONE_HINT_COPY = {
+  invalid_chars: { en: "That doesn't look like a phone number — keep only digits, spaces, dashes, or a leading +.", ar: 'هذا لا يبدو رقم هاتف صحيح — استخدم الأرقام والمسافات والشرطات وعلامة + فقط.' },
+  too_short:     { en: 'That looks a little short — double-check the digits.', ar: 'يبدو الرقم قصيراً بعض الشيء — تأكد من الأرقام.' },
+  too_long:      { en: 'That looks a little long — check for extra digits.', ar: 'يبدو الرقم طويلاً بعض الشيء — تحقق من وجود أرقام زائدة.' },
+  maybe_missing_country_code: { en: "Looks like a local number — you can add a country code (e.g. +20) so we're sure to reach you, or continue as-is.", ar: 'يبدو رقماً محلياً — يمكنك إضافة رمز الدولة (مثل +20) لضمان التواصل، أو المتابعة كما هو.' },
+};
 
 const TK = {
   bg:      '#F6F7F9',
@@ -251,6 +259,20 @@ const OnboardingWizard = () => {
                 <p style={{ fontSize: '11px', color: TK.textLight, margin: '6px 0 0' }}>
                   {language === 'ar' ? 'سيستخدم فريقنا هذا للتواصل معك' : 'Our team will use this to reach you'}
                 </p>
+                {(contactMethod === 'phone' || contactMethod === 'whatsapp') && contactValue.trim() && (() => {
+                  const hint = validatePhone(contactValue);
+                  const copy = PHONE_HINT_COPY[hint.reason];
+                  if (!copy) return null;
+                  const isWarningOnly = hint.valid; // low-confidence but not blocking
+                  return (
+                    <p style={{
+                      fontSize: '11px', margin: '6px 0 0', lineHeight: 1.5,
+                      color: isWarningOnly ? '#b45309' : '#b91c1c',
+                    }}>
+                      {language === 'ar' ? copy.ar : copy.en}
+                    </p>
+                  );
+                })()}
               </div>
             </div>
           )}

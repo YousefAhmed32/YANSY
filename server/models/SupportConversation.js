@@ -44,6 +44,23 @@ const supportConversationSchema = new mongoose.Schema({
   conversationSummary: { type: String, default: null },
   priority:            { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'low' },
 
+  // ── Live Project Blueprint — the full structured output (industry, techStack,
+  //    pages, budget, risks, nextSteps, etc). Previously this only ever lived in
+  //    the browser's localStorage and was lost on device switch / storage clear —
+  //    persisting it here is what makes "returning user" resume actually work,
+  //    and lets admins see the full blueprint, not just the narrow `lead` subset. ──
+  intelligence:  { type: mongoose.Schema.Types.Mixed, default: {} },
+  customerSegment: { type: String, enum: ['Startup', 'SMB', 'Enterprise', 'Agency', ''], default: '' },
+
+  // ── Files/links shared during the conversation — surfaced in the sidebar's
+  //    "Uploaded Files" section and in the admin conversation viewer. ─────────
+  attachmentsLog: [{
+    kind:    { type: String, enum: ['image', 'document', 'website'] },
+    name:    String,
+    url:     String,
+    addedAt: { type: Date, default: Date.now },
+  }],
+
   // ── Relations ───────────────────────────────────────────────────────────────
   ticket:    { type: mongoose.Schema.Types.ObjectId, ref: 'SupportTicket', default: null },
   requestId: { type: String, default: null },

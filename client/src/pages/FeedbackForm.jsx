@@ -9,10 +9,22 @@ import { gsap } from 'gsap';
 import toast from 'react-hot-toast';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useSEO } from '../hooks/useSEO';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const FeedbackForm = () => {
   const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  useSEO({
+    title: isRTL ? 'شاركنا رأيك | يانسي تك' : 'Share Your Feedback | YANSY TECH',
+    description: isRTL
+      ? 'شاركنا تجربتك مع يانسي تك — تقييمك يساعدنا على التحسن المستمر.'
+      : 'Share your experience working with YANSY TECH — your feedback helps us keep improving.',
+    canonical: 'https://yansytech.com/feedback',
+    noIndex: true,
+  });
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
   

@@ -1,6 +1,6 @@
-import { ShoppingBag, HeartPulse, Building2, UtensilsCrossed, TrendingUp, GraduationCap, Sparkles } from 'lucide-react';
+import { ShoppingBag, HeartPulse, Building2, UtensilsCrossed, TrendingUp, GraduationCap, BedDouble, Sparkles } from 'lucide-react';
 
-export const CATEGORIES = ['E-commerce', 'Medical', 'Real Estate', 'Restaurants & Food', 'SaaS / Platforms', 'Educational', 'Other'];
+export const CATEGORIES = ['E-commerce', 'Medical', 'Real Estate', 'Restaurants & Food', 'SaaS / Platforms', 'Educational', 'Hotels & Hospitality', 'Other'];
 
 const CATEGORY_LABEL_AR = {
   'E-commerce': 'التجارة الإلكترونية',
@@ -9,6 +9,7 @@ const CATEGORY_LABEL_AR = {
   'Restaurants & Food': 'المطاعم والأغذية',
   'SaaS / Platforms': 'برمجيات / منصات',
   'Educational': 'تعليمي',
+  'Hotels & Hospitality': 'الفنادق والضيافة',
   'Other': 'أخرى',
 };
 
@@ -20,6 +21,7 @@ const CATEGORY_ICON = {
   'Restaurants & Food': UtensilsCrossed,
   'SaaS / Platforms': TrendingUp,
   'Educational': GraduationCap,
+  'Hotels & Hospitality': BedDouble,
   'Other': Sparkles,
 };
 

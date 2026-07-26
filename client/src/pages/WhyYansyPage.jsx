@@ -69,19 +69,6 @@ const PILLARS = [
   },
 ];
 
-const STATS_EN = [
-  { num: '50+', label: 'Projects Delivered' },
-  { num: '98%', label: 'Client Satisfaction' },
-  { num: '30d', label: 'Average Launch Time' },
-  { num: '4+',  label: 'Years of Experience' },
-];
-const STATS_AR = [
-  { num: '50+', label: 'مشروع مُسلَّم' },
-  { num: '98%', label: 'رضا العملاء' },
-  { num: '30d', label: 'متوسط وقت الإطلاق' },
-  { num: '4+',  label: 'سنوات خبرة' },
-];
-
 const FAQS = [
   {
     id: 'leave',
@@ -113,45 +100,51 @@ const FAQS = [
   },
 ];
 
-const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
-  <div style={{ borderBottom: '1px solid #E8EBF0' }}>
-    <button
-      onClick={onToggle}
-      aria-expanded={isOpen}
-      style={{
-        width: '100%', display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center',
-        gap: 'clamp(12px, 2vw, 20px)', padding: 'clamp(16px, 2.2vw, 22px) 0',
-        background: 'none', border: 'none', cursor: 'pointer', direction: isRTL ? 'rtl' : 'ltr',
-      }}
-    >
-      <span style={{ fontSize: 10, fontWeight: 800, color: isOpen ? '#2563EB' : '#C9CDD6', minWidth: 24, textAlign: isRTL ? 'right' : 'left' }}>
-        {String(idx + 1).padStart(2, '0')}
-      </span>
-      <h3 style={{
-        margin: 0, fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', fontWeight: 600,
-        color: isOpen ? '#0D1117' : '#374151', fontFamily: isRTL ? FONT_AR : FONT_EN,
-        lineHeight: 1.4, textAlign: isRTL ? 'right' : 'left',
-      }}>
-        {isRTL ? faq.qAR : faq.qEN}
-      </h3>
-      <span aria-hidden style={{
-        flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-        border: `1.5px solid ${isOpen ? '#0D1117' : '#E8EBF0'}`, background: isOpen ? '#0D1117' : 'transparent',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOpen ? '#FFFFFF' : '#9BA3AE', fontSize: 15,
-      }}>
-        {isOpen ? '−' : '+'}
-      </span>
-    </button>
-    <div style={{ overflow: 'hidden', maxHeight: isOpen ? '320px' : '0px', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
-      <p style={{
-        margin: '0 0 clamp(16px, 2.2vw, 22px)', fontSize: 'clamp(0.875rem, 1vw, 1rem)', color: '#5C6370',
-        lineHeight: 1.8, fontFamily: isRTL ? FONT_AR : FONT_EN, paddingInlineStart: 'clamp(34px, 5vw, 44px)', textAlign: isRTL ? 'right' : 'left',
-      }}>
-        {isRTL ? faq.aAR : faq.aEN}
-      </p>
+const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => {
+  const panelId = `wy-faq-panel-${faq.id}`;
+  const buttonId = `wy-faq-button-${faq.id}`;
+  return (
+    <div style={{ borderBottom: '1px solid #E8EBF0' }}>
+      <button
+        id={buttonId}
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        style={{
+          width: '100%', display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center',
+          gap: 'clamp(12px, 2vw, 20px)', padding: 'clamp(16px, 2.2vw, 22px) 0',
+          background: 'none', border: 'none', cursor: 'pointer', direction: isRTL ? 'rtl' : 'ltr',
+        }}
+      >
+        <span style={{ fontSize: 10, fontWeight: 800, color: isOpen ? '#2563EB' : '#C9CDD6', minWidth: 24, textAlign: isRTL ? 'right' : 'left' }}>
+          {String(idx + 1).padStart(2, '0')}
+        </span>
+        <h3 style={{
+          margin: 0, fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', fontWeight: 600,
+          color: isOpen ? '#0D1117' : '#374151', fontFamily: isRTL ? FONT_AR : FONT_EN,
+          lineHeight: 1.4, textAlign: isRTL ? 'right' : 'left',
+        }}>
+          {isRTL ? faq.qAR : faq.qEN}
+        </h3>
+        <span aria-hidden style={{
+          flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
+          border: `1.5px solid ${isOpen ? '#0D1117' : '#E8EBF0'}`, background: isOpen ? '#0D1117' : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOpen ? '#FFFFFF' : '#9BA3AE', fontSize: 15,
+        }}>
+          {isOpen ? '−' : '+'}
+        </span>
+      </button>
+      <div id={panelId} role="region" aria-labelledby={buttonId} style={{ overflow: 'hidden', maxHeight: isOpen ? '320px' : '0px', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+        <p style={{
+          margin: '0 0 clamp(16px, 2.2vw, 22px)', fontSize: 'clamp(0.875rem, 1vw, 1rem)', color: '#5C6370',
+          lineHeight: 1.8, fontFamily: isRTL ? FONT_AR : FONT_EN, paddingInlineStart: 'clamp(34px, 5vw, 44px)', textAlign: isRTL ? 'right' : 'left',
+        }}>
+          {isRTL ? faq.aAR : faq.aEN}
+        </p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const WhyYansyPage = () => {
   const { isRTL } = useLanguage();
@@ -165,21 +158,31 @@ const WhyYansyPage = () => {
     canonical: 'https://yansytech.com/why-yansy',
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      url: 'https://yansytech.com/why-yansy',
-      name: 'Why YANSY | YANSY TECH',
-      isPartOf: { '@id': 'https://yansytech.com/#website' },
-      breadcrumb: {
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://yansytech.com/' },
-          { '@type': 'ListItem', position: 2, name: 'Why YANSY', item: 'https://yansytech.com/why-yansy' },
-        ],
-      },
+      '@graph': [
+        {
+          '@type': 'WebPage',
+          url: 'https://yansytech.com/why-yansy',
+          name: 'Why YANSY | YANSY TECH',
+          isPartOf: { '@id': 'https://yansytech.com/#website' },
+          breadcrumb: {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://yansytech.com/' },
+              { '@type': 'ListItem', position: 2, name: 'Why YANSY', item: 'https://yansytech.com/why-yansy' },
+            ],
+          },
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: FAQS.map(f => ({
+            '@type': 'Question',
+            name: f.qEN,
+            acceptedAnswer: { '@type': 'Answer', text: f.aEN },
+          })),
+        },
+      ],
     },
   });
-
-  const stats = isRTL ? STATS_AR : STATS_EN;
 
   return (
     <>
@@ -215,24 +218,6 @@ const WhyYansyPage = () => {
                 : "Every decision behind how YANSY operates was made to solve a real problem business owners face with freelancers and traditional agencies."}
             </p>
           </div>
-        </section>
-
-        {/* ── STATS BAR ─────────────────────────────────────────── */}
-        <section style={{ background: '#FAFAFA', borderTop: '1px solid #E8EBF0', borderBottom: '1px solid #E8EBF0' }}>
-          <div className="wy-stats-grid" style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            {stats.map((s, i) => (
-              <div key={i} style={{
-                padding: 'clamp(1.5rem, 3.5vw, 2.25rem) clamp(1.25rem, 3vw, 2rem)', textAlign: 'center',
-                borderInlineEnd: i < stats.length - 1 ? '1px solid #E8EBF0' : 'none',
-              }}>
-                <div style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 800, color: '#0D1117', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5, fontVariantNumeric: 'tabular-nums' }}>
-                  {s.num}
-                </div>
-                <div style={{ fontSize: 'clamp(11px, 1vw, 12.5px)', fontWeight: 700, color: '#374151' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <style>{`@media (max-width: 640px) { .wy-stats-grid { grid-template-columns: repeat(2, 1fr) !important; } }`}</style>
         </section>
 
         {/* ── PILLARS GRID ──────────────────────────────────────── */}

@@ -319,6 +319,13 @@
           @media (prefers-reduced-motion: reduce) {
             .yansy-video-showcase * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
           }
+          /* vh is computed against the browser's largest possible viewport, so on
+             mobile Safari/Chrome (address bar visible) these presets render taller
+             than what's actually visible. dvh tracks the real, current viewport. */
+          .yvs-h-compact    { height: ${HEIGHTS.compact}; height: 56dvh; }
+          .yvs-h-standard   { height: ${HEIGHTS.standard}; height: 72dvh; }
+          .yvs-h-large      { height: ${HEIGHTS.large}; height: 86dvh; }
+          .yvs-h-cinematic  { height: ${HEIGHTS.cinematic}; height: 100dvh; }
         `}</style>
 
         <div style={{ maxWidth: 1360, margin: '0 auto', position: 'relative', zIndex: 1 }}>
@@ -385,9 +392,9 @@
                 if (e.key.toLowerCase() === 'm') toggleMute();
                 if (e.key.toLowerCase() === 'f') toggleFullscreen();
               }}
+              className={`yvs-h-${HEIGHTS[settings.sectionHeight] ? settings.sectionHeight : 'large'}`}
               style={{
                 position: 'relative', zIndex: 1, overflow: 'hidden', outline: 'none',
-                height: HEIGHTS[settings.sectionHeight] || HEIGHTS.large,
                 borderRadius: settings.roundedCorners ? `${settings.borderRadius}px` : 0,
                 boxShadow: shadowFor(settings.shadowStyle),
                 background: '#000',

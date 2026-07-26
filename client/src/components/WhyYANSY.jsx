@@ -29,7 +29,7 @@ const CRITERIA_EN = [
   'Fixed-price milestones',
   'Full code ownership',
   'Post-delivery support',
-  '30-day average launch',
+  '14-day average launch',
 ];
 
 const CRITERIA_AR = [
@@ -38,7 +38,7 @@ const CRITERIA_AR = [
   'مراحل بسعر ثابت',
   'ملكية كاملة للكود',
   'دعم ما بعد التسليم',
-  'إطلاق متوسط 30 يوماً',
+  'إطلاق متوسط 14 يوماً',
 ];
 
 const COLUMNS_EN = [
@@ -137,12 +137,28 @@ const WhyYANSY = ({ onStartProject }) => {
         @media (max-width: 860px) {
           .why-grid { grid-template-columns: 1fr; }
         }
+        .comparison-table-scroll {
+          width: 100%;
+        }
+        @media (max-width: 560px) {
+          .comparison-table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 16px;
+          }
+        }
         .comparison-table {
           width: 100%;
           border-collapse: collapse;
           border: 1px solid #E8EBF0;
           border-radius: 16px;
           overflow: hidden;
+        }
+        @media (max-width: 560px) {
+          /* Below 560px, 4 columns can't compress to legible widths — scroll
+             the table within its own container instead of squishing text or
+             forcing the whole page to scroll horizontally. */
+          .comparison-table { min-width: 480px; }
         }
         .comparison-table th {
           padding: clamp(14px, 2vw, 20px) clamp(12px, 1.5vw, 18px);
@@ -208,6 +224,9 @@ const WhyYANSY = ({ onStartProject }) => {
           gap: 0;
           border-top: 1px solid #E8EBF0;
         }
+        @media (max-width: 560px) {
+          .why-note-row { min-width: 480px; }
+        }
         .why-note-cell {
           flex: 1;
           padding: clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px);
@@ -259,11 +278,11 @@ const WhyYANSY = ({ onStartProject }) => {
             {/* 3 statement cards */}
             <div className="why-statement">
               {(isRTL ? [
-                { icon: '⚡', title: 'سرعة الشركة الناشئة', body: 'نتيجة في 30 يوماً في المتوسط — لا انتظار شهوراً' },
+                { icon: '⚡', title: 'سرعة الشركة الناشئة', body: 'نتيجة في 14 يوماً في المتوسط — بدون التضحية بالجودة، وقد ننجز أسرع حسب نطاق مشروعك' },
                 { icon: '🏗', title: 'هيكل الوكالة', body: 'فريق متخصص، عملية واضحة، مراحل تسليم منظمة' },
                 { icon: '🔑', title: 'ملكية كاملة', body: 'الكود ملكك بعد التسليم — لا قفل، لا رسوم مستمرة' },
               ] : [
-                { icon: '⚡', title: 'Startup speed', body: 'Results in 30 days on average — no months of waiting' },
+                { icon: '⚡', title: 'Startup speed', body: '14 days on average — never at the expense of quality, and often faster depending on scope' },
                 { icon: '🏗', title: 'Agency structure', body: 'Dedicated team, clear process, organized delivery milestones' },
                 { icon: '🔑', title: 'Full ownership', body: 'The code is yours after delivery — no lock-in, no recurring fees' },
               ]).map((card, i) => (
@@ -301,55 +320,62 @@ const WhyYANSY = ({ onStartProject }) => {
           </div>
 
           {/* Right: Comparison table */}
+          {/* minWidth: 0 overrides the grid item's default min-width:auto — without
+              it, the table's min-width (needed for the mobile scroll wrapper below)
+              blows out the whole grid track and forces page-level horizontal scroll
+              instead of scrolling within .comparison-table-scroll. */}
           <div style={{
+            minWidth: 0,
             opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(20px)',
             transition: 'opacity 0.7s 0.15s cubic-bezier(0.16,1,0.3,1), transform 0.7s 0.15s cubic-bezier(0.16,1,0.3,1)',
           }}>
-            <table className="comparison-table" role="table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: isRTL ? 'right' : 'left', width: '36%' }}>
-                    {isRTL ? 'المعيار' : 'Criteria'}
-                  </th>
-                  {columns.map((col, ci) => (
-                    <th key={ci} className={col.highlight ? 'yansy-col' : ''}>
-                      <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 2 }}>{col.label}</div>
-                      <div style={{ fontSize: 10, fontWeight: 500, opacity: 0.7 }}>{col.sub}</div>
+            <div className="comparison-table-scroll">
+              <table className="comparison-table" role="table">
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: isRTL ? 'right' : 'left', width: '36%' }}>
+                      {isRTL ? 'المعيار' : 'Criteria'}
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {criteria.map((crit, ri) => (
-                  <tr key={ri}>
-                    <td className="criteria-col"
-                      style={{
-                        fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-                      }}
-                    >
-                      {crit}
-                    </td>
                     {columns.map((col, ci) => (
-                      <td key={ci} className={col.highlight ? 'yansy-cell' : ''}>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                          {valueIcon(col.values[ri])}
-                        </div>
-                      </td>
+                      <th key={ci} className={col.highlight ? 'yansy-col' : ''}>
+                        <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 2 }}>{col.label}</div>
+                        <div style={{ fontSize: 10, fontWeight: 500, opacity: 0.7 }}>{col.sub}</div>
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {criteria.map((crit, ri) => (
+                    <tr key={ri}>
+                      <td className="criteria-col"
+                        style={{
+                          fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
+                        }}
+                      >
+                        {crit}
+                      </td>
+                      {columns.map((col, ci) => (
+                        <td key={ci} className={col.highlight ? 'yansy-cell' : ''}>
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            {valueIcon(col.values[ri])}
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-            {/* Notes row */}
-            <div className="why-note-row">
-              <div style={{ width: '36%', padding: 'clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px)' }} />
-              {columns.map((col, ci) => (
-                <div key={ci} className={`why-note-cell${col.highlight ? ' yansy-note' : ''}`}>
-                  {col.note}
-                </div>
-              ))}
+              {/* Notes row — scrolls in sync with the table above (same wrapper) */}
+              <div className="why-note-row">
+                <div style={{ width: '36%', padding: 'clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px)' }} />
+                {columns.map((col, ci) => (
+                  <div key={ci} className={`why-note-cell${col.highlight ? ' yansy-note' : ''}`}>
+                    {col.note}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

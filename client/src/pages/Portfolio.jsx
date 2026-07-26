@@ -7,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AIChatWidget from '../components/AIChatWidget';
+import FloatingActionMenu from '../components/FloatingActionMenu';
 import ProjectRequestForm from '../components/ProjectRequestForm';
 import PortfolioCard from '../components/PortfolioCard';
 import api from '../utils/api';
@@ -23,6 +24,7 @@ const CATEGORIES = [
   { en: 'Restaurants & Food',  ar: 'مطاعم وطعام' },
   { en: 'SaaS / Platforms',    ar: 'منصات SaaS' },
   { en: 'Educational',         ar: 'تعليمي' },
+  { en: 'Hotels & Hospitality', ar: 'فنادق وضيافة' },
   { en: 'Other',               ar: 'أخرى' },
 ];
 
@@ -44,6 +46,7 @@ const SkeletonCard = ({ featured }) => (
 const Portfolio = () => {
   const { isRTL, dir }          = useLanguage();
   const user                    = useSelector(s => s.auth?.user);
+  const authToken                = useSelector(s => s.auth?.token);
   const [projects, setProjects] = useState([]);
   const [cursor, setCursor]     = useState(null);
   const [hasMore, setHasMore]   = useState(true);
@@ -57,6 +60,8 @@ const Portfolio = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError]       = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const aiWidgetRef              = useRef(null);
   const heroRef                 = useRef(null);
   const gridRef                 = useRef(null);
   const sentinelRef             = useRef(null);
@@ -285,7 +290,7 @@ const Portfolio = () => {
                 <button
                   onClick={() => setIndustry('')}
                   className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
-                  style={{ borderColor: !industry ? '#0D1117' : '#E8EBF0', color: !industry ? '#0D1117' : '#9CA3AF', background: !industry ? '#F6F7F9' : 'transparent' }}
+                  style={{ borderColor: !industry ? '#0D1117' : '#E8EBF0', color: !industry ? '#0D1117' : '#6B7280', background: !industry ? '#F6F7F9' : 'transparent' }}
                 >
                   {isRTL ? 'كل الصناعات' : 'All industries'}
                 </button>
@@ -294,7 +299,7 @@ const Portfolio = () => {
                     key={ind}
                     onClick={() => setIndustry(ind)}
                     className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
-                    style={{ borderColor: industry === ind ? '#0D1117' : '#E8EBF0', color: industry === ind ? '#0D1117' : '#9CA3AF', background: industry === ind ? '#F6F7F9' : 'transparent' }}
+                    style={{ borderColor: industry === ind ? '#0D1117' : '#E8EBF0', color: industry === ind ? '#0D1117' : '#6B7280', background: industry === ind ? '#F6F7F9' : 'transparent' }}
                   >
                     {ind}
                   </button>
@@ -315,7 +320,7 @@ const Portfolio = () => {
             </div>
           ) : error ? (
             <div className="text-center py-32">
-              <p className="text-[#9CA3AF] font-light text-lg mb-6">
+              <p className="text-[#6B7280] font-light text-lg mb-6">
                 {isRTL ? 'تعذر تحميل المشاريع. حاول مرة أخرى.' : "Couldn't load projects. Please try again."}
               </p>
               <button onClick={loadFirstPage} className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 rounded-full px-6 py-3 hover:bg-[#2563EB]/08 transition-all">
@@ -323,8 +328,16 @@ const Portfolio = () => {
               </button>
             </div>
           ) : projects.length === 0 ? (
-            <div className="text-center py-32 text-[#9CA3AF] font-light text-xl">
-              {isRTL ? 'لا توجد مشاريع مطابقة.' : 'No matching projects yet.'}
+            <div className="text-center py-32">
+              <p className="text-[#6B7280] font-light text-xl mb-6">
+                {isRTL ? 'لا توجد مشاريع مطابقة.' : 'No matching projects yet.'}
+              </p>
+              <button
+                onClick={() => { setCategory('All'); setIndustry(''); setSearchInput(''); }}
+                className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 rounded-full px-6 py-3 hover:bg-[#2563EB]/08 transition-all"
+              >
+                {isRTL ? 'مسح كل الفلاتر' : 'Clear all filters'}
+              </button>
             </div>
           ) : (
             <>
@@ -406,7 +419,7 @@ const Portfolio = () => {
             </a>
           </div>
 
-          <p className="mt-6 text-[#9CA3AF] text-[11px] tracking-widest">
+          <p className="mt-6 text-[#6B7280] text-[11px] tracking-widest">
             {isRTL ? 'رد خلال 24 ساعة' : 'We reply within 24 hours'}
           </p>
         </div>
@@ -414,7 +427,8 @@ const Portfolio = () => {
 
       <Footer />
 
-      <AIChatWidget isRTL={isRTL} onStartProject={() => setIsFormOpen(true)} user={user} />
+      <AIChatWidget ref={aiWidgetRef} isRTL={isRTL} onStartProject={() => setIsFormOpen(true)} user={user} token={authToken} onOpenChange={setAiChatOpen} />
+      <FloatingActionMenu isRTL={isRTL} onOpenAI={() => aiWidgetRef.current?.open()} hidden={aiChatOpen} />
       <ProjectRequestForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>
   );

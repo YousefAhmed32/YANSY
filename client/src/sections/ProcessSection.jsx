@@ -222,7 +222,7 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
         {/* Header */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
           gap: 'clamp(2rem, 4vw, 4rem)',
           alignItems: 'end',
           marginBottom: 'clamp(4rem, 8vw, 7rem)',
@@ -262,8 +262,8 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
               justifyContent: rtl ? 'flex-end' : 'flex-start',
             }}>
               {(rtl
-                ? ['6 مراحل', '30 يوم متوسط', 'تحديثات أسبوعية']
-                : ['6 Milestones', '30d average', 'Weekly updates']
+                ? ['6 مراحل', '14 يوم متوسط', 'تحديثات أسبوعية']
+                : ['6 Milestones', '14d average', 'Weekly updates']
               ).map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#2563EB', flexShrink: 0 }} aria-hidden />

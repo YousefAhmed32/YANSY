@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 import api from '../utils/api';
 import PortfolioCard from './PortfolioCard';
+import { categoryLabel } from '../utils/portfolioTaxonomy';
 
 const SkeletonCard = ({ wide }) => (
   <div style={{
@@ -153,7 +154,7 @@ const PortfolioSection = () => {
                   transition: 'all 0.15s',
                 }}
               >
-                {cat}
+                {cat === 'All' ? (isRTL ? 'الكل' : 'All') : categoryLabel(cat, isRTL ? 'ar' : 'en')}
               </button>
             ))}
           </div>
@@ -167,7 +168,7 @@ const PortfolioSection = () => {
             <SkeletonCard />
           </div>
         ) : displayed.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#9BA3AE' }}>
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#6B7280' }}>
             {isRTL ? 'لا توجد مشاريع بعد.' : 'No projects yet.'}
           </div>
         ) : (

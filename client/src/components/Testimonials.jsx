@@ -252,8 +252,8 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
               fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
             }}>
               {rtl
-                ? 'كل شهادة من مشروع حقيقي سلّمناه. لا استثناءات.'
-                : 'Every testimonial is from a real project we delivered. No exceptions.'}
+                ? 'شهادات من عملاء عملنا معهم فعليًا على مشاريعهم.'
+                : 'Testimonials from clients we\'ve actually delivered projects for.'}
             </p>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,

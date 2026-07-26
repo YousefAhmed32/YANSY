@@ -1,7 +1,7 @@
 import { useState, useEffect, forwardRef } from 'react';
 import { ArrowUpRight, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { trackWhatsAppClick, trackCTAClick } from '../utils/ga4';
+import { trackCTAClick } from '../utils/ga4';
 
 const SERVICES_EN = ['Websites', 'E-commerce', 'SaaS', 'Mobile Apps', 'ERP & CRM', 'Automation'];
 const SERVICES_AR = ['مواقع ويب', 'متاجر إلكترونية', 'SaaS', 'تطبيقات موبايل', '⁦ERP و CRM⁩', 'أتمتة'];
@@ -96,7 +96,7 @@ const FeaturedResultCard = ({ isRTL }) => (
   </div>
 );
 
-const AvailabilityCard = ({ isRTL, services }) => (
+const AvailabilityCard = ({ isRTL }) => (
   <div style={{
     background: '#FFFFFF',
     border: '1px solid rgba(34,197,94,0.2)',
@@ -131,6 +131,23 @@ const AvailabilityCard = ({ isRTL, services }) => (
 const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
   const { isRTL } = useLanguage();
   const [loaded, setLoaded] = useState(false);
+  // The headline's manual line breaks are tuned for the desktop copy width; at
+  // phone widths the font floor makes each hard-broken line wrap a 2nd time on
+  // its own, ballooning the hero's height. Below 640px we skip the <br> and let
+  // the browser wrap the whole headline naturally against the real container
+  // width instead. (Rendered conditionally, not just CSS-hidden, so a display:none
+  // <br> can't leave a stray inline box behind in the line-height calculation.)
+  const [stackHeadline, setStackHeadline] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 640 : true
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)');
+    const handler = () => setStackHeadline(mq.matches);
+    handler();
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setLoaded(true)));
@@ -143,7 +160,6 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
     transition: `opacity 0.8s ${delay}s cubic-bezier(0.16,1,0.3,1), transform 0.8s ${delay}s cubic-bezier(0.16,1,0.3,1)`,
   });
 
-  const whatsappUrl = 'https://wa.me/201090385390?text=Hello%2C%20I%27d%20like%20to%20discuss%20a%20project';
   const services = isRTL ? SERVICES_AR : SERVICES_EN;
   const heroBackground = isRTL
     ? '/Futuristic tech city overview-9-ar.png'
@@ -175,6 +191,21 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           margin: 0 auto;
           position: relative;
           z-index: 1;
+        }
+        /* Below 1024px the visual-column card (which visually masks the busiest
+           part of the background artwork on desktop) is hidden, so the artwork's
+           baked-in label bubbles are exposed directly behind the full-width text.
+           A soft white scrim keeps the headline/paragraph legible without losing
+           the art entirely. */
+        @media (max-width: 1023px) {
+          .hero-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.93) 0%, rgba(255,255,255,0.85) 45%, rgba(255,255,255,0.93) 100%);
+            z-index: 0;
+            pointer-events: none;
+          }
         }
         .hero-grid {
           display: grid;
@@ -254,6 +285,14 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           color: #0D1117;
           transform: translateY(-1px);
         }
+        .hero-visual-col {
+          display: none;
+          flex-direction: column;
+          gap: 14px;
+        }
+        @media (min-width: 1024px) {
+          .hero-visual-col { display: flex; }
+        }
       `}</style>
 
       <section
@@ -295,18 +334,18 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                 {isRTL ? (
                   <>
                     نبني المواقع والتطبيقات{' '}
-                    <br />
-                    والأنظمة الرقمية
-                    <br />
-                    <span style={{ color: '#2563EB' }}>لتنمية عملك.</span>
+                    {stackHeadline && <br />}
+                    والأنظمة الرقمية{' '}
+                    {stackHeadline && <br />}
+                    <span style={{ color: '#2563EB', lineHeight: 'inherit' }}>لتنمية عملك.</span>
                   </>
                 ) : (
                   <>
-                    We build websites,
-                    <br />
-                    apps & digital systems
-                    <br />
-                    <span style={{ color: '#2563EB' }}>for growing businesses.</span>
+                    We build websites,{' '}
+                    {stackHeadline && <br />}
+                    apps & digital systems{' '}
+                    {stackHeadline && <br />}
+                    <span style={{ color: '#2563EB', lineHeight: 'inherit' }}>for growing businesses.</span>
                   </>
                 )}
               </h1>
@@ -323,8 +362,8 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                 margin: '0 0 clamp(22px, 3vh, 32px)',
               }}>
                 {isRTL
-                  ? 'من صفحة هبوط إلى نظام ERP كامل — نصمم ونبرمج ونطلق منتجك الرقمي في 30 يوماً. لا تجاوز للميزانية. لا أسابيع صامتة. ملكية كاملة للكود.'
-                  : 'From a landing page to a full ERP platform — we design, build, and launch your digital product in 30 days. No budget overruns. No silent weeks. Full code ownership.'}
+                  ? 'من صفحة هبوط إلى نظام ERP كامل — نصمم ونبرمج ونطلق منتجك الرقمي خلال 14 يوماً في المتوسط. لا تجاوز للميزانية. لا أسابيع صامتة. ملكية كاملة للكود.'
+                  : 'From a landing page to a full ERP platform — we design, build, and launch your digital product in as little as 14 days on average. No budget overruns. No silent weeks. Full code ownership.'}
               </p>
 
               {/* Service pills */}
@@ -355,31 +394,12 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                 </a>
               </div>
 
-              {/* Stats strip */}
-              {/* <div className="hero-stats" style={fly(0.34)}>
-                {(isRTL ? [
-                  { num: '50+',  label: 'مشروع مُسلَّم' },
-                  { num: '98%',  label: 'رضا العملاء' },
-                  { num: '30d',  label: 'متوسط الإطلاق' },
-                  { num: '4+',   label: 'سنوات خبرة' },
-                ] : [
-                  { num: '50+',  label: 'Projects\nDelivered' },
-                  { num: '98%',  label: 'Client\nSatisfaction' },
-                  { num: '30d',  label: 'Average\nLaunch' },
-                  { num: '4+',   label: 'Years\nExperience' },
-                ]).map((s, i) => (
-                  <div key={i} className="hero-stat-item">
-                    <div className="hero-stat-num">{s.num}</div>
-                    <div className="hero-stat-label" style={{ whiteSpace: 'pre-line' }}>{s.label}</div>
-                  </div>
-                ))}
-              </div> */}
             </div>
 
-            {/* ── Right: Visual ── */}
+            {/* ── Right: Visual — real delivered-project proof, not stock imagery ── */}
             {/* <div className="hero-visual-col" style={fly(0.2)}>
               <FeaturedResultCard isRTL={isRTL} />
-              <AvailabilityCard isRTL={isRTL} services={services} />
+              <AvailabilityCard isRTL={isRTL} />
             </div> */}
 
           </div>

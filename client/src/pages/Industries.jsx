@@ -160,13 +160,13 @@ const STATS_EN = [
   { num: '50+', label: 'Projects Delivered' },
   { num: '8',   label: 'Industries Served' },
   { num: '98%', label: 'Client Satisfaction' },
-  { num: '30d', label: 'Average Launch Time' },
+  { num: '14d', label: 'Average Launch Time' },
 ];
 const STATS_AR = [
   { num: '50+', label: 'مشروع مُسلَّم' },
   { num: '8',   label: 'قطاعات نخدمها' },
   { num: '98%', label: 'رضا العملاء' },
-  { num: '30d', label: 'متوسط وقت الإطلاق' },
+  { num: '14d', label: 'متوسط وقت الإطلاق' },
 ];
 
 const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {

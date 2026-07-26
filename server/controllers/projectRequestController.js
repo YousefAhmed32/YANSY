@@ -1,4 +1,5 @@
 const ProjectRequest = require('../models/ProjectRequest');
+const { normalizePhone, phoneLooksReasonable } = require('../utils/phone');
 
 // ─── Submit (public) ───────────────────────────────────────────────────────
 exports.submitRequest = async (req, res, next) => {
@@ -43,8 +44,8 @@ exports.submitRequest = async (req, res, next) => {
       return res.status(400).json({ error: 'Full name is required' });
     }
 
-    if (!phoneNumber || phoneNumber.trim().length < 5) {
-      return res.status(400).json({ error: 'Valid phone number is required' });
+    if (!phoneNumber || !phoneLooksReasonable(phoneNumber)) {
+      return res.status(400).json({ error: 'That phone number looks too short or too long — please check the digits' });
     }
 
     if (email && !/^\S+@\S+\.\S+$/.test(email)) {
@@ -74,7 +75,7 @@ exports.submitRequest = async (req, res, next) => {
       budgetRange,
       timeline,
       fullName:           fullName.trim(),
-      phoneNumber:        phoneNumber.trim(),
+      phoneNumber:        normalizePhone(phoneNumber) || phoneNumber.trim(),
       email:              email ? email.trim().toLowerCase() : undefined,
       companyName:        companyName ? companyName.trim() : undefined,
       companySize:        companySize || undefined,
@@ -127,8 +128,8 @@ exports.submitAuthenticatedRequest = async (req, res, next) => {
       return res.status(400).json({ error: 'Timeline is required' });
     }
 
-    if (!phoneNumber || phoneNumber.trim().length < 5) {
-      return res.status(400).json({ error: 'Valid phone number is required' });
+    if (!phoneNumber || !phoneLooksReasonable(phoneNumber)) {
+      return res.status(400).json({ error: 'That phone number looks too short or too long — please check the digits' });
     }
 
     if (clientType === 'company') {
@@ -153,7 +154,7 @@ exports.submitAuthenticatedRequest = async (req, res, next) => {
       budgetRange,
       timeline,
       fullName:           user.fullName,
-      phoneNumber:        phoneNumber.trim(),
+      phoneNumber:        normalizePhone(phoneNumber) || phoneNumber.trim(),
       email:              user.email,
       companyName:        companyName ? companyName.trim() : undefined,
       companySize:        companySize || undefined,

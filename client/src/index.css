@@ -481,7 +481,7 @@
    MOBILE TOUCH TARGETS
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  button, [role="button"], a { min-height: 44px; }
+  button, [role="button"], a { min-height: 48px; }
 }
 a, button, [role="button"] { touch-action: manipulation; }
 button, [role="button"], [aria-label] {

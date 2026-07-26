@@ -3,14 +3,14 @@ import { useLanguage } from '../contexts/LanguageContext';
 const STATS_EN = [
   { num: '50+',  label: 'Projects Delivered',  sub: 'Across 6+ industries' },
   { num: '98%',  label: 'Client Satisfaction',  sub: 'Measured retention rate' },
-  { num: '30d',  label: 'Average Launch Time',  sub: 'From contract to live' },
+  { num: '14d',  label: 'Average Launch Time',  sub: 'From contract to live' },
   { num: '4+',   label: 'Years of Experience',  sub: 'Since 2020' },
 ];
 
 const STATS_AR = [
   { num: '50+',  label: 'مشروع مُسلَّم',        sub: 'في أكثر من 6 قطاعات' },
   { num: '98%',  label: 'رضا العملاء',           sub: 'معدل احتفاظ مقاس' },
-  { num: '30d',  label: 'متوسط وقت الإطلاق',    sub: 'من العقد للنشر' },
+  { num: '14d',  label: 'متوسط وقت الإطلاق',    sub: 'من العقد للنشر' },
   { num: '4+',   label: 'سنوات خبرة',            sub: 'منذ 2020' },
 ];
 

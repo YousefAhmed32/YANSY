@@ -71,9 +71,10 @@ export const useSEO = ({
   noIndex = false,
 } = {}) => {
   useEffect(() => {
-    const fullTitle = title
-      ? `${title} | ${BASE_TITLE}`
-      : `${BASE_TITLE} | Premium Digital Product Studio`;
+    // Every caller already composes its own full title (e.g. "Contact Us | YANSY TECH") —
+    // appending BASE_TITLE again here used to double up the brand name in every page's
+    // <title>/OG tag site-wide ("Contact Us | YANSY TECH | YANSY TECH"). Use title as-is.
+    const fullTitle = title || `${BASE_TITLE} | Premium Digital Product Studio`;
 
     /* Page title */
     document.title = fullTitle;

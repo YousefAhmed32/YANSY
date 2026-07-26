@@ -19,7 +19,7 @@ const systemSettingsSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['general', 'security', 'email', 'payments', 'ai', 'platform', 'features', 'files'],
+    enum: ['general', 'security', 'email', 'payments', 'ai', 'ai_chat', 'platform', 'features', 'files'],
     default: 'general',
   },
   label:       { type: String, trim: true, default: '' },

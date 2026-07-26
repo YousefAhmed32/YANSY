@@ -2,7 +2,6 @@ User-agent: *
 Allow: /
 Allow: /portfolio
 Allow: /portfolio/
-Allow: /pricing
 Allow: /feedback
 Allow: /register
 

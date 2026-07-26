@@ -213,12 +213,19 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 /* ─── Request timeout: protect against hung handlers ─────────────────────── */
 app.use((req, res, next) => {
-  // SSE streaming endpoints get extended timeout — they self-close via res.end()
-  const isSSE = req.path === '/support/chat' || req.path.startsWith('/support/chat');
-  const REQUEST_TIMEOUT_MS = isSSE ? 90_000 : 30_000;
+  // SSE streaming endpoints get extended timeout — they self-close via res.end().
+  // /support/generate-document is a deliberate, occasional long-form generation
+  // (full BRD/FRD/user-stories/architecture doc) that legitimately runs 60-90s+.
+  // Use originalUrl, not path — path reflects whatever a sub-router has already
+  // stripped by the time nested middleware sees it, which silently broke this
+  // exact check before (verified via the timeout log showing a bare route
+  // fragment instead of the full mounted path).
+  const isSSE      = req.originalUrl.includes('/support/chat');
+  const isLongForm = req.originalUrl.includes('/support/generate-document');
+  const REQUEST_TIMEOUT_MS = isSSE ? 90_000 : isLongForm ? 120_000 : 30_000;
   const timer = setTimeout(() => {
     if (!res.headersSent) {
-      console.error(`[Timeout] ${req.method} ${req.path} exceeded ${REQUEST_TIMEOUT_MS}ms`);
+      console.error(`[Timeout] ${req.method} ${req.originalUrl} exceeded ${REQUEST_TIMEOUT_MS}ms`);
       res.status(503).json({ error: 'Request timed out. Please try again.' });
     }
   }, REQUEST_TIMEOUT_MS);

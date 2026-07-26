@@ -81,13 +81,18 @@ export const Card = ({ children, hover = false, padding = '20px', style, ...prop
   </div>
 );
 
-export const SectionHead = ({ icon: Icon, title, action }) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', gap: '10px' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
-      {Icon && <Icon style={{ width: '13px', height: '13px', color: TK.accent, flexShrink: 0 }} />}
-      <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {title}
-      </h2>
+export const SectionHead = ({ icon: Icon, title, subtitle, action }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px', gap: '10px' }}>
+    <div style={{ minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
+        {Icon && <Icon style={{ width: '13px', height: '13px', color: TK.accent, flexShrink: 0 }} />}
+        <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {title}
+        </h2>
+      </div>
+      {subtitle && (
+        <p style={{ fontSize: '11.5px', color: TK.textLight, margin: '4px 0 0', lineHeight: 1.5 }}>{subtitle}</p>
+      )}
     </div>
     {action}
   </div>

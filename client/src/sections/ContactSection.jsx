@@ -38,11 +38,12 @@ const PROJECT_TYPES_AR = [
   'غير متأكد بعد',
 ];
 
-const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
+const ContactSection = ({ isRTL: isRTLProp }) => {
   const { isRTL: ctxRTL } = useLanguage();
   const rtl = isRTLProp ?? ctxRTL;
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', projectType: '', message: '' });
 
   const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -50,6 +51,7 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
+    setError(false);
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
@@ -57,7 +59,10 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
         body: JSON.stringify(form),
       });
       if (res.ok) setSubmitted(true);
-    } catch {}
+      else setError(true);
+    } catch {
+      setError(true);
+    }
     setLoading(false);
   };
 
@@ -129,7 +134,9 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
           font-family: inherit;
           transition: border-color 0.2s, background 0.2s;
           line-height: 1.6;
+          appearance: none;
           -webkit-appearance: none;
+          -moz-appearance: none;
         }
         .contact-field-light::placeholder { color: #9BA3AE; }
         .contact-field-light:focus {
@@ -196,13 +203,13 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
                 <>
                   <span>أخبرنا ما تريد</span><br />
                   <span>بناءه. سنخبرك</span><br />
-                  <span style={{ color: '#60A5FA' }}>كيف نوصلك إليه.</span>
+                  <span style={{ color: '#60A5FA', lineHeight: 'inherit' }}>كيف نوصلك إليه.</span>
                 </>
               ) : (
                 <>
                   <span>Tell us what you</span><br />
                   <span>want to build. We'll</span><br />
-                  <span style={{ color: '#60A5FA' }}>tell you how to get there.</span>
+                  <span style={{ color: '#60A5FA', lineHeight: 'inherit' }}>tell you how to get there.</span>
                 </>
               )}
             </h2>
@@ -293,7 +300,7 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
                   }}>
                     {rtl ? 'أخبرنا عن مشروعك' : 'Tell us about your project'}
                   </h3>
-                  <p style={{ fontSize: 13, color: '#9BA3AE', margin: 0 }}>
+                  <p style={{ fontSize: 13, color: '#5C6370', margin: 0 }}>
                     {rtl ? 'مجاني · بدون التزام · رد خلال ساعتين' : 'Free · No commitment · Reply within 2 hours'}
                   </p>
                 </div>
@@ -373,6 +380,12 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
                   />
                 </div>
 
+                {error && (
+                  <p style={{ fontSize: 12.5, color: '#DC2626', margin: '0 0 12px', textAlign: rtl ? 'right' : 'left' }}>
+                    {rtl ? 'تعذر إرسال طلبك. حاول مرة أخرى أو راسلنا عبر واتساب.' : "Couldn't send your request. Please try again or reach us on WhatsApp."}
+                  </p>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -394,7 +407,7 @@ const ContactSection = ({ isRTL: isRTLProp, onStartProject }) => {
                 </button>
 
                 <p style={{
-                  fontSize: 11.5, color: '#C9CDD6', textAlign: 'center',
+                  fontSize: 11.5, color: '#6B7280', textAlign: 'center',
                   margin: '14px 0 0',
                 }}>
                   {rtl ? 'نرد في الغالب خلال ساعتين' : 'We typically respond within 2 hours'}

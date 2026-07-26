@@ -6,11 +6,13 @@
     <meta name="google-site-verification" content="Vbesj7FFuDZK1EUK5BSQyrDGq1IpvLtF4S-fBfXjx5A" />
 
     <!-- ── Browser / PWA hints ──────────────────────────────────── -->
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <!-- Site is light-only (no dark theme variant) — theme-color/color-scheme
+         must not follow OS dark-mode preference or the browser chrome goes
+         black while every page renders white. -->
+    <meta name="theme-color" content="#ffffff" />
     <meta name="application-name" content="YANSY TECH" />
     <meta name="format-detection" content="telephone=no" />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="color-scheme" content="light" />
 
     <!-- ── Performance hints ─────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,10 +27,12 @@
     />
 
     <!-- ── Hero image preload — eliminates LCP delay ─────────── -->
+    <!-- English is the default document language (lang="en" above); the Arabic
+         variant loads on-demand for AR visitors instead of double-preloading. -->
     <link
       rel="preload"
       as="image"
-      href="/assets/image/GoImage/saas3.png"
+      href="/Futuristic tech city overview-9-en.png"
       fetchpriority="high"
     />
 
@@ -119,8 +123,8 @@
         "caption": "YANSY TECH"
       },
       "image": "https://yansytech.com/assets/image/logo/logoweb9.png",
-      "description": "YANSY TECH is a premium digital product studio and technology agency. We specialize in SaaS platform development, e-commerce solutions, enterprise web applications, mobile apps, and UI/UX design. Founded in 2021, we have delivered 50+ projects for clients across Egypt, the Gulf region, and globally. Our team transforms complex business requirements into scalable, high-performance digital products.",
-      "foundingDate": "2021",
+      "description": "YANSY TECH is a premium digital product studio and technology agency. We specialize in SaaS platform development, e-commerce solutions, enterprise web applications, mobile apps, and UI/UX design. Founded in 2020, we have delivered 50+ projects for clients across Egypt, the Gulf region, and globally. Our team transforms complex business requirements into scalable, high-performance digital products.",
+      "foundingDate": "2020",
       "numberOfEmployees": {
         "@type": "QuantitativeValue",
         "minValue": 5,
@@ -254,117 +258,10 @@
     }
     </script>
 
-    <!-- ── Schema 3: WebPage + Speakable (AI readability) ─────── -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "@id": "https://yansytech.com/#webpage",
-      "url": "https://yansytech.com/",
-      "name": "YANSY TECH | Premium Digital Product Studio",
-      "description": "YANSY TECH builds premium websites, e-commerce platforms, SaaS products, and enterprise systems. 50+ delivered projects. Free consultation within 24 hours.",
-      "inLanguage": "en",
-      "isPartOf": {
-        "@id": "https://yansytech.com/#website"
-      },
-      "about": {
-        "@id": "https://yansytech.com/#organization"
-      },
-      "speakable": {
-        "@type": "SpeakableSpecification",
-        "cssSelector": ["h1", "h2", "[data-speakable]"]
-      },
-      "breadcrumb": {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": "https://yansytech.com/"
-          }
-        ]
-      },
-      "primaryImageOfPage": {
-        "@type": "ImageObject",
-        "url": "https://yansytech.com/assets/image/logo/logoweb9.png"
-      }
-    }
-    </script>
-
-    <!-- ── Schema 5: FAQPage — rich results + AI citations ─────── -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How long does a project take?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Project timelines depend on scope and complexity. A standard website takes 2–3 weeks. E-commerce or SaaS platforms typically run 4–8 weeks. Enterprise systems range from 8–16 weeks. We provide a precise timeline and milestone plan after the free initial consultation."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Do I pay the full amount upfront?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. YANSY TECH splits payments into milestones: 30% to start, 40% at mid-delivery, and 30% on final delivery. You only pay when you see tangible progress. No upfront full payment is ever required."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Do I own the code after delivery?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "100% yes. After final payment, all source code, assets, databases, and intellectual property transfer fully to you. No recurring licensing fees, no lock-in contracts, no ongoing dependency on YANSY TECH."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is the consultation really free?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, completely free with no obligation. The initial consultation is a 30-minute call where we understand your project goals and give you an honest scope estimate, technology recommendation, and timeline — at no cost."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What technologies does YANSY TECH use?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "YANSY TECH primarily builds with React, Next.js, Node.js, and PostgreSQL or MongoDB depending on project needs. For enterprise systems we architect microservices. For mobile apps we use React Native. We select the right technology stack based on your specific performance, scalability, and budget requirements."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What happens after the project is delivered?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "We provide 30 days of free technical support post-launch — covering bug fixes, performance monitoring, and minor adjustments. After that period, we offer affordable monthly maintenance and growth packages tailored to your needs."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can YANSY TECH handle projects for clients outside Egypt?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. YANSY TECH serves clients globally. We work with businesses in Saudi Arabia, UAE, Kuwait, Qatar, Europe, and North America. All project communication, contracts, and deliveries are handled remotely with clear documentation."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What makes YANSY TECH different from other development agencies?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "YANSY TECH operates as a premium digital product studio — not a commodity agency. We focus on measurable business outcomes, enterprise-grade code quality, and long-term product thinking. We build products that scale. Our milestone-based payment model, full code ownership, and bilingual support (English and Arabic) make us a trusted partner for ambitious projects."
-          }
-        }
-      ]
-    }
-    </script>
+    <!-- ── WebPage + FAQPage schemas moved to Home.jsx's useSEO() call ──────────
+         (they described only the "/" route's content but were previously static
+         here in index.html, so every route on the SPA served identical Home-only
+         structured data to non-JS crawlers). ─────────────────────────────── -->
 
     <!-- ── Google Analytics 4 ────────────────────────────────── -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EBKWH60W27"></script>
@@ -388,7 +285,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
 
-  <body class="bg-black text-white antialiased">
+  <body class="bg-white text-[#0D1117] antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

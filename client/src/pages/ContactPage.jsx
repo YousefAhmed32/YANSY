@@ -24,7 +24,7 @@ const waLink = (msg) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICompon
 const TRUST_INDICATORS = [
   { icon: Clock, valueEN: '< 2 hours', valueAR: 'أقل من ساعتين', labelEN: 'Response time', labelAR: 'وقت الرد' },
   { icon: Sun,   valueEN: 'Sun–Thu, 9am–8pm', valueAR: 'الأحد–الخميس، 9ص–8م', labelEN: 'Working hours (Cairo)', labelAR: 'ساعات العمل (القاهرة)' },
-  { icon: Rocket, valueEN: '~30 days', valueAR: '~30 يوماً', labelEN: 'Average delivery', labelAR: 'متوسط التسليم' },
+  { icon: Rocket, valueEN: '~14 days', valueAR: '~14 يوماً', labelEN: 'Average delivery', labelAR: 'متوسط التسليم' },
 ];
 
 const CHANNELS = [
@@ -75,7 +75,7 @@ const CHANNELS = [
 const WHY_STATS = [
   { numEN: '4+', numAR: '4+', labelEN: 'Years of experience', labelAR: 'سنوات خبرة' },
   { numEN: '50+', numAR: '50+', labelEN: 'Projects delivered', labelAR: 'مشروع مُسلَّم' },
-  { numEN: '30d', numAR: '30d', labelEN: 'Average delivery', labelAR: 'متوسط التسليم' },
+  { numEN: '14d', numAR: '14d', labelEN: 'Average delivery', labelAR: 'متوسط التسليم' },
   { numEN: '98%', numAR: '98%', labelEN: 'Client satisfaction', labelAR: 'رضا العملاء' },
 ];
 
@@ -277,7 +277,7 @@ const ContactPage = () => {
                   <div style={{ fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 800, color: '#0D1117', letterSpacing: '-0.02em' }}>
                     {isRTL ? t.valueAR : t.valueEN}
                   </div>
-                  <div style={{ fontSize: 11.5, color: '#9BA3AE', fontWeight: 600 }}>
+                  <div style={{ fontSize: 11.5, color: '#5C6370', fontWeight: 600 }}>
                     {isRTL ? t.labelAR : t.labelEN}
                   </div>
                 </div>

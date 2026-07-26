@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import { trackWhatsAppClick } from '../utils/ga4';
 import { Mail, Phone, MessageCircle, ArrowUpRight } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import ContactItem from './ContactItem';
 
 const InstagramIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
@@ -77,53 +77,6 @@ const FooterLink = ({ to, label }) => (
   </li>
 );
 
-const CopyableRow = ({ icon, value, href, label }) => {
-  const RowIcon = icon;
-  const [copied, setCopied] = useState(false);
-  const handleCopy = useCallback(async e => {
-    e.preventDefault();
-    e.stopPropagation();
-    try { await navigator.clipboard.writeText(value); }
-    catch {
-      const el = Object.assign(document.createElement('textarea'), { value, style: 'position:fixed;opacity:0' });
-      document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [value]);
-
-  return (
-    <div
-      onClick={handleCopy}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && handleCopy(e)}
-      aria-label={`${label}: ${value}. Click to copy.`}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-        padding: '8px 12px', borderRadius: '8px', border: '1px solid #E8EBF0',
-        background: '#FAFAFA', cursor: 'pointer',
-        transition: 'background 0.18s, border-color 0.18s',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#C9CDD6'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = '#FAFAFA'; e.currentTarget.style.borderColor = '#E8EBF0'; }}
-    >
-      <a
-        href={href}
-        onClick={e => e.stopPropagation()}
-        tabIndex={-1}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#374151', textDecoration: 'none', fontSize: 12.5 }}
-      >
-        <RowIcon style={{ width: 13, height: 13, color: '#9BA3AE', flexShrink: 0 }} />
-        <span>{value}</span>
-      </a>
-      <span style={{ fontSize: 10.5, fontWeight: 700, color: copied ? '#16a34a' : '#9BA3AE', flexShrink: 0, letterSpacing: '0.04em' }}>
-        {copied ? '✓' : 'Copy'}
-      </span>
-    </div>
-  );
-};
-
 const Footer = () => {
   const { t } = useTranslation();
   const { isRTL, dir } = useLanguage();
@@ -137,10 +90,8 @@ const Footer = () => {
       { label: isRTL ? 'معرض الأعمال'  : 'Portfolio',    to: '/portfolio' },
       { label: isRTL ? 'القطاعات'      : 'Industries',   to: '/industries' },
       { label: isRTL ? 'المدونة'        : 'Blog',         to: '/blog' },
-      { label: isRTL ? 'الأسعار'       : 'Pricing',      to: '/pricing' },
     ],
     company: [
-      // { label: isRTL ? 'من نحن'       : 'About',          to: '/about' },
       { label: isRTL ? 'لماذا YANSY'  : 'Why YANSY',      to: '/why-yansy' },
       { label: isRTL ? 'تواصل معنا'   : 'Contact',        to: '/contact' },
       { label: isRTL ? 'بوابة العملاء' : 'Client Portal', to: '/login' },
@@ -183,6 +134,9 @@ const Footer = () => {
                 <img
                   src="/assets/image/logo/logo-2.png"
                   alt="YANSY"
+                  width={54}
+                  height={36}
+                  loading="lazy"
                   style={{ height: 36, width: 'auto', objectFit: 'contain' }}
                 />
               </Link>
@@ -274,8 +228,18 @@ const Footer = () => {
                 {isRTL ? 'تواصل معنا' : 'Contact'}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <CopyableRow icon={Mail} value="yansytech@gmail.com" href="mailto:yansytech@gmail.com" label="Email" />
-                <CopyableRow icon={Phone} value="+201090385390" href="tel:+201090385390" label="Phone" />
+                <ContactItem
+                  icon={Mail}
+                  value="yansytech@gmail.com"
+                  label={isRTL ? 'البريد الإلكتروني' : 'Email'}
+                  toastMessage={isRTL ? 'تم نسخ البريد الإلكتروني' : 'Email address copied'}
+                />
+                <ContactItem
+                  icon={Phone}
+                  value="+201090385390"
+                  label={isRTL ? 'رقم الهاتف' : 'Phone'}
+                  toastMessage={isRTL ? 'تم نسخ رقم الهاتف' : 'Phone number copied'}
+                />
                 <a
                   href={whatsappUrl}
                   target="_blank"
@@ -321,7 +285,7 @@ const Footer = () => {
             gap: 12,
             flexDirection: isRTL ? 'row-reverse' : 'row',
           }}>
-            <p style={{ fontSize: 12, color: '#9BA3AE', margin: 0 }}>
+            <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>
               {t('landing.footer.copyright', '© 2025 YANSY Tech. All rights reserved.')}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

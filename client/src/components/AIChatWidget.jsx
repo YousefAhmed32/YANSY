@@ -1,8 +1,10 @@
 /**
- * YANSY AI — Premium Business Consultant Widget
- * Split-panel intelligence interface: conversation + live project blueprint
+ * YANSY AI V2 — Senior Solution Consultant
+ * A conversational consultant experience with a live-updating project
+ * blueprint panel, built to feel like Linear/Perplexity/Notion AI rather
+ * than a lead-gen form dressed up as a chat window.
  */
-import { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, memo, useMemo, forwardRef, useImperativeHandle } from 'react';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const WA_NUMBER     = '201090385390';
@@ -17,7 +19,8 @@ const getApiBase = () =>
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
   'http://localhost:5000/api';
 
-// ── Stage resolver ─────────────────────────────────────────────────────────────
+// ── Blueprint completeness (UI-only heuristic — not a scripted conversation
+//    stage; the backend decides conversational flow freely) ────────────────
 const getStageNum = (c = {}) => {
   if (c.name && (c.phone || c.email)) return 5;
   if (c.name)                          return 4;
@@ -31,16 +34,16 @@ const getStageNum = (c = {}) => {
 const CSS = `
   @keyframes yai-dot   { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-5px);opacity:1} }
   @keyframes yai-fs-in { from{opacity:0;transform:scale(.98)} to{opacity:1;transform:scale(1)} }
-  @keyframes yai-pulse { 0%{transform:scale(1);opacity:.5} 100%{transform:scale(2.6);opacity:0} }
   @keyframes yai-up    { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
   @keyframes yai-in    { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
   @keyframes yai-fade  { from{opacity:0} to{opacity:1} }
   @keyframes yai-blink { 0%,100%{opacity:1} 50%{opacity:0} }
   @keyframes yai-spin  { to{transform:rotate(360deg)} }
   @keyframes yai-glow  { 0%,100%{opacity:.5} 50%{opacity:1} }
-  @keyframes yai-card  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes yai-card  { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
   @keyframes yai-score { from{width:0} }
   @keyframes yai-think { 0%{opacity:.4} 50%{opacity:1} 100%{opacity:.4} }
+  @keyframes yai-shimmer { 0%{background-position:-200px 0} 100%{background-position:200px 0} }
   .yai-win    { animation: yai-in .32s cubic-bezier(.16,1,.3,1) both; }
   .yai-notif  { animation: yai-up .28s cubic-bezier(.16,1,.3,1) both; }
   .yai-fade   { animation: yai-fade .4s ease both; }
@@ -48,60 +51,60 @@ const CSS = `
   .yai-msg-usr{ animation: yai-up .2s cubic-bezier(.16,1,.3,1) both; }
   .yai-card   { animation: yai-card .32s cubic-bezier(.16,1,.3,1) both; }
   .yai-scroll::-webkit-scrollbar { width:4px; }
-  .yai-scroll::-webkit-scrollbar-thumb { background:#E8EBF0; border-radius:2px; }
+  .yai-scroll::-webkit-scrollbar-thumb { background:#E1E5EB; border-radius:2px; }
   .yai-scroll::-webkit-scrollbar-track { background:transparent; }
-  .yai-cursor::after { content:'▋'; animation:yai-blink .8s step-end infinite; font-size:.85em; opacity:.6; margin-left:1px; }
+  .yai-cursor::after { content:'▋'; animation:yai-blink .8s step-end infinite; font-size:.85em; opacity:.5; margin-inline-start:1px; color:#2563EB; }
   .yai-btn:hover { background:#EFF6FF !important; border-color:rgba(37,99,235,.35) !important; color:#2563EB !important; transform:translateY(-1px); }
   .yai-send:hover:not(:disabled) { background:#1d4ed8 !important; transform:scale(1.05); box-shadow:0 4px 14px rgba(37,99,235,.35) !important; }
   .yai-ico:hover { background:#F0F2F5 !important; border-color:#C9CDD6 !important; color:#374151 !important; }
-  .yai-wa:hover  { filter:brightness(1.1); transform:translateY(-1px); }
+  .yai-wa:hover  { filter:brightness(1.06); transform:translateY(-1px); box-shadow:0 6px 18px rgba(37,211,102,.3) !important; }
   .yai-chip { animation: yai-up .25s cubic-bezier(.16,1,.3,1) both; }
+  .yai-skeleton { background:linear-gradient(90deg,#F0F2F5 0%,#F8F9FB 50%,#F0F2F5 100%); background-size:400px 100%; animation:yai-shimmer 1.6s ease-in-out infinite; }
+  /* vh is the browser's largest possible viewport; on mobile Safari/Chrome with
+     the address bar visible it overshoots the real visible height, so a
+     bottom-anchored fixed panel sized off raw vh can clip its own header above
+     the actual screen. dvh tracks the current viewport instead. */
+  .yai-panel-h { height: min(700px, calc(100vh - 90px)); height: min(700px, calc(100dvh - 90px)); }
 `;
 
-// ── Greeting ───────────────────────────────────────────────────────────────────
-const GREETING = {
-  en: "Hello! 👋 I'm YANSY's Senior AI Business Consultant.\n\nI'm here to help you design the perfect digital solution and connect you with our expert team.\n\nWhat are you looking to build?",
-  ar: 'مرحباً! 👋 أنا مستشار YANSY الأعمال الرقمية.\n\nأنا هنا لمساعدتك في تصميم الحل التقني المثالي والتواصل مع فريقنا المتخصص.\n\nماذا تريد أن تبني؟',
+// ── Greeting (fallback if admin config fetch fails) ────────────────────────────
+const GREETING_FALLBACK = {
+  en: "Hi, I'm YANSY's solution consultant. Tell me a bit about what you're building — or what's not working with what you have — and I'll help you shape it into a clear plan.",
+  ar: 'أهلاً، أنا مستشار الحلول لدى يانسي. احكِ لي باختصار عمّا تريد بناءه — أو المشكلة في اللي عندك حالياً — وهساعدك تحوّلها لخطة واضحة.',
 };
 
-// ── Discovery buttons ──────────────────────────────────────────────────────────
+// ── Discovery buttons (shown before the AI has suggested contextual ones) ─────
 const DISCOVERY_BUTTONS = {
   en: [
-    { icon: '🌐', label: 'Website',       msg: 'I need to build a professional website' },
-    { icon: '📱', label: 'Mobile App',    msg: 'I need a mobile app for iOS and Android' },
-    { icon: '🛒', label: 'E-Commerce',    msg: 'I need an online store' },
-    { icon: '⚡', label: 'SaaS Platform', msg: 'I want to build a SaaS platform' },
-    { icon: '🤖', label: 'AI Solution',   msg: 'I want AI integrated into my business' },
-    { icon: '📅', label: 'Consultation',  msg: 'I would like a free consultation' },
+    { icon: '🌐', label: 'A website',    msg: 'I need to build a professional website' },
+    { icon: '🛒', label: 'An online store', msg: 'I need an online store' },
+    { icon: '⚡', label: 'A SaaS product', msg: 'I want to build a SaaS platform' },
+    { icon: '📱', label: 'A mobile app',  msg: 'I need a mobile app for iOS and Android' },
+    { icon: '🧩', label: "I'm not sure yet", msg: "I'm not sure exactly what I need yet — can you help me figure it out?" },
   ],
   ar: [
-    { icon: '🌐', label: 'موقع ويب',      msg: 'أحتاج بناء موقع ويب احترافي' },
-    { icon: '📱', label: 'تطبيق موبايل', msg: 'أحتاج تطبيقاً للجوال' },
-    { icon: '🛒', label: 'متجر إلكتروني',msg: 'أحتاج متجراً إلكترونياً' },
-    { icon: '⚡', label: 'منصة SaaS',     msg: 'أريد بناء منصة SaaS' },
-    { icon: '🤖', label: 'ذكاء اصطناعي', msg: 'أريد دمج الذكاء الاصطناعي في أعمالي' },
-    { icon: '📅', label: 'استشارة',       msg: 'أريد حجز استشارة مجانية' },
+    { icon: '🌐', label: 'موقع ويب',       msg: 'أحتاج بناء موقع ويب احترافي' },
+    { icon: '🛒', label: 'متجر إلكتروني', msg: 'أحتاج متجراً إلكترونياً' },
+    { icon: '⚡', label: 'منصة SaaS',      msg: 'أريد بناء منصة SaaS' },
+    { icon: '📱', label: 'تطبيق موبايل',  msg: 'أحتاج تطبيقاً للجوال' },
+    { icon: '🧩', label: 'مش متأكد لسه',   msg: 'مش متأكد بالظبط عايز إيه لسه — تقدر تساعدني أحدد؟' },
   ],
 };
 
-// ── Stage labels ───────────────────────────────────────────────────────────────
 const STAGE_STEPS = {
-  en: ['Intent', 'Scope', 'Context', 'Timeline', 'Contact'],
-  ar: ['النية', 'النطاق', 'السياق', 'الوقت', 'التواصل'],
+  en: ['Idea', 'Scope', 'Context', 'Timeline', 'Contact'],
+  ar: ['الفكرة', 'النطاق', 'السياق', 'الوقت', 'التواصل'],
 };
 
-// ── Thinking states ────────────────────────────────────────────────────────────
 const THINKING_EN = [
-  { icon: '🔍', text: 'Analyzing your request...' },
-  { icon: '📋', text: 'Building your blueprint...' },
-  { icon: '📊', text: 'Calculating estimates...' },
-  { icon: '💡', text: 'Crafting recommendation...' },
+  { icon: '🔍', text: 'Thinking this through...' },
+  { icon: '📋', text: 'Updating the blueprint...' },
+  { icon: '💡', text: 'Shaping a recommendation...' },
 ];
 const THINKING_AR = [
-  { icon: '🔍', text: 'جاري تحليل طلبك...' },
-  { icon: '📋', text: 'جاري بناء المخطط...' },
-  { icon: '📊', text: 'جاري الحساب...' },
-  { icon: '💡', text: 'جاري صياغة التوصية...' },
+  { icon: '🔍', text: 'بفكر في الموضوع...' },
+  { icon: '📋', text: 'بحدّث المخطط...' },
+  { icon: '💡', text: 'بصيغ توصية...' },
 ];
 
 // ── Rich text renderer ──────────────────────────────────────────────────────────
@@ -125,11 +128,11 @@ const RichText = memo(({ text, streaming }) => {
     else if (/^[\-•*]\s/.test(line)) {
       const items = [];
       while (i < lines.length && /^[\-•*]\s/.test(lines[i])) { items.push(<li key={i} style={{ marginBottom: 3 }}>{fmtInline(lines[i].slice(2))}</li>); i++; }
-      els.push(<ul key={`ul${i}`} style={{ margin: '5px 0', paddingLeft: 16, listStyle: 'disc' }}>{items}</ul>); continue;
+      els.push(<ul key={`ul${i}`} style={{ margin: '5px 0', paddingInlineStart: 16, listStyle: 'disc' }}>{items}</ul>); continue;
     } else if (/^\d+\.\s/.test(line)) {
       const items = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) { items.push(<li key={i} style={{ marginBottom: 3 }}>{fmtInline(lines[i].replace(/^\d+\.\s/, ''))}</li>); i++; }
-      els.push(<ol key={`ol${i}`} style={{ margin: '5px 0', paddingLeft: 18 }}>{items}</ol>); continue;
+      els.push(<ol key={`ol${i}`} style={{ margin: '5px 0', paddingInlineStart: 18 }}>{items}</ol>); continue;
     } else if (line.trim()) { els.push(<p key={i} style={{ margin: 0, lineHeight: 1.65 }}>{fmtInline(line)}</p>); }
     i++;
   }
@@ -145,6 +148,37 @@ const MinIcon   = () => <svg width="11" height="11" fill="none" stroke="currentC
 const CloseIcon = () => <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 const MicIcon   = ({ on }) => <svg width="12" height="12" fill={on ? '#2563EB' : 'currentColor'} viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4m-4 0h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
 const PanelIcon = () => <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>;
+const SparkIcon = ({ size = 17 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 2l1.8 5.6L19.4 9.4 13.8 11.2 12 17l-1.8-5.8L4.6 9.4l5.6-1.8L12 2z" fill="currentColor"/></svg>;
+const ClipIcon  = () => <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>;
+const HandsFreeIcon = ({ on }) => <svg width="13" height="13" fill="none" stroke={on ? '#2563EB' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M3 12v-1a9 9 0 0118 0v1"/><path d="M21 12v3a2 2 0 01-2 2h-1v-6h1a2 2 0 012 2z"/><path d="M3 12v3a2 2 0 002 2h1v-6H5a2 2 0 00-2 2z"/></svg>;
+const SpeakerIcon = ({ size = 12 }) => <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>;
+const DocIcon    = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
+const GlobeIcon  = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20 15.3 15.3 0 010-20z"/></svg>;
+
+// ── Voice waveform bars ──────────────────────────────────────────────────────
+const Waveform = ({ levels = [2,2,2,2,2], color = '#2563EB' }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 2, height: 22 }}>
+    {levels.map((h, i) => (
+      <span key={i} style={{ width: 2.5, height: h, background: color, borderRadius: 2, transition: 'height .08s ease' }} />
+    ))}
+  </div>
+);
+
+// ── Attachment chip (pending, pre-send) ────────────────────────────────────────
+const AttachmentChip = ({ att, onRemove, isRTL }) => {
+  const label = att.kind === 'image' ? (att.name || (isRTL ? 'صورة' : 'Image'))
+    : att.kind === 'website' ? att.name
+    : att.name || (isRTL ? 'مستند' : 'Document');
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 9, padding: '5px 8px', maxWidth: 180 }}>
+      {att.kind === 'image'
+        ? <img src={att.dataUrl || att.url} alt="" style={{ width: 22, height: 22, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
+        : <span style={{ color: '#2563EB', flexShrink: 0, display: 'flex' }}>{att.kind === 'website' ? <GlobeIcon /> : <DocIcon />}</span>}
+      <span style={{ fontSize: 10.5, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+      <button type="button" onClick={onRemove} style={{ background: 'none', border: 'none', color: '#9BA3AE', cursor: 'pointer', fontSize: 13, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+    </div>
+  );
+};
 
 // ── Typing dots ─────────────────────────────────────────────────────────────────
 const TypingDots = () => (
@@ -167,7 +201,7 @@ const ThinkingState = memo(({ lang }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
       <span style={{ fontSize: 14, animation: 'yai-think 1.8s ease infinite' }}>{s.icon}</span>
-      <span style={{ fontSize: 12, color: 'rgba(37,99,235,.6)', fontStyle: 'italic' }}>{s.text}</span>
+      <span style={{ fontSize: 12, color: 'rgba(37,99,235,.65)', fontStyle: 'italic' }}>{s.text}</span>
       <div style={{ display: 'flex', gap: 3 }}>
         {[0,1,2].map(i => <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(37,99,235,.45)', animation: `yai-dot 1.3s ease ${i*.22}s infinite` }} />)}
       </div>
@@ -176,20 +210,20 @@ const ThinkingState = memo(({ lang }) => {
 });
 ThinkingState.displayName = 'ThinkingState';
 
-// ── Stage progress bar ──────────────────────────────────────────────────────────
+// ── Blueprint-completeness bar ──────────────────────────────────────────────────
 const StageBar = memo(({ stage, lang }) => {
   if (stage === 0) return null;
   const steps = STAGE_STEPS[lang] || STAGE_STEPS.en;
-  const color = stage >= 5 ? '#22c55e' : '#2563EB';
+  const color = stage >= 5 ? '#16a34a' : '#2563EB';
   return (
-    <div style={{ padding: '8px 14px 10px', borderBottom: '1px solid #E8EBF0', background: '#F6F7F9', flexShrink: 0 }}>
+    <div style={{ padding: '8px 14px 10px', borderBottom: '1px solid #E8EBF0', background: '#FAFAFA', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 6 }}>
         {steps.map((label, i) => {
           const done   = i < stage;
           const active = i === stage - 1;
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', background: done ? color : 'rgba(255,255,255,.05)', border: `1.5px solid ${active ? color : done ? color : 'rgba(255,255,255,.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: done ? '#fff' : '#9BA3AE', fontWeight: 700, transition: 'all .4s ease' }}>
+              <div style={{ width: 18, height: 18, borderRadius: '50%', background: done ? color : '#FFFFFF', border: `1.5px solid ${done ? color : '#D8DCE3'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: done ? '#fff' : '#9BA3AE', fontWeight: 700, transition: 'all .4s ease' }}>
                 {done ? '✓' : i + 1}
               </div>
               <span style={{ fontSize: 8, color: active ? color : done ? '#374151' : '#9BA3AE', letterSpacing: '.02em', textAlign: 'center', transition: 'color .4s' }}>{label}</span>
@@ -206,25 +240,23 @@ const StageBar = memo(({ stage, lang }) => {
 StageBar.displayName = 'StageBar';
 
 // ── Intelligence strip — compact horizontal bar for narrow screens ─────────────
-const IntelligenceStrip = memo(({ intelligence, collected, leadScore: fallbackScore, lang }) => {
-  const { leadScore = fallbackScore || 0, industry, projectType, complexity, estimatedBudget } = intelligence || {};
-  const hasData = industry || (projectType || collected?.projectType) || complexity || estimatedBudget || leadScore > 0;
+const IntelligenceStrip = memo(({ intelligence, leadScore: fallbackScore, lang }) => {
+  const { leadScore = fallbackScore || 0, industry, complexity } = intelligence || {};
+  const hasData = industry || complexity || leadScore > 0;
   if (!hasData) return null;
-  const tierColor  = leadScore >= 70 ? '#22c55e' : leadScore >= 40 ? '#2563EB' : '#C9CDD6';
-  const cxColor    = complexity === 'Enterprise' ? '#f59e0b' : complexity === 'High' ? '#8b5cf6' : complexity === 'Medium' ? '#06b6d4' : '#22c55e';
+  const tierColor  = leadScore >= 70 ? '#16a34a' : leadScore >= 40 ? '#2563EB' : '#C9CDD6';
+  const cxColor    = complexity === 'Enterprise' ? '#D97706' : complexity === 'High' ? '#7C3AED' : complexity === 'Medium' ? '#0891B2' : '#16a34a';
   const isAR = lang === 'ar';
   return (
-    <div style={{ padding: '6px 12px', borderBottom: '1px solid #E8EBF0', background: '#F6F7F9', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
+    <div style={{ padding: '6px 12px', borderBottom: '1px solid #E8EBF0', background: '#FAFAFA', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
       {industry && <Tag label={industry} color="#2563EB" />}
       {complexity && <Tag label={complexity} color={cxColor} />}
-      {estimatedBudget && <Tag label={estimatedBudget} color="#22c55e" />}
       {leadScore > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 'auto' }}>
-          <span style={{ fontSize: 9, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.05em' }}>{isAR ? 'التقييم' : 'Score'}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginInlineStart: 'auto' }}>
+          <span style={{ fontSize: 9, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.05em' }}>{isAR ? 'التقييم' : 'Fit'}</span>
           <div style={{ width: 44, height: 4, background: '#E8EBF0', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{ width: `${leadScore}%`, height: '100%', background: tierColor, borderRadius: 2, transition: 'width .8s ease', animation: 'yai-score .8s ease' }} />
           </div>
-          <span style={{ fontSize: 11, fontWeight: 800, color: tierColor, fontFamily: 'monospace' }}>{leadScore}</span>
         </div>
       )}
     </div>
@@ -233,120 +265,222 @@ const IntelligenceStrip = memo(({ intelligence, collected, leadScore: fallbackSc
 IntelligenceStrip.displayName = 'IntelligenceStrip';
 
 const Tag = ({ label, color }) => (
-  <span style={{ fontSize: 9.5, color, background: `${color}18`, border: `1px solid ${color}28`, padding: '2px 7px', borderRadius: 4, fontWeight: 600, whiteSpace: 'nowrap' }}>{label}</span>
+  <span style={{ fontSize: 9.5, color, background: `${color}14`, border: `1px solid ${color}28`, padding: '2px 7px', borderRadius: 5, fontWeight: 600, whiteSpace: 'nowrap' }}>{label}</span>
 );
 
-// ── Intelligence panel — full right-side panel ─────────────────────────────────
-const IntelligencePanel = memo(({ intelligence, collected, leadScore: fallbackScore, lang }) => {
+const CompletionRing = ({ percent = 0, size = 26 }) => {
+  const r = (size - 3) / 2;
+  const c = 2 * Math.PI * r;
+  const color = percent >= 80 ? '#16a34a' : percent >= 40 ? '#2563EB' : '#9BA3AE';
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }} title={`${percent}%`}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E8EBF0" strokeWidth="2.5" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c - (percent / 100) * c} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.16,1,.3,1)' }} />
+      </svg>
+      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7.5, fontWeight: 800, color }}>{percent}</span>
+    </div>
+  );
+};
+
+// ── Live Project Blueprint — the centerpiece feature ────────────────────────────
+const BlueprintSection = ({ icon, title, children, delay = 0 }) => (
+  <div className="yai-card" style={{ animationDelay: `${delay}ms` }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+      <span style={{ fontSize: 11 }}>{icon}</span>
+      <p style={{ margin: 0, fontSize: 9.5, fontWeight: 800, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.07em' }}>{title}</p>
+    </div>
+    {children}
+  </div>
+);
+
+const ChipList = ({ items, color = '#2563EB' }) => (
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+    {items.map((f, i) => (
+      <span key={i} style={{ fontSize: 10.5, fontWeight: 600, color, background: `${color}0F`, border: `1px solid ${color}24`, padding: '3px 9px', borderRadius: 100 }}>{f}</span>
+    ))}
+  </div>
+);
+
+const BlueprintSkeleton = ({ lang }) => (
+  <div style={{ padding: '18px 14px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    {[1, 0.7, 0.85].map((w, i) => (
+      <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="yai-skeleton" style={{ height: 8, width: '30%', borderRadius: 4 }} />
+        <div className="yai-skeleton" style={{ height: 12, width: `${w * 100}%`, borderRadius: 4 }} />
+      </div>
+    ))}
+    <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9BA3AE', textAlign: 'center', lineHeight: 1.6 }}>
+      {lang === 'ar' ? '✦ المخطط يُبنى تلقائياً أثناء حديثنا' : '✦ Your blueprint builds automatically as we talk'}
+    </p>
+  </div>
+);
+
+const IntelligencePanel = memo(({ intelligence, collected, leadScore: fallbackScore, lang, files = [], onGenerateDocument, generatingDoc, docGenEnabled = true }) => {
   const isAR = lang === 'ar';
   const {
-    leadScore = fallbackScore || 0, industry, projectType, complexity,
-    estimatedBudget, estimatedTimeline, recommendation,
+    leadScore = fallbackScore || 0, industry, projectType, businessSummary, recommendedSolution,
+    features = [], techStack = [], integrations = [], pages = [], complexity, priority, customerSegment,
+    estimatedTimeline, risks = [], nextSteps = [], completionPercent = 0,
   } = intelligence || {};
 
-  const hasProject = industry || (projectType || collected?.projectType) || complexity;
-  const hasBudget  = !!estimatedBudget;
-  const hasTime    = !!estimatedTimeline;
-  const hasScore   = leadScore > 0;
-  const hasRec     = !!recommendation;
-  const hasContact = collected?.name || collected?.phone || collected?.email;
-  const hasAny     = hasProject || hasBudget || hasTime || hasScore || hasRec || hasContact;
+  const hasHeader   = !!(industry || projectType || complexity);
+  const hasSummary  = !!businessSummary;
+  const hasRec      = !!recommendedSolution;
+  const hasFeatures = features.length > 0;
+  const hasPages    = pages.length > 0;
+  const hasStack    = techStack.length > 0 || integrations.length > 0;
+  const hasEstimate = !!estimatedTimeline;
+  const hasRisks    = risks.length > 0;
+  const hasNext     = nextSteps.length > 0;
+  const hasContact  = collected?.name || collected?.phone || collected?.email;
+  const hasAny      = hasHeader || hasSummary || hasRec || hasFeatures || hasStack || hasEstimate || hasRisks || hasNext || files.length > 0;
+  const priorityColor = priority === 'High' ? '#DC2626' : priority === 'Medium' ? '#D97706' : '#6B7280';
 
-  const tierColor = leadScore >= 70 ? '#22c55e' : leadScore >= 40 ? '#2563EB' : '#C9CDD6';
-  const tierLabel = leadScore >= 70 ? (isAR ? 'عميل محتمل' : 'Qualified') : leadScore >= 40 ? (isAR ? 'واعد' : 'Warm Lead') : (isAR ? 'استكشاف' : 'Discovery');
-  const cxColor   = complexity === 'Enterprise' ? '#f59e0b' : complexity === 'High' ? '#8b5cf6' : complexity === 'Medium' ? '#06b6d4' : '#22c55e';
+  const tierColor = leadScore >= 70 ? '#16a34a' : leadScore >= 40 ? '#2563EB' : '#C9CDD6';
+  const cxColor   = complexity === 'Enterprise' ? '#D97706' : complexity === 'High' ? '#7C3AED' : complexity === 'Medium' ? '#0891B2' : '#16a34a';
 
   return (
-    // <div className="yai-scroll" style={{ width: 210, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.05)', background: 'rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }}>
+    <div className="yai-scroll" style={{ width: 260, flexShrink: 0, borderInlineStart: '1px solid #E8EBF0', background: '#FAFAFA', display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }}>
 
-    
-    //   <div style={{ padding: '11px 12px 8px', borderBottom: '1px solid rgba(37,99,235,.08)', flexShrink: 0 }}>
-    //     <p style={{ margin: 0, fontSize: 9, fontWeight: 800, color: 'rgba(37,99,235,.55)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
-    //       ✦ {isAR ? 'مخطط المشروع' : 'Live Blueprint'}
-    //     </p>
-    //   </div>
+      <div style={{ padding: '13px 14px 10px', borderBottom: '1px solid #E8EBF0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF' }}>
+        <SparkIcon size={12} />
+        <p style={{ margin: 0, fontSize: 10, fontWeight: 800, color: '#2563EB', letterSpacing: '.08em', textTransform: 'uppercase', flex: 1 }}>
+          {isAR ? 'مخطط المشروع الحي' : 'Live Project Blueprint'}
+        </p>
+        {completionPercent > 0 && <CompletionRing percent={completionPercent} />}
+      </div>
 
-    //   <div style={{ flex: 1, padding: '10px 10px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {!hasAny ? (
+        <BlueprintSkeleton lang={lang} />
+      ) : (
+        <div style={{ flex: 1, padding: '14px 13px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
 
-    
-    //     {!hasAny && (
-    //       <div style={{ padding: '20px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-    //         {['Industry', 'Project', 'Complexity'].map(lbl => (
-    //           <div key={lbl} style={{ width: '100%', height: 30, background: 'rgba(255,255,255,.02)', borderRadius: 6, border: '1px dashed rgba(255,255,255,.05)', display: 'flex', alignItems: 'center', paddingLeft: 10 }}>
-    //             <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,.14)' }}>{lbl}</span>
-    //           </div>
-    //         ))}
-    //         <p style={{ margin: '6px 0 0', fontSize: 10, color: 'rgba(255,255,255,.18)', textAlign: 'center', lineHeight: 1.6 }}>
-    //           {isAR ? 'يُبنى المخطط أثناء المحادثة' : 'Blueprint builds as you chat...'}
-    //         </p>
-    //       </div>
-    //     )}
+          {docGenEnabled && (projectType || collected?.projectType) && (
+            <button type="button" onClick={onGenerateDocument} disabled={generatingDoc}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', padding: '9px 12px', background: generatingDoc ? '#F6F7F9' : 'linear-gradient(135deg,#2563EB,#1D4ED8)', border: 'none', borderRadius: 10, color: generatingDoc ? '#9BA3AE' : '#FFFFFF', fontSize: 11.5, fontWeight: 700, cursor: generatingDoc ? 'wait' : 'pointer', boxShadow: generatingDoc ? 'none' : '0 3px 10px rgba(37,99,235,.25)' }}>
+              {generatingDoc
+                ? <><div style={{ width: 11, height: 11, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: '#2563EB', animation: 'yai-spin .7s linear infinite' }} />{isAR ? 'جارِ الإنشاء...' : 'Generating...'}</>
+                : <>📄 {isAR ? 'إنشاء وثيقة المشروع الكاملة' : 'Generate Full Project Document'}</>}
+            </button>
+          )}
+          {docGenEnabled && (projectType || collected?.projectType) && generatingDoc && (
+            <p style={{ margin: '-9px 0 0', fontSize: 9.5, color: '#9BA3AE', textAlign: 'center' }}>
+              {isAR ? 'وثيقة كاملة تستغرق حتى دقيقة تقريباً' : 'A full document can take up to a minute'}
+            </p>
+          )}
 
-    //     {hasProject && (
-    //       <div className="yai-card" style={{ background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, padding: '10px 11px', display: 'flex', flexDirection: 'column', gap: 7 }}>
-    //         {industry && <IPRow label={isAR ? 'القطاع' : 'Industry'} value={industry} />}
-    //         {(projectType || collected?.projectType) && <IPRow label={isAR ? 'المشروع' : 'Project'} value={projectType || collected.projectType} />}
-    //         {complexity && (
-    //           <div>
-    //             <p style={{ margin: '0 0 3px', fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{isAR ? 'التعقيد' : 'Complexity'}</p>
-    //             <span style={{ fontSize: 10, fontWeight: 700, color: cxColor, background: `${cxColor}18`, padding: '2px 8px', borderRadius: 4, border: `1px solid ${cxColor}28` }}>{complexity}</span>
-    //           </div>
-    //         )}
-    //       </div>
-    //     )}
+          {hasHeader && (
+            <BlueprintSection icon="🎯" title={isAR ? 'المشروع' : 'Project'}>
+              <p style={{ margin: '0 0 5px', fontSize: 13, fontWeight: 700, color: '#0D1117', lineHeight: 1.35 }}>
+                {projectType || (isAR ? 'قيد التحديد' : 'Being defined')}
+              </p>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {industry && <Tag label={industry} color="#2563EB" />}
+                {complexity && <Tag label={complexity} color={cxColor} />}
+                {priority && <Tag label={`${isAR ? 'أولوية' : 'Priority'}: ${priority}`} color={priorityColor} />}
+                {customerSegment && <Tag label={customerSegment} color="#7C3AED" />}
+              </div>
+            </BlueprintSection>
+          )}
 
-  
-    //     {hasBudget && (
-    //       <div className="yai-card" style={{ background: 'rgba(34,197,94,.04)', border: '1px solid rgba(34,197,94,.14)', borderRadius: 10, padding: '10px 11px' }}>
-    //         <p style={{ margin: '0 0 4px', fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>💰 {isAR ? 'تقدير الميزانية' : 'Budget Est.'}</p>
-    //         <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#22c55e', letterSpacing: '-.01em', lineHeight: 1.2 }}>{estimatedBudget}</p>
-    //       </div>
-    //     )}
+          {hasSummary && (
+            <BlueprintSection icon="🧭" title={isAR ? 'ملخص العمل' : 'Business Summary'} delay={40}>
+              <p style={{ margin: 0, fontSize: 11.5, color: '#374151', lineHeight: 1.6 }}>{businessSummary}</p>
+            </BlueprintSection>
+          )}
 
-    
-    //     {hasTime && (
-    //       <div className="yai-card" style={{ background: 'rgba(6,182,212,.04)', border: '1px solid rgba(6,182,212,.14)', borderRadius: 10, padding: '10px 11px' }}>
-    //         <p style={{ margin: '0 0 4px', fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>⏱ {isAR ? 'الجدول الزمني' : 'Timeline Est.'}</p>
-    //         <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#06b6d4', letterSpacing: '-.01em', lineHeight: 1.2 }}>{estimatedTimeline}</p>
-    //       </div>
-    //     )}
+          {hasRec && (
+            <BlueprintSection icon="✦" title={isAR ? 'الحل الموصى به' : 'Recommended Solution'} delay={80}>
+              <div style={{ background: '#EFF6FF', border: '1px solid #DBEAFE', borderRadius: 10, padding: '9px 11px' }}>
+                <p style={{ margin: 0, fontSize: 11.5, color: '#1D4ED8', lineHeight: 1.6, fontWeight: 500 }}>{recommendedSolution}</p>
+              </div>
+            </BlueprintSection>
+          )}
 
- 
-    //     {hasScore && (
-    //       <div className="yai-card" style={{ background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: '10px 11px' }}>
-    //         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-    //           <p style={{ margin: 0, fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{isAR ? 'تقييم العميل' : 'Lead Score'}</p>
-    //           <span style={{ fontSize: 8.5, fontWeight: 700, color: tierColor, background: `${tierColor}18`, padding: '1.5px 7px', borderRadius: 4, border: `1px solid ${tierColor}28` }}>{tierLabel}</span>
-    //         </div>
-    //         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-    //           <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,.05)', borderRadius: 3, overflow: 'hidden' }}>
-    //             <div style={{ width: `${leadScore}%`, height: '100%', background: `linear-gradient(90deg,${tierColor}cc,${tierColor})`, borderRadius: 3, transition: 'width .9s cubic-bezier(.16,1,.3,1)', animation: 'yai-score .9s ease' }} />
-    //           </div>
-    //           <span style={{ fontSize: 16, fontWeight: 900, color: tierColor, fontFamily: 'monospace', lineHeight: 1, minWidth: 26 }}>{leadScore}</span>
-    //         </div>
-    //       </div>
-    //     )}
+          {hasFeatures && (
+            <BlueprintSection icon="🧩" title={isAR ? 'الميزات الرئيسية' : 'Key Features'} delay={120}>
+              <ChipList items={features} color="#2563EB" />
+            </BlueprintSection>
+          )}
 
-  
-    //     {hasRec && (
-    //       <div className="yai-card" style={{ background: 'rgba(37,99,235,.04)', border: '1px solid rgba(37,99,235,.1)', borderRadius: 10, padding: '10px 11px' }}>
-    //         <p style={{ margin: '0 0 5px', fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>✦ {isAR ? 'التوصية' : 'Recommendation'}</p>
-    //         <p style={{ margin: 0, fontSize: 10.5, color: 'rgba(255,255,255,.72)', lineHeight: 1.55 }}>{recommendation}</p>
-    //       </div>
-    //     )}
+          {hasPages && (
+            <BlueprintSection icon="📄" title={isAR ? 'الصفحات' : 'Pages'} delay={140}>
+              <ChipList items={pages} color="#7C3AED" />
+            </BlueprintSection>
+          )}
 
-   
-    //     {hasContact && (
-    //       <div className="yai-card" style={{ background: 'rgba(160,145,235,.04)', border: '1px solid rgba(160,145,235,.14)', borderRadius: 10, padding: '10px 11px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-    //         <p style={{ margin: '0 0 2px', fontSize: 8, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '.06em' }}>👤 {isAR ? 'جهة الاتصال' : 'Contact'}</p>
-    //         {collected.name  && <IPRow label={isAR ? 'الاسم' : 'Name'}  value={collected.name} />}
-    //         {collected.phone && <IPRow label={isAR ? 'الهاتف' : 'Phone'} value={collected.phone} />}
-    //         {collected.email && <IPRow label={isAR ? 'البريد' : 'Email'} value={collected.email} />}
-    //       </div>
-    //     )}
-    //   </div>
-    // </div>
-    <></>
+          {hasStack && (
+            <BlueprintSection icon="🛠" title={isAR ? 'التقنيات المقترحة' : 'Suggested Stack'} delay={160}>
+              <ChipList items={[...techStack, ...integrations]} color="#0891B2" />
+            </BlueprintSection>
+          )}
+
+          {hasEstimate && (
+            <BlueprintSection icon="📊" title={isAR ? 'الجدول الزمني' : 'Timeline'} delay={200}>
+              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: 9, padding: '8px 10px' }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#0E7490' }}>{estimatedTimeline}</p>
+              </div>
+            </BlueprintSection>
+          )}
+
+          {hasRisks && (
+            <BlueprintSection icon="⚠" title={isAR ? 'اعتبارات مهمة' : 'Worth Considering'} delay={240}>
+              <ul style={{ margin: 0, paddingInlineStart: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {risks.map((r, i) => <li key={i} style={{ fontSize: 11, color: '#92400E', lineHeight: 1.5 }}>{r}</li>)}
+              </ul>
+            </BlueprintSection>
+          )}
+
+          {hasNext && (
+            <BlueprintSection icon="➜" title={isAR ? 'الخطوات التالية' : 'Next Steps'} delay={280}>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {nextSteps.map((s, i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, color: '#374151', lineHeight: 1.5 }}>
+                    <span style={{ color: '#2563EB', fontWeight: 800, flexShrink: 0 }}>{i + 1}.</span>{s}
+                  </li>
+                ))}
+              </ul>
+            </BlueprintSection>
+          )}
+
+          {leadScore > 0 && (
+            <BlueprintSection icon="📈" title={isAR ? 'مدى الملاءمة' : 'Fit Score'} delay={320}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ flex: 1, height: 6, background: '#E8EBF0', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ width: `${leadScore}%`, height: '100%', background: `linear-gradient(90deg,${tierColor}cc,${tierColor})`, borderRadius: 3, transition: 'width .9s cubic-bezier(.16,1,.3,1)', animation: 'yai-score .9s ease' }} />
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 900, color: tierColor, fontFamily: 'monospace', lineHeight: 1 }}>{leadScore}</span>
+              </div>
+            </BlueprintSection>
+          )}
+
+          {files.length > 0 && (
+            <BlueprintSection icon="📎" title={isAR ? 'الملفات المرفوعة' : 'Uploaded Files'} delay={355}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {files.slice(-6).map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5, color: '#374151', background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 7, padding: '5px 8px' }}>
+                    <span style={{ color: '#9BA3AE', flexShrink: 0 }}>{f.kind === 'image' ? '🖼️' : f.kind === 'website' ? '🔗' : '📄'}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                  </div>
+                ))}
+              </div>
+            </BlueprintSection>
+          )}
+
+          {hasContact && (
+            <BlueprintSection icon="👤" title={isAR ? 'جهة الاتصال' : 'Contact'} delay={360}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 9, padding: '9px 11px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {collected.name  && <IPRow label={isAR ? 'الاسم' : 'Name'}  value={collected.name} />}
+                {collected.phone && <IPRow label={isAR ? 'الهاتف' : 'Phone'} value={collected.phone} />}
+                {collected.email && <IPRow label={isAR ? 'البريد' : 'Email'} value={collected.email} />}
+              </div>
+            </BlueprintSection>
+          )}
+        </div>
+      )}
+    </div>
   );
 });
 IntelligencePanel.displayName = 'IntelligencePanel';
@@ -360,17 +494,60 @@ const IPRow = ({ label, value }) => (
 
 // ── Special cards ───────────────────────────────────────────────────────────────
 const WACard = memo(({ msg, isRTL }) => {
-  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg.waMessage || (isRTL ? 'مرحباً YANSY! أريد مناقشة مشروع.' : "Hello YANSY! I'd like to discuss a project."))}`;
+  const brief = msg.whatsappBrief;
+  const fallbackMsg = isRTL ? 'مرحباً YANSY! أريد مناقشة مشروع.' : "Hello YANSY! I'd like to discuss a project.";
+  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(brief || fallbackMsg)}`;
+
+  // The brief is a WhatsApp-markdown document (sections separated by blank
+  // lines, each optionally starting with an "emoji *Header*" line) — parse it
+  // into { header, lines } blocks for a readable preview, not a flat colon-list.
+  const briefSections = brief
+    ? brief.split('\n\n').slice(1, -1) // drop the greeting line and the closing CTA line
+        .map(block => {
+          const lines = block.split('\n').filter(Boolean);
+          const headerMatch = lines[0]?.match(/^[^\w*]*\*(.+)\*$/);
+          return headerMatch
+            ? { header: headerMatch[1], lines: lines.slice(1) }
+            : { header: null, lines };
+        })
+        .filter(s => s.lines.length)
+    : [];
+
   return (
-    <div className="yai-msg-ai" style={{ background: 'linear-gradient(135deg,rgba(37,211,102,.07),rgba(37,211,102,.03))', border: '1px solid rgba(37,211,102,.2)', borderRadius: 14, padding: '14px 16px', marginTop: 2 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
-        <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#25d366', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><WaIcon size={14} /></div>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#25d366' }}>{isRTL ? 'تواصل عبر واتساب' : 'Continue on WhatsApp'}</span>
+    <div className="yai-msg-ai" style={{ background: 'linear-gradient(160deg,rgba(37,211,102,.06),rgba(37,211,102,.015))', border: '1px solid rgba(37,211,102,.22)', borderRadius: 16, padding: '15px 16px', marginTop: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#25d366', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><WaIcon size={15} /></div>
+        <div>
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#128C4A' }}>{isRTL ? 'جاهز للتواصل مع الفريق' : 'Ready to talk to the team'}</p>
+          <p style={{ margin: 0, fontSize: 10.5, color: '#6B7280' }}>{isRTL ? 'لن تحتاج لتكرار أي شيء' : "You won't need to repeat yourself"}</p>
+        </div>
       </div>
+
       <p style={{ fontSize: 12, color: '#374151', margin: '0 0 11px', lineHeight: 1.55 }}>{msg.content}</p>
+
+      {briefSections.length > 0 && (
+        <div style={{ background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 10, padding: '10px 12px', marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <p style={{ margin: '0 0 -2px', fontSize: 9, fontWeight: 800, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.06em' }}>{isRTL ? 'ملخص سيصل للفريق' : "What the team will receive"}</p>
+          {briefSections.slice(0, 5).map((s, i) => (
+            <div key={i}>
+              {s.header && <p style={{ margin: '0 0 2px', fontSize: 9.5, fontWeight: 700, color: '#128C4A' }}>{s.header}</p>}
+              {s.lines.slice(0, 3).map((l, j) => {
+                const isBullet = /^[-\d]/.test(l);
+                const [k, ...rest] = l.split(':');
+                return (
+                  <p key={j} style={{ margin: 0, fontSize: 11, color: '#0D1117', lineHeight: 1.5 }}>
+                    {!s.header && rest.length ? <><span style={{ color: '#9BA3AE' }}>{k}:</span> <span style={{ fontWeight: 500 }}>{rest.join(':').trim()}</span></> : (isBullet ? l : l)}
+                  </p>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
       <a href={url} target="_blank" rel="noopener noreferrer" className="yai-wa"
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#25d366', color: '#000', padding: '8px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', transition: 'all .2s' }}>
-        <WaIcon size={13} /> {isRTL ? 'ابدأ محادثة' : 'Start Chat'}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#25d366', color: '#FFFFFF', padding: '11px 18px', borderRadius: 10, fontSize: 12.5, fontWeight: 700, textDecoration: 'none', transition: 'all .2s', boxShadow: '0 3px 10px rgba(37,211,102,.25)' }}>
+        <WaIcon size={14} /> {isRTL ? 'أكمل مع مستشار الحلول على واتساب' : 'Continue with our solution architect on WhatsApp'}
       </a>
     </div>
   );
@@ -418,6 +595,37 @@ const RequestCard = memo(({ msg, isRTL }) => (
 ));
 RequestCard.displayName = 'RequestCard';
 
+const DocumentCard = memo(({ msg, isRTL }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(msg.document).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
+  };
+  const download = () => {
+    const blob = new Blob([msg.document], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'yansy-project-document.md'; a.click();
+    URL.revokeObjectURL(url);
+  };
+  return (
+    <div className="yai-msg-ai" style={{ background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 16, padding: '16px 18px', marginTop: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(37,99,235,.1)', border: '1px solid rgba(37,99,235,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}><DocIcon /></div>
+        <div style={{ flex: 1 }}>
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#0D1117' }}>{isRTL ? 'وثيقة المشروع الكاملة' : 'Full Project Document'}</p>
+          <p style={{ margin: 0, fontSize: 10.5, color: '#6B7280' }}>{isRTL ? 'المتطلبات، قصص المستخدم، البنية، خارطة الطريق' : 'Requirements, user stories, architecture, roadmap'}</p>
+        </div>
+        <button type="button" onClick={copy} title={isRTL ? 'نسخ' : 'Copy'} style={{ background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 7, padding: '5px 9px', fontSize: 10.5, color: copied ? '#16a34a' : '#374151', cursor: 'pointer' }}>{copied ? '✓' : (isRTL ? 'نسخ' : 'Copy')}</button>
+        <button type="button" onClick={download} title={isRTL ? 'تنزيل' : 'Download'} style={{ background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 7, padding: '5px 9px', fontSize: 10.5, color: '#374151', cursor: 'pointer' }}>{isRTL ? 'تنزيل' : 'Download'}</button>
+      </div>
+      <div style={{ maxHeight: 420, overflowY: 'auto', fontSize: 12.5, color: '#0D1117' }} className="yai-scroll">
+        <RichText text={msg.document} />
+      </div>
+    </div>
+  );
+});
+DocumentCard.displayName = 'DocumentCard';
+
 const RCRow = ({ label, value, mono }) => (
   <div>
     <p style={{ margin: '0 0 1px', fontSize: 9, color: '#9BA3AE', textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</p>
@@ -426,7 +634,11 @@ const RCRow = ({ label, value, mono }) => (
 );
 
 // ── Main widget ─────────────────────────────────────────────────────────────────
-const AIChatWidget = ({ isRTL, user }) => {
+// The widget no longer renders its own floating launcher button or greeting
+// bubble — opening is triggered externally (see FloatingActionMenu) via the
+// imperative `open()` handle, and `onOpenChange` lets the parent know when to
+// hide its own trigger UI while the chat window/minimized bar is visible.
+const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
   const lang = isRTL ? 'ar' : 'en';
   const dir  = isRTL ? 'rtl' : 'ltr';
 
@@ -437,12 +649,11 @@ const AIChatWidget = ({ isRTL, user }) => {
   const [input,          setInput]          = useState('');
   const [streaming,      setStreaming]      = useState(false);
   const [typing,         setTyping]         = useState(false);
-  const [showNotif,      setShowNotif]      = useState(false);
   const [showActions,    setShowActions]    = useState(false);
-  const [listening,      setListening]      = useState(false);
   const [leadScore,      setLeadScore]      = useState(0);
   const [hasOpened,      setHasOpened]      = useState(false);
-  const [showPanel,      setShowPanel]      = useState(true);    // intelligence panel toggle
+  const [showPanel,      setShowPanel]      = useState(true);
+  const [remoteConfig,   setRemoteConfig]   = useState(null);
   // Qualification state
   const [collected,      setCollected]      = useState({});
   const [intelligence,   setIntelligence]   = useState({});
@@ -454,15 +665,46 @@ const AIChatWidget = ({ isRTL, user }) => {
   const [isNarrow,       setIsNarrow]       = useState(
     typeof window !== 'undefined' ? window.innerWidth < 600 : false
   );
+  // Voice
+  const [voiceMode,      setVoiceMode]      = useState('idle'); // idle | listening | speaking
+  const [handsFree,      setHandsFree]      = useState(false);
+  const [micError,       setMicError]       = useState(null); // null | 'denied' | 'unsupported'
+  const [waveLevels,     setWaveLevels]     = useState([2, 2, 2, 2, 2]);
+  // Attachments
+  const [pendingAttachments, setPendingAttachments] = useState([]);
+  const [sentAttachments, setSentAttachments] = useState([]);
+  const [uploading,      setUploading]      = useState(false);
+  const [generatingDoc,  setGeneratingDoc]  = useState(false);
+  const [detectedUrl,    setDetectedUrl]    = useState(null);
+  const [analyzingUrl,   setAnalyzingUrl]   = useState(false);
 
-  const sessionRef = useRef(null);
-  const historyRef = useRef([]);
-  const endRef     = useRef(null);
-  const inputRef   = useRef(null);
-  const srRef      = useRef(null);
-  const abortRef   = useRef(null);
+  const sessionRef      = useRef(null);
+  const historyRef      = useRef([]);
+  const endRef          = useRef(null);
+  const inputRef        = useRef(null);
+  const fileInputRef    = useRef(null);
+  const abortRef        = useRef(null);
+  const recognitionRef  = useRef(null);
+  const handsFreeRef    = useRef(false);
+  const silenceTimerRef = useRef(null);
+  const finalTranscriptRef = useRef('');
+  const recognitionFailCountRef = useRef(0);
+  const micStreamRef    = useRef(null);
+  const audioCtxRef     = useRef(null);
+  const analyserRef     = useRef(null);
+  const rafRef          = useRef(null);
+  const audioElRef      = useRef(typeof Audio !== 'undefined' ? new Audio() : null);
 
   const stageNum = useMemo(() => getStageNum(collected), [collected]);
+  const greeting = useMemo(() => remoteConfig?.welcomeMessage?.[lang] || GREETING_FALLBACK[lang], [remoteConfig, lang]);
+
+  // ── Fetch admin-configured welcome message once ────────────────────────────
+  useEffect(() => {
+    fetch(`${getApiBase()}/support/config`)
+      .then(r => r.json())
+      .then(data => { if (data) setRemoteConfig(data); })
+      .catch(() => {});
+  }, []);
 
   // ── Resize listener ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -501,12 +743,13 @@ const AIChatWidget = ({ isRTL, user }) => {
     if (!delta) return;
     setIntelligence(prev => {
       const next = { ...prev };
-      const fields = ['leadScore','industry','projectType','complexity','estimatedBudget','estimatedTimeline','recommendation'];
-      for (const f of fields) {
-        if (delta[f]) {
-          if (f === 'leadScore') next[f] = Math.max(prev[f] || 0, delta[f]);
-          else next[f] = delta[f];
-        }
+      const scalarFields = ['leadScore', 'industry', 'projectType', 'businessSummary', 'recommendedSolution', 'complexity', 'priority', 'customerSegment', 'estimatedTimeline', 'completionPercent'];
+      const arrayFields  = ['features', 'techStack', 'integrations', 'pages', 'risks', 'nextSteps'];
+      for (const f of scalarFields) {
+        if (delta[f] !== undefined && delta[f] !== '') next[f] = f === 'leadScore' ? Math.max(prev[f] || 0, delta[f]) : delta[f];
+      }
+      for (const f of arrayFields) {
+        if (Array.isArray(delta[f]) && delta[f].length) next[f] = delta[f]; // backend sends cumulative arrays
       }
       try { localStorage.setItem(INTEL_KEY, JSON.stringify(next)); } catch {}
       return next;
@@ -525,6 +768,17 @@ const AIChatWidget = ({ isRTL, user }) => {
       return next;
     });
   }, []);
+
+  const showGreeting = useCallback(() => {
+    setTyping(true);
+    setTimeout(() => {
+      setTyping(false);
+      const id = `ai-${Date.now()}`;
+      setMessages([{ id, type: 'ai', content: greeting }]);
+      historyRef.current = [{ role: 'assistant', content: greeting }];
+      setShowActions(true);
+    }, 850);
+  }, [greeting]);
 
   const startNewConversation = useCallback(() => {
     if (streaming) return;
@@ -547,17 +801,42 @@ const AIChatWidget = ({ isRTL, user }) => {
     setLeadScore(0);
     setShowSidebar(false);
     setHasOpened(false);
-    showGreeting(); // eslint-disable-line
-  }, [streaming, messages, leadScore, updateConvListEntry]); // eslint-disable-line
-
-  // ── Notification bubble ────────────────────────────────────────────────────
-  useEffect(() => {
-    const t = setTimeout(() => { if (!open) setShowNotif(true); }, 9000);
-    return () => clearTimeout(t);
-  }, [open]);
+    setPendingAttachments([]);
+    setSentAttachments([]);
+    setDetectedUrl(null);
+    showGreeting();
+  }, [streaming, messages, leadScore, updateConvListEntry, showGreeting]);
 
   // ── Scroll on new message ──────────────────────────────────────────────────
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // Shared restore logic — used for both "same-browser session" and
+  // "returning logged-in user on a new device" resume paths.
+  const applyRestoredConversation = useCallback((data) => {
+    if (!data.messages?.length) return false;
+    const restored = data.messages.map((m, i) => ({
+      id: `r-${i}`, type: m.role === 'user' ? 'user' : 'ai', content: m.content,
+    }));
+    setMessages(restored);
+    historyRef.current = data.messages.map(m => ({ role: m.role, content: m.content }));
+    if (data.leadScore) setLeadScore(data.leadScore);
+    if (data.intelligence && Object.keys(data.intelligence).length) mergeIntelligence(data.intelligence);
+    if (data.attachmentsLog?.length) setSentAttachments(data.attachmentsLog);
+    if (data.lead) {
+      const { name, phone, email, projectType, features, business, timeline } = data.lead;
+      const rc = {};
+      if (name)        rc.name        = name;
+      if (phone)       rc.phone       = phone;
+      if (email)       rc.email       = email;
+      if (projectType) rc.projectType = projectType;
+      if (features)    rc.features    = features;
+      if (business)    rc.business    = business;
+      if (timeline)    rc.timeline    = timeline;
+      if (Object.keys(rc).length) mergeCollected(rc);
+    }
+    setShowActions(true);
+    return true;
+  }, [mergeIntelligence, mergeCollected]);
 
   // ── Init on first open ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -567,45 +846,25 @@ const AIChatWidget = ({ isRTL, user }) => {
     if (sessionRef.current) {
       fetch(`${getApiBase()}/support/conversation/${sessionRef.current}`)
         .then(r => r.json())
+        .then(data => { if (!applyRestoredConversation(data)) showGreeting(); })
+        .catch(() => showGreeting());
+    } else if (user && token) {
+      // No local session on this device — a logged-in user may still have a
+      // recent conversation on the server (started on their phone, another
+      // browser, etc). Resume it instead of starting over from zero.
+      fetch(`${getApiBase()}/support/my-conversation`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
         .then(data => {
-          if (data.messages?.length > 0) {
-            const restored = data.messages.map((m, i) => ({
-              id: `r-${i}`, type: m.role === 'user' ? 'user' : 'ai', content: m.content,
-            }));
-            setMessages(restored);
-            historyRef.current = data.messages.map(m => ({ role: m.role, content: m.content }));
-            if (data.leadScore) { setLeadScore(data.leadScore); mergeIntelligence({ leadScore: data.leadScore }); }
-            if (data.lead) {
-              const { name, phone, email, projectType, features, business, timeline } = data.lead;
-              const rc = {};
-              if (name)        rc.name        = name;
-              if (phone)       rc.phone       = phone;
-              if (email)       rc.email       = email;
-              if (projectType) rc.projectType = projectType;
-              if (features)    rc.features    = features;
-              if (business)    rc.business    = business;
-              if (timeline)    rc.timeline    = timeline;
-              if (Object.keys(rc).length) mergeCollected(rc);
-            }
-            setShowActions(true);
+          if (data.found && applyRestoredConversation(data)) {
+            sessionRef.current = data.sessionId;
+            try { localStorage.setItem(SESSION_KEY, data.sessionId); } catch {}
           } else { showGreeting(); }
         })
-        .catch(() => showGreeting()); // eslint-disable-line
-    } else { showGreeting(); } // eslint-disable-line
+        .catch(() => showGreeting());
+    } else { showGreeting(); }
 
     setTimeout(() => inputRef.current?.focus(), 400);
   }, [open]); // eslint-disable-line
-
-  const showGreeting = () => {
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      const id = `ai-${Date.now()}`;
-      setMessages([{ id, type: 'ai', content: GREETING[lang] }]);
-      historyRef.current = [{ role: 'assistant', content: GREETING[lang] }];
-      setShowActions(true);
-    }, 950);
-  };
 
   // ── Message helpers ────────────────────────────────────────────────────────
   const addMsg = useCallback((msg) => {
@@ -625,8 +884,10 @@ const AIChatWidget = ({ isRTL, user }) => {
   }, []);
 
   const finalizeMsg = useCallback((id, meta) => {
+    let finalizedText = '';
     setMessages(prev => {
       const next = prev.map(m => m.id === id ? { ...m, streaming: false } : m);
+      finalizedText = next.find(m => m.id === id)?.content || '';
       const pairs = next.filter(m => m.type === 'user' || m.type === 'ai');
       historyRef.current = pairs.map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }));
       saveHistory(historyRef.current);
@@ -638,11 +899,11 @@ const AIChatWidget = ({ isRTL, user }) => {
       if (meta?.requestCreated && meta?.requestData) {
         extras.push({ id: `req-${Date.now()}`, type: 'request', requestData: meta.requestData });
       }
-      if (meta?.suggestWhatsapp) {
+      if (meta?.suggestWhatsapp || meta?.whatsappBrief) {
         extras.push({
           id: `wa-${Date.now()}`, type: 'whatsapp',
-          waMessage: lang === 'ar' ? 'مرحباً YANSY! أريد مناقشة مشروعي.' : "Hello YANSY! I'd like to discuss my project.",
-          content: lang === 'ar' ? 'يمكن فريقنا مساعدتك بشكل أسرع عبر واتساب — مباشر وفوري.' : 'Our team can help you faster on WhatsApp — direct and immediate.',
+          whatsappBrief: meta.whatsappBrief,
+          content: lang === 'ar' ? 'يمكن مستشار الحلول لدينا مساعدتك أسرع على واتساب — مباشر وفوري، وسيصله كل ما ناقشناه.' : 'Our solution architect can help you faster on WhatsApp — direct, immediate, and they\'ll already have everything we discussed.',
         });
       }
       return [...next, ...extras];
@@ -661,26 +922,32 @@ const AIChatWidget = ({ isRTL, user }) => {
       });
     }
 
-    // Update intelligence from AI's JSON analysis
     if (meta?.intelligence) mergeIntelligence(meta.intelligence);
     else if (meta?.leadScore) setLeadScore(s => Math.max(s, meta.leadScore));
 
-    // Update collected from parsed fields
     if (meta?.collected && Object.keys(meta.collected).length) mergeCollected(meta.collected);
 
-    // Update dynamic buttons
     if (meta?.buttons?.length) setDynamicButtons(meta.buttons);
+
+    // Hands-free mode: speak the reply aloud, then resume listening automatically
+    if (handsFreeRef.current && finalizedText.trim()) {
+      speakRef.current?.(finalizedText.replace(/[*`#_]/g, ''));
+    }
   }, [lang, saveHistory, mergeCollected, mergeIntelligence, collected, intelligence, leadScore, updateConvListEntry]);
 
   // ── Send ───────────────────────────────────────────────────────────────────
-  const send = useCallback(async (text) => {
-    const msg = text.trim();
-    if (!msg || streaming) return;
+  const send = useCallback(async (text, attachmentsOverride) => {
+    const msg = (text || '').trim();
+    const atts = attachmentsOverride || pendingAttachments;
+    if ((!msg && !atts.length) || streaming) return;
 
     setShowActions(false);
     setDynamicButtons(null);
-    addMsg({ id: `u-${Date.now()}`, type: 'user', content: msg });
+    addMsg({ id: `u-${Date.now()}`, type: 'user', content: msg, attachments: atts.length ? atts : undefined });
     setInput('');
+    setPendingAttachments([]);
+    setDetectedUrl(null);
+    if (atts.length) setSentAttachments(prev => [...prev, ...atts]);
 
     const aiId = `ai-${Date.now()}`;
     setStreaming(true);
@@ -702,6 +969,7 @@ const AIChatWidget = ({ isRTL, user }) => {
           userId:    user?._id   || undefined,
           userEmail: user?.email || undefined,
           collected,
+          attachments: atts,
         }),
       });
 
@@ -739,81 +1007,319 @@ const AIChatWidget = ({ isRTL, user }) => {
       setStreaming(false);
       setTimeout(() => setShowActions(true), 800);
     }
-  }, [streaming, lang, user, collected, addMsg, patchMsg, replaceMsg, finalizeMsg]);
+  }, [streaming, lang, user, collected, pendingAttachments, addMsg, patchMsg, replaceMsg, finalizeMsg]);
 
   const submit  = (e) => { e?.preventDefault(); send(input); };
   const onKey   = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } };
 
-  // ── Voice ──────────────────────────────────────────────────────────────────
+  // ── Voice: waveform (real mic-driven bars via a dedicated getUserMedia stream,
+  //    independent of SpeechRecognition's own internal capture) ─────────────────
+  const stopWaveform = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+    try { micStreamRef.current?.getTracks().forEach(t => t.stop()); } catch {}
+    try { audioCtxRef.current?.close(); } catch {}
+    micStreamRef.current = null; audioCtxRef.current = null; analyserRef.current = null;
+    setWaveLevels([2, 2, 2, 2, 2]);
+  }, []);
+
+  const startWaveform = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+      const source = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        if (!analyserRef.current) return;
+        analyser.getByteFrequencyData(data);
+        const bars = [0, 1, 2, 3, 4].map(i => {
+          const seg = data.slice(i * 3, i * 3 + 3);
+          const avg = seg.reduce((a, b) => a + b, 0) / (seg.length || 1);
+          return Math.max(2, Math.min(22, Math.round((avg / 255) * 22)));
+        });
+        setWaveLevels(bars);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      // Waveform is cosmetic — if the browser blocks this second stream for any
+      // reason, speech recognition (which opens its own internal capture) still works.
+    }
+  }, []);
+
+  // ── Voice: text-to-speech playback ──────────────────────────────────────────
+  const stopSpeaking = useCallback(() => {
+    try { audioElRef.current?.pause(); if (audioElRef.current) audioElRef.current.currentTime = 0; } catch {}
+    if (voiceMode === 'speaking') setVoiceMode('idle');
+  }, [voiceMode]);
+
+  const speak = useCallback(async (text) => {
+    if (!text?.trim() || !audioElRef.current) return;
+    try {
+      const res = await fetch(`${getApiBase()}/support/tts`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, sessionId: sessionRef.current }),
+      });
+      if (!res.ok) throw new Error('tts failed');
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const audio = audioElRef.current;
+      audio.src = url;
+      setVoiceMode('speaking');
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        setVoiceMode('idle');
+        if (handsFreeRef.current) startListening('handsfree');
+      };
+      await audio.play();
+    } catch {
+      setVoiceMode('idle');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Voice: speech-to-text ────────────────────────────────────────────────────
   const hasSpeech = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
-  const toggleVoice = useCallback(() => {
-    if (listening) { srRef.current?.stop(); setListening(false); return; }
+  const voiceUiEnabled = hasSpeech && remoteConfig?.voiceEnabled !== false;
+
+  const stopListening = useCallback(() => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    try { recognitionRef.current?.stop(); } catch {}
+    stopWaveform();
+    setVoiceMode(m => (m === 'listening' ? 'idle' : m));
+  }, [stopWaveform]);
+
+  const startListening = useCallback((mode = 'manual') => {
+    if (streaming) return;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
+    if (!SR) { setMicError('unsupported'); return; }
+
+    stopSpeaking(); // barge-in: stop any AI audio the instant the user starts talking again
+    setMicError(null);
+    finalTranscriptRef.current = '';
+
     const r = new SR();
+    const continuous = mode === 'handsfree';
     r.lang = isRTL ? 'ar-SA' : 'en-US';
-    r.continuous = false;
-    r.interimResults = false;
-    r.onresult = (e) => { setInput(e.results[0][0].transcript); setListening(false); };
-    r.onerror = r.onend = () => setListening(false);
-    srRef.current = r; r.start(); setListening(true);
-  }, [isRTL, listening]);
+    r.continuous = continuous;
+    r.interimResults = true;
+
+    r.onstart = () => { setVoiceMode('listening'); startWaveform(); };
+
+    r.onresult = (e) => {
+      recognitionFailCountRef.current = 0; // real audio came through — reset the error circuit breaker
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalTranscriptRef.current += t;
+        else interim += t;
+      }
+      const combined = (finalTranscriptRef.current + interim).trim();
+      setInput(combined);
+
+      if (continuous) {
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          const finalMsg = (finalTranscriptRef.current + interim).trim();
+          if (finalMsg) {
+            try { r.stop(); } catch {}
+            finalTranscriptRef.current = '';
+            send(finalMsg);
+          }
+        }, 1400);
+      }
+    };
+
+    r.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'permission-denied' || e.error === 'service-not-allowed') {
+        setMicError('denied');
+        handsFreeRef.current = false;
+        setHandsFree(false);
+        return;
+      }
+      if (e.error === 'network') {
+        recognitionFailCountRef.current += 1;
+        // A brief network blip during continuous listening is normal (onend
+        // will just retry); repeated failures back-to-back mean something is
+        // actually wrong (offline, blocked) — stop hammering it and say so,
+        // instead of looping forever.
+        if (recognitionFailCountRef.current >= 3) {
+          setMicError('network');
+          handsFreeRef.current = false;
+          setHandsFree(false);
+        }
+      }
+      // 'no-speech'/'aborted' are routine (user paused, or we stopped it ourselves) — ignore.
+    };
+
+    r.onend = () => {
+      stopWaveform();
+      if (handsFreeRef.current && recognitionFailCountRef.current < 3) {
+        try { r.start(); } catch { setVoiceMode('idle'); }
+      } else {
+        setVoiceMode('idle');
+      }
+    };
+
+    recognitionRef.current = r;
+    try { r.start(); } catch { setVoiceMode('idle'); }
+  }, [streaming, isRTL, stopSpeaking, startWaveform, stopWaveform, send]);
+
+  const togglePushToTalk = useCallback(() => {
+    if (voiceMode === 'listening') { stopListening(); if (input.trim()) send(input); return; }
+    if (voiceMode === 'speaking') { stopSpeaking(); return; }
+    startListening('manual');
+  }, [voiceMode, input, stopListening, stopSpeaking, startListening, send]);
+
+  const toggleHandsFree = useCallback(() => {
+    const next = !handsFree;
+    handsFreeRef.current = next;
+    setHandsFree(next);
+    if (next) { setMicError(null); startListening('handsfree'); }
+    else { stopListening(); stopSpeaking(); }
+  }, [handsFree, startListening, stopListening, stopSpeaking]);
+
+  // Speak AI replies automatically while in hands-free mode
+  const speakRef = useRef(speak);
+  useEffect(() => { speakRef.current = speak; }, [speak]);
+
+  // Clean up all voice/audio resources on unmount
+  useEffect(() => () => { stopWaveform(); try { recognitionRef.current?.stop(); } catch {}; try { audioElRef.current?.pause(); } catch {}; }, [stopWaveform]);
+
+  // ── Attachments ────────────────────────────────────────────────────────────
+  const handleFileSelect = useCallback(async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const form = new FormData();
+      files.forEach(f => form.append('files', f));
+      const res = await fetch(`${getApiBase()}/support/upload`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (data?.attachments?.length) {
+        setPendingAttachments(prev => [...prev, ...data.attachments.filter(a => a.kind !== 'error')]);
+      }
+    } catch {} finally { setUploading(false); }
+  }, []);
+
+  const removeAttachment = useCallback((idx) => {
+    setPendingAttachments(prev => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  // Detect a pasted/typed URL to offer an inline "analyze this website" action
+  useEffect(() => {
+    const m = input.match(/https?:\/\/[^\s]+/i);
+    setDetectedUrl(m ? m[0] : null);
+  }, [input]);
+
+  const generateDocument = useCallback(async () => {
+    if (generatingDoc) return;
+    setGeneratingDoc(true);
+    try {
+      const res = await fetch(`${getApiBase()}/support/generate-document`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collected, intelligence, lang, sessionId: sessionRef.current }),
+      });
+      const data = await res.json();
+      if (res.ok && data.document) {
+        addMsg({ id: `doc-${Date.now()}`, type: 'document', document: data.document });
+      }
+    } catch {} finally { setGeneratingDoc(false); }
+  }, [generatingDoc, collected, intelligence, lang, addMsg]);
+
+  const analyzeDetectedUrl = useCallback(async () => {
+    if (!detectedUrl || analyzingUrl) return;
+    setAnalyzingUrl(true);
+    try {
+      const res = await fetch(`${getApiBase()}/support/analyze-url`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: detectedUrl, lang, sessionId: sessionRef.current }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPendingAttachments(prev => [...prev, { kind: 'website', url: data.url, heuristics: data.heuristics, critique: data.critique, name: detectedUrl }]);
+        setDetectedUrl(null);
+      }
+    } catch {} finally { setAnalyzingUrl(false); }
+  }, [detectedUrl, analyzingUrl, lang]);
 
   // ── Controls ───────────────────────────────────────────────────────────────
-  const openChat       = () => { setOpen(true); setMinimized(false); setShowNotif(false); };
-  const closeChat      = () => { abortRef.current?.abort(); setOpen(false); setFullscreen(false); };
+  const closeChat      = () => {
+    abortRef.current?.abort();
+    handsFreeRef.current = false;
+    setHandsFree(false);
+    stopListening();
+    stopSpeaking();
+    setOpen(false); setFullscreen(false);
+  };
   const toggleFullscreen = () => setFullscreen(f => !f);
+
+  // External trigger (FloatingActionMenu's "YANSY AI" action) opens the chat
+  // via this handle — the widget has no launcher button of its own anymore.
+  // (setOpen/setMinimized are stable setters, so this never needs to change.)
+  useImperativeHandle(ref, () => ({ open: () => { setOpen(true); setMinimized(false); } }), []);
+
+  // Lets the parent hide its own floating trigger while the chat window or
+  // the minimized bar is on screen, so the two don't overlap.
+  useEffect(() => { onOpenChange?.(open); }, [open, onOpenChange]);
 
   const activeButtons = useMemo(() => {
     if (dynamicButtons?.length) return dynamicButtons;
     return DISCOVERY_BUTTONS[lang] || DISCOVERY_BUTTONS.en;
   }, [dynamicButtons, lang]);
 
-  const pos   = isRTL ? { left: '1rem' }  : { right: '1rem' };
+  // max(...) keeps the 1rem margin on devices with no safe-area (most desktops
+  // and older phones) while clearing the notch/home-indicator on ones that do.
+  const pos   = isRTL
+    ? { left: 'max(1rem, env(safe-area-inset-left))' }
+    : { right: 'max(1rem, env(safe-area-inset-right))' };
   const align = isRTL ? 'flex-start' : 'flex-end';
 
-  // Determine if intelligence panel should render as sidebar
   const showSplitPanel = !isNarrow && showPanel;
+
+  // No launcher button/greeting bubble of our own anymore — when closed and
+  // not minimized there is nothing for this component to render at all.
+  if (!open) return null;
 
   return (
     <>
       <style>{CSS}</style>
-      <div style={{ position: 'fixed', bottom: '1.5rem', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, alignItems: align, ...pos }}>
-
-        {/* Notification bubble */}
-        {/* {showNotif && !open && (
-          <div className="yai-notif" onClick={openChat} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '14px 16px', cursor: 'pointer', maxWidth: 280, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>👋</div>
-            <div style={{ flex: 1 }}>
-              <p style={{ margin: '0 0 3px', fontSize: 12.5, fontWeight: 600, color: '#0D1117' }}>YANSY AI</p>
-              <p style={{ margin: 0, fontSize: 11.5, color: '#6B7280', lineHeight: 1.5 }}>{isRTL ? 'مرحباً! كيف يمكنني مساعدتك اليوم؟' : 'Hi! How can I help you today?'}</p>
-            </div>
-            <button onClick={e => { e.stopPropagation(); setShowNotif(false); }} style={{ background: 'none', border: 'none', color: '#9BA3AE', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, marginTop: -2 }}>×</button>
-          </div>
-        )} */}
+      <div style={{ position: 'fixed', bottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, alignItems: align, ...pos }}>
 
         {/* Chat window */}
         {open && !minimized && (
-          <div className={fullscreen ? '' : 'yai-win'} dir={dir} style={fullscreen ? {
+          <div className={fullscreen ? '' : 'yai-win yai-panel-h'} dir={dir} style={fullscreen ? {
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', flexDirection: 'row', overflow: 'hidden',
             background: '#FFFFFF',
             animation: 'yai-fs-in .22s ease both',
+            // Fullscreen goes fully edge-to-edge, so it's the one place that has
+            // to clear the notch/home-indicator itself instead of relying on the
+            // floating panel's own margins.
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            paddingLeft: 'env(safe-area-inset-left)',
+            paddingRight: 'env(safe-area-inset-right)',
           } : {
-            width:  `min(${showSplitPanel ? 640 : 455}px, calc(100vw - 1rem))`,
-            height: 'min(680px, calc(100vh - 90px))',
+            width:  `min(${showSplitPanel ? 700 : 420}px, calc(100vw - 1rem))`,
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             background: '#FFFFFF',
-            border: '1px solid rgba(37,99,235,.13)',
+            border: '1px solid #E8EBF0',
             borderRadius: 20,
-            boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
-            backdropFilter: 'blur(24px)',
+            boxShadow: '0 24px 80px rgba(13,17,23,0.14), 0 4px 16px rgba(13,17,23,0.06)',
             transition: 'width .3s cubic-bezier(.16,1,.3,1)',
           }}>
 
             {/* Fullscreen: conversations sidebar */}
             {fullscreen && showSidebar && (
-              <div dir={dir} style={{ width: 230, flexShrink: 0, background: '#F6F7F9', borderRight: '1px solid #E8EBF0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div dir={dir} style={{ width: 230, flexShrink: 0, background: '#F6F7F9', borderInlineEnd: '1px solid #E8EBF0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid #E8EBF0' }}>
                   <button onClick={startNewConversation} style={{ width: '100%', padding: '8px 12px', background: 'rgba(37,99,235,.08)', border: '1px solid rgba(37,99,235,.2)', borderRadius: 8, color: '#2563EB', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                     {isRTL ? '+ محادثة جديدة' : '+ New Conversation'}
@@ -835,47 +1341,47 @@ const AIChatWidget = ({ isRTL, user }) => {
             )}
 
             {/* Content: chat column + intelligence panel */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: fullscreen ? 'row' : 'row', overflow: 'hidden', minWidth: 0 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', minWidth: 0 }}>
 
               {/* Chat column */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, maxWidth: fullscreen ? 700 : '100%', margin: fullscreen && !showSplitPanel ? '0 auto' : undefined }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, maxWidth: fullscreen ? 720 : '100%', margin: fullscreen && !showSplitPanel ? '0 auto' : undefined }}>
 
                 {/* Header */}
-                <div style={{ padding: '13px 14px', borderBottom: '1px solid #E8EBF0', background: '#FAFAFA', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, background: 'linear-gradient(135deg,rgba(37,99,235,.15),rgba(37,99,235,.05))', border: '1.5px solid rgba(37,99,235,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <span style={{ fontSize: 17, filter: 'drop-shadow(0 0 7px rgba(37,99,235,.5))' }}>✦</span>
-                    <span style={{ position: 'absolute', bottom: -1, right: -1, width: 9, height: 9, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #FFFFFF' }} />
+                <div style={{ padding: '13px 14px', borderBottom: '1px solid #E8EBF0', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, background: 'linear-gradient(135deg,#2563EB,#1D4ED8)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(37,99,235,.28)' }}>
+                    <SparkIcon size={17} />
+                    <span style={{ position: 'absolute', bottom: -1, insetInlineEnd: -1, width: 9, height: 9, borderRadius: '50%', background: '#22c55e', border: '1.5px solid #FFFFFF' }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#0D1117', letterSpacing: '-.01em' }}>YANSY AI</p>
-                      {user && <span style={{ fontSize: 9, background: 'rgba(160,145,235,.15)', border: '1px solid rgba(160,145,235,.22)', color: 'rgba(160,145,235,.85)', padding: '1px 6px', borderRadius: 9, fontWeight: 700 }}>VIP</span>}
+                      {user && <span style={{ fontSize: 9, background: '#F5F3FF', border: '1px solid #DDD6FE', color: '#7C3AED', padding: '1px 6px', borderRadius: 9, fontWeight: 700 }}>VIP</span>}
                     </div>
                     <p style={{ margin: 0, fontSize: 10.5, color: '#6B7280', letterSpacing: '.01em' }}>
                       {streaming
-                        ? (isRTL ? '⟳ جاري التحليل...' : '⟳ Analyzing...')
-                        : (isRTL ? '✦ متصل · يرد فوراً' : '✦ Online · Responds instantly')}
+                        ? (isRTL ? '⟳ جاري التفكير...' : '⟳ Thinking...')
+                        : (isRTL ? '● متصل الآن' : '● Online now')}
                     </p>
                   </div>
 
                   {/* Header controls */}
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                     {!isNarrow && (
-                      <button className="yai-ico" onClick={() => setShowPanel(p => !p)} title={isRTL ? 'لوحة المعلومات' : 'Intelligence panel'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showPanel ? 'rgba(37,99,235,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${showPanel ? 'rgba(37,99,235,.28)' : 'rgba(255,255,255,.07)'}`, borderRadius: 6, color: showPanel ? '#2563EB' : 'rgba(255,255,255,.35)', cursor: 'pointer', transition: 'all .2s' }}>
+                      <button className="yai-ico" onClick={() => setShowPanel(p => !p)} title={isRTL ? 'مخطط المشروع' : 'Project blueprint'} aria-label={isRTL ? 'مخطط المشروع' : 'Project blueprint'} aria-pressed={showPanel} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showPanel ? '#EFF6FF' : '#FFFFFF', border: `1px solid ${showPanel ? '#DBEAFE' : '#E8EBF0'}`, borderRadius: 6, color: showPanel ? '#2563EB' : '#9BA3AE', cursor: 'pointer', transition: 'all .2s' }}>
                         <PanelIcon />
                       </button>
                     )}
                     {fullscreen && (
-                      <button className="yai-ico" onClick={() => setShowSidebar(s => !s)} title="Conversations" style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showSidebar ? 'rgba(37,99,235,.1)' : 'rgba(255,255,255,.04)', border: `1px solid ${showSidebar ? 'rgba(37,99,235,.28)' : 'rgba(255,255,255,.07)'}`, borderRadius: 6, color: showSidebar ? '#2563EB' : 'rgba(255,255,255,.35)', cursor: 'pointer', fontSize: 13 }}>≡</button>
+                      <button className="yai-ico" onClick={() => setShowSidebar(s => !s)} title="Conversations" aria-label={isRTL ? 'المحادثات' : 'Conversations'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showSidebar ? '#EFF6FF' : '#FFFFFF', border: `1px solid ${showSidebar ? '#DBEAFE' : '#E8EBF0'}`, borderRadius: 6, color: showSidebar ? '#2563EB' : '#9BA3AE', cursor: 'pointer', fontSize: 13 }}>≡</button>
                     )}
                     {fullscreen && (
-                      <button className="yai-ico" onClick={startNewConversation} title={isRTL ? 'محادثة جديدة' : 'New conversation'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>+</button>
+                      <button className="yai-ico" onClick={startNewConversation} title={isRTL ? 'محادثة جديدة' : 'New conversation'} aria-label={isRTL ? 'محادثة جديدة' : 'New conversation'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>+</button>
                     )}
-                    <button className="yai-ico" onClick={toggleFullscreen} title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', fontSize: 11 }}>
+                    <button className="yai-ico" onClick={toggleFullscreen} title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', fontSize: 11 }}>
                       {fullscreen ? '⊡' : '⊞'}
                     </button>
-                    {!fullscreen && <button className="yai-ico" onClick={() => setMinimized(true)} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', transition: 'background .2s, border-color .2s' }}><MinIcon /></button>}
-                    <button className="yai-ico" onClick={closeChat} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', transition: 'background .2s, border-color .2s' }}><CloseIcon /></button>
+                    {!fullscreen && <button className="yai-ico" onClick={() => setMinimized(true)} aria-label={isRTL ? 'تصغير' : 'Minimize'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', transition: 'background .2s, border-color .2s' }}><MinIcon /></button>}
+                    <button className="yai-ico" onClick={closeChat} aria-label={isRTL ? 'إغلاق المحادثة' : 'Close chat'} style={{ width: 27, height: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 6, color: '#6B7280', cursor: 'pointer', transition: 'background .2s, border-color .2s' }}><CloseIcon /></button>
                   </div>
                 </div>
 
@@ -884,59 +1390,83 @@ const AIChatWidget = ({ isRTL, user }) => {
 
                 {/* Intelligence strip — only when panel is hidden */}
                 {(!showSplitPanel || isNarrow) && (
-                  <IntelligenceStrip intelligence={intelligence} collected={collected} leadScore={leadScore} lang={lang} />
+                  <IntelligenceStrip intelligence={intelligence} leadScore={leadScore} lang={lang} />
                 )}
 
                 {/* Messages */}
-                <div className="yai-scroll" style={{ flex: 1, overflowY: 'auto', padding: '14px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="yai-scroll" style={{ flex: 1, overflowY: 'auto', padding: '14px 14px', display: 'flex', flexDirection: 'column', gap: 10, background: '#FFFFFF' }}>
 
                   {messages.map(msg => {
                     if (msg.type === 'whatsapp') return <WACard    key={msg.id} msg={msg} isRTL={isRTL} />;
                     if (msg.type === 'ticket')   return <TicketCard key={msg.id} msg={msg} isRTL={isRTL} />;
                     if (msg.type === 'request')  return <RequestCard key={msg.id} msg={msg} isRTL={isRTL} />;
+                    if (msg.type === 'document') return <DocumentCard key={msg.id} msg={msg} isRTL={isRTL} />;
 
                     const isUser = msg.type === 'user';
                     if (isUser) {
                       return (
-                        <div key={msg.id} className="yai-msg-usr" style={{ display: 'flex', justifyContent: isRTL ? 'flex-start' : 'flex-end' }}>
-                          <div style={{
-                            maxWidth: '82%', padding: '9px 14px', fontSize: 13, lineHeight: 1.65,
-                            background: 'linear-gradient(135deg,#2563EB,#1e40af)',
-                            borderRadius: isRTL ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
-                            color: '#000', fontWeight: 500,
-                            boxShadow: '0 2px 10px rgba(37,99,235,.22)',
-                          }}>
-                            {msg.content}
-                          </div>
+                        <div key={msg.id} className="yai-msg-usr" style={{ display: 'flex', flexDirection: 'column', alignItems: isRTL ? 'flex-start' : 'flex-end', gap: 5 }}>
+                          {msg.attachments?.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: isRTL ? 'flex-start' : 'flex-end', maxWidth: '82%' }}>
+                              {msg.attachments.map((a, i) => (
+                                a.kind === 'image'
+                                  ? <img key={i} src={a.dataUrl || a.url} alt="" style={{ width: 54, height: 54, borderRadius: 8, objectFit: 'cover', border: '1px solid #E8EBF0' }} />
+                                  : <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: '#374151', background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: 7, padding: '4px 9px' }}>
+                                      {a.kind === 'website' ? <GlobeIcon /> : <DocIcon />} {a.name}
+                                    </span>
+                              ))}
+                            </div>
+                          )}
+                          {msg.content && (
+                            <div style={{
+                              maxWidth: '82%', padding: '9px 14px', fontSize: 13, lineHeight: 1.65,
+                              background: 'linear-gradient(135deg,#2563EB,#1e40af)',
+                              borderRadius: isRTL ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
+                              color: '#FFFFFF', fontWeight: 500,
+                              boxShadow: '0 2px 10px rgba(37,99,235,.22)',
+                            }}>
+                              {msg.content}
+                            </div>
+                          )}
                         </div>
                       );
                     }
 
-                    // AI message — document block style
+                    // AI message — document block style. The avatar+bubble row is
+                    // pinned physically left regardless of language (chat convention:
+                    // your own messages on the right, the other party's on the left,
+                    // unmirrored) — flexDirection compensates for the ambient dir="rtl"
+                    // flip that would otherwise push the avatar to the right.
                     return (
-                      <div key={msg.id} className="yai-msg-ai" style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, marginTop: 2 }}>✦</div>
+                      <div key={msg.id} className="yai-msg-ai" style={{ display: 'flex', flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'flex-start', gap: 9 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#2563EB', marginTop: 2 }}><SparkIcon size={13} /></div>
                         <div style={{
                           flex: 1, padding: '10px 14px',
                           background: '#F6F7F9',
-                          borderRadius: isRTL ? '12px 2px 12px 12px' : '2px 12px 12px 12px',
+                          borderRadius: '2px 12px 12px 12px',
                           border: '1px solid #E8EBF0',
-                          borderLeft: isRTL ? '1px solid #E8EBF0' : '2px solid rgba(37,99,235,0.3)',
-                          borderRight: isRTL ? '2px solid rgba(37,99,235,0.3)' : '1px solid #E8EBF0',
+                          borderLeft: '2px solid rgba(37,99,235,0.3)',
+                          borderRight: '1px solid #E8EBF0',
                           fontSize: 13, color: '#0D1117', lineHeight: 1.68,
                         }}>
                           {msg.streaming && !msg.content
                             ? <ThinkingState lang={lang} />
                             : <RichText text={msg.content} streaming={msg.streaming} />
                           }
+                          {voiceUiEnabled && !msg.streaming && msg.content && (
+                            <button type="button" onClick={() => (voiceMode === 'speaking' ? stopSpeaking() : speak(msg.content.replace(/[*`#_]/g, '')))} title={isRTL ? 'استمع' : 'Listen'} aria-label={isRTL ? 'استمع لهذه الرسالة' : 'Listen to this message'}
+                              style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: '#9BA3AE', cursor: 'pointer', fontSize: 10, padding: 0 }}>
+                              <SpeakerIcon size={11} /> {isRTL ? 'استمع' : 'Listen'}
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
                   })}
 
                   {typing && (
-                    <div className="yai-msg-ai" style={{ display: 'flex', alignItems: 'flex-end', gap: 9 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12 }}>✦</div>
+                    <div className="yai-msg-ai" style={{ display: 'flex', flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 9 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#2563EB' }}><SparkIcon size={13} /></div>
                       <div style={{ background: '#F6F7F9', border: '1px solid #E8EBF0', borderRadius: '2px 12px 12px 12px' }}>
                         <TypingDots />
                       </div>
@@ -952,6 +1482,13 @@ const AIChatWidget = ({ isRTL, user }) => {
                           <span>{a.label}</span>
                         </button>
                       ))}
+                      {/* On narrow screens / hidden panel the sidebar's "Generate Document"
+                          action isn't reachable at all — surface it here too. */}
+                      {!showSplitPanel && remoteConfig?.documentGenerationEnabled !== false && (intelligence?.projectType || collected?.projectType) && (
+                        <button className="yai-btn yai-chip" onClick={generateDocument} disabled={generatingDoc} style={{ padding: '6px 11px', fontSize: 11.5, cursor: generatingDoc ? 'wait' : 'pointer', border: '1px solid rgba(37,99,235,.25)', color: '#2563EB', background: '#EFF6FF', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                          📄 {generatingDoc ? (isRTL ? 'جارِ الإنشاء...' : 'Generating...') : (isRTL ? 'إنشاء وثيقة المشروع' : 'Generate Project Document')}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -960,25 +1497,78 @@ const AIChatWidget = ({ isRTL, user }) => {
 
                 {/* Input bar */}
                 <div style={{ padding: '10px 12px', borderTop: '1px solid #E8EBF0', background: '#FAFAFA', flexShrink: 0 }}>
-                  <form onSubmit={submit} style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
-                    {hasSpeech && (
-                      <button type="button" className="yai-ico" onClick={toggleVoice} style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: listening ? 'rgba(37,99,235,.12)' : 'rgba(255,255,255,.04)', border: `1px solid ${listening ? 'rgba(37,99,235,.4)' : 'rgba(255,255,255,.07)'}`, borderRadius: 9, color: listening ? '#2563EB' : 'rgba(255,255,255,.28)', cursor: 'pointer', transition: 'all .2s' }}>
-                        <MicIcon on={listening} />
+
+                  {pendingAttachments.length > 0 && (
+                    <div className="yai-fade" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                      {pendingAttachments.map((a, i) => <AttachmentChip key={i} att={a} isRTL={isRTL} onRemove={() => removeAttachment(i)} />)}
+                    </div>
+                  )}
+
+                  {detectedUrl && !pendingAttachments.some(a => a.url === detectedUrl) && (
+                    <div className="yai-fade" style={{ marginBottom: 8 }}>
+                      <button type="button" onClick={analyzeDetectedUrl} disabled={analyzingUrl} className="yai-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 11px', fontSize: 11.5, cursor: analyzingUrl ? 'wait' : 'pointer', border: '1px solid rgba(37,99,235,.25)', color: '#2563EB', background: '#EFF6FF', borderRadius: 8 }}>
+                        <GlobeIcon />
+                        {analyzingUrl ? (isRTL ? 'جارِ تحليل الموقع...' : 'Analyzing website...') : (isRTL ? 'تحليل هذا الموقع' : 'Analyze this website')}
+                      </button>
+                    </div>
+                  )}
+
+                  {micError === 'denied' && (
+                    <div className="yai-fade" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 10px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 9 }}>
+                      <span style={{ fontSize: 14, flexShrink: 0 }}>🎙️</span>
+                      <p style={{ margin: 0, fontSize: 10.5, color: '#991B1B', lineHeight: 1.5, flex: 1 }}>
+                        {isRTL ? 'تم حظر إذن الميكروفون. اضغط على أيقونة القفل بجانب الرابط ← إعدادات الموقع ← اسمح بالميكروفون.' : 'Microphone was blocked. Click the lock icon in your address bar → Site settings → allow Microphone.'}
+                      </p>
+                      <button type="button" onClick={() => setMicError(null)} style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', fontSize: 15, lineHeight: 1, flexShrink: 0 }}>×</button>
+                    </div>
+                  )}
+
+                  {micError === 'network' && (
+                    <div className="yai-fade" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 10px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 9 }}>
+                      <span style={{ fontSize: 14, flexShrink: 0 }}>📡</span>
+                      <p style={{ margin: 0, fontSize: 10.5, color: '#92400E', lineHeight: 1.5, flex: 1 }}>
+                        {isRTL ? 'انقطع الاتصال أثناء الاستماع. تحقق من الإنترنت وحاول مرة أخرى.' : 'Lost connection while listening. Check your internet and try again.'}
+                      </p>
+                      <button type="button" onClick={() => { setMicError(null); recognitionFailCountRef.current = 0; }} style={{ background: 'none', border: 'none', color: '#92400E', cursor: 'pointer', fontSize: 15, lineHeight: 1, flexShrink: 0 }}>×</button>
+                    </div>
+                  )}
+
+                  <form onSubmit={submit} style={{ display: 'flex', gap: 6, alignItems: 'flex-end' }}>
+                    <input ref={fileInputRef} type="file" accept="image/*,.pdf,.docx" multiple hidden onChange={handleFileSelect} />
+                    <button type="button" className="yai-ico" onClick={() => fileInputRef.current?.click()} disabled={uploading} title={isRTL ? 'إرفاق ملف' : 'Attach a file'} aria-label={isRTL ? 'إرفاق ملف' : 'Attach a file'} style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 9, color: '#9BA3AE', cursor: uploading ? 'wait' : 'pointer', transition: 'all .2s' }}>
+                      {uploading ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: '#2563EB', animation: 'yai-spin .7s linear infinite' }} /> : <ClipIcon />}
+                    </button>
+
+                    {voiceUiEnabled && (
+                      <button type="button" className="yai-ico" onClick={togglePushToTalk}
+                        title={voiceMode === 'listening' ? (isRTL ? 'إيقاف الاستماع' : 'Stop listening') : voiceMode === 'speaking' ? (isRTL ? 'إيقاف الصوت' : 'Stop speaking') : (isRTL ? 'تحدث' : 'Push to talk')}
+                        aria-label={voiceMode === 'listening' ? (isRTL ? 'إيقاف الاستماع' : 'Stop listening') : voiceMode === 'speaking' ? (isRTL ? 'إيقاف الصوت' : 'Stop speaking') : (isRTL ? 'تحدث' : 'Push to talk')}
+                        aria-pressed={voiceMode === 'listening'}
+                        style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: voiceMode === 'listening' ? '#EFF6FF' : voiceMode === 'speaking' ? '#F0FDF4' : '#FFFFFF', border: `1px solid ${voiceMode === 'listening' ? '#DBEAFE' : voiceMode === 'speaking' ? '#BBF7D0' : '#E8EBF0'}`, borderRadius: 9, color: voiceMode === 'listening' ? '#2563EB' : voiceMode === 'speaking' ? '#16a34a' : '#9BA3AE', cursor: 'pointer', transition: 'all .2s' }}>
+                        {voiceMode === 'listening' ? <Waveform levels={waveLevels} /> : voiceMode === 'speaking' ? <SpeakerIcon /> : <MicIcon on={false} />}
                       </button>
                     )}
+
+                    {voiceUiEnabled && (
+                      <button type="button" className="yai-ico" onClick={toggleHandsFree} title={isRTL ? 'وضع اليدين الحرتين' : 'Hands-free mode'} aria-label={isRTL ? 'وضع اليدين الحرتين' : 'Hands-free mode'} aria-pressed={handsFree}
+                        style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: handsFree ? '#EFF6FF' : '#FFFFFF', border: `1px solid ${handsFree ? '#DBEAFE' : '#E8EBF0'}`, borderRadius: 9, color: handsFree ? '#2563EB' : '#9BA3AE', cursor: 'pointer', transition: 'all .2s' }}>
+                        <HandsFreeIcon on={handsFree} />
+                      </button>
+                    )}
+
                     <textarea
                       ref={inputRef} value={input}
                       onChange={e => setInput(e.target.value)}
                       onKeyDown={onKey}
-                      placeholder={isRTL ? 'اكتب رسالتك...' : 'Message YANSY AI...'}
+                      placeholder={voiceMode === 'listening' ? (isRTL ? 'أستمع...' : 'Listening...') : isRTL ? 'اكتب رسالتك...' : 'Message YANSY AI...'}
                       dir={dir} rows={1}
-                      style={{ flex: 1, minWidth: 0, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 9, color: '#0D1117', padding: '9px 12px', fontSize: 13, outline: 'none', resize: 'none', minHeight: 36, maxHeight: 110, lineHeight: 1.5, fontFamily: 'inherit', transition: 'border-color .2s, box-shadow .2s' }}
+                      style={{ flex: 1, minWidth: 0, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 9, color: '#0D1117', padding: '9px 12px', fontSize: 13, outline: 'none', resize: 'none', minHeight: 38, maxHeight: 110, lineHeight: 1.5, fontFamily: 'inherit', transition: 'border-color .2s, box-shadow .2s' }}
                       onFocus={e => { e.target.style.borderColor = '#2563EB'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.08)'; }}
                       onBlur={e  => { e.target.style.borderColor = '#E8EBF0'; e.target.style.boxShadow = 'none'; }}
                       onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 110) + 'px'; }}
                     />
-                    <button type="submit" className="yai-send" disabled={!input.trim() || streaming} style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: input.trim() && !streaming ? '#2563EB' : '#F0F2F5', border: 'none', borderRadius: 9, color: input.trim() && !streaming ? '#FFFFFF' : '#9BA3AE', cursor: input.trim() && !streaming ? 'pointer' : 'not-allowed', transition: 'all .2s' }}>
-                      {streaming ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: '#2563EB', animation: 'yai-spin .7s linear infinite' }} /> : <SendIcon />}
+                    <button type="submit" className="yai-send" disabled={(!input.trim() && !pendingAttachments.length) || streaming} aria-label={isRTL ? 'إرسال' : 'Send message'} style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: (input.trim() || pendingAttachments.length) && !streaming ? '#2563EB' : '#F0F2F5', border: 'none', borderRadius: 9, color: (input.trim() || pendingAttachments.length) && !streaming ? '#FFFFFF' : '#9BA3AE', cursor: (input.trim() || pendingAttachments.length) && !streaming ? 'pointer' : 'not-allowed', transition: 'all .2s' }}>
+                      {streaming ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: '#2563EB', animation: 'yai-spin .7s linear infinite' }} /> : <span style={{ display: 'flex', transform: isRTL ? 'scaleX(-1)' : 'none' }}><SendIcon /></span>}
                     </button>
                   </form>
                   <p style={{ margin: '6px 0 0', textAlign: 'center', fontSize: 9.5, color: '#9BA3AE', letterSpacing: '.04em' }}>
@@ -994,6 +1584,10 @@ const AIChatWidget = ({ isRTL, user }) => {
                   collected={collected}
                   leadScore={leadScore}
                   lang={lang}
+                  files={sentAttachments}
+                  onGenerateDocument={generateDocument}
+                  generatingDoc={generatingDoc}
+                  docGenEnabled={remoteConfig?.documentGenerationEnabled !== false}
                 />
               )}
             </div>
@@ -1003,30 +1597,16 @@ const AIChatWidget = ({ isRTL, user }) => {
         {/* Minimized bar */}
         {open && minimized && (
           <button className="yai-notif" onClick={() => setMinimized(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', cursor: 'pointer', width: 240, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-          <span style={{ fontSize: 16 }}>✦</span>
+          <span style={{ color: '#2563EB', display: 'flex' }}><SparkIcon size={15} /></span>
           <span style={{ fontSize: 12, fontWeight: 600, color: '#0D1117', flex: 1, textAlign: 'start' }}>YANSY AI</span>
           {stageNum > 0 && <span style={{ fontSize: 9.5, color: 'rgba(37,99,235,.6)', fontFamily: 'monospace' }}>{stageNum}/5</span>}
-          {leadScore > 0 && <span style={{ fontSize: 10, color: leadScore >= 70 ? '#22c55e' : '#2563EB', fontFamily: 'monospace', fontWeight: 700 }}>{leadScore}</span>}
+          {leadScore > 0 && <span style={{ fontSize: 10, color: leadScore >= 70 ? '#16a34a' : '#2563EB', fontFamily: 'monospace', fontWeight: 700 }}>{leadScore}</span>}
           <span style={{ fontSize: 10, color: '#6B7280' }}>{isRTL ? 'افتح' : 'Open'}</span>
           </button>
         )}
-
-        {/* Toggle button */}
-        <div style={{ position: 'relative', alignSelf: align }}>
-          {!open && (
-            <>
-              <span style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(37,99,235,.26)', animation: 'yai-pulse 2.4s ease-out infinite', pointerEvents: 'none' }} />
-              <span style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(37,99,235,.12)', animation: 'yai-pulse 2.4s ease-out .8s infinite', pointerEvents: 'none' }} />
-            </>
-          )}
-          <button onClick={() => open ? closeChat() : openChat()} aria-label={open ? 'Close AI assistant' : 'Open YANSY AI assistant'} style={{ width: 58, height: 58, borderRadius: '50%', background: open ? '#2563EB' : '#0D1117', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', zIndex: 1, boxShadow: open ? '0 8px 24px rgba(37,99,235,0.4)' : '0 8px 28px rgba(0,0,0,0.3)', transition: 'all .3s cubic-bezier(.16,1,.3,1)' }}>
-            {open ? <CloseIcon /> : <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 10px rgba(37,99,235,.5))' }}>✦</span>}
-          </button>
-        </div>
       </div>
     </>
   );
-};
+});
 
 export default AIChatWidget;
-

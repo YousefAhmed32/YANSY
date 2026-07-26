@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const User   = require('../models/User');
 const emailService = require('../utils/emailService');
 const { logActivity } = require('./activityController');
+const { normalizePhone, phoneLooksReasonable } = require('../utils/phone');
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const generateEmailVerificationToken = () => {
@@ -117,9 +118,12 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: 'Full name must be at least 2 characters.' });
     }
 
-    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-    if (!phoneRegex.test(phoneNumber)) {
-      return res.status(400).json({ error: 'Please provide a valid phone number.' });
+    // Permissive by design: normalize away formatting noise (spaces, dashes,
+    // parens, Arabic-Indic digits, invisible bidi marks from a pasted number)
+    // instead of rejecting it outright — a strict charset regex here is what
+    // traps users in an unrecoverable "invalid number" retry loop.
+    if (!phoneLooksReasonable(phoneNumber)) {
+      return res.status(400).json({ error: 'That phone number looks too short or too long — please check the digits.' });
     }
 
     if (!brandName && !companyName) {
@@ -152,7 +156,7 @@ exports.register = async (req, res) => {
       email: normalizedEmail,
       password,
       fullName: fullName.trim(),
-      phoneNumber: phoneNumber.trim(),
+      phoneNumber: normalizePhone(phoneNumber) || phoneNumber.trim(),
       brandName:   brandName   ? brandName.trim()   : null,
       companyName: companyName ? companyName.trim()  : null,
       role: finalRole,
