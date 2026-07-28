@@ -1,5 +1,59 @@
 const ProjectRequest = require('../models/ProjectRequest');
 const { normalizePhone, phoneLooksReasonable } = require('../utils/phone');
+const emailService = require('../utils/emailService');
+const { createNotification } = require('./notificationController');
+const { sendServerEvent } = require('../utils/metaConversionsApi');
+
+// ─── Notify admins on every new lead — in-app + email ──────────────────────
+// Fire-and-forget (setImmediate) so a slow/failed email never delays or
+// fails the visitor's response. Previously nothing notified the team about
+// new leads at all; they had to manually poll the admin panel.
+const notifyAdminsOfNewLead = async (request, io) => {
+  try {
+    const User = require('../models/User');
+    const admins = await User.find({ role: { $in: ['ADMIN', 'SUPER_ADMIN'] }, isActive: { $ne: false } })
+      .select('_id email').lean();
+    if (!admins.length) return;
+
+    const clientName    = request.fullName || 'A visitor';
+    const projectTitle  = `${request.projectType || 'Project'} — ${(request.projectDescription || '').slice(0, 60)}`;
+
+    await Promise.all(admins.map(async (admin) => {
+      await createNotification({
+        userId: admin._id,
+        type: 'alert',
+        title: 'New project request',
+        message: `${clientName} submitted a new ${request.projectType || ''} request.`.trim(),
+        link: '/app/admin/project-requests',
+        priority: 'high',
+        io,
+      });
+      if (admin.email) {
+        try {
+          await emailService.sendAdminNewProjectRequest(admin.email, clientName, projectTitle);
+        } catch (emailErr) {
+          console.error('Failed to email admin about new lead:', emailErr.message);
+        }
+      }
+    }));
+  } catch (err) {
+    console.error('Failed to notify admins of new project request:', err.message);
+  }
+};
+
+// ─── Fire-and-forget: admin notification + Meta server-side Lead event ─────
+// Combines the in-app/email notification above with a Meta Conversions API
+// call, so lead attribution survives even when the visitor's browser Pixel
+// was blocked (ad blockers, Safari ITP, iOS App Tracking Transparency).
+// sendServerEvent no-ops on its own when META_PIXEL_ID/META_CAPI_ACCESS_TOKEN
+// aren't configured, so this is always safe to call.
+const notifyNewLead = (request, req) => {
+  notifyAdminsOfNewLead(request, req.io);
+  sendServerEvent('Lead', req, { email: request.email, phone: request.phoneNumber }, {
+    content_name: request.projectType,
+    content_category: request.clientType,
+  });
+};
 
 // ─── Submit (public) ───────────────────────────────────────────────────────
 exports.submitRequest = async (req, res, next) => {
@@ -81,6 +135,8 @@ exports.submitRequest = async (req, res, next) => {
       companySize:        companySize || undefined,
     });
 
+    setImmediate(() => notifyNewLead(projectRequest, req));
+
     res.status(201).json({
       message: 'Your request has been received. We will contact you within 24 hours.',
       requestId: projectRequest._id,
@@ -160,6 +216,8 @@ exports.submitAuthenticatedRequest = async (req, res, next) => {
       companySize:        companySize || undefined,
       user:               user._id,
     });
+
+    setImmediate(() => notifyNewLead(projectRequest, req));
 
     res.status(201).json({
       message: 'Your project request has been submitted successfully.',
@@ -285,7 +343,7 @@ exports.deleteRequest = async (req, res, next) => {
 // ─── AI Chat Lead (public, minimal fields) ────────────────────────────────
 exports.submitAiLead = async (req, res, next) => {
   try {
-    const { service, name, contact } = req.body;
+    const { service, name, contact, message, source } = req.body;
 
     if (!name || name.trim().length < 2) {
       return res.status(400).json({ error: 'Name is required' });
@@ -302,18 +360,25 @@ exports.submitAiLead = async (req, res, next) => {
     };
 
     const projectType = SERVICE_TO_TYPE[(service || '').toLowerCase()] || 'other';
+    const sourceLabel  = source ? source.trim().slice(0, 60) : 'AI Chat Widget';
+    const trimmedMessage = message ? message.trim().slice(0, 2000) : '';
 
     const request = await ProjectRequest.create({
       projectType,
       clientType:         'individual',
-      projectDescription: `AI Chat Lead — Service: ${service || 'Not specified'}`,
+      projectDescription: trimmedMessage
+        ? `${sourceLabel} — ${trimmedMessage}`
+        : `${sourceLabel} — Service: ${service || 'Not specified'}`,
       budgetRange:        'less-than-500',
       timeline:           'flexible',
       fullName:           name.trim(),
       phoneNumber:        contact.trim(),
+      email:              /^\S+@\S+\.\S+$/.test(contact.trim()) ? contact.trim().toLowerCase() : undefined,
       tags:               ['ai-chat-lead'],
-      adminNotes:         `Source: AI Chat Widget\nRequested service: ${service || '—'}`,
+      adminNotes:         `Source: ${sourceLabel}\nRequested service: ${service || '—'}`,
     });
+
+    setImmediate(() => notifyNewLead(request, req));
 
     res.status(201).json({
       message: 'Lead received. We will contact you shortly.',

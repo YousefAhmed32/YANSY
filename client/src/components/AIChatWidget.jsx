@@ -5,6 +5,7 @@
  * than a lead-gen form dressed up as a chat window.
  */
 import { useState, useEffect, useRef, useCallback, memo, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { floatingCornerStyle, floatingPanelWidth } from '../constants/floatingUi';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const WA_NUMBER     = '201090385390';
@@ -1275,13 +1276,6 @@ const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
     return DISCOVERY_BUTTONS[lang] || DISCOVERY_BUTTONS.en;
   }, [dynamicButtons, lang]);
 
-  // max(...) keeps the 1rem margin on devices with no safe-area (most desktops
-  // and older phones) while clearing the notch/home-indicator on ones that do.
-  const pos   = isRTL
-    ? { left: 'max(1rem, env(safe-area-inset-left))' }
-    : { right: 'max(1rem, env(safe-area-inset-right))' };
-  const align = isRTL ? 'flex-start' : 'flex-end';
-
   const showSplitPanel = !isNarrow && showPanel;
 
   // No launcher button/greeting bubble of our own anymore — when closed and
@@ -1291,7 +1285,9 @@ const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
   return (
     <>
       <style>{CSS}</style>
-      <div style={{ position: 'fixed', bottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, alignItems: align, ...pos }}>
+      {/* Same corner geometry as FloatingActionMenu — the two swap places, so a
+          differing edge gap would make the panel jump sideways on open. */}
+      <div style={{ ...floatingCornerStyle(isRTL), zIndex: 9999, gap: 10 }}>
 
         {/* Chat window */}
         {open && !minimized && (
@@ -1308,7 +1304,7 @@ const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
             paddingLeft: 'env(safe-area-inset-left)',
             paddingRight: 'env(safe-area-inset-right)',
           } : {
-            width:  `min(${showSplitPanel ? 700 : 420}px, calc(100vw - 1rem))`,
+            width:  floatingPanelWidth(showSplitPanel ? 700 : 420),
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             background: '#FFFFFF',
             border: '1px solid #E8EBF0',
@@ -1594,14 +1590,16 @@ const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
           </div>
         )}
 
-        {/* Minimized bar */}
+        {/* Minimized bar. `dir` is set explicitly: the floating wrapper is
+            pinned to `ltr` so its corner alignment stays physical, so this bar
+            can't inherit the page's Arabic direction and has to opt back in. */}
         {open && minimized && (
-          <button className="yai-notif" onClick={() => setMinimized(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', cursor: 'pointer', width: 240, background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-          <span style={{ color: '#2563EB', display: 'flex' }}><SparkIcon size={15} /></span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#0D1117', flex: 1, textAlign: 'start' }}>YANSY AI</span>
-          {stageNum > 0 && <span style={{ fontSize: 9.5, color: 'rgba(37,99,235,.6)', fontFamily: 'monospace' }}>{stageNum}/5</span>}
-          {leadScore > 0 && <span style={{ fontSize: 10, color: leadScore >= 70 ? '#16a34a' : '#2563EB', fontFamily: 'monospace', fontWeight: 700 }}>{leadScore}</span>}
-          <span style={{ fontSize: 10, color: '#6B7280' }}>{isRTL ? 'افتح' : 'Open'}</span>
+          <button className="yai-notif" dir={dir} onClick={() => setMinimized(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', cursor: 'pointer', width: floatingPanelWidth(240), background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+            <span style={{ color: '#2563EB', display: 'flex' }}><SparkIcon size={15} /></span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#0D1117', flex: 1, textAlign: 'start' }}>YANSY AI</span>
+            {stageNum > 0 && <span style={{ fontSize: 9.5, color: 'rgba(37,99,235,.6)', fontFamily: 'monospace' }}>{stageNum}/5</span>}
+            {leadScore > 0 && <span style={{ fontSize: 10, color: leadScore >= 70 ? '#16a34a' : '#2563EB', fontFamily: 'monospace', fontWeight: 700 }}>{leadScore}</span>}
+            <span style={{ fontSize: 10, color: '#6B7280' }}>{isRTL ? 'افتح' : 'Open'}</span>
           </button>
         )}
       </div>

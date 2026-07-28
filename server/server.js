@@ -40,10 +40,14 @@ const activityRoutes = require('./routes/activity');
 
 // Optional routes — loaded only when their files exist
 let auditRoutes, invoiceRoutes, searchRoutes, billingRoutes, aiRoutes, settingsRoutes, reportRoutes, supportRoutes;
+let billingController;
 try { auditRoutes    = require('./routes/audit');    } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] audit:',    e.message); }
 try { invoiceRoutes  = require('./routes/invoices'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] invoices:', e.message); }
 try { searchRoutes   = require('./routes/search');   } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] search:',   e.message); }
-try { billingRoutes  = require('./routes/billing');  } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] billing:',  e.message); }
+try {
+  billingRoutes = require('./routes/billing');
+  billingController = require('./controllers/billingController');
+} catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] billing:',  e.message); }
 try { aiRoutes       = require('./routes/ai');       } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] ai:',       e.message); }
 try { settingsRoutes = require('./routes/settings'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] settings:', e.message); }
 try { reportRoutes   = require('./routes/reports');  } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] reports:',  e.message); }
@@ -140,6 +144,18 @@ if (compression) {
 
 /* ================== MIDDLEWARE ================== */
 app.use(cors(corsOptions));
+
+/* ================== STRIPE WEBHOOK — raw body, must precede express.json() ================
+   Stripe's signature verification (stripeService.constructWebhookEvent) needs the exact
+   unmodified request bytes. routes/billing.js used to mount this with express.raw() on its
+   own router, but that router is registered *after* the global express.json() below — by
+   the time it ran, the JSON parser had already consumed and parsed the body, so req.body was
+   a plain object instead of a raw Buffer and every real Stripe webhook failed signature
+   verification in production. Mounting it here, before the global JSON parser, is what
+   actually gives the handler the raw bytes it needs. */
+if (billingController) {
+  app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), billingController.handleWebhook);
+}
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));

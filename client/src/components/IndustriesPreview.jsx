@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-
-gsap.registerPlugin(ScrollTrigger);
+import SectionHeader from './SectionHeader';
+import Reveal from './Reveal';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -135,46 +133,11 @@ const IndustryTile = ({ industry, isRTL }) => {
 
 const IndustriesPreview = () => {
   const { isRTL } = useLanguage();
-  const font = isRTL ? FONT_AR : FONT_EN;
-  const sectionRef = useRef(null);
-  const headerRef = useRef(null);
-  const gridRef = useRef(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tiles = gridRef.current?.querySelectorAll('[data-industry-tile]');
-    if (prefersReduced) {
-      gsap.set([headerRef.current, ...(tiles || [])], { opacity: 1, y: 0 });
-      return;
-    }
-    const ctx = gsap.context(() => {
-      gsap.fromTo(headerRef.current, { opacity: 0, y: 24 }, {
-        opacity: 1, y: 0, duration: 0.7, ease: 'power3.out',
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 80%', once: true },
-      });
-      if (tiles?.length) {
-        gsap.fromTo(tiles, { opacity: 0, y: 28 }, {
-          opacity: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power3.out',
-          scrollTrigger: { trigger: gridRef.current, start: 'top 85%', once: true },
-        });
-      }
-    }, sectionRef);
-    return () => ctx.revert();
-  }, []);
 
   return (
     <section
-      ref={sectionRef}
       dir={isRTL ? 'rtl' : 'ltr'}
-      style={{
-        background: '#FFFFFF',
-        paddingTop: 'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft: 'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
-        borderTop: '1px solid #E8EBF0',
-      }}
+      className="section-shell section-shell--plain"
       aria-label={isRTL ? 'القطاعات التي نخدمها' : 'Industries we serve'}
     >
       <style>{`
@@ -187,53 +150,37 @@ const IndustriesPreview = () => {
         @media (max-width: 480px)  { .industries-preview-grid { grid-template-columns: 1fr; } }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        {/* Header */}
-        <div
-          ref={headerRef}
-          style={{
-            display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between',
-            gap: '1.5rem clamp(1.5rem, 4vw, 4rem)', marginBottom: 'clamp(2.5rem, 5vw, 4rem)',
-            opacity: 0,
-          }}
-        >
-          <div style={{ textAlign: isRTL ? 'right' : 'left', maxWidth: 620 }}>
-            <span className="section-label" style={{ marginBottom: 18, display: 'inline-block' }}>
-              {isRTL ? 'القطاعات التي نخدمها' : 'Industries We Serve'}
-            </span>
-            <h2 style={{
-              fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.5,
-              letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117', margin: '0 0 16px', fontFamily: font,
-            }}>
-              {isRTL ? 'كل قطاع يعمل بطريقته. نبني وفقًا لذلك.' : 'Every Industry Runs Differently. We Build Accordingly.'}
-            </h2>
-            <p style={{ fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: '#5C6370', lineHeight: 1.7, margin: 0, fontFamily: font }}>
-              {isRTL
-                ? 'من المطاعم إلى العقارات — برمجيات مصمَّمة حول عملياتك الفعلية، لا قوالب عامة.'
-                : "From restaurants to real estate — software shaped around your actual operations, not a generic template."}
-            </p>
-          </div>
+      <div className="section-inner">
+        <SectionHeader
+          eyebrow={isRTL ? 'القطاعات التي نخدمها' : 'Industries We Serve'}
+          title={isRTL ? 'كل قطاع يعمل بطريقته.\nنبني وفقًا لذلك.' : 'Every industry runs differently.\nWe build accordingly.'}
+          lead={isRTL
+            ? 'من المطاعم إلى العقارات — برمجيات مصمَّمة حول عملياتك الفعلية، لا قوالب عامة.'
+            : 'From restaurants to real estate — software shaped around your actual operations, not a generic template.'}
+          maxLeadWidth={380}
+          action={
+            <Link
+              to="/industries"
+              className="industries-preview-cta"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0,
+                fontSize: 13.5, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none',
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+              }}
+            >
+              {isRTL ? 'استكشف كل القطاعات' : 'Explore All Industries'}
+              <ArrowRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+            </Link>
+          }
+        />
 
-          <Link
-            to="/industries"
-            className="industries-preview-cta"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0,
-              fontSize: 13.5, fontWeight: 600, color: '#2563EB', textDecoration: 'none',
-              padding: '10px 4px', flexDirection: isRTL ? 'row-reverse' : 'row', fontFamily: font,
-            }}
-          >
-            {isRTL ? 'استكشف كل القطاعات' : 'Explore All Industries'}
-            <ArrowRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
-          </Link>
-        </div>
-
-        {/* Grid */}
-        <div className="industries-preview-grid" ref={gridRef}>
+        {/* Grid. Tiles animate on hover, so each gets its own reveal wrapper
+            rather than sharing a node with the hover transform. */}
+        <Reveal stagger className="industries-preview-grid" step={0.05} distance={24}>
           {INDUSTRIES.map((industry) => (
             <IndustryTile key={industry.key} industry={industry} isRTL={isRTL} />
           ))}
-        </div>
+        </Reveal>
       </div>
 
       <style>{`

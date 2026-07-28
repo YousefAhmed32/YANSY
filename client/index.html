@@ -20,19 +20,40 @@
     <link rel="dns-prefetch" href="https://wa.me" />
 
     <!-- ── Google Fonts — Inter + IBM Plex Sans Arabic + Alexandria ── -->
-    <!-- size-adjust @font-face in index.css reduces CLS during swap   -->
+    <!-- size-adjust @font-face in index.css reduces CLS during swap. Loaded
+         via the preload+onload swap instead of a plain blocking <link
+         rel="stylesheet"> so the browser doesn't have to finish fetching this
+         CSS before it can start rendering the page — the CSS becomes active
+         the instant it arrives instead of blocking the critical path. The
+         <noscript> fallback covers the (rare) no-JS case, where the onload
+         swap trick can't run. Google's font URLs already carry their own
+         long-lived, immutable Cache-Control, so there's no separate woff2
+         file to preload here — the CSS itself is the only round trip. -->
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@300;400;500;600;700&display=swap"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=Alexandria:wght@300;400;500;600;700&amp;display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=Alexandria:wght@300;400;500;600;700&amp;display=swap"
+      />
+    </noscript>
 
     <!-- ── Hero image preload — eliminates LCP delay ─────────── -->
     <!-- English is the default document language (lang="en" above); the Arabic
          variant loads on-demand for AR visitors instead of double-preloading. -->
+    <!-- imagesrcset mirrors the media queries in HeroSection's .hero-section
+         rule, so the preload and the CSS resolve to the same file instead of
+         racing and fetching two. -->
     <link
       rel="preload"
       as="image"
-      href="/Futuristic tech city overview-9-en.png"
+      href="/hero-en-1280.webp"
+      imagesrcset="/hero-en-768.webp 768w, /hero-en-1280.webp 1280w, /hero-en-1920.webp 1920w"
+      imagesizes="100vw"
       fetchpriority="high"
     />
 
@@ -263,29 +284,59 @@
          here in index.html, so every route on the SPA served identical Home-only
          structured data to non-JS crawlers). ─────────────────────────────── -->
 
-    <!-- ── Google Analytics 4 ────────────────────────────────── -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EBKWH60W27"></script>
+    <!-- ── Google Analytics 4 ─────────────────────────────────── -->
+    <!-- ID is env-driven (VITE_GA4_ID) via Vite's %ENV_VAR% HTML replacement,
+         instead of being hardcoded here — lets staging/prod use different IDs
+         without editing this file. send_page_view is off because App.jsx fires
+         a manual page_view on every SPA route change (see utils/ga4.js). -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA4_ID%"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-EBKWH60W27', { send_page_view: false });
+      gtag('config', '%VITE_GA4_ID%', { send_page_view: false });
     </script>
 
-    <!-- ── Microsoft Clarity ─────────────────────────────────── -->
+    <!-- ── Microsoft Clarity ──────────────────────────────────── -->
     <script type="text/javascript">
       (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "x58kfxz02f");
+      })(window, document, "clarity", "script", "%VITE_CLARITY_ID%");
     </script>
 
-    <!-- ── Styles ───────────────────────────────────────────────── -->
-    <link rel="stylesheet" href="./styles.css" />
+    <!-- ── Meta (Facebook) Pixel ──────────────────────────────── -->
+    <!-- ID is env-driven (VITE_META_PIXEL_ID). When unset, %VITE_META_PIXEL_ID%
+         resolves to an empty string at build time, the `if` below is falsy, and
+         fbq/init/PageView never fire — the Pixel stays fully inert until a real
+         ID is configured. SPA route-change PageViews are fired from App.jsx
+         (see utils/metaPixel.js) the same way GA4's are, since fbq's own
+         PageView-per-load only covers the first document load. -->
+    <script>
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+      document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      var __metaPixelId = '%VITE_META_PIXEL_ID%';
+      if (__metaPixelId) {
+        fbq('init', __metaPixelId);
+        fbq('track', 'PageView');
+      }
+    </script>
+
+    <!-- ── Styles ─────────────────────────────────────────────── -->
   </head>
 
   <body class="bg-white text-[#0D1117] antialiased">
+    <!-- Meta's standard noscript fallback (only loads with JS disabled). Must
+         live in <body> — <noscript> inside <head> may only contain metadata
+         content (link/meta/style) per the HTML5 spec; an <img> there is a
+         parse error. The empty `id=` when VITE_META_PIXEL_ID is unset makes
+         this a harmless no-op request — Meta ignores pixel hits with no ID. -->
+    <noscript><img height="1" width="1" style="display:none" alt=""
+      src="https://www.facebook.com/tr?id=%VITE_META_PIXEL_ID%&amp;ev=PageView&amp;noscript=1" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

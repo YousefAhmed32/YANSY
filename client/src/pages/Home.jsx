@@ -11,22 +11,26 @@ import ProjectRequestForm from '../components/ProjectRequestForm';
 
 // Sections
 import HeroSection      from '../components/HeroSection';
-import TrustBar         from '../components/TrustBar';
-import IndustriesPreview from '../components/IndustriesPreview';
 import PortfolioSection from '../components/PortfolioSection';
-import WhyYANSY         from '../components/WhyYANSY';
 import Testimonials     from '../components/Testimonials';
-import AIChatWidget     from '../components/AIChatWidget';
 import FloatingActionMenu from '../components/FloatingActionMenu';
-import FAQ              from '../components/FAQ';
 
 import MetricsSection  from '../sections/MetricsSection';
-import ProcessSection  from '../sections/ProcessSection';
-import TechSection     from '../sections/TechSection';
-import ContactSection  from '../sections/ContactSection';
 
-// Below-the-fold and non-critical — kept out of the eager Home bundle
+// Below-the-fold and non-critical — kept out of the eager Home bundle so
+// visitors to every OTHER route (not just "/") don't pay for them too. Home
+// used to import all of this eagerly, making it (plus the ~1600-line
+// AIChatWidget) the single largest chunk in the whole app, unconditionally
+// preloaded on every page load regardless of route.
+const ClientVoices           = lazy(() => import('../components/reviews/ClientVoices'));
 const HomepageVideoShowcase = lazy(() => import('../components/HomepageVideoShowcase'));
+const WhyYANSY              = lazy(() => import('../components/WhyYANSY'));
+const IndustriesPreview     = lazy(() => import('../components/IndustriesPreview'));
+const FAQ                   = lazy(() => import('../components/FAQ'));
+const AIChatWidget          = lazy(() => import('../components/AIChatWidget'));
+const ProcessSection        = lazy(() => import('../sections/ProcessSection'));
+const TechSection           = lazy(() => import('../sections/TechSection'));
+const ContactSection        = lazy(() => import('../sections/ContactSection'));
 
 const Home = () => {
   const { t }               = useTranslation();
@@ -95,47 +99,71 @@ const Home = () => {
 
       <Header onStartProject={open} />
 
-      {/* 01 — Hero: Who we are + What we build + Why trust us */}
+      {/*
+        Narrative order. The page previously ran hero → brand film → stat strip →
+        industries → work, which spent its first three screens before showing a
+        single thing YANSY had built, and put an 8-tile grid of links *out* to
+        /industries at position 4 — an exit ramp before the visitor had any
+        reason to stay. Proof was also split across four sections spanning
+        ~5,000px. The order below states the promise, then proves it without
+        interruption, then explains, then handles objections, then asks.
+      */}
+
+      {/* 01 — Promise. Hero carries the proof-stat rail (was a standalone strip). */}
       <HeroSection onStartProject={open} isRTL={isRTL} t={t} />
 
-      {/* 01.5 — Premium Video Showcase: cinematic product/brand film */}
+      {/* ── Proof block: work → outcomes → voices, uninterrupted ── */}
+
+      {/* 02 — The work itself. Nothing earns attention faster than shipped product. */}
+      <PortfolioSection />
+
+      {/* 03 — What that work did for the business. */}
+      <MetricsSection isRTL={isRTL} onStartProject={open} />
+
+      {/* 04 — The clients saying it in their own words. */}
+      <Testimonials isRTL={isRTL} />
+
+      {/* 04.5 — The unscripted version of the above: real WhatsApp screenshots
+              and voice notes, sent unprompted after delivery. */}
+      <Suspense fallback={null}>
+        <ClientVoices isRTL={isRTL} />
+      </Suspense>
+
+      {/* 05 — Brand film. A breather after three dense proof sections, and
+              deferred far enough down that it no longer competes with LCP. */}
       <Suspense fallback={null}>
         <HomepageVideoShowcase />
       </Suspense>
 
-      {/* 02 — Social Proof Strip: Stats + Industries */}
-      <TrustBar />
+      {/* ── Explanation block: why us, how we work, what with ── */}
+      <Suspense fallback={null}>
+        {/* 06 — Why YANSY: vs Freelancers vs Agencies */}
+        <WhyYANSY onStartProject={open} />
 
-      {/* 03 — Industries: Who we build for (gateway into /industries) */}
-      <IndustriesPreview />
+        {/* 07 — Process: how we work */}
+        <ProcessSection isRTL={isRTL} onStartProject={open} />
 
-      {/* 04 — Portfolio: Real shipped work */}
-      <PortfolioSection />
+        {/* 08 — Technology: what we build with. Sits with Process — both answer
+                "how", and splitting them put a cold spec list between the
+                testimonials and the FAQ. */}
+        <TechSection isRTL={isRTL} />
 
-      {/* 05 — Results: Business outcomes */}
-      <MetricsSection isRTL={isRTL} onStartProject={open} />
+        {/* 09 — Industries: who we build for. The gateway into /industries earns
+                its place here, once the visitor is convinced, rather than at #4. */}
+        <IndustriesPreview />
 
-      {/* 06 — Why YANSY: vs Freelancers vs Agencies */}
-      <WhyYANSY onStartProject={open} />
+        {/* 10 — FAQ: objection handling */}
+        <FAQ onStartProject={open} />
 
-      {/* 07 — Process: How we work */}
-      <ProcessSection isRTL={isRTL} onStartProject={open} />
-
-      {/* 08 — Testimonials: Client stories */}
-      <Testimonials isRTL={isRTL} />
-
-      {/* 09 — Technology: What we build with */}
-      <TechSection isRTL={isRTL} />
-
-      {/* 10 — FAQ: Objection handling */}
-      <FAQ onStartProject={open} />
-
-      {/* 11 — Contact: Final CTA */}
-      <ContactSection isRTL={isRTL} onStartProject={open} />
+        {/* 11 — Contact: final CTA */}
+        <ContactSection isRTL={isRTL} />
+      </Suspense>
 
       <Footer />
 
-      <AIChatWidget ref={aiWidgetRef} isRTL={isRTL} onStartProject={open} user={user} token={authToken} onOpenChange={setAiChatOpen} />
+      <Suspense fallback={null}>
+        <AIChatWidget ref={aiWidgetRef} isRTL={isRTL} user={user} token={authToken} onOpenChange={setAiChatOpen} />
+      </Suspense>
       <FloatingActionMenu isRTL={isRTL} onOpenAI={openAIChat} hidden={aiChatOpen} />
 
       <ProjectRequestForm isOpen={isFormOpen} onClose={close} />

@@ -34,6 +34,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/register"/>
   </url>
 
+  <url>
+    <loc>https://yansytech.com/feedback</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yansytech.com/feedback"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yansytech.com/feedback"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://yansytech.com/feedback"/>
+  </url>
+
 
   <url>
     <loc>https://yansytech.com/industries</loc>

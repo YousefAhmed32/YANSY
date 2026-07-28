@@ -19,6 +19,8 @@ const BASE_TITLE        = 'YANSY TECH';
 const BASE_URL          = 'https://yansytech.com';
 const DEFAULT_OG_IMAGE  = `${BASE_URL}/assets/image/logo/logoweb9.png`;
 const PAGE_SCHEMA_ID    = 'yansy-page-schema-ld';
+const DEFAULT_TITLE       = `${BASE_TITLE} | Premium Digital Product Studio — Websites, E-commerce & SaaS`;
+const DEFAULT_DESCRIPTION = 'YANSY TECH is a premium digital product studio. We build enterprise-grade websites, e-commerce platforms, SaaS products, booking systems, and custom software.';
 
 const setMeta = (attr, name, content) => {
   if (!content) return;
@@ -102,8 +104,24 @@ export const useSEO = ({
     /* Page-level structured data */
     injectSchema(schema);
 
+    // Every setter above only ever writes a value forward — nothing reset the
+    // previous route's title/description/OG/canonical when the next route
+    // called useSEO({}) or didn't call it at all, so stale metadata (and even
+    // a stale canonical URL) leaked across navigations. Restore site defaults
+    // on unmount so the next page starts clean unless it sets its own values.
     return () => {
       removeSchema();
+      document.title = DEFAULT_TITLE;
+      setMeta('name', 'description', DEFAULT_DESCRIPTION);
+      setMeta('name', 'robots', 'index, follow, max-image-preview:large');
+      setMeta('property', 'og:title', DEFAULT_TITLE);
+      setMeta('property', 'og:description', DEFAULT_DESCRIPTION);
+      setMeta('property', 'og:image', DEFAULT_OG_IMAGE);
+      setMeta('property', 'og:url', `${BASE_URL}/`);
+      setMeta('name', 'twitter:title', DEFAULT_TITLE);
+      setMeta('name', 'twitter:description', DEFAULT_DESCRIPTION);
+      setMeta('name', 'twitter:image', DEFAULT_OG_IMAGE);
+      setCanonical(`${BASE_URL}/`);
     };
   }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogLocale, canonical, schema, noIndex]);
 };

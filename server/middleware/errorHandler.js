@@ -47,6 +47,13 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ error: `${field} already exists.` });
   }
 
+  // ── 400 Bad ObjectId / cast error ─────────────────────────────────────────
+  // Previously fell through to the generic 500 branch below — a malformed ID in a
+  // URL (e.g. GET /api/projects/not-an-id) is a client error, not a server fault.
+  if (err.name === 'CastError') {
+    return res.status(400).json({ error: `Invalid ${err.path || 'identifier'}.`, code: 'INVALID_ID' });
+  }
+
   // ── 401 JWT ───────────────────────────────────────────────────────────────
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({ error: 'Invalid token. Please log in again.', code: 'TOKEN_INVALID' });

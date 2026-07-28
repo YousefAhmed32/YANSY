@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
+import SectionHeader from '../components/SectionHeader';
 
 const useCountUp = (end, duration = 1800, start = false) => {
   const [value, setValue] = useState(0);
@@ -119,14 +120,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
       ref={sectionRef}
       id="results"
       dir={rtl ? 'rtl' : 'ltr'}
-      style={{
-        background: '#FAFAFA',
-        paddingTop:    'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
-        borderTop: '1px solid #E8EBF0',
-      }}
+      className="section-shell section-shell--tint"
     >
       <style>{`
         .metrics-grid {
@@ -135,7 +129,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
           gap: 0;
           border-top: 1px solid #E8EBF0;
           border-bottom: 1px solid #E8EBF0;
-          margin-bottom: clamp(4rem, 8vw, 6rem);
+          margin-bottom: clamp(3rem, 6vw, 4.5rem);
         }
         @media (max-width: 860px) {
           .metrics-grid { grid-template-columns: repeat(2, 1fr); }
@@ -205,74 +199,19 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div className="section-inner">
 
-        {/* Section header */}
-     <div
-  style={{
-    display: 'flex',
-    flexDirection: rtl ? 'column' : 'row',
-    alignItems: rtl ? 'stretch' : 'flex-end',
-    justifyContent: 'space-between',
-    gap: 'clamp(1.5rem, 3vw, 2rem)',
-    marginBottom: 'clamp(3rem, 6vw, 5rem)',
-    flexWrap: 'wrap',
-  }}
->
-  <div
-    style={{
-      textAlign: rtl ? 'right' : 'left',
-      width: rtl ? '100%' : 'auto',
-      alignSelf: rtl ? 'stretch' : 'auto',
-    }}
-  >
-    <span
-      className="section-label"
-      style={{
-        marginBottom: 20,
-        display: 'inline-block',
-      }}
-    >
-      {rtl ? 'النتائج' : 'Results'}
-    </span>
-
-    <h2
-      style={{
-        fontSize: 'var(--text-5xl)',
-        fontWeight: 800,
-        lineHeight: 1,
-        letterSpacing: rtl ? 0 : '-0.035em',
-        color: '#0D1117',
-        margin: 0,
-        fontFamily: rtl
-          ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif"
-          : "'Inter',system-ui,sans-serif",
-        whiteSpace: 'pre-line',
-        textAlign: rtl ? 'right' : 'left',
-      }}
-    >
-      {rtl ? 'أرقام لا تكذب.' : "Numbers that\ndon't lie."}
-    </h2>
-  </div>
-
-  <p
-    style={{
-      fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-      color: '#5C6370',
-      lineHeight: 1.75,
-      maxWidth: rtl ? '100%' : 400,
-      margin: 0,
-      textAlign: rtl ? 'right' : 'left',
-      fontFamily: rtl
-        ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif"
-        : "'Inter',system-ui,sans-serif",
-    }}
-  >
-    {rtl
-      ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
-      : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
-  </p>
-</div>
+        {/* Arabic used to get an entirely different header layout here (stacked
+            column vs. the split row English got), which made the two languages
+            read as two different designs. SectionHeader mirrors one layout. */}
+        <SectionHeader
+          eyebrow={rtl ? 'النتائج' : 'Results'}
+          title={rtl ? 'أرقام لا تكذب.' : "Numbers that\ndon't lie."}
+          lead={rtl
+            ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
+            : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
+          maxLeadWidth={400}
+        />
 
         {/* Metrics grid */}
         <div className="metrics-grid">

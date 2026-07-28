@@ -11,6 +11,7 @@ import ProjectRequestForm from '../components/ProjectRequestForm';
 import ProcessSection from '../sections/ProcessSection';
 import FAQ from '../components/FAQ';
 import { trackWhatsAppClick, trackCTAClick } from '../utils/ga4';
+import { trackContact } from '../utils/metaPixel';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -122,7 +123,11 @@ const ChannelCard = ({ ch, isRTL, onOpenForm, idx }) => {
         href: ch.href,
         target: ch.external ? '_blank' : undefined,
         rel: ch.external ? 'noopener noreferrer' : undefined,
-        onClick: () => { if (ch.id === 'whatsapp' || ch.id === 'call') trackWhatsAppClick(`contact-page-${ch.id}`); trackCTAClick(`contact-channel-${ch.id}`, 'contact-page'); },
+        onClick: () => {
+          if (ch.id === 'whatsapp' || ch.id === 'call') trackWhatsAppClick(`contact-page-${ch.id}`);
+          trackCTAClick(`contact-channel-${ch.id}`, 'contact-page');
+          trackContact({ content_name: `contact-page-${ch.id}` });
+        },
       };
 
   return (
@@ -476,7 +481,7 @@ const ContactPage = () => {
               <a
                 href={waLink('Hi YANSY Tech! I would like to discuss my project.')}
                 target="_blank" rel="noopener noreferrer"
-                onClick={() => trackWhatsAppClick('contact-final-cta')}
+                onClick={() => { trackWhatsAppClick('contact-final-cta'); trackContact({ content_name: 'contact-final-cta' }); }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   padding: '14px 28px', borderRadius: 10, background: 'rgba(255,255,255,0.06)',

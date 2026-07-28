@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Sparkles, ArrowUp } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { trackWhatsAppClick, trackCTAClick } from '../utils/ga4';
+import { trackContact } from '../utils/metaPixel';
+import { floatingAlign, floatingCornerStyle } from '../constants/floatingUi';
 
 const WA_URL = 'https://wa.me/201090385390';
 
@@ -132,6 +134,7 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
       delay: 0,
       onSelect: () => {
         trackWhatsAppClick('floating_menu');
+        trackContact({ content_name: 'floating_menu' });
         window.open(WA_URL, '_blank', 'noopener,noreferrer');
       },
     },
@@ -168,10 +171,7 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
     action.onSelect();
   };
 
-  const pos = isRTL
-    ? { left: 'max(1rem, env(safe-area-inset-left))' }
-    : { right: 'max(1rem, env(safe-area-inset-right))' };
-  const align = isRTL ? 'flex-start' : 'flex-end';
+  const align = floatingAlign(isRTL);
 
   return (
     <>
@@ -179,19 +179,11 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
       <div
         ref={containerRef}
         style={{
-          position: 'fixed',
-          bottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))',
+          // Shared corner geometry: identical edge gap in both directions, so
+          // RTL is a real mirror of LTR rather than a separately tuned offset.
+          ...floatingCornerStyle(isRTL),
           zIndex: 998,
-          display: 'flex',
-          flexDirection: 'column',
           gap: 12,
-          alignItems: align,
-          // `flex-start`/`flex-end` are logical (writing-mode-relative), so under
-          // the page's ambient `dir="rtl"` they'd flip and silently cancel out
-          // the isRTL branch above. Pinning this wrapper to `ltr` keeps them
-          // tied to physical left/right, matching the `pos`/`align` intent.
-          direction: 'ltr',
-          ...pos,
         }}
       >
         <div
@@ -199,7 +191,9 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
           role="group"
           aria-label={isRTL ? 'إجراءات سريعة' : 'Quick actions'}
           aria-hidden={!open}
-          style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: align, direction: 'ltr' }}
+          // `direction` is inherited from the corner wrapper; only `alignItems`
+          // has to be restated, since it doesn't cascade.
+          style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: align }}
         >
           {[...actions].reverse().map((action) => (
             <button

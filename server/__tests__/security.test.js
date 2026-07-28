@@ -100,9 +100,12 @@ describe('Security: Server middleware order', () => {
     expect(src).toContain('helmet');
   });
 
-  it('server.js loads express-mongo-sanitize', () => {
+  it('server.js sanitizes NoSQL injection ($-prefixed keys)', () => {
+    // express-mongo-sanitize is incompatible with Express 5's read-only req.query
+    // getter, so server.js inlines equivalent $-key-stripping logic instead of
+    // importing the package (see server.js's NoSQL injection sanitization block).
     const src = readFile('server.js');
-    expect(src).toContain('mongoSanitize');
+    expect(src).toContain('stripDollarKeys');
   });
 
   it('server.js loads express-rate-limit', () => {

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSEO } from '../hooks/useSEO';
 import { login, googleLogin, clearError } from '../store/authSlice';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
@@ -88,6 +89,8 @@ const Login = () => {
   const { t }      = useTranslation();
   const { isRTL, dir } = useLanguage();
   const { isAuthenticated, loading, error } = useSelector((s) => s.auth);
+
+  useSEO({ title: `${t('auth.login', 'Log In')} | YANSY TECH`, noIndex: true });
 
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');

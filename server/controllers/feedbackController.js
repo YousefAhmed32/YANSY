@@ -1,6 +1,7 @@
 const Feedback = require('../models/Feedback');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const { createNotification } = require('./notificationController');
 
 /**
  * Create feedback (public or authenticated)
@@ -93,6 +94,29 @@ exports.createFeedback = async (req, res, next) => {
 
     // Check for low satisfaction alert
     const isLowSatisfaction = feedback.isLowSatisfaction();
+
+    // Low-satisfaction feedback previously only set a flag in the JSON response —
+    // nothing ever surfaced it to the team unless someone happened to check the
+    // admin feedback list. Notify admins in-app so it gets seen promptly.
+    if (isLowSatisfaction) {
+      setImmediate(async () => {
+        try {
+          const admins = await User.find({ role: { $in: ['ADMIN', 'SUPER_ADMIN'] }, isActive: { $ne: false } })
+            .select('_id').lean();
+          await Promise.all(admins.map((admin) => createNotification({
+            userId: admin._id,
+            type: 'feedback',
+            title: 'Low satisfaction feedback received',
+            message: `${feedback.isAnonymous ? 'A client' : feedback.name} left a low rating${feedback.reviewText ? ' with a review' : ''}.`,
+            link: '/app/admin/feedback',
+            priority: 'high',
+            io: req.io,
+          })));
+        } catch (err) {
+          console.error('Failed to notify admins of low-satisfaction feedback:', err.message);
+        }
+      });
+    }
 
     res.status(201).json({
       message: 'Feedback submitted successfully',

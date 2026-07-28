@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
+import SectionHeader from './SectionHeader';
+import Reveal from './Reveal';
 
 const STATIC = [
   {
@@ -89,28 +91,13 @@ const Stars = ({ count = 5 }) => (
   </div>
 );
 
-const TestimonialCard = ({ t, idx, visible, delay }) => {
+const TestimonialCard = ({ t, idx }) => {
   const { isRTL } = useLanguage();
 
   return (
-    <div
-      style={{
-        background: '#FFFFFF',
-        border: '1px solid #E8EBF0',
-        borderRadius: 16,
-        padding: 'clamp(22px, 2.5vw, 32px)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-        height: '100%',
-        boxSizing: 'border-box',
-        textAlign: isRTL ? 'right' : 'left',
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(20px)',
-        transition: `opacity 0.6s ${delay}s cubic-bezier(0.16,1,0.3,1), transform 0.6s ${delay}s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, border-color 0.22s ease`,
-      }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = '#C9CDD6'; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#E8EBF0'; }}
+    <figure
+      className="testimonial-card"
+      style={{ textAlign: isRTL ? 'right' : 'left' }}
     >
       {/* Stars + project tag */}
       <div style={{
@@ -128,8 +115,9 @@ const TestimonialCard = ({ t, idx, visible, delay }) => {
         </span>
       </div>
 
-      {/* Quote */}
-      <p style={{
+      {/* Quote. Arabic takes «guillemets» — the straight ASCII pair reads as a
+          Latin import mid-Arabic and confuses the bidi run at the boundary. */}
+      <blockquote style={{
         fontSize: 'clamp(0.875rem, 1vw, 0.9375rem)',
         lineHeight: isRTL ? 1.9 : 1.75,
         color: '#374151',
@@ -138,11 +126,13 @@ const TestimonialCard = ({ t, idx, visible, delay }) => {
         fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter', system-ui, sans-serif",
         fontStyle: isRTL ? 'normal' : 'italic',
       }}>
-        "{isRTL ? (t.reviewTextAR || t.reviewText) : t.reviewText}"
-      </p>
+        {isRTL
+          ? `«${t.reviewTextAR || t.reviewText}»`
+          : `“${t.reviewText}”`}
+      </blockquote>
 
       {/* Author */}
-      <div style={{
+      <figcaption style={{
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -159,8 +149,8 @@ const TestimonialCard = ({ t, idx, visible, delay }) => {
             {isRTL ? (t.roleAR || t.role) : t.role}
           </div>
         </div>
-      </div>
-    </div>
+      </figcaption>
+    </figure>
   );
 };
 
@@ -168,119 +158,84 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
   const { isRTL: ctxRTL } = useLanguage();
   const rtl = isRTLProp ?? ctxRTL;
   const [list, setList] = useState(STATIC);
-  const [visible, setVisible] = useState(false);
-  const gridRef = useRef(null);
 
   useEffect(() => {
+    let alive = true;
     api.get('/testimonials').then(r => {
-      if (r.data?.length > 0) setList(r.data);
+      if (alive && r.data?.length > 0) setList(r.data);
     }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); io.disconnect(); }
-    }, { threshold: 0.05 });
-    io.observe(el);
-    return () => io.disconnect();
+    return () => { alive = false; };
   }, []);
 
   const shown = list.slice(0, 6);
 
   return (
-    <section
-      id="testimonials"
-      dir={rtl ? 'rtl' : 'ltr'}
-      style={{
-        background: '#FAFAFA',
-        paddingTop:    'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
-        borderTop: '1px solid #E8EBF0',
-      }}
-    >
+    <section id="testimonials" dir={rtl ? 'rtl' : 'ltr'} className="section-shell section-shell--tint">
       <style>{`
         .testimonials-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: clamp(12px, 1.5vw, 18px);
         }
-        @media (max-width: 1024px) {
-          .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 1024px) { .testimonials-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px)  { .testimonials-grid { grid-template-columns: 1fr; } }
+        /* The reveal wrapper is the grid item, so it — not the card — is what
+           the row stretches; without this the cards stop being equal-height. */
+        .testimonial-slot { height: 100%; }
+
+        /* Hover lives in CSS, on the card itself. It used to be inline
+           mouseenter/mouseleave handlers on the same node that carried the
+           reveal transition — so a card with a 0.32s reveal delay sat still for
+           320ms before lifting, and any re-render (a language switch, say)
+           wiped the hover styles the handlers had written. */
+        .testimonial-card {
+          background: #FFFFFF;
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: clamp(22px, 2.5vw, 32px);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          height: 100%;
+          box-sizing: border-box;
+          margin: 0;
+          transition: box-shadow 0.28s cubic-bezier(0.16,1,0.3,1),
+                      border-color 0.22s ease,
+                      transform 0.28s cubic-bezier(0.16,1,0.3,1);
         }
-        @media (max-width: 560px) {
-          .testimonials-grid { grid-template-columns: 1fr; }
+        .testimonial-card:hover {
+          box-shadow: 0 12px 36px rgba(0,0,0,0.08);
+          border-color: var(--border-strong);
+          transform: translateY(-3px);
         }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: 'clamp(1.5rem, 3vw, 2rem)',
-          marginBottom: 'clamp(3rem, 6vw, 5rem)',
-        }}>
-          <div style={{ textAlign: rtl ? 'right' : 'left' }}>
-            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
-              {rtl ? 'قصص العملاء' : 'Client Stories'}
-            </span>
-            <h2 style={{
-              fontSize: 'var(--text-5xl)',
-              fontWeight: 800,
-              lineHeight: 1.0,
-              letterSpacing: rtl ? 0 : '-0.035em',
-              color: '#0D1117',
-              margin: 0,
-              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
-              {rtl ? 'عملاء حقيقيون.\nنتائج مثبتة.' : 'Real clients.\nProven results.'}
-            </h2>
-          </div>
-          <div style={{ maxWidth: 380, textAlign: rtl ? 'right' : 'left' }}>
-            <p style={{
-              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-              color: '#5C6370',
-              lineHeight: 1.75,
-              margin: '0 0 12px',
-              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
-              {rtl
-                ? 'شهادات من عملاء عملنا معهم فعليًا على مشاريعهم.'
-                : 'Testimonials from clients we\'ve actually delivered projects for.'}
-            </p>
+      <div className="section-inner">
+        <SectionHeader
+          eyebrow={rtl ? 'قصص العملاء' : 'Client Stories'}
+          title={rtl ? 'عملاء حقيقيون.\nنتائج مثبتة.' : 'Real clients.\nProven results.'}
+          lead={rtl
+            ? 'شهادات من عملاء عملنا معهم فعليًا على مشاريعهم.'
+            : "Testimonials from clients we've actually delivered projects for."}
+          maxLeadWidth={380}
+          action={
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              justifyContent: rtl ? 'flex-end' : 'flex-start',
               flexDirection: rtl ? 'row-reverse' : 'row',
             }}>
               <Stars count={5} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#5C6370' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
                 {rtl ? '5/5 متوسط التقييم' : '5/5 average rating'}
               </span>
             </div>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Cards grid */}
-        <div className="testimonials-grid" ref={gridRef}>
+        <Reveal stagger className="testimonials-grid" step={0.06} itemClassName="testimonial-slot">
           {shown.map((t, i) => (
-            <TestimonialCard
-              key={t._id}
-              t={t}
-              idx={i}
-              visible={visible}
-              delay={Math.min(i * 0.08, 0.32)}
-            />
+            <TestimonialCard key={t._id} t={t} idx={i} />
           ))}
-        </div>
-
+        </Reveal>
       </div>
     </section>
   );

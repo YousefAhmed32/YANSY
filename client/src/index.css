@@ -509,4 +509,96 @@ button, [role="button"], [aria-label] {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SECTION SCAFFOLDING
+   One rhythm for every homepage section. Before this, each section
+   inlined its own padding, max-width, heading size and line-height —
+   which had drifted to three different display line-heights (1.0,
+   1.25, 1.5) and header margins between 12px and 5rem.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  /* Latin display headings can sit tight; Arabic cannot — at line-height 1.0
+     the descenders on ج/ح/ع and the dots below ب/ي clip against the next line.
+     Two tokens instead of one stops sections from each picking their own. */
+  --lh-display:     1.04;
+  --lh-display-ar:  1.42;
+  --section-gap:    clamp(4.5rem, 9vw, 7rem);
+  --header-gap:     clamp(2.5rem, 5vw, 4rem);
+}
+
+.section-shell {
+  padding-top: var(--section-gap);
+  padding-bottom: var(--section-gap);
+  padding-left: var(--container-x);
+  padding-right: var(--container-x);
+  border-top: 1px solid var(--border);
+}
+.section-shell--tint { background: var(--bg-secondary); }
+.section-shell--plain { background: var(--bg); }
+.section-inner { max-width: 1280px; margin: 0 auto; }
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem clamp(1.5rem, 4vw, 4rem);
+  margin-bottom: var(--header-gap);
+}
+.section-header--stack {
+  flex-direction: column;
+  align-items: flex-start;
+}
+[dir="rtl"] .section-header--stack { align-items: flex-end; }
+.section-header__main { min-width: 0; max-width: 640px; }
+.section-header__aside {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+[dir="rtl"] .section-header__aside { align-items: flex-end; }
+.section-header__eyebrow { margin-bottom: 18px; }
+
+/* `.display-title` is the same type treatment for sections whose layout can't
+   use SectionHeader (two-column ones that interleave the heading with other
+   content). Both names resolve to one rule so the rhythm can't drift again. */
+.section-header__title,
+.display-title {
+  font-size: var(--text-5xl);
+  font-weight: 800;
+  line-height: var(--lh-display);
+  letter-spacing: -0.035em;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: pre-line;   /* authored line breaks stay authored */
+  text-wrap: balance;
+}
+[dir="rtl"] .section-header__title,
+[dir="rtl"] .display-title {
+  font-family: var(--font-arabic);
+  line-height: var(--lh-display-ar);
+  letter-spacing: 0;
+}
+.section-header__lead {
+  font-size: clamp(0.9375rem, 1.1vw, 1.0625rem);
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin: 0;
+}
+.section-header__main .section-header__lead { margin-top: 16px; }
+[dir="rtl"] .section-header__lead {
+  font-family: var(--font-arabic);
+  line-height: 1.9;
+}
+
+/* Below the split breakpoint the aside stops being a side column, so it should
+   read as a continuation of the header rather than a second, competing block. */
+@media (max-width: 720px) {
+  .section-header { flex-direction: column; align-items: stretch; }
+  .section-header__aside { align-items: flex-start; }
+  [dir="rtl"] .section-header__aside { align-items: flex-end; }
+}
+
 #root { opacity: 1; }

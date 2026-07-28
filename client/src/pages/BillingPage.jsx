@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -13,6 +13,7 @@ import {
 } from '../store/billingSlice';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { trackInitiateCheckout, trackPurchase } from '../utils/metaPixel';
 
 const PLAN_ICONS  = { FREE: Star, PROFESSIONAL: Zap, ENTERPRISE: Crown };
 const STATUS_CFG  = {
@@ -44,6 +45,7 @@ const BillingPage = () => {
   const [portalLoading,  setPortalLoading]  = useState(false);
   const [cancelConfirm,  setCancelConfirm]  = useState(false);
   const [successMsg,     setSuccessMsg]     = useState('');
+  const pendingPurchaseRef = useRef(false);
 
   const gold      = '#2563EB';
   const bg        = isDark ? '#080806' : '#fafaf9';
@@ -61,6 +63,7 @@ const BillingPage = () => {
     const params = new URLSearchParams(location.search);
     if (params.get('checkout') === 'success') {
       setSuccessMsg('Payment successful! Your subscription has been activated.');
+      pendingPurchaseRef.current = true;
       dispatch(fetchSubscription());
       navigate('/app/billing', { replace: true });
     }
@@ -75,12 +78,28 @@ const BillingPage = () => {
     }
   }, []);
 
+  // Fire Purchase once the freshly-activated subscription (with its real plan/price)
+  // has loaded back in — firing it eagerly at the `checkout=success` redirect would
+  // have no plan/value data yet since fetchSubscription hasn't resolved.
+  useEffect(() => {
+    if (pendingPurchaseRef.current && !loading && subscription) {
+      pendingPurchaseRef.current = false;
+      const cycle = subscription.billingCycle || billingCycle;
+      const value = currentPlan?.price
+        ? (cycle === 'annual' ? currentPlan.price.annual : currentPlan.price.monthly)
+        : undefined;
+      trackPurchase(value, 'USD', { content_name: currentPlan?.name, content_type: 'subscription' });
+    }
+  }, [loading, subscription, currentPlan, billingCycle]);
+
   const handleUpgrade = async (plan) => {
     if (plan.price?.monthly === 0) return;
     setCheckoutLoading(true);
     try {
       const result = await dispatch(createCheckout({ planId: plan._id, billingCycle })).unwrap();
       if (result.checkoutUrl) {
+        const value = billingCycle === 'annual' ? plan.price?.annual : plan.price?.monthly;
+        trackInitiateCheckout({ value, currency: 'USD', content_name: plan.name, content_type: 'subscription' });
         window.location.href = result.checkoutUrl;
       }
     } catch {

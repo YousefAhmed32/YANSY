@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Calendar, Clock, Video, MessageCircle, Zap, ChevronRight, Check } from 'lucide-react';
+import { trackSchedule } from '../utils/metaPixel';
 
 const TK = {
   bg:        '#F6F7F9',
@@ -63,6 +64,7 @@ export default function Meetings() {
       ? `مرحباً، أود حجز ${type.title_ar} (${type.duration}).`
       : `Hi, I'd like to book a ${type.title_en} (${type.duration}).`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+    trackSchedule({ content_name: type.id, content_category: type.duration });
     setBooked(true);
     setSelected(null);
   };

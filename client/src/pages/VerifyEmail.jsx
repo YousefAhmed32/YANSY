@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
 import api from '../utils/api';
+import { useSEO } from '../hooks/useSEO';
 
 const VerifyEmail = () => {
+  useSEO({ title: 'Verify Email | YANSY TECH', noIndex: true });
+
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [status, setStatus] = useState('loading');

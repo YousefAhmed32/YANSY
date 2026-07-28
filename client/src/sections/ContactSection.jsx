@@ -1,6 +1,43 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowRight, MessageCircle } from 'lucide-react';
+import api from '../utils/api';
+import { trackContactForm } from '../utils/ga4';
+import { trackLead, trackContact } from '../utils/metaPixel';
+
+/**
+ * One labelled form control.
+ *
+ * The fields previously carried a placeholder and nothing else — no `<label>`,
+ * no programmatic name. That fails WCAG 3.3.2, and the moment a visitor starts
+ * typing the only description of the field disappears. The label is visually
+ * hidden (the placeholder still carries the visible affordance) but is a real
+ * label element, so assistive tech and autofill both resolve the field.
+ */
+const Field = ({ id, label, error, required, rtl, children }) => (
+  <div style={{ marginBottom: 12 }}>
+    <label htmlFor={id} className="sr-only">
+      {label}{required ? (rtl ? ' (مطلوب)' : ' (required)') : ''}
+    </label>
+    {children}
+    {error && (
+      <p
+        id={`${id}-err`}
+        style={{
+          fontSize: 12, color: '#B91C1C', margin: '6px 2px 0',
+          textAlign: rtl ? 'right' : 'left',
+          display: 'flex', alignItems: 'center', gap: 5,
+          flexDirection: rtl ? 'row-reverse' : 'row',
+        }}
+      >
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden style={{ flexShrink: 0 }}>
+          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 018 4.5zM8 11.75a.9.9 0 110-1.8.9.9 0 010 1.8z" />
+        </svg>
+        {error}
+      </p>
+    )}
+  </div>
+);
 
 const WA_URL = 'https://wa.me/201090385390?text=Hello%2C%20I%27d%20like%20to%20discuss%20a%20project%20with%20YANSY.';
 
@@ -38,6 +75,11 @@ const PROJECT_TYPES_AR = [
   'غير متأكد بعد',
 ];
 
+/* Deliberately permissive: this only has to catch typos like a missing @ or a
+   trailing comma. Anything stricter starts rejecting valid addresses, and the
+   server validates for real anyway. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 const ContactSection = ({ isRTL: isRTLProp }) => {
   const { isRTL: ctxRTL } = useLanguage();
   const rtl = isRTLProp ?? ctxRTL;
@@ -45,21 +87,62 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', projectType: '', message: '' });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const formRef = useRef(null);
 
-  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const validate = (values) => {
+    const errs = {};
+    if (!values.name.trim()) {
+      errs.name = rtl ? 'من فضلك أدخل اسمك.' : 'Please enter your name.';
+    }
+    if (!values.email.trim()) {
+      errs.email = rtl ? 'من فضلك أدخل بريدك الإلكتروني.' : 'Please enter your email address.';
+    } else if (!EMAIL_RE.test(values.email.trim())) {
+      errs.email = rtl ? 'هذا البريد الإلكتروني لا يبدو صحيحاً.' : "That email address doesn't look right.";
+    }
+    if (!values.message.trim()) {
+      errs.message = rtl ? 'أخبرنا باختصار عما تريد بناءه.' : 'Tell us briefly what you want to build.';
+    }
+    return errs;
+  };
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    // Clear a field's error as soon as the visitor starts fixing it — keeping
+    // it on screen while they type reads as the form arguing with them.
+    setFieldErrors(prev => (prev[name] ? { ...prev, [name]: undefined } : prev));
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
+    const errs = validate(form);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      // Move focus to the first invalid field so screen-reader and keyboard
+      // users land on the problem instead of having to hunt for it.
+      formRef.current?.querySelector(`[name="${Object.keys(errs)[0]}"]`)?.focus();
+      return;
+    }
     setLoading(true);
     setError(false);
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+      // Was previously `fetch('/api/contact', ...)` — that endpoint has never
+      // existed on the backend (no /api/contact route anywhere in server/routes),
+      // so every homepage contact-form submission silently failed. Routed
+      // through the existing lightweight lead-capture endpoint instead, via the
+      // shared `api` client so it respects VITE_API_URL in every environment.
+      await api.post('/project-requests/ai-lead', {
+        name: form.name,
+        contact: form.email,
+        service: form.projectType || undefined,
+        message: form.message,
+        source: 'Homepage Contact Form',
       });
-      if (res.ok) setSubmitted(true);
-      else setError(true);
+      setSubmitted(true);
+      trackContactForm('homepage-contact-form');
+      trackLead({ content_name: 'homepage-contact-form', content_category: form.projectType || undefined });
+      trackContact({ content_name: 'homepage-contact-form' });
     } catch {
       setError(true);
     }
@@ -73,12 +156,10 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
     <section
       id="contact"
       dir={rtl ? 'rtl' : 'ltr'}
+      className="section-shell"
       style={{
         background: '#0D1117',
-        paddingTop:    'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
+        borderTop: 'none',   /* the dark block is its own boundary */
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -172,7 +253,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div className="section-inner" style={{ position: 'relative', zIndex: 1 }}>
         <div className="contact-grid">
 
           {/* Left: Pitch */}
@@ -271,7 +352,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
             padding: 'clamp(24px, 3.5vw, 44px)',
           }}>
             {submitted ? (
-              <div style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 60px) 0' }}>
+              <div role="status" style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 60px) 0' }}>
                 <div style={{
                   width: 60, height: 60, borderRadius: '50%',
                   background: '#DCFCE7', margin: '0 auto 20px',
@@ -289,8 +370,8 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate>
-                <div style={{ textAlign: rtl ? 'right' : 'left', marginBottom: 28 }}>
+              <form onSubmit={handleSubmit} noValidate ref={formRef}>
+                <div style={{ textAlign: rtl ? 'right' : 'left', marginBottom: 24 }}>
                   <h3 style={{
                     fontSize: 'clamp(1.125rem, 1.5vw, 1.375rem)',
                     fontWeight: 700, color: '#0D1117',
@@ -305,83 +386,107 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                   </p>
                 </div>
 
-                {/* Name */}
-                <div style={{ marginBottom: 12 }}>
+                <Field
+                  id="contact-name" name="name" rtl={rtl} error={fieldErrors.name} required
+                  label={rtl ? 'الاسم' : 'Name'}
+                >
                   <input
-                    type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
+                    type="text" id="contact-name" name="name"
+                    value={form.name} onChange={handleChange}
+                    autoComplete="name"
                     placeholder={rtl ? 'اسمك' : 'Your name'}
                     dir={rtl ? 'rtl' : 'ltr'}
                     className="contact-field-light"
+                    aria-required="true"
+                    aria-invalid={fieldErrors.name ? 'true' : undefined}
+                    aria-describedby={fieldErrors.name ? 'contact-name-err' : undefined}
                   />
-                </div>
+                </Field>
 
-                {/* Email */}
-                <div style={{ marginBottom: 12 }}>
+                <Field
+                  id="contact-email" name="email" rtl={rtl} error={fieldErrors.email} required
+                  label={rtl ? 'البريد الإلكتروني' : 'Email address'}
+                >
                   <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
+                    type="email" id="contact-email" name="email"
+                    value={form.email} onChange={handleChange}
+                    autoComplete="email" inputMode="email"
                     placeholder={rtl ? 'البريد الإلكتروني' : 'Email address'}
-                    dir={rtl ? 'rtl' : 'ltr'}
+                    dir="ltr"
+                    style={{ textAlign: rtl ? 'right' : 'left' }}
                     className="contact-field-light"
+                    aria-required="true"
+                    aria-invalid={fieldErrors.email ? 'true' : undefined}
+                    aria-describedby={fieldErrors.email ? 'contact-email-err' : undefined}
                   />
-                </div>
+                </Field>
 
-                {/* Project type */}
-                <div style={{ marginBottom: 12, position: 'relative' }}>
-                  <select
-                    name="projectType"
-                    value={form.projectType}
-                    onChange={handleChange}
-                    dir={rtl ? 'rtl' : 'ltr'}
-                    className="contact-field-light"
-                    style={{
-                      cursor: 'pointer',
-                      color: form.projectType ? '#0D1117' : '#9BA3AE',
-                      paddingInlineEnd: 36,
-                    }}
-                  >
-                    <option value="" disabled>
-                      {rtl ? 'نوع المشروع (اختياري)' : 'Project type (optional)'}
-                    </option>
-                    {projectTypes.map((t, i) => (
-                      <option key={i} value={t}>{t}</option>
-                    ))}
-                  </select>
-                  <svg
-                    viewBox="0 0 24 24" fill="none" stroke="#9BA3AE" strokeWidth="2"
-                    width="14" height="14" aria-hidden
-                    style={{
-                      position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-                      [rtl ? 'left' : 'right']: 14, pointerEvents: 'none',
-                    }}
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
+                <Field
+                  id="contact-type" name="projectType" rtl={rtl}
+                  label={rtl ? 'نوع المشروع (اختياري)' : 'Project type (optional)'}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      id="contact-type" name="projectType"
+                      value={form.projectType} onChange={handleChange}
+                      dir={rtl ? 'rtl' : 'ltr'}
+                      className="contact-field-light"
+                      style={{
+                        cursor: 'pointer',
+                        color: form.projectType ? '#0D1117' : '#9BA3AE',
+                        paddingInlineEnd: 36,
+                      }}
+                    >
+                      <option value="">
+                        {rtl ? 'نوع المشروع (اختياري)' : 'Project type (optional)'}
+                      </option>
+                      {projectTypes.map((t, i) => (
+                        <option key={i} value={t}>{t}</option>
+                      ))}
+                    </select>
+                    <svg
+                      viewBox="0 0 24 24" fill="none" stroke="#9BA3AE" strokeWidth="2"
+                      width="14" height="14" aria-hidden
+                      style={{
+                        position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+                        [rtl ? 'left' : 'right']: 14, pointerEvents: 'none',
+                      }}
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
+                </Field>
 
-                {/* Message */}
-                <div style={{ marginBottom: 22 }}>
+                <Field
+                  id="contact-message" name="message" rtl={rtl} error={fieldErrors.message} required
+                  label={rtl ? 'وصف المشروع' : 'Project description'}
+                >
                   <textarea
-                    name="message"
-                    value={form.message}
-                    onChange={handleChange}
+                    id="contact-message" name="message"
+                    value={form.message} onChange={handleChange}
                     rows={4}
                     placeholder={rtl ? 'صف مشروعك باختصار — ما الذي تريد بناءه؟' : 'Describe your project briefly — what do you want to build?'}
                     dir={rtl ? 'rtl' : 'ltr'}
                     className="contact-field-light"
                     style={{ resize: 'vertical' }}
+                    aria-required="true"
+                    aria-invalid={fieldErrors.message ? 'true' : undefined}
+                    aria-describedby={fieldErrors.message ? 'contact-message-err' : undefined}
                   />
-                </div>
+                </Field>
 
+                {/* Submit-level failure. role="alert" so it is announced the
+                    moment it appears, unlike the silent <p> this replaced. */}
                 {error && (
-                  <p style={{ fontSize: 12.5, color: '#DC2626', margin: '0 0 12px', textAlign: rtl ? 'right' : 'left' }}>
+                  <p
+                    role="alert"
+                    style={{
+                      fontSize: 12.5, color: '#B91C1C', margin: '0 0 12px',
+                      textAlign: rtl ? 'right' : 'left',
+                      background: '#FEF2F2', border: '1px solid #FECACA',
+                      borderRadius: 8, padding: '10px 12px',
+                    }}
+                  >
                     {rtl ? 'تعذر إرسال طلبك. حاول مرة أخرى أو راسلنا عبر واتساب.' : "Couldn't send your request. Please try again or reach us on WhatsApp."}
                   </p>
                 )}
@@ -396,6 +501,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                     fontSize: '14px',
                     padding: '14px 24px',
                     opacity: loading ? 0.65 : 1,
+                    cursor: loading ? 'wait' : 'pointer',
                   }}
                 >
                   {loading

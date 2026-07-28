@@ -9,7 +9,7 @@ const submissionStore = new Map();
 const cleanOldEntries = () => {
   const now = Date.now();
   const oneHour = 60 * 60 * 1000;
-  
+
   for (const [key, value] of submissionStore.entries()) {
     if (now - value.timestamp > oneHour) {
       submissionStore.delete(key);
@@ -21,41 +21,62 @@ const cleanOldEntries = () => {
 setInterval(cleanOldEntries, 10 * 60 * 1000);
 
 /**
- * Rate limit middleware for guest feedback submissions
- * Allows 3 submissions per hour per IP address
+ * Factory for a per-IP, in-memory sliding-window submission limiter.
+ * Each named bucket gets its own counter so different endpoints don't
+ * share (or steal) each other's quota.
  */
-const rateLimitFeedback = (req, res, next) => {
+const createSubmissionLimiter = ({ bucket, max, windowMs = 60 * 60 * 1000, message }) => (req, res, next) => {
   // Skip rate limiting for authenticated users
   if (req.user) {
     return next();
   }
 
   const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+  const key = `${bucket}:${ipAddress}`;
   const now = Date.now();
-  const oneHour = 60 * 60 * 1000;
 
-  // Get or create entry for this IP
-  const entry = submissionStore.get(ipAddress) || { count: 0, timestamp: now };
+  const entry = submissionStore.get(key) || { count: 0, timestamp: now };
 
-  // Reset if more than 1 hour has passed
-  if (now - entry.timestamp > oneHour) {
+  if (now - entry.timestamp > windowMs) {
     entry.count = 0;
     entry.timestamp = now;
   }
 
-  // Check limit (3 per hour)
-  if (entry.count >= 3) {
+  if (entry.count >= max) {
     return res.status(429).json({
-      error: 'Too many submissions. Please try again later or log in to submit unlimited feedback.'
+      error: message || 'Too many submissions. Please try again later.',
     });
   }
 
-  // Increment count
   entry.count++;
-  submissionStore.set(ipAddress, entry);
+  submissionStore.set(key, entry);
 
   next();
 };
 
-module.exports = { rateLimitFeedback };
+/**
+ * Rate limit middleware for guest feedback submissions
+ * Allows 3 submissions per hour per IP address
+ */
+const rateLimitFeedback = createSubmissionLimiter({
+  bucket: 'feedback',
+  max: 3,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many submissions. Please try again later or log in to submit unlimited feedback.',
+});
 
+/**
+ * Rate limit for the public lead-capture endpoints (project-requests submit/ai-lead).
+ * Looser than feedback (legitimate visitors may retry after fixing a validation
+ * error) but far tighter than the blanket 300/min API limiter these previously
+ * relied on alone — 10 submissions/hour/IP is enough headroom for a real visitor,
+ * not for a scripted flood.
+ */
+const rateLimitLeadSubmission = createSubmissionLimiter({
+  bucket: 'lead',
+  max: 10,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests submitted. Please try again later or reach us on WhatsApp.',
+});
+
+module.exports = { rateLimitFeedback, rateLimitLeadSubmission, createSubmissionLimiter };

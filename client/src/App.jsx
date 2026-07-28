@@ -10,6 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PageTransition from './components/PageTransition';
 import IntroOverlay from './components/IntroOverlay';
 import { trackPageView } from './utils/ga4';
+import { trackPageView as trackMetaPageView } from './utils/metaPixel';
 
 import './i18n/config';
 import './index.css';
@@ -115,6 +116,7 @@ const AnimatedRoutes = () => {
 
   useEffect(() => {
     trackPageView(location.pathname + location.search);
+    trackMetaPageView();
   }, [location.pathname, location.search]);
 
   return (

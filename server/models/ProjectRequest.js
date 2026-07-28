@@ -94,4 +94,10 @@ const projectRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Admin list/filter view queries by status + sorts by createdAt (projectRequestController.getAllRequests);
+// getUserRequests queries by user. No indexes existed before, so every one of these was a full collection scan.
+projectRequestSchema.index({ status: 1, createdAt: -1 });
+projectRequestSchema.index({ user: 1 });
+projectRequestSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('ProjectRequest', projectRequestSchema);

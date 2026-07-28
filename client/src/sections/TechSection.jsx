@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { RevealItems } from '../components/Reveal';
 
 const CATEGORIES = [
   {
@@ -43,46 +43,13 @@ const CATEGORIES = [
 const TechSection = ({ sectionRef, isRTL }) => {
   const { isRTL: ctxRTL } = useLanguage();
   const rtl = isRTL ?? ctxRTL;
-  const gridRef = useRef(null);
-
-  useEffect(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const cats = el.querySelectorAll('[data-cat]');
-    if (prefersReduced) {
-      cats.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
-      return;
-    }
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        cats.forEach((c, i) => {
-          setTimeout(() => {
-            c.style.transition = `opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)`;
-            c.style.opacity = '1';
-            c.style.transform = 'translateY(0)';
-          }, i * 80);
-        });
-        io.disconnect();
-      }
-    }, { threshold: 0.1 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
   return (
     <section
       ref={sectionRef}
       id="tech"
       dir={rtl ? 'rtl' : 'ltr'}
-      style={{
-        background: '#FFFFFF',
-        paddingTop:    'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
-        borderTop: '1px solid #E8EBF0',
-      }}
+      className="section-shell section-shell--plain"
     >
       <style>{`
         .tech-main-grid {
@@ -158,7 +125,7 @@ const TechSection = ({ sectionRef, isRTL }) => {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div className="section-inner">
 
         <div className="tech-main-grid">
 
@@ -167,15 +134,7 @@ const TechSection = ({ sectionRef, isRTL }) => {
             <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
               {rtl ? 'التقنيات' : 'Technology'}
             </span>
-            <h2 style={{
-              fontSize: 'var(--text-5xl)',
-              fontWeight: 800,
-              lineHeight: 1.25,
-              letterSpacing: rtl ? 0 : '-0.035em',
-              color: '#0D1117',
-              margin: '0 0 clamp(1.25rem, 2.5vw, 2rem)',
-              fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
+            <h2 className="display-title" style={{ marginBottom: 'clamp(1.25rem, 2.5vw, 2rem)' }}>
               {rtl ? 'مبني على\nتقنيات المؤسسات\nالكبرى.' : 'Built on\nenterprise-grade\ntechnology.'}
             </h2>
             <p style={{
@@ -208,16 +167,9 @@ const TechSection = ({ sectionRef, isRTL }) => {
           </div>
 
           {/* Right: Tech categories */}
-          <div className="tech-categories" ref={gridRef}>
+          <RevealItems className="tech-categories" distance={16} step={0.06}>
             {CATEGORIES.map((cat, ci) => (
-              <div
-                key={ci}
-                data-cat
-                style={{
-                  opacity: 0,
-                  transform: 'translateY(16px)',
-                }}
-              >
+              <div key={ci}>
                 <div className="tech-cat-name">
                   {rtl ? cat.nameAR : cat.nameEN}
                 </div>
@@ -234,7 +186,7 @@ const TechSection = ({ sectionRef, isRTL }) => {
                 ))}
               </div>
             ))}
-          </div>
+          </RevealItems>
 
         </div>
 

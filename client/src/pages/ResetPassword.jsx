@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import api from '../utils/api';
+import { useSEO } from '../hooks/useSEO';
 
 const ResetPassword = () => {
+  useSEO({ title: 'Reset Password | YANSY TECH', noIndex: true });
+
   const navigate    = useNavigate();
   const [params]    = useSearchParams();
   const token       = params.get('token');

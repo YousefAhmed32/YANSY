@@ -23,7 +23,13 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
     <Link
       to={`/portfolio/${project.slug || project._id}`}
       data-card
-      className={`group relative flex flex-col bg-white border border-[#E8EBF0] rounded-2xl overflow-hidden transition-all duration-500 hover:border-[#C9CDD6] hover:shadow-[0_20px_50px_rgba(13,17,23,0.08)] hover:-translate-y-1 ${featured ? 'sm:col-span-2 sm:row-span-2' : ''}`}
+      /* The featured card spans two columns but deliberately NOT two rows.
+         Row-spanning stretched it to the height of two stacked cards while its
+         content stayed short, so `mt-auto` on the tag row opened a dead gap of
+         several hundred pixels mid-card — and any project count that didn't
+         divide evenly left an empty cell in the grid. One row wide is the same
+         spotlight emphasis without either artifact. */
+      className={`group relative flex flex-col bg-white border border-[#E8EBF0] rounded-2xl overflow-hidden transition-all duration-500 hover:border-[#C9CDD6] hover:shadow-[0_20px_50px_rgba(13,17,23,0.08)] hover:-translate-y-1 ${featured ? 'sm:col-span-2' : ''}`}
     >
       {/* Image */}
       <div className={`relative overflow-hidden ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>

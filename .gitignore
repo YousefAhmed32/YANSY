@@ -14,3 +14,7 @@ logs
 .DS_Store
 .idea
 *.local
+
+# Design/media masters pulled out of client/public so they stop shipping in the
+# build. Kept on disk for reference; the originals remain in git history.
+design-assets/

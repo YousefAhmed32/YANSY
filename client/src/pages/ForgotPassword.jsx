@@ -2,8 +2,11 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import api from '../utils/api';
+import { useSEO } from '../hooks/useSEO';
 
 const ForgotPassword = () => {
+  useSEO({ title: 'Forgot Password | YANSY TECH', noIndex: true });
+
   const [email,   setEmail]   = useState('');
   const [loading, setLoading] = useState(false);
   const [sent,    setSent]    = useState(false);

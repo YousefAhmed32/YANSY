@@ -11,6 +11,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useSEO } from '../hooks/useSEO';
 import { useLanguage } from '../contexts/LanguageContext';
+import { trackCustomEvent } from '../utils/metaPixel';
 
 const FeedbackForm = () => {
   const { t } = useTranslation();
@@ -122,8 +123,9 @@ const FeedbackForm = () => {
       };
 
       const response = await api.post('/feedback', payload);
-      
+
       toast.success(t('feedback.thankYou'));
+      trackCustomEvent('Feedback', { feedback_type: feedbackType });
       
       // Reset form
       setFormData({

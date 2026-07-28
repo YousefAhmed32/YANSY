@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProjectRequestForm from '../components/ProjectRequestForm';
 import CaseStudyVisual from '../components/CaseStudyVisual';
+import { trackViewContent } from '../utils/metaPixel';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -25,6 +26,10 @@ const CaseStudyDetail = () => {
   useEffect(() => {
     if (!cs) navigate('/case-studies', { replace: true });
   }, [cs, navigate]);
+
+  useEffect(() => {
+    if (cs) trackViewContent({ content_name: cs.title, content_type: 'case_study', content_category: cs.industry?.en });
+  }, [cs]);
 
   const excerptEn = cs?.excerpt.en;
 

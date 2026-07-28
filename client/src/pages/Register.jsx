@@ -6,6 +6,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSEO } from '../hooks/useSEO';
 import { register, googleLogin, clearError } from '../store/authSlice';
+import { trackCompleteRegistration } from '../utils/metaPixel';
 import { Eye, EyeOff, ArrowRight, Check, AlertCircle, MessageCircle } from 'lucide-react';
 import { validatePhone } from '../utils/phone';
 
@@ -195,6 +196,8 @@ const Register = () => {
     if (register.rejected.match(result)) {
       setLocalError(result.payload || t('register.registrationFailed', 'Registration failed. Please try again.'));
       shakeForm();
+    } else {
+      trackCompleteRegistration({ method: 'email' });
     }
   };
 

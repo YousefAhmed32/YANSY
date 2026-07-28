@@ -175,14 +175,7 @@ const FAQ = ({ onStartProject }) => {
     <section
       id="faq"
       dir={isRTL ? 'rtl' : 'ltr'}
-      style={{
-        background: '#FAFAFA',
-        paddingTop:    'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
-        borderTop: '1px solid #E8EBF0',
-      }}
+      className="section-shell section-shell--tint"
     >
       <style>{`
         .faq-layout {
@@ -203,7 +196,7 @@ const FAQ = ({ onStartProject }) => {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div className="section-inner">
         <div className="faq-layout">
 
           {/* Left: header — sticky on desktop only (see .faq-header-col) */}
@@ -211,15 +204,7 @@ const FAQ = ({ onStartProject }) => {
             <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
               {isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
             </span>
-            <h2 style={{
-              fontSize: 'var(--text-5xl)',
-              fontWeight: 800,
-              lineHeight: 1.0,
-              letterSpacing: isRTL ? 0 : '-0.035em',
-              color: '#0D1117',
-              margin: '0 0 clamp(1rem, 2vw, 1.5rem)',
-              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
+            <h2 className="display-title" style={{ marginBottom: 'clamp(1rem, 2vw, 1.5rem)' }}>
               {isRTL ? 'كل ما تريد\nمعرفته.' : 'Everything\nyou need\nto know.'}
             </h2>
             <p style={{

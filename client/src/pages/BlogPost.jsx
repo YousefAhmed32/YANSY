@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProjectRequestForm from '../components/ProjectRequestForm';
 import BlogVisual from '../components/BlogVisual';
+import { trackViewContent } from '../utils/metaPixel';
 
 const BlogPost = () => {
   const { slug }  = useParams();
@@ -22,6 +23,10 @@ const BlogPost = () => {
   useEffect(() => {
     if (!post) navigate('/blog', { replace: true });
   }, [post, navigate]);
+
+  useEffect(() => {
+    if (post) trackViewContent({ content_name: post.title, content_type: 'blog_post', content_category: post.category });
+  }, [post]);
 
   const category = post ? CATEGORIES.find(c => c.slug === post.category) : null;
   const categoryLabel = post ? (isRTL ? category?.labelAr : category?.label) || post.category : '';

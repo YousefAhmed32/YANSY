@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
+import { useReveal } from '../hooks/useReveal';
 
 const CheckIcon = ({ color = '#22c55e' }) => (
   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden>
@@ -97,18 +97,7 @@ const valueIcon = (v) => {
 
 const WhyYANSY = ({ onStartProject }) => {
   const { isRTL } = useLanguage();
-  const sectionRef = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); io.disconnect(); }
-    }, { threshold: 0.1 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  const { ref: sectionRef, revealed: visible } = useReveal({ threshold: 0.1 });
 
   const criteria = isRTL ? CRITERIA_AR : CRITERIA_EN;
   const columns  = isRTL ? COLUMNS_AR : COLUMNS_EN;
@@ -118,14 +107,7 @@ const WhyYANSY = ({ onStartProject }) => {
       ref={sectionRef}
       id="why-yansy"
       dir={isRTL ? 'rtl' : 'ltr'}
-      style={{
-        background: '#FFFFFF',
-        paddingTop:    'clamp(5rem, 10vw, 8rem)',
-        paddingBottom: 'clamp(5rem, 10vw, 8rem)',
-        paddingLeft:   'clamp(1.25rem, 5vw, 3rem)',
-        paddingRight:  'clamp(1.25rem, 5vw, 3rem)',
-        borderTop: '1px solid #E8EBF0',
-      }}
+      className="section-shell section-shell--plain"
     >
       <style>{`
         .why-grid {
@@ -244,7 +226,7 @@ const WhyYANSY = ({ onStartProject }) => {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div className="section-inner">
         <div className="why-grid">
 
           {/* Left: Header */}
@@ -252,15 +234,7 @@ const WhyYANSY = ({ onStartProject }) => {
             <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
               {isRTL ? 'لماذا YANSY' : 'Why YANSY'}
             </span>
-            <h2 style={{
-              fontSize: 'var(--text-5xl)',
-              fontWeight: 800,
-              lineHeight: 1.0,
-              letterSpacing: isRTL ? 0 : '-0.035em',
-              color: '#0D1117',
-              margin: '0 0 clamp(1.25rem, 2.5vw, 2rem)',
-              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
+            <h2 className="display-title" style={{ marginBottom: 'clamp(1.25rem, 2.5vw, 2rem)' }}>
               {isRTL ? 'ليس كل\nخيار متساوٍ.' : 'Not every\noption is\nequal.'}
             </h2>
             <p style={{

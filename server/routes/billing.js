@@ -7,14 +7,12 @@ const ctrl = require('../controllers/billingController');
 // ── Public ───────────────────────────────────────────────────────────────────
 router.get('/plans', ctrl.getPlans);
 
-// ── Stripe webhook — must use raw body (registered before express.json in server.js) ──
-// This route is wired up in server.js BEFORE the json middleware with raw body parsing.
-// The handler here is just a named export reference.
-router.post(
-  '/webhook',
-  express.raw({ type: 'application/json' }),
-  ctrl.handleWebhook
-);
+// ── Stripe webhook ──────────────────────────────────────────────────────────
+// Actually mounted in server.js as `app.post('/api/billing/webhook', express.raw(...), ...)`,
+// registered BEFORE the global express.json() middleware — that's the only way the
+// handler gets the raw, unparsed body Stripe's signature verification requires.
+// (Mounting express.raw() on this router doesn't work: this router is registered
+// after express.json() runs, so the body is already consumed/parsed by then.)
 
 // ── Authenticated user routes ─────────────────────────────────────────────────
 router.get('/subscription',     authenticate, ctrl.getSubscription);

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import { trackWhatsAppClick } from '../utils/ga4';
+import { trackContact } from '../utils/metaPixel';
 import { Mail, Phone, MessageCircle, ArrowUpRight } from 'lucide-react';
 import ContactItem from './ContactItem';
 
@@ -244,7 +245,7 @@ const Footer = () => {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackWhatsAppClick('footer')}
+                  onClick={() => { trackWhatsAppClick('footer'); trackContact({ content_name: 'footer' }); }}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
                     padding: '8px 12px', borderRadius: '8px',

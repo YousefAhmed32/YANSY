@@ -11,6 +11,7 @@ import api from '../utils/api';
 import { gsap } from 'gsap';
 import { PROJECT_TYPES, FEATURE_TAGS, BUDGET_OPTIONS, TIMELINE_OPTIONS, COMPANY_SIZE_OPTIONS } from '../constants/projectOptions';
 import { trackStartProjectChoice, trackFormStep, trackWhatsAppClick, trackContactForm } from '../utils/ga4';
+import { trackLead, trackContact } from '../utils/metaPixel';
 import { validatePhone } from '../utils/phone';
 
 const PHONE_REASON_KEYS = {
@@ -347,6 +348,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
     const text = encodeURIComponent(buildWhatsAppMessage());
     beacon('whatsapp_submit');
     trackWhatsAppClick('start-project-flow');
+    trackContact({ content_name: 'start-project-whatsapp' });
     setWaRedirecting(true);
     window.open(`https://wa.me/${digits}?text=${text}`, '_blank', 'noopener,noreferrer');
     setTimeout(() => doClose(), 1200);
@@ -416,6 +418,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
       const seconds = formStartRef.current ? (Date.now() - formStartRef.current) / 1000 : undefined;
       beacon('form_complete', { completionSeconds: seconds });
       trackContactForm('project-request');
+      trackLead({ content_name: 'start-project-form', content_category: form.projectType });
     } catch (err) {
       setErrors({ submit: err.response?.data?.error || t('projectForm.errors.submitFailed') });
     } finally {
