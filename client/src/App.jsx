@@ -43,6 +43,7 @@ const ProjectRequests = lazy(() => import('./pages/ProjectRequests'));
 const AdminFeedback   = lazy(() => import('./pages/AdminFeedback'));
 const AdminPortfolio  = lazy(() => import('./pages/AdminPortfolio'));
 const PortfolioWizard = lazy(() => import('./pages/PortfolioWizard'));
+const PortfolioPreview = lazy(() => import('./pages/PortfolioPreview'));
 const AdminIntro      = lazy(() => import('./pages/AdminIntro'));
 const AdminHomepageVideo = lazy(() => import('./pages/AdminHomepageVideo'));
 const AdminStartProject  = lazy(() => import('./pages/AdminStartProject'));
@@ -209,6 +210,10 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/portfolio/:id/edit"
               element={<ProtectedRoute requireAdmin><PortfolioWizard /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/portfolio/:id/preview"
+              element={<ProtectedRoute requireAdmin><PortfolioPreview /></ProtectedRoute>}
             />
             <Route
               path="admin/intro"

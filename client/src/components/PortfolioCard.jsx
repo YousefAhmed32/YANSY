@@ -1,19 +1,26 @@
 import { Link } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck } from 'lucide-react';
 import ProgressiveImage from './ProgressiveImage';
 import { categoryLabel, categoryIcon } from '../utils/portfolioTaxonomy';
 
 /**
  * Premium portfolio card — cinematic hover, progressive blur-up image reveal,
- * category/industry badges. `size="featured"` renders the larger spotlight variant.
+ * category/industry badges, and (schema v3) a headline-metric proof badge +
+ * client/tagline kicker so the card itself carries a little of the case
+ * study's payoff, not just its category. `size="featured"` renders the
+ * larger spotlight variant.
  *
  * Image fallback chain: cover image -> first gallery image -> generated on-brand
  * placeholder. A card never renders with a blank/empty image area.
  */
 const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) => {
   const title       = isRTL ? (project.titleAr || project.title) : (project.title || project.titleAr);
+  const tagline     = isRTL ? (project.taglineAr || project.tagline) : (project.tagline || project.taglineAr);
   const description = isRTL ? (project.descriptionAr || project.description) : (project.description || project.descriptionAr);
+  const clientName  = isRTL ? (project.clientNameAr || project.clientName) : (project.clientName || project.clientNameAr);
+  const dek = tagline || description;
   const featured    = size === 'featured';
+  const topMetric   = project.metrics?.[0];
 
   const displayAsset = project.coverImage?.url
     ? project.coverImage
@@ -45,8 +52,10 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
           fallbackVariant={featured ? 'hero' : 'card'}
         />
 
-        {/* Cinematic gradient on hover only — image stays clean by default */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        {/* Cinematic gradient — always on when there's a metric badge to
+            ground (for legibility), hover-only otherwise so the image stays
+            clean by default. */}
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent transition-opacity duration-500 ${topMetric ? 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
 
         {/* Badges */}
         <div className={`absolute top-3 flex flex-wrap gap-1.5 ${isRTL ? 'right-3' : 'left-3'}`}>
@@ -67,6 +76,20 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
           </span>
         )}
 
+        {/* Headline metric — the card's proof point, echoing the hero's
+            glass chips so the payoff is visible before the visitor even clicks. */}
+        {topMetric && (
+          <div className={`absolute bottom-3 ${isRTL ? 'right-3' : 'left-3'}`}>
+            <span
+              dir="ltr"
+              className="inline-flex items-baseline gap-1.5 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-sm border border-white/10"
+            >
+              <span className="text-xs font-bold text-white tabular-nums">{topMetric.value}</span>
+              <span className="text-[9.5px] font-medium text-white/70">{isRTL && topMetric.labelAr ? topMetric.labelAr : topMetric.label}</span>
+            </span>
+          </div>
+        )}
+
         {/* Arrow reveal */}
         <div
           className={`absolute bottom-3 w-9 h-9 rounded-full bg-[#0D1117] flex items-center justify-center opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ${isRTL ? 'left-3' : 'right-3'}`}
@@ -78,15 +101,28 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
 
       {/* Content */}
       <div className={`flex-1 flex flex-col p-5 ${featured ? 'sm:p-7' : ''}`}>
+        {(clientName || project.confidential) && (
+          <div className="flex items-center gap-1.5 mb-1.5">
+            {clientName ? (
+              <span className="text-[10.5px] font-semibold text-[#9BA3AE] tracking-wide uppercase">{clientName}</span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#9BA3AE]">
+                <ShieldCheck className="w-3 h-3" aria-hidden />
+                {isRTL ? 'عميل سري' : 'Confidential client'}
+              </span>
+            )}
+          </div>
+        )}
+
         <h3
           className={`font-bold text-[#0D1117] leading-tight mb-1.5 ${featured ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'}`}
           style={{ letterSpacing: '-0.02em' }}
         >
           {title}
         </h3>
-        {description && (
+        {dek && (
           <p className={`text-[#5C6370] font-normal leading-relaxed line-clamp-2 mb-3 ${featured ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>
-            {description}
+            {dek}
           </p>
         )}
 
@@ -100,6 +136,11 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
                 {tag}
               </span>
             ))}
+            {project.tags.length > (featured ? 5 : 3) && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F6F7F9] border border-[#E8EBF0] text-[#9BA3AE]">
+                +{project.tags.length - (featured ? 5 : 3)}
+              </span>
+            )}
           </div>
         )}
       </div>

@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Figma, Github, MapPin, ShieldCheck } from 'lucide-react';
 import ProgressiveImage from '../ProgressiveImage';
+import { mediaSrc } from '../../utils/media';
 import { categoryLabel, categoryIcon } from '../../utils/portfolioTaxonomy';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -23,6 +24,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
   const heroRef  = useRef(null);
   const panelRef = useRef(null);
   const imgWrapRef = useRef(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     if (!heroRef.current) return;
@@ -44,15 +46,22 @@ const Hero = ({ project, title, desc, isRTL }) => {
     return () => ctx.revert();
   }, [project?._id]);
 
+  useEffect(() => {
+    videoRef.current?.play().catch(() => {});
+  }, [project?.coverVideo?.url]);
+
   const metrics = (project.metrics || []).slice(0, 4);
   const hasMetrics = metrics.length > 0;
+  const tagline = isRTL ? (project.taglineAr || project.tagline) : (project.tagline || project.taglineAr);
+  const clientName = isRTL ? (project.clientNameAr || project.clientName) : (project.clientName || project.clientNameAr);
+  const location = isRTL ? (project.locationAr || project.location) : (project.location || project.locationAr);
 
   return (
     <div ref={heroRef} style={{ paddingTop: 'calc(68px + clamp(2rem, 5vw, 3.5rem))', paddingBottom: 0, position: 'relative' }}>
       <div className="max-w-7xl mx-auto" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', textAlign: isRTL ? 'right' : 'left' }}>
 
         {/* Breadcrumb */}
-        <nav data-fade aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} style={{ opacity: 0, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+        <nav data-fade aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} style={{ opacity: 0, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
           <Link to="/" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'var(--text-tertiary)', textDecoration: 'none' }}>{isRTL ? 'الرئيسية' : 'Home'}</Link>
           <span aria-hidden style={{ color: 'var(--border-strong)' }}>{isRTL ? '‹' : '›'}</span>
           <Link to="/portfolio" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'var(--text-tertiary)', textDecoration: 'none' }}>{isRTL ? 'المحفظة' : 'Portfolio'}</Link>
@@ -61,7 +70,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
         </nav>
 
         {/* Eyebrow badges */}
-        <div data-fade style={{ opacity: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 22, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+        <div data-fade style={{ opacity: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
           <span className="section-label">{categoryLabel(project.category, isRTL ? 'ar' : 'en')}</span>
           {project.industry && (
             <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)', fontFamily: font }}>{project.industry}</span>
@@ -74,19 +83,54 @@ const Hero = ({ project, title, desc, isRTL }) => {
           )}
         </div>
 
+        {/* Client line — real name+logo when public, a neutral "confidential" note when redacted */}
+        {(clientName || project.confidential) && (
+          <div data-fade style={{ opacity: 0, display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+            {clientName ? (
+              <>
+                {project.clientLogo?.url && (
+                  <img src={mediaSrc(project.clientLogo)} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', border: '1px solid var(--border)', background: '#fff' }} />
+                )}
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: font }}>{clientName}</span>
+              </>
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: font }}>
+                <ShieldCheck style={{ width: 13, height: 13 }} aria-hidden />
+                {isRTL ? 'تفاصيل العميل سرية' : 'Client details confidential'}
+              </span>
+            )}
+            {location && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-tertiary)' }}>
+                <MapPin style={{ width: 12, height: 12 }} aria-hidden /> {location}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Title */}
         <h1 data-fade style={{
           opacity: 0, fontFamily: font, fontSize: 'clamp(2.5rem, 6vw, 5.25rem)', fontWeight: 800,
           lineHeight: isRTL ? 1.18 : 1.02, letterSpacing: isRTL ? 0 : '-0.035em', color: 'var(--text-primary)',
-          maxWidth: '18ch', marginBottom: 22, marginInlineStart: isRTL ? 'auto' : 0,
+          maxWidth: '18ch', marginBottom: tagline ? 14 : 22, marginInlineStart: isRTL ? 'auto' : 0,
         }}>
           {title}
         </h1>
 
-        {/* Lead — the project description, read here rather than repeated below */}
+        {/* Tagline — the project's one-line elevator pitch, distinct from the
+            fuller description below it */}
+        {tagline && (
+          <p data-fade style={{
+            opacity: 0, fontFamily: font, fontSize: 'clamp(1.125rem, 2.2vw, 1.5rem)', fontWeight: 500,
+            color: 'var(--accent)', lineHeight: 1.4, maxWidth: '48ch', marginBottom: 14,
+            marginInlineStart: isRTL ? 'auto' : 0,
+          }}>
+            {tagline}
+          </p>
+        )}
+
         {desc && (
           <p data-fade style={{
-            opacity: 0, fontFamily: font, fontSize: 'clamp(1.0625rem, 2vw, 1.375rem)', fontWeight: 400,
+            opacity: 0, fontFamily: font, fontSize: 'clamp(1rem, 1.6vw, 1.1875rem)', fontWeight: 400,
             color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '56ch', marginBottom: 'clamp(2.5rem, 5vw, 3.5rem)',
             marginInlineStart: isRTL ? 'auto' : 0,
           }}>
@@ -105,16 +149,26 @@ const Hero = ({ project, title, desc, isRTL }) => {
           }}
         >
           <div ref={imgWrapRef} style={{ position: 'absolute', inset: '-5% 0', willChange: 'transform' }}>
-            <ProgressiveImage
-              asset={project.coverImage?.url ? project.coverImage : (project.gallery || []).find((g) => g?.url) || null}
-              alt={title}
-              priority
-              fill
-              fallbackIcon={categoryIcon(project.category)}
-              fallbackLabel={categoryLabel(project.category, isRTL ? 'ar' : 'en')}
-              isRTL={isRTL}
-              fallbackVariant="hero"
-            />
+            {project.coverVideo?.url ? (
+              <video
+                ref={videoRef}
+                src={mediaSrc(project.coverVideo)}
+                poster={mediaSrc(project.coverImage)}
+                muted loop playsInline autoPlay
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <ProgressiveImage
+                asset={project.coverImage?.url ? project.coverImage : (project.gallery || []).find((g) => g?.url) || null}
+                alt={title}
+                priority
+                fill
+                fallbackIcon={categoryIcon(project.category)}
+                fallbackLabel={categoryLabel(project.category, isRTL ? 'ar' : 'en')}
+                isRTL={isRTL}
+                fallbackVariant="hero"
+              />
+            )}
           </div>
           <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,17,23,0.65) 0%, transparent 46%)' }} />
 
@@ -182,14 +236,24 @@ const Hero = ({ project, title, desc, isRTL }) => {
 };
 
 /* ── Meta strip ───────────────────────────────────────────────────────────── */
+const LINK_PILL = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, border: '1px solid var(--border)', transition: 'border-color 0.2s, color 0.2s' };
+
 const MetaStrip = ({ project, isRTL, font }) => {
+  const myRole = isRTL ? (project.myRoleAr || project.myRole) : (project.myRole || project.myRoleAr);
   const fields = [
+    myRole && { label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
     project.duration && { label: isRTL ? 'المدة' : 'Duration', value: project.duration },
     project.teamSize && { label: isRTL ? 'الفريق' : 'Team', value: project.teamSize },
     project.tags?.length > 0 && { label: isRTL ? 'التقنيات' : 'Technologies', value: String(project.tags.length) },
   ].filter(Boolean);
 
-  if (!fields.length && !project.liveUrl) return null;
+  const links = [
+    project.liveUrl  && { href: project.liveUrl,  label: isRTL ? 'الموقع المباشر' : 'Live Site', Icon: ExternalLink },
+    project.figmaUrl  && { href: project.figmaUrl,  label: 'Figma', Icon: Figma },
+    project.githubUrl && { href: project.githubUrl, label: 'GitHub', Icon: Github },
+  ].filter(Boolean);
+
+  if (!fields.length && !links.length && !project.team?.length) return null;
 
   return (
     <div style={{ borderBottom: '1px solid var(--border)', marginTop: 'clamp(2.5rem, 5vw, 3.5rem)' }}>
@@ -204,13 +268,48 @@ const MetaStrip = ({ project, isRTL, font }) => {
               <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 500, fontFamily: font }}>{f.value}</p>
             </div>
           ))}
+
+          {project.team?.length > 0 && (
+            <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
+              <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 6, fontWeight: 600 }}>{isRTL ? 'فريق العمل' : 'Team'}</p>
+              <div style={{ display: 'flex', alignItems: 'center', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                {project.team.slice(0, 6).map((m, i) => (
+                  <div
+                    key={i}
+                    title={`${m.name}${m.role ? ` — ${isRTL ? (m.roleAr || m.role) : m.role}` : ''}`}
+                    style={{
+                      width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                      border: '2px solid #fff', boxShadow: '0 0 0 1px var(--border)',
+                      marginInlineStart: i > 0 ? -8 : 0,
+                      background: 'var(--accent-light)', color: 'var(--accent)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, fontWeight: 700,
+                    }}
+                  >
+                    {m.avatar?.url ? <img src={mediaSrc(m.avatar)} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : m.name?.[0]?.toUpperCase()}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {project.liveUrl && (
-          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none', fontSize: 12.5 }}>
-            <ExternalLink style={{ width: 14, height: 14 }} aria-hidden />
-            {isRTL ? 'عرض المشروع المباشر' : 'View Live Project'}
-          </a>
+        {links.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {links.map((link) => {
+              const LinkIcon = link.Icon;
+              return (
+                <a
+                  key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={LINK_PILL}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                >
+                  <LinkIcon style={{ width: 14, height: 14 }} aria-hidden />
+                  {link.label}
+                </a>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

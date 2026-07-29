@@ -11,7 +11,7 @@ import FloatingActionMenu from '../components/FloatingActionMenu';
 import ProjectRequestForm from '../components/ProjectRequestForm';
 import PortfolioCard from '../components/PortfolioCard';
 import api from '../utils/api';
-import { ArrowUpRight, Search, X } from 'lucide-react';
+import { ArrowUpRight, Search, Star, X } from 'lucide-react';
 import { useSEO } from '../hooks/useSEO';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -29,8 +29,9 @@ const CATEGORIES = [
 ];
 
 const SORTS = [
-  { value: 'latest', en: 'Latest',  ar: 'الأحدث' },
-  { value: 'oldest', en: 'Oldest',  ar: 'الأقدم' },
+  { value: 'latest',  en: 'Latest',      ar: 'الأحدث' },
+  { value: 'oldest',  en: 'Oldest',      ar: 'الأقدم' },
+  { value: 'popular', en: 'Most Viewed', ar: 'الأكثر مشاهدة' },
 ];
 
 const SkeletonCard = ({ featured }) => (
@@ -53,6 +54,9 @@ const Portfolio = () => {
   const [category, setCategory] = useState('All');
   const [industry, setIndustry] = useState('');
   const [industries, setIndustries] = useState([]);
+  const [tag, setTag]           = useState('');
+  const [tags, setTags]         = useState([]);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
   const [sort, setSort]         = useState('latest');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch]     = useState('');
@@ -92,9 +96,12 @@ const Portfolio = () => {
     },
   });
 
-  // ── Fetch filter meta (categories/industries with real projects) ────────────
+  // ── Fetch filter meta (categories/industries/tags with real projects) ───────
   useEffect(() => {
-    api.get('/portfolio/meta').then(({ data }) => setIndustries(data.industries || [])).catch(() => {});
+    api.get('/portfolio/meta').then(({ data }) => {
+      setIndustries(data.industries || []);
+      setTags(data.tags || []);
+    }).catch(() => {});
   }, []);
 
   // ── Debounce search input ────────────────────────────────────────────────
@@ -114,6 +121,8 @@ const Portfolio = () => {
           limit: 12,
           ...(category !== 'All' && { category }),
           ...(industry && { industry }),
+          ...(tag && { tag }),
+          ...(featuredOnly && { featured: 'true' }),
           ...(search && { search }),
           ...(!search && { sort }),
         },
@@ -129,7 +138,7 @@ const Portfolio = () => {
     } finally {
       if (myRequest === requestId.current) setLoading(false);
     }
-  }, [category, industry, search, sort]);
+  }, [category, industry, tag, featuredOnly, search, sort]);
 
   useEffect(() => { loadFirstPage(); }, [loadFirstPage]);
 
@@ -139,7 +148,7 @@ const Portfolio = () => {
     setLoadingMore(true);
     try {
       const { data } = await api.get('/portfolio', {
-        params: { limit: 12, cursor, ...(category !== 'All' && { category }), ...(industry && { industry }), sort },
+        params: { limit: 12, cursor, ...(category !== 'All' && { category }), ...(industry && { industry }), ...(tag && { tag }), ...(featuredOnly && { featured: 'true' }), sort },
       });
       setProjects((prev) => [...prev, ...(data.projects || [])]);
       setCursor(data.nextCursor || null);
@@ -149,7 +158,7 @@ const Portfolio = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [cursor, loadingMore, search, category, industry, sort]);
+  }, [cursor, loadingMore, search, category, industry, tag, featuredOnly, sort]);
 
   // ── IntersectionObserver sentinel for infinite scroll ────────────────────
   useEffect(() => {
@@ -187,7 +196,7 @@ const Portfolio = () => {
   }, []);
 
   const activeLabel = (cat) => isRTL ? cat.ar : cat.en;
-  const showFeaturedSpotlight = category === 'All' && !industry && !search;
+  const showFeaturedSpotlight = category === 'All' && !industry && !tag && !featuredOnly && !search;
 
   return (
     <div className="bg-white text-[#0D1117] min-h-screen overflow-x-hidden" dir={dir}>
@@ -255,6 +264,20 @@ const Portfolio = () => {
 
             {/* Search + sort */}
             <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => setFeaturedOnly((v) => !v)}
+                aria-pressed={featuredOnly}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
+                style={{
+                  borderColor: featuredOnly ? '#2563EB' : '#E8EBF0',
+                  color: featuredOnly ? '#2563EB' : '#5C6370',
+                  background: featuredOnly ? 'rgba(37,99,235,0.08)' : 'transparent',
+                }}
+              >
+                <Star className="w-3 h-3" fill={featuredOnly ? '#2563EB' : 'none'} />
+                {isRTL ? 'مميز فقط' : 'Featured only'}
+              </button>
+
               <div className="relative">
                 <Search className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" style={{ [isRTL ? 'right' : 'left']: 10 }} />
                 <input
@@ -307,6 +330,36 @@ const Portfolio = () => {
               </div>
             </div>
           )}
+
+          {/* Tech/tag chips — capped to keep the row from exploding on a
+              growing tag vocabulary; already alphabetical from the API. */}
+          {tags.length > 0 && (
+            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <div className={`flex items-center gap-1.5 min-w-max ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <span className="text-[9.5px] font-semibold tracking-widest uppercase text-[#9CA3AF] flex-shrink-0">
+                  {isRTL ? 'التقنيات' : 'Tech'}
+                </span>
+                {tag && (
+                  <button
+                    onClick={() => setTag('')}
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap"
+                    style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #DBEAFE' }}
+                  >
+                    {tag} <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
+                {tags.filter((t) => t !== tag).slice(0, 16).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTag(t)}
+                    className="px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap border border-transparent text-[#9CA3AF] hover:text-[#5C6370] hover:border-[#E8EBF0] transition-colors"
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -333,7 +386,7 @@ const Portfolio = () => {
                 {isRTL ? 'لا توجد مشاريع مطابقة.' : 'No matching projects yet.'}
               </p>
               <button
-                onClick={() => { setCategory('All'); setIndustry(''); setSearchInput(''); }}
+                onClick={() => { setCategory('All'); setIndustry(''); setTag(''); setFeaturedOnly(false); setSearchInput(''); }}
                 className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 rounded-full px-6 py-3 hover:bg-[#2563EB]/08 transition-all"
               >
                 {isRTL ? 'مسح كل الفلاتر' : 'Clear all filters'}

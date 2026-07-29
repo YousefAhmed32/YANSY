@@ -1,35 +1,18 @@
 /**
- * PortfolioDetail — Premium Case Study Page
+ * PortfolioDetail — Premium Case Study Page (schema v3)
  *
- * Structure:
- *  1. Editorial hero — title as real content, large image panel with
- *     floating glass metric chips (the project's headline numbers, not
- *     buried in a separate strip further down the page)
- *  2. Meta strip — duration / team / tech count / live-site link
- *  3. Narrative — Challenge/Solution paired side by side, Process, Stack
- *  4. Results + Testimonial — one continuous payoff beat
- *  5. Gallery — browser-chrome-framed screenshots + lightbox
- *  6. Next Case Study — one large cinematic transition, then more work
- *  7. Conversion CTA
+ * Fetches the published project and hands it to PortfolioDetailView, which
+ * owns the actual render (see that file's doc comment for the section
+ * breakdown, and why it's shared with the admin preview).
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { trackViewContent } from '../utils/metaPixel';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import ProjectRequestForm from '../components/ProjectRequestForm';
 import api from '../utils/api';
 import { useSEO } from '../hooks/useSEO';
 import { mediaSrc } from '../utils/media';
-import ScrollProgress from '../components/portfolio-detail/ScrollProgress';
-import Hero from '../components/portfolio-detail/Hero';
-import Narrative from '../components/portfolio-detail/Narrative';
-import ResultsAndTestimonial from '../components/portfolio-detail/ResultsAndTestimonial';
-import Gallery from '../components/portfolio-detail/Gallery';
-import Lightbox from '../components/portfolio-detail/Lightbox';
-import NextProject from '../components/portfolio-detail/NextProject';
-import CTASection from '../components/portfolio-detail/CTASection';
+import PortfolioDetailView from '../components/portfolio-detail/PortfolioDetailView';
 
 /* ── Skeleton ─────────────────────────────────────────────────────────────── */
 const Skeleton = () => (
@@ -48,12 +31,9 @@ const Skeleton = () => (
 const PortfolioDetail = () => {
   const { id }           = useParams();
   const { isRTL, dir }   = useLanguage();
-  const [project, setProject]       = useState(null);
-  const [related, setRelated]       = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [lightbox, setLightbox]     = useState(false);
-  const [activeImg, setActiveImg]   = useState(0);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [project, setProject] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useSEO({
     title       : project ? `${project.title} — ${isRTL ? 'دراسة حالة' : 'Case Study'} | YANSY TECH` : (isRTL ? 'المحفظة | يانسي تك' : 'Portfolio | YANSY TECH'),
@@ -88,7 +68,6 @@ const PortfolioDetail = () => {
       setLoading(true);
       setProject(null);
       setRelated([]);
-      setActiveImg(0);
       try {
         const { data } = await api.get(`/portfolio/${id}`);
         if (cancelled) return;
@@ -108,11 +87,6 @@ const PortfolioDetail = () => {
     return () => { cancelled = true; };
   }, [id]);
 
-  /* Gallery navigation — every image, not just the first 6 */
-  const allImages = project ? [project.coverImage, ...(project.gallery || [])].filter(Boolean) : [];
-  const prev = useCallback(() => setActiveImg((i) => (i - 1 + allImages.length) % allImages.length), [allImages.length]);
-  const next = useCallback(() => setActiveImg((i) => (i + 1) % allImages.length), [allImages.length]);
-
   if (loading) return <Skeleton />;
   if (!project) return (
     <div className="bg-white text-[#0D1117] min-h-screen flex items-center justify-center" dir={dir}>
@@ -125,47 +99,7 @@ const PortfolioDetail = () => {
     </div>
   );
 
-  const title = isRTL && project.titleAr ? project.titleAr : project.title;
-  const desc  = isRTL && project.descriptionAr ? project.descriptionAr : project.description;
-  const [nextProject, ...moreProjects] = related;
-
-  return (
-    <div className="bg-white text-[#0D1117] min-h-screen overflow-x-hidden" dir={dir}>
-      <Header onStartProject={() => setIsFormOpen(true)} />
-      <ScrollProgress isRTL={isRTL} />
-
-      <Hero project={project} title={title} desc={desc} isRTL={isRTL} />
-
-      <Narrative project={project} isRTL={isRTL} />
-
-      <ResultsAndTestimonial project={project} isRTL={isRTL} />
-
-      {allImages.length > 0 && (
-        <Gallery
-          images={allImages}
-          activeImg={activeImg}
-          setActiveImg={setActiveImg}
-          onOpenLightbox={() => setLightbox(true)}
-          onPrev={prev}
-          onNext={next}
-          isRTL={isRTL}
-          liveUrl={project.liveUrl}
-          title={title}
-        />
-      )}
-
-      <NextProject nextProject={nextProject} moreProjects={moreProjects} isRTL={isRTL} />
-
-      <CTASection project={project} title={title} isRTL={isRTL} onStartProject={() => setIsFormOpen(true)} />
-
-      <Footer />
-
-      {lightbox && (
-        <Lightbox images={allImages} active={activeImg} onClose={() => setLightbox(false)} onPrev={prev} onNext={next} isRTL={isRTL} title={title} />
-      )}
-      <ProjectRequestForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
-    </div>
-  );
+  return <PortfolioDetailView project={project} related={related} isRTL={isRTL} dir={dir} />;
 };
 
 export default PortfolioDetail;

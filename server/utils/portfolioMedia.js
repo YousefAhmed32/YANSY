@@ -45,30 +45,50 @@ const generateBlurDataURL = async (url, provider) => {
   }
 };
 
+const KIND_FOR_MIME = (mimeType) => {
+  if (mimeType.startsWith('video/')) return 'video';
+  if (mimeType.startsWith('audio/')) return 'audio';
+  return 'image';
+};
+
 /**
- * Upload one image buffer and return a fully-formed media asset ready to store on
- * PortfolioProject.coverImage / gallery[].
+ * Upload one media file (image, video, or audio) and return a fully-formed
+ * asset ready to store on any mediaAssetSchema field — cover, gallery,
+ * testimonial.avatar/audio, proofScreenshots, team[].avatar, or a block's
+ * asset/images/before/after/poster.
+ *
+ * The blur-up placeholder only makes sense for images (it's a blurred still
+ * frame), so it's skipped for video/audio — `generateBlurDataURL` already
+ * no-ops for non-Cloudinary assets, but here it's skipped before the network
+ * round-trip even happens rather than after.
  */
-const uploadPortfolioImage = async (fileBuffer, filename, mimeType) => {
+const uploadPortfolioMedia = async (fileBuffer, filename, mimeType) => {
+  const kind = KIND_FOR_MIME(mimeType);
   const uploaded = await uploadToCloud(fileBuffer, filename, mimeType, {
     folder: 'yansy/portfolio',
     tags:   ['yansy-portfolio'],
   });
 
-  const blurDataURL = await generateBlurDataURL(uploaded.url, uploaded.provider);
+  const blurDataURL = kind === 'image' ? await generateBlurDataURL(uploaded.url, uploaded.provider) : null;
 
   return {
     url:           uploaded.url,
     publicId:      uploaded.cloudId,
     provider:      uploaded.provider,
+    kind,
     width:         uploaded.width,
     height:        uploaded.height,
+    duration:      uploaded.duration,
     dominantColor: uploaded.dominantColor,
     blurDataURL,
-    alt:  '',
-    altAr: '',
+    alt: '', altAr: '',
+    caption: '', captionAr: '',
   };
 };
+
+// Kept as an alias — every existing call site (routes, migration scripts)
+// only ever uploaded images before v3 introduced video/audio support.
+const uploadPortfolioImage = uploadPortfolioMedia;
 
 const deletePortfolioImage = async (asset) => {
   if (!asset?.publicId) return;
@@ -78,6 +98,7 @@ const deletePortfolioImage = async (asset) => {
 module.exports = {
   buildResponsiveUrl,
   generateBlurDataURL,
+  uploadPortfolioMedia,
   uploadPortfolioImage,
   deletePortfolioImage,
 };

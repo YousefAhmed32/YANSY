@@ -13,52 +13,56 @@ const Index = ({ n }) => (
 );
 
 /**
- * The problem/answer pair, given equal weight side by side so the reader
- * holds both in view at once — rather than the flat Overview→Challenge→
- * Solution→Process→Results column the previous version used, where nothing
- * signaled which paragraph mattered most. "The Brief" (description) now
- * lives in the hero lead, so this starts directly at Challenge.
+ * The story beats (goals, pain points, challenge, solution — whichever are
+ * present) laid out as equal-weight numbered cards, two per row, so the
+ * reader holds each in view rather than scrolling a flat Overview→Challenge→
+ * Solution→Process→Results column where nothing signaled which paragraph
+ * mattered most. "The Brief" (description) lives in the hero lead, so this
+ * starts directly at the first present beat.
  */
+const BEATS = [
+  ['goals', 'goalsAr', { en: 'The Goal', ar: 'الهدف' }],
+  ['painPoints', 'painPointsAr', { en: 'The Pain Points', ar: 'نقاط الألم' }],
+  ['challenge', 'challengeAr', { en: 'The Challenge', ar: 'التحدي' }],
+  ['solution', 'solutionAr', { en: 'The Solution', ar: 'الحل' }],
+];
+
 const Narrative = ({ project, isRTL }) => {
   const font = isRTL ? FONT_AR : FONT_EN;
-  const challenge = isRTL ? (project.challengeAr || project.challenge) : (project.challenge || project.challengeAr);
-  const solution  = isRTL ? (project.solutionAr  || project.solution)  : (project.solution  || project.solutionAr);
-  const process   = isRTL ? (project.processAr   || project.process)   : (project.process   || project.processAr);
+  const beats = BEATS
+    .map(([enKey, arKey, label]) => ({
+      key: enKey,
+      label: isRTL ? label.ar : label.en,
+      content: isRTL ? (project[arKey] || project[enKey]) : (project[enKey] || project[arKey]),
+    }))
+    .filter((b) => b.content);
+  const process = isRTL ? (project.processAr || project.process) : (project.process || project.processAr);
   const tags = project.tags?.filter(Boolean) || [];
 
-  if (!challenge && !solution && !process && !tags.length) return null;
+  if (!beats.length && !process && !tags.length) return null;
 
   return (
     <section className="section-shell section-shell--plain" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="section-inner" style={{ maxWidth: 1040 }}>
 
-        {(challenge || solution) && (
+        {beats.length > 0 && (
           <Reveal stagger className="narrative-pair" step={0.1} itemClassName="narrative-pair__item" distance={16}>
-            {challenge && (
-              <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                <Index n={1} />
-                <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>{isRTL ? 'التحدي' : 'The Challenge'}</span>
+            {beats.map((b, i) => (
+              <div key={b.key} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                <Index n={i + 1} />
+                <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>{b.label}</span>
                 <p style={{ fontFamily: font, fontSize: 'clamp(1rem, 1.4vw, 1.125rem)', fontWeight: 400, color: 'var(--text-secondary)', lineHeight: 1.85, whiteSpace: 'pre-line' }}>
-                  {challenge}
+                  {b.content}
                 </p>
               </div>
-            )}
-            {solution && (
-              <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                <Index n={2} />
-                <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>{isRTL ? 'الحل' : 'The Solution'}</span>
-                <p style={{ fontFamily: font, fontSize: 'clamp(1rem, 1.4vw, 1.125rem)', fontWeight: 400, color: 'var(--text-secondary)', lineHeight: 1.85, whiteSpace: 'pre-line' }}>
-                  {solution}
-                </p>
-              </div>
-            )}
+            ))}
           </Reveal>
         )}
 
         {process && (
           <Reveal distance={16}>
             <div style={{
-              marginTop: (challenge || solution) ? 'clamp(3rem, 6vw, 4.5rem)' : 0,
+              marginTop: beats.length ? 'clamp(3rem, 6vw, 4.5rem)' : 0,
               borderInlineStart: '2px solid var(--accent-muted)', paddingInlineStart: 'clamp(1.25rem, 3vw, 2rem)',
               textAlign: isRTL ? 'right' : 'left',
             }}>
@@ -95,12 +99,13 @@ const Narrative = ({ project, isRTL }) => {
       </div>
 
       <style>{`
-        .narrative-pair { display: grid; grid-template-columns: 1fr; gap: clamp(2.5rem, 5vw, 4rem); }
+        .narrative-pair { display: grid; grid-template-columns: 1fr; gap: clamp(2.5rem, 5vw, 4rem) clamp(2.5rem, 5vw, 5rem); }
         @media (min-width: 800px) {
           .narrative-pair { grid-template-columns: repeat(2, 1fr); }
-          /* Challenge or Solution alone (the other field empty) spans full width
-             instead of leaving a blank second column. */
-          .narrative-pair:has(> .narrative-pair__item:only-child) { grid-template-columns: 1fr; }
+          /* An odd total leaves the last card alone in its row — span it full
+             width instead of leaving a blank second column beside it. Matches
+             any count (1, 3, 5 beats), not just the "exactly one" case. */
+          .narrative-pair__item:last-child:nth-child(odd) { grid-column: 1 / -1; }
         }
       `}</style>
     </section>

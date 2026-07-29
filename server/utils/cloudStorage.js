@@ -54,6 +54,7 @@ const uploadToCloudinary = async (fileBuffer, filename, mimeType, options = {}) 
           provider: 'cloudinary',
           width:    result.width,
           height:   result.height,
+          duration: result.duration,          // video/audio only — seconds
           // Cloudinary returns colors sorted by prevalence — first entry is the dominant color
           dominantColor: Array.isArray(result.colors) && result.colors[0] ? result.colors[0][0] : undefined,
         });

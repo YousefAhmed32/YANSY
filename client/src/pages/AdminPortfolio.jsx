@@ -2,7 +2,7 @@
   import { useNavigate } from 'react-router-dom';
   import {
     Plus, Edit2, Trash2, Eye, EyeOff, Star, StarOff, ExternalLink,
-    GripVertical, Archive, CheckSquare, Square, Images, ImageOff,
+    GripVertical, Archive, CheckSquare, Square, Images, ImageOff, Copy, ShieldCheck,
   } from 'lucide-react';
   import toast from 'react-hot-toast';
   import api from '../utils/api';
@@ -66,7 +66,7 @@
 
   const AdminPortfolio = () => {
     const navigate = useNavigate();
-    const { language } = useLanguage();
+    const { language, isRTL } = useLanguage();
     const [projects, setProjects]       = useState([]);
     const [loading, setLoading]         = useState(true);
     const [statusCounts, setStatusCounts] = useState({ draft: 0, published: 0, archived: 0 });
@@ -82,6 +82,7 @@
     const [deleting, setDeleting]       = useState(false);
     const [bulkAction, setBulkAction]   = useState(null);
     const [bulkBusy, setBulkBusy]       = useState(false);
+    const [duplicatingId, setDuplicatingId] = useState(null);
     const dragItem  = useRef(null);
     const dragOver  = useRef(null);
 
@@ -100,7 +101,7 @@
       } finally {
         setLoading(false);
       }
-    }, [status, category, search, page]);
+    }, [status, category, search, page, language]);
 
     useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
@@ -140,6 +141,19 @@
         toast.success(language === 'ar' ? `تم التعليم كـ ${statusDisplayLabel(newStatus, language)}` : `Marked as ${newStatus}`);
         fetchProjects();
       } catch { toast.error(language === 'ar' ? 'فشل التحديث' : 'Update failed'); }
+    };
+
+    const duplicateProject = async (p) => {
+      try {
+        setDuplicatingId(p._id);
+        const { data } = await api.post(`/portfolio/admin/${p._id}/duplicate`);
+        toast.success(language === 'ar' ? 'تم إنشاء نسخة' : 'Duplicate created');
+        navigate(`/app/admin/portfolio/${data.project._id}/edit`);
+      } catch {
+        toast.error(language === 'ar' ? 'فشل النسخ' : 'Duplicate failed');
+      } finally {
+        setDuplicatingId(null);
+      }
     };
 
     const confirmDeleteProject = async () => {
@@ -190,7 +204,7 @@
     };
 
     return (
-      <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }}>
+      <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }} dir={isRTL ? 'rtl' : 'ltr'}>
       <div style={{ maxWidth: '1440px', margin: '0 auto', minWidth: 0 }}>
         <PageHeader
           icon={Images}
@@ -230,7 +244,7 @@
         {selected.size > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: RADIUS.md, marginBottom: '16px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: TK.accent, fontWeight: 500 }}>{language === 'ar' ? `${selected.size} محدد` : `${selected.size} selected`}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginInlineStart: 'auto' }}>
               <Button size="sm" variant="secondary" onClick={() => runBulkAction('published')}>{language === 'ar' ? 'نشر' : 'Publish'}</Button>
               <Button size="sm" variant="secondary" onClick={() => runBulkAction('draft')}>{language === 'ar' ? 'مسودة' : 'Draft'}</Button>
               <Button size="sm" variant="secondary" onClick={() => runBulkAction('archived')}>{language === 'ar' ? 'أرشفة' : 'Archive'}</Button>
@@ -297,6 +311,12 @@
                     <Badge tone="info">{categoryLabel(p.category, language)}</Badge>
                     <Badge tone={STATUS_TONE[p.status] || 'neutral'} dot>{statusDisplayLabel(p.status, language)}</Badge>
                     {p.featured && <Badge tone="purple">{language === 'ar' ? 'مميز' : 'Featured'}</Badge>}
+                    {p.private && <Badge tone="danger">{language === 'ar' ? 'خاص' : 'Private'}</Badge>}
+                    {p.confidential && (
+                      <span title={language === 'ar' ? 'عميل سري' : 'Confidential client'} style={{ display: 'inline-flex' }}>
+                        <ShieldCheck style={{ width: '12px', height: '12px', color: TK.textLight }} />
+                      </span>
+                    )}
                     {p.viewCount > 0 && <span style={{ fontSize: '10px', color: TK.textLight }}>{language === 'ar' ? `${p.viewCount} مشاهدة` : `${p.viewCount} views`}</span>}
                   </div>
                   <p style={{
@@ -323,6 +343,19 @@
                     </a>
                   )}
                   <IconButton icon={Edit2} size={30} onClick={() => navigate(`/app/admin/portfolio/${p._id}/edit`)} title={language === 'ar' ? 'تعديل' : 'Edit'} />
+                  <a
+                    href={`/app/admin/portfolio/${p._id}/preview`} target="_blank" rel="noopener noreferrer"
+                    title={language === 'ar' ? 'معاينة' : 'Preview'}
+                    className="au-icon-btn"
+                    style={{ width: '30px', height: '30px', borderRadius: RADIUS.md, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TK.textMuted, flexShrink: 0 }}
+                  >
+                    <Eye style={{ width: '14px', height: '14px' }} />
+                  </a>
+                  <IconButton
+                    icon={Copy} size={30} onClick={() => duplicateProject(p)}
+                    title={language === 'ar' ? 'نسخ' : 'Duplicate'}
+                    disabled={duplicatingId === p._id}
+                  />
 
                   <Divider />
 
@@ -341,7 +374,7 @@
             {pages > 1 && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', paddingTop: '14px' }}>
                 <Button size="sm" variant="ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>{language === 'ar' ? 'السابق' : 'Prev'}</Button>
-                <span style={{ fontSize: '11.5px', color: TK.textMuted }}>{page} / {pages}</span>
+                <span dir="ltr" style={{ fontSize: '11.5px', color: TK.textMuted }}>{page} / {pages}</span>
                 <Button size="sm" variant="ghost" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>{language === 'ar' ? 'التالي' : 'Next'}</Button>
               </div>
             )}
