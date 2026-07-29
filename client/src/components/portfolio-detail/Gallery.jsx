@@ -71,10 +71,13 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
 
               {images.length > 1 && (
                 <>
-                  <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/90 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة السابقة' : 'Previous'}>
+                  {/* Physically-left/right controls swap which action they perform
+                      under RTL, matching the Lightbox's keyboard-arrow semantics —
+                      reading direction reverses which side is "back". */}
+                  <button onClick={(e) => { e.stopPropagation(); isRTL ? onNext() : onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/90 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة التالية' : 'Previous'}>
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/90 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة التالية' : 'Next'}>
+                  <button onClick={(e) => { e.stopPropagation(); isRTL ? onPrev() : onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/90 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة السابقة' : 'Next'}>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </>

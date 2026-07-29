@@ -40,7 +40,9 @@ const ScrollProgress = ({ isRTL }) => {
       <div
         ref={barRef}
         style={{
-          height: '100%', width: '100%', background: 'var(--accent)',
+          height: '100%', width: '100%',
+          background: 'linear-gradient(90deg, var(--accent), #60A5FA)',
+          boxShadow: '0 0 8px rgba(37,99,235,0.5)',
           transformOrigin: isRTL ? 'right' : 'left', transform: 'scaleX(0)',
         }}
       />

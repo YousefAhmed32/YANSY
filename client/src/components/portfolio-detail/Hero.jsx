@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ExternalLink, Figma, Github, MapPin, ShieldCheck } from 'lucide-react';
+import { Briefcase, Clock, ExternalLink, Figma, Github, Layers, MapPin, ShieldCheck, Users } from 'lucide-react';
 import ProgressiveImage from '../ProgressiveImage';
 import { mediaSrc } from '../../utils/media';
 import { categoryLabel, categoryIcon } from '../../utils/portfolioTaxonomy';
@@ -235,16 +235,35 @@ const Hero = ({ project, title, desc, isRTL }) => {
   );
 };
 
-/* ── Meta strip ───────────────────────────────────────────────────────────── */
+/* ── Spec strip ───────────────────────────────────────────────────────────── */
 const LINK_PILL = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, border: '1px solid var(--border)', transition: 'border-color 0.2s, color 0.2s' };
 
+const SpecItem = ({ Icon, label, children, isRTL }) => (
+  <div className="spec-item" style={{ display: 'flex', alignItems: 'center', gap: 12, flexDirection: isRTL ? 'row-reverse' : 'row', textAlign: isRTL ? 'right' : 'left' }}>
+    <div aria-hidden style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon style={{ width: 15, height: 15, color: 'var(--accent)' }} />
+    </div>
+    <div style={{ minWidth: 0 }}>
+      <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 3, fontWeight: 600 }}>{label}</p>
+      {children}
+    </div>
+  </div>
+);
+
+/**
+ * Fact strip beneath the hero panel, restyled as icon-forward "spec cards"
+ * (Apple product-page convention) instead of the plain label/value text
+ * pairs this replaces — those read as leftover metadata; this reads as a
+ * deliberate at-a-glance summary before the reader commits to the full
+ * story below.
+ */
 const MetaStrip = ({ project, isRTL, font }) => {
   const myRole = isRTL ? (project.myRoleAr || project.myRole) : (project.myRole || project.myRoleAr);
   const fields = [
-    myRole && { label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
-    project.duration && { label: isRTL ? 'المدة' : 'Duration', value: project.duration },
-    project.teamSize && { label: isRTL ? 'الفريق' : 'Team', value: project.teamSize },
-    project.tags?.length > 0 && { label: isRTL ? 'التقنيات' : 'Technologies', value: String(project.tags.length) },
+    myRole && { Icon: Briefcase, label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
+    project.duration && { Icon: Clock, label: isRTL ? 'المدة' : 'Duration', value: project.duration },
+    project.teamSize && !project.team?.length && { Icon: Users, label: isRTL ? 'الفريق' : 'Team', value: project.teamSize },
+    project.tags?.length > 0 && { Icon: Layers, label: isRTL ? 'التقنيات' : 'Tech Stack', value: isRTL ? `${project.tags.length} تقنية` : `${project.tags.length} technologies` },
   ].filter(Boolean);
 
   const links = [
@@ -257,28 +276,26 @@ const MetaStrip = ({ project, isRTL, font }) => {
 
   return (
     <div style={{ borderBottom: '1px solid var(--border)', marginTop: 'clamp(2.5rem, 5vw, 3.5rem)' }}>
-      <div className="max-w-7xl mx-auto" style={{
-        padding: 'clamp(20px, 3vw, 30px) clamp(1.25rem, 5vw, 3rem)',
-        display: 'flex', flexWrap: 'wrap', gap: '20px 44px', alignItems: 'center', justifyContent: 'space-between',
+      <div className="max-w-7xl mx-auto spec-strip" style={{
+        padding: 'clamp(22px, 3vw, 32px) clamp(1.25rem, 5vw, 3rem)',
+        display: 'flex', flexWrap: 'wrap', gap: '22px clamp(28px, 4vw, 48px)', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px 44px', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '22px clamp(28px, 4vw, 48px)', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
           {fields.map((f, i) => (
-            <div key={i} style={{ textAlign: isRTL ? 'right' : 'left' }}>
-              <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 4, fontWeight: 600 }}>{f.label}</p>
-              <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 500, fontFamily: font }}>{f.value}</p>
-            </div>
+            <SpecItem key={i} Icon={f.Icon} label={f.label} isRTL={isRTL}>
+              <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, fontFamily: font }}>{f.value}</p>
+            </SpecItem>
           ))}
 
           {project.team?.length > 0 && (
-            <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
-              <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 6, fontWeight: 600 }}>{isRTL ? 'فريق العمل' : 'Team'}</p>
+            <SpecItem Icon={Users} label={isRTL ? 'فريق العمل' : 'Team'} isRTL={isRTL}>
               <div style={{ display: 'flex', alignItems: 'center', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
                 {project.team.slice(0, 6).map((m, i) => (
                   <div
                     key={i}
                     title={`${m.name}${m.role ? ` — ${isRTL ? (m.roleAr || m.role) : m.role}` : ''}`}
                     style={{
-                      width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                      width: 26, height: 26, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
                       border: '2px solid #fff', boxShadow: '0 0 0 1px var(--border)',
                       marginInlineStart: i > 0 ? -8 : 0,
                       background: 'var(--accent-light)', color: 'var(--accent)',
@@ -290,7 +307,7 @@ const MetaStrip = ({ project, isRTL, font }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </SpecItem>
           )}
         </div>
 
@@ -312,6 +329,17 @@ const MetaStrip = ({ project, isRTL, font }) => {
           </div>
         )}
       </div>
+
+      <style>{`
+        .spec-strip .spec-item:not(:last-child) { position: relative; }
+        @media (min-width: 640px) {
+          .spec-strip > div:first-child { position: relative; }
+          .spec-strip .spec-item:not(:last-child)::after {
+            content: ''; position: absolute; top: 50%; transform: translateY(-50%);
+            inset-inline-end: calc(-1 * clamp(14px, 2vw, 24px)); width: 1px; height: 28px; background: var(--border);
+          }
+        }
+      `}</style>
     </div>
   );
 };

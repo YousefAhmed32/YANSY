@@ -4,9 +4,10 @@ import Footer from '../Footer';
 import ProjectRequestForm from '../ProjectRequestForm';
 import ScrollProgress from './ScrollProgress';
 import Hero from './Hero';
-import Narrative from './Narrative';
+import StoryBeats from './StoryBeats';
+import ProcessBand from './ProcessBand';
 import BlockRenderer from './BlockRenderer';
-import ResultsAndTestimonial from './ResultsAndTestimonial';
+import ImpactSection from './ImpactSection';
 import ProofSection from './ProofSection';
 import Gallery from './Gallery';
 import Lightbox from './Lightbox';
@@ -20,6 +21,15 @@ import CTASection from './CTASection';
  * same markup a visitor will see (fetched via the admin API, which returns
  * drafts too) instead of a second, hand-maintained approximation that could
  * silently drift from what actually ships.
+ *
+ * Section rhythm (light → light → tint → light → DARK → light → tint →
+ * light → light-with-dark-panel → DARK) is deliberate: two tonal breaks
+ * only — Impact (the results payoff) and the closing CTA — so a dark
+ * section reads as a climax, not a recurring pattern. Every section between
+ * Hero and CTA now has its own distinct composition (alternating-margin
+ * editorial beats, a quiet pull-statement interstitial, a full stat wall,
+ * a sticky two-column FAQ, ...) instead of the previous repeating
+ * label-heading-paragraph block used site-wide.
  */
 const PortfolioDetailView = ({ project, related, isRTL, dir }) => {
   const [lightbox, setLightbox]     = useState(false);
@@ -41,17 +51,22 @@ const PortfolioDetailView = ({ project, related, isRTL, dir }) => {
 
       <Hero project={project} title={title} desc={desc} isRTL={isRTL} />
 
-      <Narrative project={project} isRTL={isRTL} />
+      <StoryBeats project={project} isRTL={isRTL} />
+
+      <ProcessBand project={project} isRTL={isRTL} />
 
       {project.blocks?.length > 0 && (
         <section className="section-shell section-shell--plain" dir={dir}>
-          <div className="section-inner" style={{ maxWidth: 900 }}>
+          <div className="section-inner" style={{ maxWidth: 860 }}>
+            <span className="section-label" style={{ marginBottom: 'clamp(2rem, 4vw, 3rem)', display: 'inline-flex' }}>
+              {isRTL ? 'داخل المشروع' : 'The Build'}
+            </span>
             <BlockRenderer blocks={project.blocks} isRTL={isRTL} />
           </div>
         </section>
       )}
 
-      <ResultsAndTestimonial project={project} isRTL={isRTL} />
+      <ImpactSection project={project} isRTL={isRTL} />
 
       <ProofSection project={project} isRTL={isRTL} />
 

@@ -87,17 +87,21 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext, isRTL, title }) => 
 
       {images.length > 1 && (
         <>
+          {/* Physically-left control: in LTR this steps backward (prev); in RTL,
+              reading moves right-to-left, so the same physical position steps
+              forward (next) — matching the ArrowLeft/ArrowRight keyboard
+              handler above, which already makes this swap. */}
           <button
-            onClick={(e) => { e.stopPropagation(); onPrev(); }}
+            onClick={(e) => { e.stopPropagation(); isRTL ? onNext() : onPrev(); }}
             className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] bg-white text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all rounded-full"
-            aria-label={isRTL ? 'الصورة السابقة' : 'Previous image'}
+            aria-label={isRTL ? 'الصورة التالية' : 'Previous image'}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onNext(); }}
+            onClick={(e) => { e.stopPropagation(); isRTL ? onPrev() : onNext(); }}
             className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] bg-white text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all rounded-full"
-            aria-label={isRTL ? 'الصورة التالية' : 'Next image'}
+            aria-label={isRTL ? 'الصورة السابقة' : 'Next image'}
           >
             <ChevronRight className="w-5 h-5" />
           </button>

@@ -12,24 +12,33 @@ const FAQItem = ({ q, a, isRTL, font, open, onToggle }) => (
       aria-expanded={open}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-        padding: '20px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: isRTL ? 'right' : 'left',
+        padding: '22px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: isRTL ? 'right' : 'left',
         flexDirection: isRTL ? 'row-reverse' : 'row',
       }}
     >
-      <span style={{ fontFamily: font, fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{q}</span>
-      <Plus aria-hidden style={{ width: 16, height: 16, color: 'var(--text-tertiary)', flexShrink: 0, transition: 'transform 0.25s', transform: open ? 'rotate(45deg)' : 'none' }} />
+      <span style={{ fontFamily: font, fontSize: 15.5, fontWeight: 600, color: 'var(--text-primary)' }}>{q}</span>
+      <span aria-hidden style={{
+        width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        border: '1px solid var(--border)', transition: 'transform 0.25s, background 0.2s, border-color 0.2s',
+        transform: open ? 'rotate(45deg)' : 'none', background: open ? 'var(--accent-light)' : 'transparent', borderColor: open ? 'var(--accent-muted)' : 'var(--border)',
+      }}>
+        <Plus style={{ width: 13, height: 13, color: open ? 'var(--accent)' : 'var(--text-tertiary)' }} />
+      </span>
     </button>
     <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s ease' }}>
       <div style={{ overflow: 'hidden' }}>
-        <p style={{ fontFamily: font, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, margin: '0 0 20px', textAlign: isRTL ? 'right' : 'left' }}>{a}</p>
+        <p style={{ fontFamily: font, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, margin: '0 0 22px', maxWidth: '62ch', textAlign: isRTL ? 'right' : 'left' }}>{a}</p>
       </div>
     </div>
   </div>
 );
 
 /**
- * Per-project objection handling — placed late in the page, same narrative
- * slot the homepage gives its own FAQ (right before the closing CTA).
+ * Objection handling as a two-column "sticky intro / scrolling answers"
+ * layout instead of the single centered text column used by every other
+ * text-heavy section on this page (Story, Process, Impact) — the one
+ * genuinely list-shaped section on the page gets a genuinely list-shaped
+ * layout, so it doesn't read as "another paragraph section" while scrolling.
  */
 const FAQSection = ({ project, isRTL }) => {
   const font = isRTL ? FONT_AR : FONT_EN;
@@ -39,11 +48,25 @@ const FAQSection = ({ project, isRTL }) => {
 
   return (
     <section className="section-shell section-shell--plain" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="section-inner" style={{ maxWidth: 720 }}>
-        <Reveal distance={16}>
-          <span className="section-label" style={{ marginBottom: 20, display: 'inline-flex' }}>
-            {isRTL ? 'أسئلة شائعة' : 'FAQs'}
-          </span>
+      <div className="section-inner faq-grid" style={{ maxWidth: 1100 }}>
+        <Reveal distance={14} className="faq-aside">
+          <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
+            <span className="section-label" style={{ marginBottom: 18, display: 'inline-flex' }}>
+              {isRTL ? 'أسئلة شائعة' : 'FAQs'}
+            </span>
+            <h2 style={{
+              fontFamily: font, fontSize: 'clamp(1.5rem, 2.8vw, 2.125rem)', fontWeight: 800,
+              color: 'var(--text-primary)', letterSpacing: isRTL ? 0 : '-0.02em', lineHeight: 1.2, margin: '0 0 12px',
+            }}>
+              {isRTL ? 'أسئلة قد تدور في ذهنك' : 'Questions worth asking'}
+            </h2>
+            <p style={{ fontFamily: font, fontSize: 14, color: 'var(--text-tertiary)', lineHeight: 1.7, margin: 0, maxWidth: '38ch' }}>
+              {isRTL ? 'إن لم تجد إجابتك هنا، تواصل معنا مباشرة — نرد خلال ساعتين.' : "Don't see yours? Ask us directly — we reply within 2 hours."}
+            </p>
+          </div>
+        </Reveal>
+
+        <Reveal distance={14} className="faq-list">
           <div>
             {faqs.map((f, i) => (
               <FAQItem
@@ -59,6 +82,14 @@ const FAQSection = ({ project, isRTL }) => {
           </div>
         </Reveal>
       </div>
+
+      <style>{`
+        .faq-grid { display: grid; grid-template-columns: 1fr; gap: clamp(2rem, 4vw, 3rem); }
+        @media (min-width: 860px) {
+          .faq-grid { grid-template-columns: 0.85fr 1.15fr; align-items: start; }
+          .faq-aside { position: sticky; top: calc(68px + 2rem); }
+        }
+      `}</style>
     </section>
   );
 };
