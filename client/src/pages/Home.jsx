@@ -22,6 +22,7 @@ import MetricsSection  from '../sections/MetricsSection';
 // used to import all of this eagerly, making it (plus the ~1600-line
 // AIChatWidget) the single largest chunk in the whole app, unconditionally
 // preloaded on every page load regardless of route.
+const TrustedByLogos         = lazy(() => import('../components/TrustedByLogos'));
 const ClientVoices           = lazy(() => import('../components/reviews/ClientVoices'));
 const HomepageVideoShowcase = lazy(() => import('../components/HomepageVideoShowcase'));
 const WhyYANSY              = lazy(() => import('../components/WhyYANSY'));
@@ -111,6 +112,13 @@ const Home = () => {
 
       {/* 01 — Promise. Hero carries the proof-stat rail (was a standalone strip). */}
       <HeroSection onStartProject={open} isRTL={isRTL} t={t} />
+
+      {/* 01.5 — Immediate credibility: brand logo wall, admin-managed, hidden
+              entirely when empty/disabled. Renders nothing until fetched, so
+              it never reserves layout space or shifts the fold beneath it. */}
+      <Suspense fallback={null}>
+        <TrustedByLogos />
+      </Suspense>
 
       {/* ── Proof block: work → outcomes → voices, uninterrupted ── */}
 

@@ -16,7 +16,7 @@ const ICON_MAP = {
   automation: Workflow,
 };
 
-const BlogVisual = ({ icon, label, color = '#2563EB', variant = 'card', isRTL = false, style }) => (
+const BlogVisual = ({ icon, label, color = 'rgb(var(--accent))', variant = 'card', isRTL = false, style }) => (
   <div style={{ position: 'absolute', inset: 0, ...style }}>
     <GeneratedPlaceholder icon={ICON_MAP[icon] || Code2} label={label} color={color} isRTL={isRTL} variant={variant} />
   </div>

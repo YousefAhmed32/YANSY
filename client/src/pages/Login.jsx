@@ -98,9 +98,13 @@ const Login = () => {
   const [localError, setLocalError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const [focused, setFocused]       = useState(null);
+  // State, not a ref — isDisabled (below) reads this during render, and a
+  // ref mutation doesn't trigger the re-render needed for that to actually
+  // reflect in the UI (the button could stay clickable for a tick after
+  // submit, or stay stuck disabled after the request settles).
+  const [submitting, setSubmitting] = useState(false);
 
   const formRef    = useRef(null);
-  const submitting = useRef(false);
 
   useEffect(() => { if (isAuthenticated) navigate('/app/dashboard'); }, [isAuthenticated, navigate]);
   useEffect(() => { dispatch(clearError()); }, [dispatch]);
@@ -116,14 +120,14 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (submitting.current || loading) return;
+    if (submitting || loading) return;
     setLocalError('');
     if (!email.trim()) { setLocalError(t('auth.emailRequired', 'Email address is required.')); return; }
     if (!password)     { setLocalError(t('auth.passwordRequired', 'Password is required.')); return; }
 
-    submitting.current = true;
+    setSubmitting(true);
     const result = await dispatch(login({ email: email.trim(), password }));
-    submitting.current = false;
+    setSubmitting(false);
 
     if (login.rejected.match(result)) {
       setLocalError(result.payload || t('auth.loginFailed', 'Login failed. Please try again.'));
@@ -153,7 +157,7 @@ const Login = () => {
     flow:      'auth-code',
   });
 
-  const isDisabled = loading || submitting.current || googleLoading;
+  const isDisabled = loading || submitting || googleLoading;
 
   const inputStyle = (name) => ({
     width: '100%',

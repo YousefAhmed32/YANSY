@@ -71,18 +71,18 @@ const CaseStudyDetail = () => {
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-white text-[#0D1117] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <main className="bg-surface-white text-[rgb(var(--text-primary))] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
         <section ref={heroRef} style={{ paddingTop: '100px', paddingBottom: '4rem', position: 'relative', overflow: 'hidden' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ position: 'relative', zIndex: 2, textAlign: isRTL ? 'right' : 'left' }}>
             {/* Breadcrumb */}
             <nav data-hero-anim className="opacity-0 flex items-center gap-2 mb-8" style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
-              <Link to="/" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.2em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: font }}>{isRTL ? 'الرئيسية' : 'Home'}</Link>
-              <span style={{ color: 'rgba(0,0,0,0.18)' }}>{isRTL ? '‹' : '›'}</span>
-              <Link to="/case-studies" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.2em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: font }}>{isRTL ? 'أعمالنا' : 'Case Studies'}</Link>
-              <span style={{ color: 'rgba(0,0,0,0.18)' }}>{isRTL ? '‹' : '›'}</span>
-              <span style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.2em', textTransform: isRTL ? 'none' : 'uppercase', color: '#2563EB', fontFamily: font }}>{cs.title}</span>
+              <Link to="/" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.2em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgb(var(--hover-overlay) / 0.3)', fontFamily: font }}>{isRTL ? 'الرئيسية' : 'Home'}</Link>
+              <span style={{ color: 'rgb(var(--hover-overlay) / 0.18)' }}>{isRTL ? '‹' : '›'}</span>
+              <Link to="/case-studies" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.2em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgb(var(--hover-overlay) / 0.3)', fontFamily: font }}>{isRTL ? 'أعمالنا' : 'Case Studies'}</Link>
+              <span style={{ color: 'rgb(var(--hover-overlay) / 0.18)' }}>{isRTL ? '‹' : '›'}</span>
+              <span style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.2em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgb(var(--accent))', fontFamily: font }}>{cs.title}</span>
             </nav>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem', flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
@@ -96,7 +96,7 @@ const CaseStudyDetail = () => {
               }}>
                 {isRTL ? cs.industry.ar : cs.industry.en}
               </span>
-              <span data-hero-anim className="opacity-0" style={{ fontFamily: font, fontSize: 11, color: 'rgba(0,0,0,0.3)', letterSpacing: isRTL ? 0 : '0.12em', textTransform: isRTL ? 'none' : 'uppercase' }}>
+              <span data-hero-anim className="opacity-0" style={{ fontFamily: font, fontSize: 11, color: 'rgb(var(--hover-overlay) / 0.3)', letterSpacing: isRTL ? 0 : '0.12em', textTransform: isRTL ? 'none' : 'uppercase' }}>
                 {isRTL ? cs.duration.ar : cs.duration.en} · {cs.year}
               </span>
             </div>
@@ -107,7 +107,7 @@ const CaseStudyDetail = () => {
               fontWeight: 700,
               lineHeight: 1.04,
               letterSpacing: '-0.03em',
-              color: '#0D1117',
+              color: 'rgb(var(--text-primary))',
               maxWidth: '20ch',
               marginBottom: '1rem',
               marginInlineStart: isRTL ? 'auto' : 0,
@@ -118,7 +118,7 @@ const CaseStudyDetail = () => {
               fontFamily: font,
               fontSize: 'clamp(1.1rem, 2.5vw, 1.6rem)',
               fontWeight: 400,
-              color: 'rgba(0,0,0,0.55)',
+              color: 'rgb(var(--hover-overlay) / 0.55)',
               lineHeight: 1.4,
               maxWidth: '52ch',
               marginBottom: '3rem',
@@ -186,15 +186,15 @@ const CaseStudyDetail = () => {
         </section>
 
         {/* ── CHALLENGE ─────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(4rem,8vw,7rem) 0', borderTop: '1px solid #E8EBF0' }}>
+        <section style={{ padding: 'clamp(4rem,8vw,7rem) 0', borderTop: '1px solid rgb(var(--border))' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <div className="grid lg:grid-cols-2 gap-16">
               <div>
                 <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'التحدي' : 'The Challenge'}</span>
-                <h2 style={{ fontFamily: font, fontSize: 'clamp(1.5rem,3vw,2.25rem)', fontWeight: 600, color: '#0D1117', lineHeight: 1.1, letterSpacing: isRTL ? 0 : '-0.025em', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontFamily: font, fontSize: 'clamp(1.5rem,3vw,2.25rem)', fontWeight: 600, color: 'rgb(var(--text-primary))', lineHeight: 1.1, letterSpacing: isRTL ? 0 : '-0.025em', marginBottom: '1.5rem' }}>
                   {isRTL ? cs.challenge.title.ar : cs.challenge.title.en}
                 </h2>
-                <p style={{ fontFamily: font, fontSize: '0.9rem', fontWeight: 400, color: 'rgba(0,0,0,0.52)', lineHeight: 1.85 }}>
+                <p style={{ fontFamily: font, fontSize: '0.9rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.52)', lineHeight: 1.85 }}>
                   {isRTL ? cs.challenge.body.ar : cs.challenge.body.en}
                 </p>
               </div>
@@ -203,7 +203,7 @@ const CaseStudyDetail = () => {
                   {cs.challenge.points.map((p, i) => (
                     <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(37,99,235,0.4)', marginTop: 8, flexShrink: 0 }} aria-hidden />
-                      <span style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgba(0,0,0,0.52)', lineHeight: 1.75 }}>{isRTL ? p.ar : p.en}</span>
+                      <span style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.52)', lineHeight: 1.75 }}>{isRTL ? p.ar : p.en}</span>
                     </li>
                   ))}
                 </ul>
@@ -213,18 +213,18 @@ const CaseStudyDetail = () => {
         </section>
 
         {/* ── STRATEGY + UX ─────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(4rem,8vw,7rem) 0', background: '#FAFAFA', borderTop: '1px solid #E8EBF0', borderBottom: '1px solid #E8EBF0' }}>
+        <section style={{ padding: 'clamp(4rem,8vw,7rem) 0', background: 'rgb(var(--bg-secondary))', borderTop: '1px solid rgb(var(--border))', borderBottom: '1px solid rgb(var(--border))' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <div className="grid lg:grid-cols-2 gap-10">
               <div className="card-premium" style={{ padding: 'clamp(1.5rem,4vw,2.5rem)' }}>
                 <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'الاستراتيجية' : 'Strategy'}</span>
-                <h3 style={{ fontFamily: font, fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 400, color: '#0D1117', lineHeight: 1.2, marginBottom: '1rem' }}>{isRTL ? cs.strategy.title.ar : cs.strategy.title.en}</h3>
-                <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgba(0,0,0,0.52)', lineHeight: 1.85 }}>{isRTL ? cs.strategy.body.ar : cs.strategy.body.en}</p>
+                <h3 style={{ fontFamily: font, fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 400, color: 'rgb(var(--text-primary))', lineHeight: 1.2, marginBottom: '1rem' }}>{isRTL ? cs.strategy.title.ar : cs.strategy.title.en}</h3>
+                <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.52)', lineHeight: 1.85 }}>{isRTL ? cs.strategy.body.ar : cs.strategy.body.en}</p>
               </div>
               <div className="card-premium" style={{ padding: 'clamp(1.5rem,4vw,2.5rem)' }}>
                 <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'تجربة المستخدم' : 'UX Process'}</span>
-                <h3 style={{ fontFamily: font, fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 400, color: '#0D1117', lineHeight: 1.2, marginBottom: '1rem' }}>{isRTL ? cs.uxProcess.title.ar : cs.uxProcess.title.en}</h3>
-                <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgba(0,0,0,0.52)', lineHeight: 1.85 }}>{isRTL ? cs.uxProcess.body.ar : cs.uxProcess.body.en}</p>
+                <h3 style={{ fontFamily: font, fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 400, color: 'rgb(var(--text-primary))', lineHeight: 1.2, marginBottom: '1rem' }}>{isRTL ? cs.uxProcess.title.ar : cs.uxProcess.title.en}</h3>
+                <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.52)', lineHeight: 1.85 }}>{isRTL ? cs.uxProcess.body.ar : cs.uxProcess.body.en}</p>
               </div>
             </div>
           </div>
@@ -235,19 +235,19 @@ const CaseStudyDetail = () => {
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <div className="mb-12">
               <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'البنية التقنية' : 'Technical Architecture'}</span>
-              <h2 style={{ fontFamily: font, fontSize: 'clamp(1.5rem,3vw,2.25rem)', fontWeight: 600, color: '#0D1117', lineHeight: 1.08, letterSpacing: isRTL ? 0 : '-0.025em' }}>
+              <h2 style={{ fontFamily: font, fontSize: 'clamp(1.5rem,3vw,2.25rem)', fontWeight: 600, color: 'rgb(var(--text-primary))', lineHeight: 1.08, letterSpacing: isRTL ? 0 : '-0.025em' }}>
                 {isRTL ? 'قرارات هندسية رئيسية' : 'Key Engineering Decisions'}
               </h2>
             </div>
-            <div className="grid md:grid-cols-3 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
+            <div className="grid md:grid-cols-3 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
               {cs.keyDecisions.map((d, i) => (
-                <div key={i} style={{ background: '#F6F7F9', padding: 'clamp(1.5rem,4vw,2.5rem)', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
+                <div key={i} style={{ background: 'rgb(var(--bg-surface))', padding: 'clamp(1.5rem,4vw,2.5rem)', transition: 'background 0.3s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
                 >
-                  <div style={{ width: 32, height: 1, background: 'linear-gradient(to right, #2563EB, transparent)', marginBottom: 20 }} aria-hidden />
-                  <h3 style={{ fontFamily: font, fontSize: '1.1rem', fontWeight: 500, color: '#0D1117', marginBottom: 10, lineHeight: 1.3 }}>{isRTL ? d.title.ar : d.title.en}</h3>
-                  <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgba(0,0,0,0.45)', lineHeight: 1.8 }}>{isRTL ? d.desc.ar : d.desc.en}</p>
+                  <div style={{ width: 32, height: 1, background: 'linear-gradient(to right, rgb(var(--accent)), transparent)', marginBottom: 20 }} aria-hidden />
+                  <h3 style={{ fontFamily: font, fontSize: '1.1rem', fontWeight: 500, color: 'rgb(var(--text-primary))', marginBottom: 10, lineHeight: 1.3 }}>{isRTL ? d.title.ar : d.title.en}</h3>
+                  <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.45)', lineHeight: 1.8 }}>{isRTL ? d.desc.ar : d.desc.en}</p>
                 </div>
               ))}
             </div>
@@ -258,7 +258,7 @@ const CaseStudyDetail = () => {
               {cs.stack.map((t, i) => (
                 <span key={i} style={{
                   padding: '5px 14px', border: '1px solid rgba(37,99,235,0.15)',
-                  color: 'rgba(0,0,0,0.52)', fontFamily: "'Inter', sans-serif",
+                  color: 'rgb(var(--hover-overlay) / 0.52)', fontFamily: "'Inter', sans-serif",
                   fontSize: 11, fontWeight: 400, letterSpacing: '0.1em',
                   background: 'rgba(37,99,235,0.03)',
                 }}>{t}</span>
@@ -268,7 +268,7 @@ const CaseStudyDetail = () => {
         </section>
 
         {/* ── OUTCOME ───────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(4rem,8vw,7rem) 0', background: '#FAFAFA', borderTop: '1px solid #E8EBF0', borderBottom: '1px solid #E8EBF0' }}>
+        <section style={{ padding: 'clamp(4rem,8vw,7rem) 0', background: 'rgb(var(--bg-secondary))', borderTop: '1px solid rgb(var(--border))', borderBottom: '1px solid rgb(var(--border))' }}>
           <div className="max-w-3xl mx-auto px-5 sm:px-8" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'النتيجة' : 'The Outcome'}</span>
             <p style={{ fontFamily: font, fontSize: 'clamp(1.2rem,2.5vw,1.8rem)', fontWeight: 400, color: 'rgba(13,17,23,0.8)', lineHeight: 1.6, marginBottom: '3rem', fontStyle: isRTL ? 'normal' : 'italic' }}>
@@ -284,7 +284,7 @@ const CaseStudyDetail = () => {
                 "{isRTL ? cs.testimonial.quote.ar : cs.testimonial.quote.en}"
               </p>
               <footer style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400 }}>
-                <strong style={{ color: '#0D1117', fontWeight: 500 }}>{cs.testimonial.name}</strong>
+                <strong style={{ color: 'rgb(var(--text-primary))', fontWeight: 500 }}>{cs.testimonial.name}</strong>
                 <span style={{ color: 'rgba(13,17,23,0.4)', marginInlineStart: 8 }}>— {isRTL ? cs.testimonial.role.ar : cs.testimonial.role.en}</span>
               </footer>
             </blockquote>
@@ -293,27 +293,27 @@ const CaseStudyDetail = () => {
 
         {/* ── RELATED CASE STUDIES ──────────────────────────────── */}
         {cs.relatedStudies?.length > 0 && (
-          <section style={{ padding: 'clamp(4rem,8vw,6rem) 0', borderTop: '1px solid #E8EBF0' }}>
+          <section style={{ padding: 'clamp(4rem,8vw,6rem) 0', borderTop: '1px solid rgb(var(--border))' }}>
             <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
               <div className="mb-10">
                 <span className="eyebrow" style={{ display: 'block', marginBottom: '0.75rem' }}>{isRTL ? 'المزيد من أعمالنا' : 'More Work'}</span>
-                <h2 style={{ fontFamily: font, fontSize: 'clamp(1.25rem,2.5vw,1.75rem)', fontWeight: 600, color: '#0D1117', letterSpacing: isRTL ? 0 : '-0.02em' }}>{isRTL ? 'دراسات حالة ذات صلة' : 'Related Case Studies'}</h2>
+                <h2 style={{ fontFamily: font, fontSize: 'clamp(1.25rem,2.5vw,1.75rem)', fontWeight: 600, color: 'rgb(var(--text-primary))', letterSpacing: isRTL ? 0 : '-0.02em' }}>{isRTL ? 'دراسات حالة ذات صلة' : 'Related Case Studies'}</h2>
               </div>
-              <div className="grid md:grid-cols-2 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
+              <div className="grid md:grid-cols-2 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
                 {CASE_STUDIES.filter(c => cs.relatedStudies.includes(c.slug)).slice(0, 2).map(c => (
                   <Link key={c.slug} to={`/case-studies/${c.slug}`}
-                    style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', gap: '1.5rem', padding: 'clamp(1.5rem,4vw,2.5rem)', alignItems: 'center', transition: 'background 0.3s', flexDirection: isRTL ? 'row-reverse' : 'row' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
+                    style={{ background: 'rgb(var(--bg-surface))', textDecoration: 'none', display: 'flex', gap: '1.5rem', padding: 'clamp(1.5rem,4vw,2.5rem)', alignItems: 'center', transition: 'background 0.3s', flexDirection: isRTL ? 'row-reverse' : 'row' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
                   >
                     <div style={{ position: 'relative', width: 80, height: 60, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
                       <CaseStudyVisual slug={c.slug} industryKey={c.industryKey} color={c.color} variant="thumb" isRTL={isRTL} alt={c.title} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: font, fontSize: 10, color: 'rgba(0,0,0,0.35)', letterSpacing: isRTL ? 0 : '0.15em', textTransform: isRTL ? 'none' : 'uppercase', marginBottom: 6 }}>{isRTL ? c.industry.ar : c.industry.en}</div>
-                      <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1.1rem', fontWeight: 400, color: '#0D1117', lineHeight: 1.3 }}>{c.title}</div>
+                      <div style={{ fontFamily: font, fontSize: 10, color: 'rgb(var(--hover-overlay) / 0.35)', letterSpacing: isRTL ? 0 : '0.15em', textTransform: isRTL ? 'none' : 'uppercase', marginBottom: 6 }}>{isRTL ? c.industry.ar : c.industry.en}</div>
+                      <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1.1rem', fontWeight: 400, color: 'rgb(var(--text-primary))', lineHeight: 1.3 }}>{c.title}</div>
                     </div>
-                    <ArrowUpRight size={16} style={{ color: 'rgba(0,0,0,0.25)', flexShrink: 0, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+                    <ArrowUpRight size={16} style={{ color: 'rgb(var(--hover-overlay) / 0.25)', flexShrink: 0, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
                   </Link>
                 ))}
               </div>
@@ -322,23 +322,23 @@ const CaseStudyDetail = () => {
         )}
 
         {/* ── CTA ───────────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid #E8EBF0' }}>
+        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid rgb(var(--border))' }}>
           <div className="max-w-xl mx-auto px-5">
             <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'دورك الآن' : 'Your Turn'}</span>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: '#0D1117', lineHeight: 1.06, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: 'rgb(var(--text-primary))', lineHeight: 1.06, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
               {isRTL ? 'ابنِ شيئًا مثل هذا' : 'Build Something Like This'}
             </h2>
             <button
               onClick={() => setIsFormOpen(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                padding: '16px 40px', background: '#2563EB', border: '2px solid #2563EB',
-                color: '#FFFFFF', fontFamily: font,
+                padding: '16px 40px', background: 'rgb(var(--accent))', border: '2px solid rgb(var(--accent))',
+                color: 'rgb(var(--bg-elevated))', fontFamily: font,
                 fontSize: 10, fontWeight: 500, letterSpacing: isRTL ? 0 : '0.22em', textTransform: isRTL ? 'none' : 'uppercase',
                 cursor: 'pointer', transition: 'background 0.3s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--accent-hover))'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--accent))'; }}
             >
               {isRTL ? 'ابدأ مشروعك' : 'Start a Project'} <ArrowUpRight size={14} style={{ transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
             </button>

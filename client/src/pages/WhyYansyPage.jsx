@@ -104,7 +104,7 @@ const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => {
   const panelId = `wy-faq-panel-${faq.id}`;
   const buttonId = `wy-faq-button-${faq.id}`;
   return (
-    <div style={{ borderBottom: '1px solid #E8EBF0' }}>
+    <div style={{ borderBottom: '1px solid rgb(var(--border))' }}>
       <button
         id={buttonId}
         onClick={onToggle}
@@ -116,27 +116,27 @@ const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => {
           background: 'none', border: 'none', cursor: 'pointer', direction: isRTL ? 'rtl' : 'ltr',
         }}
       >
-        <span style={{ fontSize: 10, fontWeight: 800, color: isOpen ? '#2563EB' : '#C9CDD6', minWidth: 24, textAlign: isRTL ? 'right' : 'left' }}>
+        <span style={{ fontSize: 10, fontWeight: 800, color: isOpen ? 'rgb(var(--accent))' : 'rgb(var(--border-strong))', minWidth: 24, textAlign: isRTL ? 'right' : 'left' }}>
           {String(idx + 1).padStart(2, '0')}
         </span>
         <h3 style={{
           margin: 0, fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', fontWeight: 600,
-          color: isOpen ? '#0D1117' : '#374151', fontFamily: isRTL ? FONT_AR : FONT_EN,
+          color: isOpen ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', fontFamily: isRTL ? FONT_AR : FONT_EN,
           lineHeight: 1.4, textAlign: isRTL ? 'right' : 'left',
         }}>
           {isRTL ? faq.qAR : faq.qEN}
         </h3>
         <span aria-hidden style={{
           flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-          border: `1.5px solid ${isOpen ? '#0D1117' : '#E8EBF0'}`, background: isOpen ? '#0D1117' : 'transparent',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOpen ? '#FFFFFF' : '#9BA3AE', fontSize: 15,
+          border: `1.5px solid ${isOpen ? 'rgb(var(--text-primary))' : 'rgb(var(--border))'}`, background: isOpen ? 'rgb(var(--text-primary))' : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: isOpen ? 'rgb(var(--bg-elevated))' : 'rgb(var(--text-tertiary))', fontSize: 15,
         }}>
           {isOpen ? '−' : '+'}
         </span>
       </button>
       <div id={panelId} role="region" aria-labelledby={buttonId} style={{ overflow: 'hidden', maxHeight: isOpen ? '320px' : '0px', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
         <p style={{
-          margin: '0 0 clamp(16px, 2.2vw, 22px)', fontSize: 'clamp(0.875rem, 1vw, 1rem)', color: '#5C6370',
+          margin: '0 0 clamp(16px, 2.2vw, 22px)', fontSize: 'clamp(0.875rem, 1vw, 1rem)', color: 'rgb(var(--text-secondary))',
           lineHeight: 1.8, fontFamily: isRTL ? FONT_AR : FONT_EN, paddingInlineStart: 'clamp(34px, 5vw, 44px)', textAlign: isRTL ? 'right' : 'left',
         }}>
           {isRTL ? faq.aAR : faq.aEN}
@@ -188,7 +188,7 @@ const WhyYansyPage = () => {
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main dir={isRTL ? 'rtl' : 'ltr'} style={{ background: '#FFFFFF', overflowX: 'hidden' }}>
+      <main dir={isRTL ? 'rtl' : 'ltr'} style={{ background: 'rgb(var(--bg-elevated))', overflowX: 'hidden' }}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
         <section style={{
@@ -203,14 +203,14 @@ const WhyYansyPage = () => {
             </span>
             <h1 style={{
               fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.05,
-              letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117',
+              letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))',
               margin: '0 0 clamp(1.25rem, 2.5vw, 1.75rem)',
               fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL ? 'الثقة تُبنى بالشفافية،\nليس بالوعود.' : 'Trust is built on transparency, not promises.'}
             </h1>
             <p style={{
-              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: '#5C6370', lineHeight: 1.75,
+              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: 'rgb(var(--text-secondary))', lineHeight: 1.75,
               margin: '0 auto', maxWidth: '52ch', fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL
@@ -234,7 +234,7 @@ const WhyYansyPage = () => {
               </span>
               <h2 style={{
                 fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.05,
-                letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117', margin: '0 auto', maxWidth: '20ch',
+                letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))', margin: '0 auto', maxWidth: '20ch',
                 fontFamily: isRTL ? FONT_AR : FONT_EN,
               }}>
                 {isRTL ? 'ثمانية التزامات في كل مشروع.' : 'Eight commitments on every project.'}
@@ -244,21 +244,21 @@ const WhyYansyPage = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(12px, 1.5vw, 18px)' }}>
               {PILLARS.map((p, i) => (
                 <div key={i} style={{
-                  background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 16,
+                  background: 'rgb(var(--bg-elevated))', border: '1px solid rgb(var(--border))', borderRadius: 16,
                   padding: 'clamp(22px, 2.5vw, 28px)', transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
                 }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 40px rgba(37,99,235,0.10)'; e.currentTarget.style.borderColor = 'rgba(37,99,235,0.3)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#E8EBF0'; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgb(var(--border))'; }}
                 >
                   <div style={{ fontSize: 26, marginBottom: 14 }} aria-hidden>{p.icon}</div>
                   <h3 style={{
-                    margin: '0 0 8px', fontSize: 15.5, fontWeight: 700, color: '#0D1117',
+                    margin: '0 0 8px', fontSize: 15.5, fontWeight: 700, color: 'rgb(var(--text-primary))',
                     fontFamily: isRTL ? FONT_AR : FONT_EN, textAlign: isRTL ? 'right' : 'left',
                   }}>
                     {isRTL ? p.titleAR : p.titleEN}
                   </h3>
                   <p style={{
-                    margin: 0, fontSize: 13, color: '#5C6370', lineHeight: 1.7,
+                    margin: 0, fontSize: 13, color: 'rgb(var(--text-secondary))', lineHeight: 1.7,
                     fontFamily: isRTL ? FONT_AR : FONT_EN, textAlign: isRTL ? 'right' : 'left',
                   }}>
                     {isRTL ? p.descAR : p.descEN}
@@ -274,7 +274,7 @@ const WhyYansyPage = () => {
 
         {/* ── MINI FAQ ──────────────────────────────────────────── */}
         <section style={{
-          background: '#FAFAFA', borderTop: '1px solid #E8EBF0',
+          background: 'rgb(var(--bg-secondary))', borderTop: '1px solid rgb(var(--border))',
           paddingTop: 'clamp(5rem, 10vw, 8rem)', paddingBottom: 'clamp(5rem, 10vw, 8rem)',
           paddingLeft: 'clamp(1.25rem, 5vw, 3rem)', paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
         }}>
@@ -285,7 +285,7 @@ const WhyYansyPage = () => {
               </span>
               <h2 style={{
                 fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 800, lineHeight: 1.1,
-                letterSpacing: isRTL ? 0 : '-0.03em', color: '#0D1117', margin: 0,
+                letterSpacing: isRTL ? 0 : '-0.03em', color: 'rgb(var(--text-primary))', margin: 0,
                 fontFamily: isRTL ? FONT_AR : FONT_EN,
               }}>
                 {isRTL ? 'الأسئلة التي يطرحها أصحاب الأعمال فعلاً' : 'What business owners actually ask us'}
@@ -301,13 +301,13 @@ const WhyYansyPage = () => {
         <section style={{ padding: 'clamp(5rem,10vw,7rem) 0', textAlign: 'center' }}>
           <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 20px' }}>
             <h2 style={{
-              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#0D1117',
+              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: 'rgb(var(--text-primary))',
               lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 1.5rem',
               fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL ? 'اختبر الفرق بنفسك.' : 'See the difference for yourself.'}
             </h2>
-            <p style={{ fontSize: '0.95rem', color: '#5C6370', lineHeight: 1.8, margin: '0 0 2.5rem', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+            <p style={{ fontSize: '0.95rem', color: 'rgb(var(--text-secondary))', lineHeight: 1.8, margin: '0 0 2.5rem', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
               {isRTL ? 'استشارة مجانية 30 دقيقة — بدون التزام.' : 'Free 30-minute consultation — no obligation.'}
             </p>
             <button onClick={() => setIsFormOpen(true)} className="btn-primary" style={{ fontSize: '13.5px', padding: '14px 32px' }}>

@@ -36,7 +36,7 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
          several hundred pixels mid-card — and any project count that didn't
          divide evenly left an empty cell in the grid. One row wide is the same
          spotlight emphasis without either artifact. */
-      className={`group relative flex flex-col bg-white border border-[#E8EBF0] rounded-2xl overflow-hidden transition-all duration-500 hover:border-[#C9CDD6] hover:shadow-[0_20px_50px_rgba(13,17,23,0.08)] hover:-translate-y-1 ${featured ? 'sm:col-span-2' : ''}`}
+      className={`group relative flex flex-col bg-surface-white border border-[rgb(var(--border))] rounded-2xl overflow-hidden transition-all duration-500 hover:border-[rgb(var(--border-strong))] hover:shadow-[0_20px_50px_rgba(13,17,23,0.08)] hover:-translate-y-1 ${featured ? 'sm:col-span-2' : ''}`}
     >
       {/* Image */}
       <div className={`relative overflow-hidden ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
@@ -59,7 +59,7 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
 
         {/* Badges */}
         <div className={`absolute top-3 flex flex-wrap gap-1.5 ${isRTL ? 'right-3' : 'left-3'}`}>
-          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm border border-black/5 text-[#0D1117] tracking-wide">
+          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-surface-white/95 backdrop-blur-sm border border-[rgb(var(--border))] text-[rgb(var(--text-primary))] tracking-wide">
             {categoryLabel(project.category, isRTL ? 'ar' : 'en')}
           </span>
           {project.industry && (
@@ -92,7 +92,7 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
 
         {/* Arrow reveal */}
         <div
-          className={`absolute bottom-3 w-9 h-9 rounded-full bg-[#0D1117] flex items-center justify-center opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ${isRTL ? 'left-3' : 'right-3'}`}
+          className={`absolute bottom-3 w-9 h-9 rounded-full bg-[rgb(var(--text-primary))] flex items-center justify-center opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ${isRTL ? 'left-3' : 'right-3'}`}
           aria-hidden="true"
         >
           <ArrowUpRight className={`w-4 h-4 text-white ${isRTL ? '-scale-x-100' : ''}`} />
@@ -104,9 +104,9 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
         {(clientName || project.confidential) && (
           <div className="flex items-center gap-1.5 mb-1.5">
             {clientName ? (
-              <span className="text-[10.5px] font-semibold text-[#9BA3AE] tracking-wide uppercase">{clientName}</span>
+              <span className="text-[10.5px] font-semibold text-[rgb(var(--text-tertiary))] tracking-wide uppercase">{clientName}</span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#9BA3AE]">
+              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[rgb(var(--text-tertiary))]">
                 <ShieldCheck className="w-3 h-3" aria-hidden />
                 {isRTL ? 'عميل سري' : 'Confidential client'}
               </span>
@@ -115,13 +115,13 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
         )}
 
         <h3
-          className={`font-bold text-[#0D1117] leading-tight mb-1.5 ${featured ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'}`}
+          className={`font-bold text-[rgb(var(--text-primary))] leading-tight mb-1.5 ${featured ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'}`}
           style={{ letterSpacing: '-0.02em' }}
         >
           {title}
         </h3>
         {dek && (
-          <p className={`text-[#5C6370] font-normal leading-relaxed line-clamp-2 mb-3 ${featured ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>
+          <p className={`text-[rgb(var(--text-secondary))] font-normal leading-relaxed line-clamp-2 mb-3 ${featured ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>
             {dek}
           </p>
         )}
@@ -131,13 +131,13 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
             {project.tags.slice(0, featured ? 5 : 3).map((tag, i) => (
               <span
                 key={`${tag}-${i}`}
-                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F6F7F9] border border-[#E8EBF0] text-[#5C6370]"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border))] text-[rgb(var(--text-secondary))]"
               >
                 {tag}
               </span>
             ))}
             {project.tags.length > (featured ? 5 : 3) && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F6F7F9] border border-[#E8EBF0] text-[#9BA3AE]">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border))] text-[rgb(var(--text-tertiary))]">
                 +{project.tags.length - (featured ? 5 : 3)}
               </span>
             )}

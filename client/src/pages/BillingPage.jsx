@@ -11,7 +11,6 @@ import {
   selectCurrentPlan, selectSubscriptionStatus, selectIsTrialing, selectTrialDaysLeft,
   clearBillingError,
 } from '../store/billingSlice';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { trackInitiateCheckout, trackPurchase } from '../utils/metaPixel';
 
@@ -21,7 +20,7 @@ const STATUS_CFG  = {
   active:     { label: 'Active',     color: '#34d399', bg: 'rgba(52,211,153,0.1)' },
   past_due:   { label: 'Past Due',   color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
   cancelled:  { label: 'Cancelled',  color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
-  free:       { label: 'Free',       color: 'rgba(255,255,255,0.4)', bg: 'rgba(0,0,0,0.04)' },
+  free:       { label: 'Free',       color: 'rgba(0,0,0,0.45)', bg: 'rgba(0,0,0,0.04)' },
   paused:     { label: 'Paused',     color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
   incomplete: { label: 'Incomplete', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
 };
@@ -30,7 +29,6 @@ const BillingPage = () => {
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
   const location   = useLocation();
-  const { isDark } = useTheme();
   const { dir }    = useLanguage();
 
   const { subscription, plans, history, loading, historyLoading, error } = useSelector(s => s.billing);
@@ -48,11 +46,11 @@ const BillingPage = () => {
   const pendingPurchaseRef = useRef(false);
 
   const gold      = '#2563EB';
-  const bg        = isDark ? '#080806' : '#fafaf9';
-  const surface   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
-  const border    = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-  const textMain  = isDark ? '#f5f5f0' : '#0a0a0a';
-  const textMuted = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+  const bg        = '#fafaf9';
+  const surface   = 'rgba(0,0,0,0.03)';
+  const border    = 'rgba(0,0,0,0.08)';
+  const textMain  = '#0a0a0a';
+  const textMuted = 'rgba(0,0,0,0.4)';
 
   useEffect(() => {
     dispatch(fetchPlans());
@@ -275,7 +273,7 @@ const BillingPage = () => {
         <div style={{ padding: '24px', background: surface, border: `1px solid ${border}`, borderRadius: '12px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <h2 style={{ fontSize: '14px', fontWeight: 400, color: textMain, margin: 0 }}>Upgrade your plan</h2>
-            <div style={{ display: 'flex', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderRadius: '8px', padding: '3px', gap: '3px' }}>
+            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', padding: '3px', gap: '3px' }}>
               {['monthly', 'annual'].map(c => (
                 <button key={c} onClick={() => setBillingCycle(c)} style={{ padding: '5px 12px', background: billingCycle === c ? gold : 'transparent', border: 'none', borderRadius: '6px', color: billingCycle === c ? '#000' : textMuted, fontSize: '10px', fontWeight: billingCycle === c ? 600 : 300, cursor: 'pointer', textTransform: 'capitalize' }}>
                   {c}
@@ -292,7 +290,7 @@ const BillingPage = () => {
               const isCurrentPlan = plan.name === currentPlan;
 
               return (
-                <div key={plan._id} style={{ padding: '20px', background: isPro ? 'rgba(37,99,235,0.06)' : isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isPro ? 'rgba(37,99,235,0.25)' : border}`, borderRadius: '10px' }}>
+                <div key={plan._id} style={{ padding: '20px', background: isPro ? 'rgba(37,99,235,0.06)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isPro ? 'rgba(37,99,235,0.25)' : border}`, borderRadius: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                     <PIcon style={{ width: '16px', height: '16px', color: isPro ? gold : textMuted }} />
                     <span style={{ fontSize: '13px', fontWeight: 300, color: textMain }}>{plan.displayName}</span>
@@ -349,7 +347,7 @@ const BillingPage = () => {
           </p>
         ) : (
           history.invoices.map(inv => (
-            <div key={inv._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+            <div key={inv._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
               <div>
                 <div style={{ fontSize: '12px', fontWeight: 300, color: textMain }}>#{inv.invoiceNumber}</div>
                 <div style={{ fontSize: '10px', color: textMuted }}>{formatDate(inv.createdAt)}</div>

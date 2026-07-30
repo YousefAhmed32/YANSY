@@ -7,6 +7,7 @@ const PortfolioProject = require('../models/PortfolioProject');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { audit }         = require('../utils/auditLogger');
 const { uploadPortfolioMedia, deletePortfolioImage, buildResponsiveUrl } = require('../utils/portfolioMedia');
+const { slugify } = require('../utils/slugify');
 
 const protect   = authenticate;
 const adminOnly = requireAdmin;
@@ -35,15 +36,6 @@ const assertPublishable = (doc) => {
   if (!doc.coverImage?.url) missing.push('coverImage');
   return missing;
 };
-
-const slugify = (str) =>
-  (str || '')
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 
 const ensureUniqueSlug = async (title, excludeId) => {
   const base = slugify(title) || `project-${Date.now()}`;
@@ -161,7 +153,7 @@ const LIST_EXCLUDE = '-myRole -myRoleAr -goals -goalsAr -painPoints -painPointsA
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // GET /api/portfolio — listing with cursor pagination, filters, search, sort
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   try {
     const { category, industry, tag, featured, search, sort = 'latest' } = req.query;
     const limit = Math.min(parseInt(req.query.limit, 10) || 12, 60);
@@ -178,7 +170,8 @@ router.get('/', async (req, res) => {
       const projects = await PortfolioProject.find(filter, { score: { $meta: 'textScore' } })
         .sort(sort === 'popular' ? { viewCount: -1 } : { score: { $meta: 'textScore' } })
         .limit(limit)
-        .select(LIST_EXCLUDE);
+        .select(LIST_EXCLUDE)
+        .lean();
       return res.json({ projects: projects.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor: null });
     }
 
@@ -190,7 +183,7 @@ router.get('/', async (req, res) => {
     // uncursored branch — consistent with the search branch above rather
     // than trying to force viewCount into the createdAt/_id cursor shape.
     if (sort === 'popular') {
-      const projects = await PortfolioProject.find(filter).sort({ viewCount: -1, _id: -1 }).limit(limit).select(LIST_EXCLUDE);
+      const projects = await PortfolioProject.find(filter).sort({ viewCount: -1, _id: -1 }).limit(limit).select(LIST_EXCLUDE).lean();
       return res.json({ projects: projects.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor: null });
     }
 
@@ -207,7 +200,8 @@ router.get('/', async (req, res) => {
     const projects = await PortfolioProject.find(filter)
       .sort(sortSpec)
       .limit(limit + 1)
-      .select(LIST_EXCLUDE);
+      .select(LIST_EXCLUDE)
+      .lean();
 
     const hasMore = projects.length > limit;
     const page = hasMore ? projects.slice(0, limit) : projects;
@@ -215,12 +209,12 @@ router.get('/', async (req, res) => {
 
     res.json({ projects: page.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // GET /api/portfolio/meta — distinct categories/industries/tags for filter chips
-router.get('/meta', async (req, res) => {
+router.get('/meta', async (req, res, next) => {
   try {
     const baseFilter = { status: 'published', private: { $ne: true } };
     const [categories, industries, tags] = await Promise.all([
@@ -230,7 +224,7 @@ router.get('/meta', async (req, res) => {
     ]);
     res.json({ categories, industries, tags: tags.filter(Boolean).sort() });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
@@ -239,7 +233,7 @@ router.get('/meta', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // GET /api/portfolio/admin — full list, all statuses, filters + search + pagination
-router.get('/admin', protect, adminOnly, async (req, res) => {
+router.get('/admin', protect, adminOnly, async (req, res, next) => {
   try {
     const { status, category, search } = req.query;
     const page  = Math.max(parseInt(req.query.page, 10) || 1, 1);
@@ -255,7 +249,8 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
         .sort(search?.trim() ? { score: { $meta: 'textScore' } } : { order: 1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
-        .select(LIST_EXCLUDE),
+        .select(LIST_EXCLUDE)
+        .lean(),
       PortfolioProject.countDocuments(filter),
       PortfolioProject.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     ]);
@@ -271,35 +266,35 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
       statusCounts,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // GET /api/portfolio/admin/:id — single project, any status (for the edit wizard)
-router.get('/admin/:id', protect, adminOnly, async (req, res) => {
+router.get('/admin/:id', protect, adminOnly, async (req, res, next) => {
   try {
     const project = await PortfolioProject.findById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
     res.json({ project: withResponsiveMedia(project) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // POST /api/portfolio/admin/media — upload one image/video/audio, returns a ready media asset
-router.post('/admin/media', protect, adminOnly, upload.single('file'), async (req, res) => {
+router.post('/admin/media', protect, adminOnly, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
     const asset = await uploadPortfolioMedia(req.file.buffer, req.file.originalname, req.file.mimetype);
     audit({ req, action: 'portfolio.media_upload', entityType: 'PortfolioProject', metadata: { publicId: asset.publicId, kind: asset.kind } });
     res.status(201).json({ asset });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // DELETE /api/portfolio/admin/media — remove an (orphaned or replaced) uploaded asset
-router.delete('/admin/media', protect, adminOnly, async (req, res) => {
+router.delete('/admin/media', protect, adminOnly, async (req, res, next) => {
   try {
     const { publicId, provider } = req.body;
     if (!publicId) return res.status(400).json({ error: 'publicId required' });
@@ -307,7 +302,7 @@ router.delete('/admin/media', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.media_delete', entityType: 'PortfolioProject', metadata: { publicId } });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
@@ -316,7 +311,7 @@ router.delete('/admin/media', protect, adminOnly, async (req, res) => {
 // category) is all that's required to bring a draft into existence — this
 // is the endpoint the wizard's autosave calls the moment those two fields
 // are filled in, well before the rest of the case study is written.
-router.post('/admin', protect, adminOnly, async (req, res) => {
+router.post('/admin', protect, adminOnly, async (req, res, next) => {
   try {
     const body = pickWritable(req.body);
     if (!body.title?.trim()) return res.status(400).json({ error: 'Title is required' });
@@ -339,12 +334,12 @@ router.post('/admin', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.create', entityType: 'PortfolioProject', entityId: project._id, after: { title: project.title, status: project.status } });
     res.status(201).json({ project: withResponsiveMedia(project) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // PUT /api/portfolio/admin/:id — update
-router.put('/admin/:id', protect, adminOnly, async (req, res) => {
+router.put('/admin/:id', protect, adminOnly, async (req, res, next) => {
   try {
     const project = await PortfolioProject.findById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
@@ -369,7 +364,7 @@ router.put('/admin/:id', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.update', entityType: 'PortfolioProject', entityId: project._id, before, after: { title: project.title, status: project.status, featured: project.featured } });
     res.json({ project: withResponsiveMedia(project) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
@@ -382,7 +377,7 @@ router.put('/admin/:id', protect, adminOnly, async (req, res) => {
 // from this one" convenience action (the expected next step is editing text/
 // data, rarely touching media untouched) as long as it's a known tradeoff,
 // not a silent one — flagged here and in the admin UI's duplicate confirmation.
-router.post('/admin/:id/duplicate', protect, adminOnly, async (req, res) => {
+router.post('/admin/:id/duplicate', protect, adminOnly, async (req, res, next) => {
   try {
     const source = await PortfolioProject.findById(req.params.id).lean();
     if (!source) return res.status(404).json({ error: 'Project not found' });
@@ -405,12 +400,12 @@ router.post('/admin/:id/duplicate', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.duplicate', entityType: 'PortfolioProject', entityId: clone._id, metadata: { sourceId: source._id } });
     res.status(201).json({ project: withResponsiveMedia(clone) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // PATCH /api/portfolio/admin/:id/status — draft / publish / archive
-router.patch('/admin/:id/status', protect, adminOnly, async (req, res) => {
+router.patch('/admin/:id/status', protect, adminOnly, async (req, res, next) => {
   try {
     const { status } = req.body;
     if (!['draft', 'published', 'archived'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
@@ -431,12 +426,12 @@ router.patch('/admin/:id/status', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.status_change', entityType: 'PortfolioProject', entityId: project._id, before: { status: before }, after: { status } });
     res.json({ project: withResponsiveMedia(project) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // PATCH /api/portfolio/admin/reorder — persist new drag order
-router.patch('/admin/reorder', protect, adminOnly, async (req, res) => {
+router.patch('/admin/reorder', protect, adminOnly, async (req, res, next) => {
   try {
     const { items } = req.body; // [{ id, order }]
     if (!Array.isArray(items)) return res.status(400).json({ error: 'items array required' });
@@ -450,12 +445,12 @@ router.patch('/admin/reorder', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.reorder', entityType: 'PortfolioProject', metadata: { count: items.length } });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // POST /api/portfolio/admin/bulk — bulk publish / archive / draft / delete
-router.post('/admin/bulk', protect, adminOnly, async (req, res) => {
+router.post('/admin/bulk', protect, adminOnly, async (req, res, next) => {
   try {
     const { ids, action } = req.body;
     if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ error: 'ids array required' });
@@ -485,12 +480,12 @@ router.post('/admin/bulk', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.bulk_action', entityType: 'PortfolioProject', metadata: { action, count: ids.length, skipped } });
     res.json({ ok: true, count: ids.length - skipped, skipped });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // DELETE /api/portfolio/admin/:id
-router.delete('/admin/:id', protect, adminOnly, async (req, res) => {
+router.delete('/admin/:id', protect, adminOnly, async (req, res, next) => {
   try {
     const project = await PortfolioProject.findById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
@@ -501,7 +496,7 @@ router.delete('/admin/:id', protect, adminOnly, async (req, res) => {
     audit({ req, action: 'portfolio.delete', entityType: 'PortfolioProject', entityId: project._id, before: { title: project.title } });
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
@@ -510,7 +505,7 @@ router.delete('/admin/:id', protect, adminOnly, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // GET /api/portfolio/:idOrSlug
-router.get('/:idOrSlug', async (req, res) => {
+router.get('/:idOrSlug', async (req, res, next) => {
   try {
     const { idOrSlug } = req.params;
     const query = mongoose.isValidObjectId(idOrSlug) ? { _id: idOrSlug } : { slug: idOrSlug };
@@ -521,12 +516,12 @@ router.get('/:idOrSlug', async (req, res) => {
 
     res.json({ project: redactConfidential(withResponsiveMedia(project)) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // GET /api/portfolio/:id/related
-router.get('/:id/related', async (req, res) => {
+router.get('/:id/related', async (req, res, next) => {
   try {
     const project = await PortfolioProject.findById(req.params.id).select('category industry relatedProjectsOverride');
     if (!project) return res.json({ projects: [] });
@@ -554,7 +549,7 @@ router.get('/:id/related', async (req, res) => {
 
     res.json({ projects: related.map((p) => redactConfidential(withResponsiveMedia(p))) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

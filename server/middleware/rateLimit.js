@@ -79,4 +79,19 @@ const rateLimitLeadSubmission = createSubmissionLimiter({
   message: 'Too many requests submitted. Please try again later or reach us on WhatsApp.',
 });
 
-module.exports = { rateLimitFeedback, rateLimitLeadSubmission, createSubmissionLimiter };
+/**
+ * Rate limit for the public (unauthenticated) AI chat widget. Every request
+ * here costs real, metered LLM API spend with no per-user budget to fall
+ * back on (unlike the authenticated AI routes, which are gated by
+ * `aiRateLimit`'s daily-plan quota) — the blanket 300/min `apiLimiter` alone
+ * left this endpoint open to sustained cost-draining abuse from a single IP.
+ * 30/hour is generous for a real visitor's chat session, not for a script.
+ */
+const rateLimitAIChat = createSubmissionLimiter({
+  bucket: 'ai-chat',
+  max: 30,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many messages sent. Please try again later or contact us via WhatsApp.',
+});
+
+module.exports = { rateLimitFeedback, rateLimitLeadSubmission, rateLimitAIChat, createSubmissionLimiter };

@@ -60,7 +60,7 @@ const ICONS = {
 const INDUSTRIES = [
   { key: 'restaurant',  accent: '#EA580C', titleEN: 'Restaurants & Food',   titleAR: 'المطاعم والأغذية',    hookEN: 'Multi-branch orders, kitchen displays, and delivery — unified.', hookAR: 'طلبات متعددة الفروع وشاشات مطبخ وتوصيل — كلها موحّدة.' },
   { key: 'medical',     accent: '#0891B2', titleEN: 'Healthcare & Clinics', titleAR: 'الرعاية الصحية',      hookEN: 'Patient booking and records that just work.',                    hookAR: 'حجز وسجلات مرضى تعمل بسلاسة.' },
-  { key: 'realestate',  accent: '#2563EB', titleEN: 'Real Estate',          titleAR: 'العقارات',            hookEN: 'Listings, leads, and tours — under one roof.',                   hookAR: 'قوائم وعملاء وجولات — في مكان واحد.' },
+  { key: 'realestate',  accent: 'rgb(var(--accent))', titleEN: 'Real Estate',          titleAR: 'العقارات',            hookEN: 'Listings, leads, and tours — under one roof.',                   hookAR: 'قوائم وعملاء وجولات — في مكان واحد.' },
   { key: 'academy',     accent: '#7C3AED', titleEN: 'Education & Academies',titleAR: 'التعليم والأكاديميات', hookEN: 'Courses, certificates, and progress — one platform.',            hookAR: 'دورات وشهادات ومتابعة تقدّم في منصة واحدة.' },
   { key: 'hotel',       accent: '#0E7490', titleEN: 'Hotels & Hospitality', titleAR: 'الفنادق والضيافة',    hookEN: 'Direct bookings, without the commission tax.',                   hookAR: 'حجوزات مباشرة، بلا ضريبة عمولة.' },
   { key: 'factory',     accent: '#D97706', titleEN: 'Manufacturing',        titleAR: 'التصنيع',             hookEN: 'Production, inventory, and orders — finally connected.',        hookAR: 'الإنتاج والمخزون والطلبات — أخيرًا متصلة.' },
@@ -79,8 +79,8 @@ const IndustryTile = ({ industry, isRTL }) => {
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative', display: 'block', textDecoration: 'none',
-        background: hovered ? `linear-gradient(160deg, ${industry.accent}08 0%, #FFFFFF 60%)` : '#FFFFFF',
-        border: `1px solid ${hovered ? `${industry.accent}45` : '#E8EBF0'}`,
+        background: hovered ? `linear-gradient(160deg, ${industry.accent}08 0%, rgb(var(--bg-elevated)) 60%)` : 'rgb(var(--bg-elevated))',
+        border: `1px solid ${hovered ? `${industry.accent}45` : 'rgb(var(--border))'}`,
         borderRadius: 18, padding: 'clamp(20px, 2.2vw, 28px)',
         overflow: 'hidden',
         transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
@@ -102,7 +102,7 @@ const IndustryTile = ({ industry, isRTL }) => {
             background: hovered ? industry.accent : `${industry.accent}0D`,
             border: `1px solid ${hovered ? industry.accent : `${industry.accent}22`}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: hovered ? '#FFFFFF' : industry.accent,
+            color: hovered ? 'rgb(var(--bg-elevated))' : industry.accent,
             transform: hovered ? 'scale(1.08) rotate(-4deg)' : 'scale(1) rotate(0deg)',
             transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
           }}>
@@ -117,12 +117,12 @@ const IndustryTile = ({ industry, isRTL }) => {
 
         <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
           <h3 style={{
-            margin: '0 0 6px', fontSize: 'clamp(0.95rem, 1.15vw, 1.05rem)', fontWeight: 700, color: '#0D1117',
+            margin: '0 0 6px', fontSize: 'clamp(0.95rem, 1.15vw, 1.05rem)', fontWeight: 700, color: 'rgb(var(--text-primary))',
             letterSpacing: isRTL ? 0 : '-0.015em', lineHeight: 1.25, fontFamily: font,
           }}>
             {isRTL ? industry.titleAR : industry.titleEN}
           </h3>
-          <p style={{ margin: 0, fontSize: 12.5, color: '#5C6370', lineHeight: 1.6, fontFamily: font }}>
+          <p style={{ margin: 0, fontSize: 12.5, color: 'rgb(var(--text-secondary))', lineHeight: 1.6, fontFamily: font }}>
             {isRTL ? industry.hookAR : industry.hookEN}
           </p>
         </div>
@@ -164,7 +164,7 @@ const IndustriesPreview = () => {
               className="industries-preview-cta"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0,
-                fontSize: 13.5, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none',
+                fontSize: 13.5, fontWeight: 600, color: 'rgb(var(--accent))', textDecoration: 'none',
                 flexDirection: isRTL ? 'row-reverse' : 'row',
               }}
             >

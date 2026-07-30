@@ -93,7 +93,7 @@ exports.changePassword = async (req, res, next) => {
       return res.status(400).json({ error: 'New password must be at least 6 characters' });
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const isMatch = await user.comparePassword(currentPassword);
@@ -126,7 +126,8 @@ exports.getAllUsers = async (req, res, next) => {
       .select('-password')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit)
+      .lean();
 
     const total = await User.countDocuments(query);
 
@@ -297,17 +298,32 @@ exports.exportCSV = async (req, res, next) => {
 
     const users = await User.find(query).select('-password').sort({ createdAt: -1 }).lean();
 
+    // Every user-controlled field (fullName, companyName/brandName, email,
+    // phoneNumber) goes through here — a leading =/+/-/@ makes Excel/Sheets
+    // treat the cell as a formula, so a registered user with fullName
+    // `=HYPERLINK("http://evil.com","x")` would otherwise execute that
+    // formula the moment an admin opens the exported CSV. Prefixing with a
+    // single quote is the standard OWASP mitigation (forces "text" parsing);
+    // always quoting + escaping internal quotes also fixes the separate,
+    // pre-existing bug where an unquoted email/phone containing a comma
+    // would silently shift every column after it.
+    const csvCell = (value) => {
+      const str = value === null || value === undefined ? '' : String(value);
+      const guarded = /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+      return `"${guarded.replace(/"/g, '""')}"`;
+    };
+
     const headers = ['ID', 'Full Name', 'Email', 'Phone', 'Company', 'Role', 'Status', 'Created At', 'Last Login'];
     const rows = users.map(u => [
-      u._id,
-      `"${(u.fullName || '').replace(/"/g, '""')}"`,
-      u.email,
-      u.phoneNumber || '',
-      `"${(u.companyName || u.brandName || '').replace(/"/g, '""')}"`,
-      u.role,
-      u.isActive ? 'Active' : 'Suspended',
-      u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : '',
-      u.lastLoginAt ? new Date(u.lastLoginAt).toISOString().split('T')[0] : '',
+      csvCell(u._id),
+      csvCell(u.fullName),
+      csvCell(u.email),
+      csvCell(u.phoneNumber),
+      csvCell(u.companyName || u.brandName),
+      csvCell(u.role),
+      csvCell(u.isActive ? 'Active' : 'Suspended'),
+      csvCell(u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : ''),
+      csvCell(u.lastLoginAt ? new Date(u.lastLoginAt).toISOString().split('T')[0] : ''),
     ].join(','));
 
     const csv = [headers.join(','), ...rows].join('\n');
@@ -356,7 +372,7 @@ exports.deleteOwnAccount = async (req, res, next) => {
     const { password } = req.body;
     if (!password) return res.status(400).json({ error: 'Password is required to confirm account deletion.' });
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
     const isMatch = await user.comparePassword(password);

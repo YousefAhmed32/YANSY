@@ -2,23 +2,21 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Clock, CheckCircle2, AlertCircle, Plus, ChevronRight, DollarSign } from 'lucide-react';
 import api from '../utils/api';
-import { useTheme } from '../contexts/ThemeContext';
 import { useSelector } from 'react-redux';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const STATUS_CFG = {
-  draft:         { label: 'Draft',          color: 'rgba(255,255,255,0.4)',  bg: 'rgba(0,0,0,0.04)',  icon: FileText },
-  sent:          { label: 'Awaiting Payment', color: '#f59e0b',              bg: 'rgba(245,158,11,0.1)',    icon: Clock },
-  paid:          { label: 'Paid',            color: '#34d399',               bg: 'rgba(52,211,153,0.1)',    icon: CheckCircle2 },
-  overdue:       { label: 'Overdue',         color: '#f87171',               bg: 'rgba(248,113,113,0.1)',   icon: AlertCircle },
-  cancelled:     { label: 'Cancelled',       color: 'rgba(255,255,255,0.3)', bg: 'rgba(0,0,0,0.03)', icon: FileText },
+  draft:         { label: 'Draft',          color: 'rgba(0,0,0,0.45)',  bg: 'rgba(0,0,0,0.04)',  icon: FileText },
+  sent:          { label: 'Awaiting Payment', color: '#f59e0b',        bg: 'rgba(245,158,11,0.1)',    icon: Clock },
+  paid:          { label: 'Paid',            color: '#34d399',         bg: 'rgba(52,211,153,0.1)',    icon: CheckCircle2 },
+  overdue:       { label: 'Overdue',         color: '#f87171',         bg: 'rgba(248,113,113,0.1)',   icon: AlertCircle },
+  cancelled:     { label: 'Cancelled',       color: 'rgba(0,0,0,0.35)', bg: 'rgba(0,0,0,0.03)', icon: FileText },
   partially_paid:{ label: 'Partially Paid',  color: '#60a5fa',               bg: 'rgba(96,165,250,0.1)',   icon: Clock },
 };
 
 const currencySymbol = { USD: '$', EUR: '€', SAR: '﷼', AED: 'د.إ', EGP: 'ج.م', GBP: '£', KWD: 'د.ك', QAR: '﷼' };
 
 const Invoices = () => {
-  const { isDark }     = useTheme();
   const { dir }        = useLanguage();
   const { user }       = useSelector(s => s.auth);
   const isAdmin        = user?.role === 'ADMIN';
@@ -28,11 +26,11 @@ const Invoices = () => {
   const [stats,    setStats]    = useState(null);
 
   const gold      = '#2563EB';
-  const bg        = isDark ? '#080806' : '#fafaf9';
-  const surface   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
-  const border    = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-  const textMain  = isDark ? '#f5f5f0' : '#0a0a0a';
-  const textMuted = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+  const bg        = '#fafaf9';
+  const surface   = 'rgba(0,0,0,0.03)';
+  const border    = 'rgba(0,0,0,0.08)';
+  const textMain  = '#0a0a0a';
+  const textMuted = 'rgba(0,0,0,0.4)';
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -129,7 +127,7 @@ const Invoices = () => {
             {['Secure payment links', 'PDF receipts', 'Payment history'].map(label => (
               <span key={label} style={{
                 padding: '5px 12px', borderRadius: '8px',
-                background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+                background: 'rgba(0,0,0,0.04)',
                 border: `1px solid ${border}`,
                 fontSize: '11px', color: textMuted,
               }}>

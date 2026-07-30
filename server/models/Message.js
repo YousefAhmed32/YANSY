@@ -99,7 +99,16 @@ const messageThreadSchema = new mongoose.Schema({
 });
 
 messageThreadSchema.index({ participants: 1 });
-messageThreadSchema.index({ lastActivity: -1 });
+
+// Cover the two base access patterns in messageController.getThreads — every
+// query there always includes `isArchived` plus either `participants` (a
+// customer's own inbox) or nothing extra (an admin sees all threads), sorted
+// {isPinned:-1, lastActivity:-1}. Neither shape was covered before (only a
+// bare `participants` and a bare `lastActivity` index existed), so every
+// admin inbox load and every customer inbox load did a full collection scan
+// + in-memory sort.
+messageThreadSchema.index({ participants: 1, isArchived: 1, isPinned: -1, lastActivity: -1 });
+messageThreadSchema.index({ isArchived: 1, isPinned: -1, lastActivity: -1 });
 
 const Message = mongoose.model('Message', messageSchema);
 const MessageThread = mongoose.model('MessageThread', messageThreadSchema);

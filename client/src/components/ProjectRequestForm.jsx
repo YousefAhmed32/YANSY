@@ -67,19 +67,19 @@ const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disab
 /* ─── Small shared bits ───────────────────────────────────────── */
 const FieldError = ({ msg }) =>
   msg ? (
-    <p className="flex items-center gap-2 mt-2 text-xs" style={{ color: '#DC2626' }}>
+    <p className="flex items-center gap-2 mt-2 text-xs" style={{ color: 'rgb(var(--danger))' }}>
       <AlertCircle style={{ width: 13, height: 13, flexShrink: 0 }} />
       {msg}
     </p>
   ) : null;
 
 const T = {
-  bg: '#FFFFFF', surface: '#FAFAFA', subtle: '#F6F7F9',
-  border: '#E8EBF0', borderStrong: '#C9CDD6',
-  text: '#0D1117', textSecondary: '#5C6370', textTertiary: '#9BA3AE',
-  accent: '#2563EB', accentLight: '#EFF6FF', accentMuted: '#DBEAFE', accentHover: '#1D4ED8',
+  bg: 'rgb(var(--bg-elevated))', surface: 'rgb(var(--bg-secondary))', subtle: 'rgb(var(--bg-surface))',
+  border: 'rgb(var(--border))', borderStrong: 'rgb(var(--border-strong))',
+  text: 'rgb(var(--text-primary))', textSecondary: 'rgb(var(--text-secondary))', textTertiary: 'rgb(var(--text-tertiary))',
+  accent: 'rgb(var(--accent))', accentLight: 'rgb(var(--accent-light))', accentMuted: 'rgb(var(--accent-muted))', accentHover: 'rgb(var(--accent-hover))',
   whatsapp: '#25D366', whatsappLight: '#ECFDF5', whatsappMuted: '#D1FAE5',
-  danger: '#DC2626',
+  danger: 'rgb(var(--danger))', dangerLight: 'rgb(var(--danger-light))',
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -430,7 +430,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
 
   /* ── Shared styles ──────────────────────────────────────────── */
   const inputCls = [
-    'w-full px-4 py-3.5 bg-white border transition-all outline-none text-base',
+    'w-full px-4 py-3.5 bg-surface-white border transition-all outline-none text-base',
   ].join(' ');
 
   const charPct = Math.min((charCount / 300) * 100, 100);
@@ -856,14 +856,14 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           {t('projectForm.steps.projectDescription.title')}
                         </span>
                         <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-colors"
-                          style={{ fontSize: 10, color: charOk ? '#16A34A' : T.textTertiary, background: charOk ? '#F0FDF4' : 'transparent', border: `1px solid ${charOk ? '#BBF7D0' : 'transparent'}` }}>
+                          style={{ fontSize: 10, color: charOk ? 'rgb(var(--success))' : T.textTertiary, background: charOk ? 'rgb(var(--success-light))' : 'transparent', border: `1px solid ${charOk ? 'rgb(var(--success) / 0.35)' : 'transparent'}` }}>
                           {charOk && <Check style={{ width: 9, height: 9 }} />}
                           {charCount}
                         </span>
                       </label>
                       <div className="h-[3px] mb-2.5 overflow-hidden rounded-full" style={{ background: T.border }}>
                         <div className="h-full transition-all duration-300 rounded-full"
-                          style={{ width: `${charPct}%`, background: charOk ? '#22C55E' : T.accentMuted }} />
+                          style={{ width: `${charPct}%`, background: charOk ? 'rgb(var(--success))' : T.accentMuted }} />
                       </div>
                       <textarea
                         id="sp-project-description"
@@ -890,7 +890,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           style={{ borderColor: T.border, color: T.text, paddingInlineEnd: form.referenceUrl ? 40 : undefined }}
                           placeholder={t('projectForm.steps.reference.placeholder')} />
                         {form.referenceUrl && (
-                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: '#16A34A', [isRTL ? 'left' : 'right']: 14 }} />
+                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: 'rgb(var(--success))', [isRTL ? 'left' : 'right']: 14 }} />
                         )}
                       </div>
                     </div>
@@ -1058,7 +1058,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           style={{ borderColor: errors.fullName ? T.danger : T.border, color: T.text, paddingInlineEnd: form.fullName ? 40 : undefined }}
                           placeholder={t('projectForm.steps.contact.fullNamePlaceholder')} />
                         {form.fullName && form.fullName.length >= 2 && (
-                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: '#16A34A', [isRTL ? 'left' : 'right']: 14 }} />
+                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: 'rgb(var(--success))', [isRTL ? 'left' : 'right']: 14 }} />
                         )}
                       </div>
                       {errors.fullName && <div data-error><FieldError msg={errors.fullName} /></div>}
@@ -1077,7 +1077,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           style={{ borderColor: errors.phoneNumber ? T.danger : T.border, color: T.text, paddingInlineEnd: form.phoneNumber ? 40 : undefined }}
                           placeholder={t('projectForm.steps.contact.phoneNumberPlaceholder')} />
                         {form.phoneNumber && form.phoneNumber.length >= 5 && (
-                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: '#16A34A', [isRTL ? 'left' : 'right']: 14 }} />
+                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: 'rgb(var(--success))', [isRTL ? 'left' : 'right']: 14 }} />
                         )}
                       </div>
                       {errors.phoneNumber && <div data-error><FieldError msg={errors.phoneNumber} /></div>}
@@ -1095,7 +1095,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                             </button>
                             <button type="button" onClick={chooseWhatsApp}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium"
-                              style={{ border: '1px solid rgba(37,211,102,0.3)', background: 'rgba(37,211,102,0.06)', color: '#16a34a', fontSize: 12, cursor: 'pointer' }}>
+                              style={{ border: '1px solid rgba(37,211,102,0.3)', background: 'rgba(37,211,102,0.06)', color: 'rgb(var(--success))', fontSize: 12, cursor: 'pointer' }}>
                               <MessageCircle style={{ width: 13, height: 13 }} />
                               {t('projectForm.steps.contact.phoneUseWhatsapp', 'Switch to WhatsApp instead')}
                             </button>
@@ -1117,7 +1117,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                           style={{ borderColor: errors.email ? T.danger : T.border, color: T.text }}
                           placeholder={t('projectForm.steps.contact.emailPlaceholder')} />
                         {form.email && /^\S+@\S+\.\S+$/.test(form.email) && (
-                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: '#16A34A', [isRTL ? 'left' : 'right']: 14 }} />
+                          <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: 'rgb(var(--success))', [isRTL ? 'left' : 'right']: 14 }} />
                         )}
                       </div>
                       {errors.email && <div data-error><FieldError msg={errors.email} /></div>}
@@ -1138,7 +1138,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                               style={{ borderColor: errors.companyName ? T.danger : T.border, color: T.text }}
                               placeholder={t('projectForm.steps.contact.companyNamePlaceholder')} />
                             {form.companyName && form.companyName.length >= 2 && (
-                              <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: '#16A34A', [isRTL ? 'left' : 'right']: 14 }} />
+                              <Check className="absolute top-1/2 -translate-y-1/2" style={{ width: 16, height: 16, color: 'rgb(var(--success))', [isRTL ? 'left' : 'right']: 14 }} />
                             )}
                           </div>
                           {errors.companyName && <div data-error><FieldError msg={errors.companyName} /></div>}
@@ -1180,7 +1180,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     )}
 
                     {errors.submit && (
-                      <div className="flex items-center gap-3 px-4 py-3.5 rounded-lg" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+                      <div className="flex items-center gap-3 px-4 py-3.5 rounded-lg" style={{ background: 'rgb(var(--danger-light))', border: '1px solid rgb(var(--danger) / 0.35)' }}>
                         <AlertCircle style={{ width: 16, height: 16, color: T.danger, flexShrink: 0 }} />
                         <p style={{ fontSize: 13, color: T.danger }}>{errors.submit}</p>
                       </div>

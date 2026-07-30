@@ -54,7 +54,7 @@ const CHANNELS = [
   {
     id: 'request',
     icon: FileText,
-    color: '#2563EB', bg: '#EFF6FF',
+    color: 'rgb(var(--accent))', bg: '#EFF6FF',
     titleEN: 'Send Project Request', titleAR: 'أرسل طلب مشروع',
     descEN: 'Structured details, a clear proposal back — no back-and-forth.', descAR: 'تفاصيل منظمة، وعرض واضح بالرد — بدون رسائل متكررة.',
     badgeEN: 'Most thorough', badgeAR: 'الأكثر تفصيلاً',
@@ -137,7 +137,7 @@ const ChannelCard = ({ ch, isRTL, onOpenForm, idx }) => {
       style={{
         display: 'flex', flexDirection: 'column', textAlign: isRTL ? 'right' : 'left',
         padding: 'clamp(22px, 2.6vw, 30px)', borderRadius: 18,
-        border: '1px solid #E8EBF0', background: '#FFFFFF',
+        border: '1px solid rgb(var(--border))', background: 'rgb(var(--bg-elevated))',
         textDecoration: 'none', cursor: 'pointer', width: '100%',
         fontFamily: isRTL ? FONT_AR : FONT_EN,
         animationDelay: `${idx * 60}ms`,
@@ -151,10 +151,10 @@ const ChannelCard = ({ ch, isRTL, onOpenForm, idx }) => {
           {isRTL ? ch.badgeAR : ch.badgeEN}
         </span>
       </div>
-      <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0D1117', margin: '0 0 6px', letterSpacing: isRTL ? 0 : '-0.015em' }}>
+      <h3 style={{ fontSize: 17, fontWeight: 700, color: 'rgb(var(--text-primary))', margin: '0 0 6px', letterSpacing: isRTL ? 0 : '-0.015em' }}>
         {isRTL ? ch.titleAR : ch.titleEN}
       </h3>
-      <p style={{ fontSize: 13, color: '#5C6370', lineHeight: 1.65, margin: '0 0 16px', flex: 1 }}>
+      <p style={{ fontSize: 13, color: 'rgb(var(--text-secondary))', lineHeight: 1.65, margin: '0 0 16px', flex: 1 }}>
         {isRTL ? ch.descAR : ch.descEN}
       </p>
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: ch.color }}>
@@ -227,12 +227,12 @@ const ContactPage = () => {
     <>
       <Header onStartProject={openForm} />
 
-      <main ref={revealRef} dir={isRTL ? 'rtl' : 'ltr'} style={{ background: '#FFFFFF', overflowX: 'hidden' }}>
+      <main ref={revealRef} dir={isRTL ? 'rtl' : 'ltr'} style={{ background: 'rgb(var(--bg-elevated))', overflowX: 'hidden' }}>
 
         <style>{`
           .cp-channel-card { transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.18s ease; }
-          .cp-channel-card:hover { border-color: #C9CDD6; box-shadow: 0 16px 40px rgba(13,17,23,0.08); transform: translateY(-3px); }
-          .cp-channel-card:focus-visible { outline: 2px solid #2563EB; outline-offset: 3px; }
+          .cp-channel-card:hover { border-color: rgb(var(--border-strong)); box-shadow: 0 16px 40px rgba(13,17,23,0.08); transform: translateY(-3px); }
+          .cp-channel-card:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 3px; }
           .cp-trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(1.5rem, 4vw, 3rem); }
           @media (max-width: 640px) { .cp-trust-grid { grid-template-columns: 1fr; gap: 1.25rem; } }
           .cp-channels-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(14px, 2vw, 20px); }
@@ -261,13 +261,13 @@ const ContactPage = () => {
             </span>
             <h1 style={{
               fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.05,
-              letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117',
+              letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))',
               margin: '0 0 clamp(1.25rem, 2.5vw, 1.75rem)', fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL ? 'لنحوّل فكرتك إلى منتج حقيقي.' : "Let's turn your idea into a live product."}
             </h1>
             <p style={{
-              fontSize: 'clamp(0.9375rem, 1.15vw, 1.125rem)', color: '#5C6370', lineHeight: 1.75,
+              fontSize: 'clamp(0.9375rem, 1.15vw, 1.125rem)', color: 'rgb(var(--text-secondary))', lineHeight: 1.75,
               margin: '0 auto clamp(2.5rem, 5vw, 3.5rem)', maxWidth: '56ch', fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL
@@ -275,14 +275,14 @@ const ContactPage = () => {
                 : 'Tell us about your project and get a clear plan, timeline, and price — usually within hours, always within one business day.'}
             </p>
 
-            <div className="cp-trust-grid" style={{ maxWidth: 640, margin: '0 auto', paddingTop: 'clamp(2rem, 4vw, 2.75rem)', borderTop: '1px solid #E8EBF0' }}>
+            <div className="cp-trust-grid" style={{ maxWidth: 640, margin: '0 auto', paddingTop: 'clamp(2rem, 4vw, 2.75rem)', borderTop: '1px solid rgb(var(--border))' }}>
               {TRUST_INDICATORS.map((t, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                  <t.icon style={{ width: 18, height: 18, color: '#2563EB' }} aria-hidden />
-                  <div style={{ fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 800, color: '#0D1117', letterSpacing: '-0.02em' }}>
+                  <t.icon style={{ width: 18, height: 18, color: 'rgb(var(--accent))' }} aria-hidden />
+                  <div style={{ fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 800, color: 'rgb(var(--text-primary))', letterSpacing: '-0.02em' }}>
                     {isRTL ? t.valueAR : t.valueEN}
                   </div>
-                  <div style={{ fontSize: 11.5, color: '#5C6370', fontWeight: 600 }}>
+                  <div style={{ fontSize: 11.5, color: 'rgb(var(--text-secondary))', fontWeight: 600 }}>
                     {isRTL ? t.labelAR : t.labelEN}
                   </div>
                 </div>
@@ -300,12 +300,12 @@ const ContactPage = () => {
             <div style={{ textAlign: 'center', marginBottom: 'clamp(2.5rem, 5vw, 3.5rem)' }}>
               <h2 style={{
                 fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 800, lineHeight: 1.1,
-                letterSpacing: isRTL ? 0 : '-0.03em', color: '#0D1117', margin: '0 0 12px',
+                letterSpacing: isRTL ? 0 : '-0.03em', color: 'rgb(var(--text-primary))', margin: '0 0 12px',
                 fontFamily: isRTL ? FONT_AR : FONT_EN,
               }}>
                 {isRTL ? 'اختر طريقة التواصل' : 'Choose how to reach us'}
               </h2>
-              <p style={{ fontSize: 14, color: '#5C6370', margin: 0, fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+              <p style={{ fontSize: 14, color: 'rgb(var(--text-secondary))', margin: 0, fontFamily: isRTL ? FONT_AR : FONT_EN }}>
                 {isRTL ? 'كل قناة موضّح متى تكون الأنسب لك.' : "Each option below explains exactly when it's the right fit."}
               </p>
             </div>
@@ -327,7 +327,7 @@ const ContactPage = () => {
             data-reveal
             style={{
               maxWidth: 1280, margin: '0 auto', position: 'relative', overflow: 'hidden',
-              borderRadius: 28, border: '1px solid #DBEAFE', background: 'linear-gradient(135deg, #EFF6FF 0%, #FAFAFA 100%)',
+              borderRadius: 28, border: '1px solid rgb(var(--accent-muted))', background: 'linear-gradient(135deg, rgb(var(--accent-light)) 0%, rgb(var(--bg-secondary)) 100%)',
               padding: 'clamp(2.5rem, 6vw, 4.5rem)',
               display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 'clamp(2rem, 4vw, 3rem)', alignItems: 'center',
             }}
@@ -342,12 +342,12 @@ const ContactPage = () => {
               </span>
               <h2 style={{
                 fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, lineHeight: 1.15,
-                letterSpacing: isRTL ? 0 : '-0.03em', color: '#0D1117', margin: '0 0 16px',
+                letterSpacing: isRTL ? 0 : '-0.03em', color: 'rgb(var(--text-primary))', margin: '0 0 16px',
                 fontFamily: isRTL ? FONT_AR : FONT_EN,
               }}>
                 {isRTL ? 'أخبرنا بالتفاصيل، واحصل على عرض واضح.' : 'Give us the details, get a clear proposal.'}
               </h2>
-              <p style={{ fontSize: 14.5, color: '#5C6370', lineHeight: 1.75, margin: '0 0 22px', maxWidth: '48ch', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+              <p style={{ fontSize: 14.5, color: 'rgb(var(--text-secondary))', lineHeight: 1.75, margin: '0 0 22px', maxWidth: '48ch', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
                 {isRTL
                   ? 'تدفق سلس ومصمم بعناية — تختار بين واتساب أو نموذج الموقع، وفي الحالتين نفس التجربة الفاخرة.'
                   : 'A smooth, carefully designed flow — choose between WhatsApp or the website form, either way you get the same premium experience.'}
@@ -364,11 +364,11 @@ const ContactPage = () => {
                 { icon: FileText,      textEN: 'Website form — structured, nothing gets lost', textAR: 'نموذج الموقع — منظم، لا يضيع أي تفصيل' },
                 { icon: Zap,           textEN: 'Reply within 2 hours, always', textAR: 'رد خلال ساعتين، دائماً' },
               ].map((row, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 14 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'rgb(var(--bg-elevated))', border: '1px solid rgb(var(--border))', borderRadius: 14 }}>
                   <div style={{ width: 34, height: 34, borderRadius: 10, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <row.icon style={{ width: 15, height: 15, color: '#2563EB' }} aria-hidden />
+                    <row.icon style={{ width: 15, height: 15, color: 'rgb(var(--accent))' }} aria-hidden />
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: '#0D1117', textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'rgb(var(--text-primary))', textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
                     {isRTL ? row.textAR : row.textEN}
                   </span>
                 </div>
@@ -379,7 +379,7 @@ const ContactPage = () => {
 
         {/* ═══ WHY WORK WITH YANSY ══════════════════════════════ */}
         <section style={{
-          background: '#FAFAFA', borderTop: '1px solid #E8EBF0', borderBottom: '1px solid #E8EBF0',
+          background: 'rgb(var(--bg-secondary))', borderTop: '1px solid rgb(var(--border))', borderBottom: '1px solid rgb(var(--border))',
           paddingTop: 'clamp(5rem, 10vw, 7rem)', paddingBottom: 'clamp(5rem, 10vw, 7rem)',
           paddingLeft: 'clamp(1.25rem, 5vw, 3rem)', paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
         }}>
@@ -390,7 +390,7 @@ const ContactPage = () => {
               </span>
               <h2 style={{
                 fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.05,
-                letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117', margin: '0 auto', maxWidth: '20ch',
+                letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))', margin: '0 auto', maxWidth: '20ch',
                 fontFamily: isRTL ? FONT_AR : FONT_EN,
               }}>
                 {isRTL ? 'الأرقام والمبادئ التي نبني عليها.' : 'The numbers and principles behind every build.'}
@@ -398,17 +398,17 @@ const ContactPage = () => {
             </div>
 
             {/* Stats */}
-            <div className="cp-stats-row" style={{ background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 20, overflow: 'hidden', marginBottom: 'clamp(1.5rem, 3vw, 2rem)' }}>
+            <div className="cp-stats-row" style={{ background: 'rgb(var(--bg-elevated))', border: '1px solid rgb(var(--border))', borderRadius: 20, overflow: 'hidden', marginBottom: 'clamp(1.5rem, 3vw, 2rem)' }}>
               {WHY_STATS.map((s, i) => (
                 <div key={i} style={{
                   padding: 'clamp(1.75rem, 3.5vw, 2.25rem) 1rem', textAlign: 'center',
-                  borderInlineEnd: (i + 1) % 4 !== 0 ? '1px solid #E8EBF0' : 'none',
-                  borderTop: i >= 2 ? '1px solid #E8EBF0' : 'none',
+                  borderInlineEnd: (i + 1) % 4 !== 0 ? '1px solid rgb(var(--border))' : 'none',
+                  borderTop: i >= 2 ? '1px solid rgb(var(--border))' : 'none',
                 }}>
-                  <div style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 800, color: '#2563EB', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 6, fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 800, color: 'rgb(var(--accent))', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 6, fontVariantNumeric: 'tabular-nums' }}>
                     {isRTL ? s.numAR : s.numEN}
                   </div>
-                  <div style={{ fontSize: 'clamp(11px, 1vw, 12.5px)', fontWeight: 600, color: '#5C6370' }}>{isRTL ? s.labelAR : s.labelEN}</div>
+                  <div style={{ fontSize: 'clamp(11px, 1vw, 12.5px)', fontWeight: 600, color: 'rgb(var(--text-secondary))' }}>{isRTL ? s.labelAR : s.labelEN}</div>
                 </div>
               ))}
             </div>
@@ -416,14 +416,14 @@ const ContactPage = () => {
             {/* Pillars */}
             <div className="cp-why-grid">
               {WHY_PILLARS.map((p, i) => (
-                <div key={i} style={{ background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: 16, padding: 'clamp(20px, 2.4vw, 26px)' }}>
+                <div key={i} style={{ background: 'rgb(var(--bg-elevated))', border: '1px solid rgb(var(--border))', borderRadius: 16, padding: 'clamp(20px, 2.4vw, 26px)' }}>
                   <div style={{ width: 40, height: 40, borderRadius: 11, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                    <p.icon style={{ width: 18, height: 18, color: '#2563EB' }} aria-hidden />
+                    <p.icon style={{ width: 18, height: 18, color: 'rgb(var(--accent))' }} aria-hidden />
                   </div>
-                  <h3 style={{ fontSize: 14.5, fontWeight: 700, color: '#0D1117', margin: '0 0 6px', textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+                  <h3 style={{ fontSize: 14.5, fontWeight: 700, color: 'rgb(var(--text-primary))', margin: '0 0 6px', textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
                     {isRTL ? p.titleAR : p.titleEN}
                   </h3>
-                  <p style={{ fontSize: 12.5, color: '#5C6370', lineHeight: 1.65, margin: 0, textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+                  <p style={{ fontSize: 12.5, color: 'rgb(var(--text-secondary))', lineHeight: 1.65, margin: 0, textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
                     {isRTL ? p.descAR : p.descEN}
                   </p>
                 </div>
@@ -440,7 +440,7 @@ const ContactPage = () => {
 
         {/* ═══ FINAL CTA — dark accent, per design system ═══════ */}
         <section style={{
-          position: 'relative', overflow: 'hidden', background: '#111827',
+          position: 'relative', overflow: 'hidden', background: 'rgb(var(--bg-contrast))',
           paddingTop: 'clamp(5rem, 10vw, 7.5rem)', paddingBottom: 'clamp(5rem, 10vw, 7.5rem)',
           paddingLeft: 'clamp(1.25rem, 5vw, 3rem)', paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
         }}>
@@ -452,7 +452,7 @@ const ContactPage = () => {
           <div style={{ position: 'relative', zIndex: 1, maxWidth: 640, margin: '0 auto', textAlign: 'center' }} data-reveal>
             <Award style={{ width: 28, height: 28, color: '#60A5FA', margin: '0 auto 20px' }} aria-hidden />
             <h2 style={{
-              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#FFFFFF',
+              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: 'rgb(var(--on-contrast))',
               lineHeight: 1.1, letterSpacing: isRTL ? 0 : '-0.03em', margin: '0 0 1.25rem',
               fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
@@ -468,11 +468,11 @@ const ContactPage = () => {
                 onClick={() => { trackCTAClick('contact-final-cta', 'contact-page'); openForm(); }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '14px 32px', borderRadius: 10, background: '#FFFFFF', color: '#0D1117',
+                  padding: '14px 32px', borderRadius: 10, background: 'rgb(var(--on-contrast))', color: 'rgb(var(--bg-contrast))',
                   fontSize: 13.5, fontWeight: 700, border: 'none', cursor: 'pointer',
                   transition: 'transform 0.15s ease, box-shadow 0.2s ease',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.35)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgb(var(--hover-overlay) / 0.35)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 {isRTL ? 'ابدأ مشروعك الآن' : 'Start Your Project'}
@@ -485,7 +485,7 @@ const ContactPage = () => {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   padding: '14px 28px', borderRadius: 10, background: 'rgba(255,255,255,0.06)',
-                  border: '1.5px solid rgba(255,255,255,0.16)', color: '#FFFFFF',
+                  border: '1.5px solid rgba(255,255,255,0.16)', color: 'rgb(var(--on-contrast))',
                   fontSize: 13.5, fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s ease, border-color 0.2s ease',
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}

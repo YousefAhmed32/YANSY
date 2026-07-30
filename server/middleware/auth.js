@@ -38,11 +38,6 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ error: 'Authentication required. Please provide a valid token.' });
     }
 
-    // Support impersonation tokens (SUPER_ADMIN only)
-    if (req.headers['x-impersonate-user'] && req.user?.role === 'SUPER_ADMIN') {
-      // Impersonation handled via separate middleware
-    }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user    = await User.findById(decoded.userId).select('-password');
 
@@ -55,6 +50,14 @@ const authenticate = async (req, res, next) => {
     }
 
     req.user = user;
+    // Impersonation tokens (issued by userController.impersonate, SUPER_ADMIN
+    // only) carry `impersonatedBy` in the payload. Propagate it so every
+    // audit() call made during an impersonated session can record which
+    // admin was actually behind the action — otherwise those actions are
+    // audit-indistinguishable from the target user's own, which defeats the
+    // one feature that most needs accountability if that SUPER_ADMIN account
+    // is ever compromised.
+    req.impersonatedBy = decoded.impersonatedBy || null;
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError')  return res.status(401).json({ error: 'Invalid token. Please login again.' });

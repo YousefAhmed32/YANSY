@@ -6,7 +6,7 @@ const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
 
 const FAQItem = ({ q, a, isRTL, font, open, onToggle }) => (
-  <div style={{ borderBottom: '1px solid var(--border)' }}>
+  <div style={{ borderBottom: '1px solid rgb(var(--border))' }}>
     <button
       onClick={onToggle}
       aria-expanded={open}
@@ -16,18 +16,18 @@ const FAQItem = ({ q, a, isRTL, font, open, onToggle }) => (
         flexDirection: isRTL ? 'row-reverse' : 'row',
       }}
     >
-      <span style={{ fontFamily: font, fontSize: 15.5, fontWeight: 600, color: 'var(--text-primary)' }}>{q}</span>
+      <span style={{ fontFamily: font, fontSize: 15.5, fontWeight: 600, color: 'rgb(var(--text-primary))' }}>{q}</span>
       <span aria-hidden style={{
         width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '1px solid var(--border)', transition: 'transform 0.25s, background 0.2s, border-color 0.2s',
-        transform: open ? 'rotate(45deg)' : 'none', background: open ? 'var(--accent-light)' : 'transparent', borderColor: open ? 'var(--accent-muted)' : 'var(--border)',
+        border: '1px solid rgb(var(--border))', transition: 'transform 0.25s, background 0.2s, border-color 0.2s',
+        transform: open ? 'rotate(45deg)' : 'none', background: open ? 'rgb(var(--accent-light))' : 'transparent', borderColor: open ? 'rgb(var(--accent-muted))' : 'rgb(var(--border))',
       }}>
-        <Plus style={{ width: 13, height: 13, color: open ? 'var(--accent)' : 'var(--text-tertiary)' }} />
+        <Plus style={{ width: 13, height: 13, color: open ? 'rgb(var(--accent))' : 'rgb(var(--text-tertiary))' }} />
       </span>
     </button>
     <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s ease' }}>
       <div style={{ overflow: 'hidden' }}>
-        <p style={{ fontFamily: font, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, margin: '0 0 22px', maxWidth: '62ch', textAlign: isRTL ? 'right' : 'left' }}>{a}</p>
+        <p style={{ fontFamily: font, fontSize: 14, color: 'rgb(var(--text-secondary))', lineHeight: 1.75, margin: '0 0 22px', maxWidth: '62ch', textAlign: isRTL ? 'right' : 'left' }}>{a}</p>
       </div>
     </div>
   </div>
@@ -56,11 +56,11 @@ const FAQSection = ({ project, isRTL }) => {
             </span>
             <h2 style={{
               fontFamily: font, fontSize: 'clamp(1.5rem, 2.8vw, 2.125rem)', fontWeight: 800,
-              color: 'var(--text-primary)', letterSpacing: isRTL ? 0 : '-0.02em', lineHeight: 1.2, margin: '0 0 12px',
+              color: 'rgb(var(--text-primary))', letterSpacing: isRTL ? 0 : '-0.02em', lineHeight: 1.2, margin: '0 0 12px',
             }}>
               {isRTL ? 'أسئلة قد تدور في ذهنك' : 'Questions worth asking'}
             </h2>
-            <p style={{ fontFamily: font, fontSize: 14, color: 'var(--text-tertiary)', lineHeight: 1.7, margin: 0, maxWidth: '38ch' }}>
+            <p style={{ fontFamily: font, fontSize: 14, color: 'rgb(var(--text-tertiary))', lineHeight: 1.7, margin: 0, maxWidth: '38ch' }}>
               {isRTL ? 'إن لم تجد إجابتك هنا، تواصل معنا مباشرة — نرد خلال ساعتين.' : "Don't see yours? Ask us directly — we reply within 2 hours."}
             </p>
           </div>

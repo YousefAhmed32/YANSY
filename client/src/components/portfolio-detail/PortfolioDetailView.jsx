@@ -45,7 +45,7 @@ const PortfolioDetailView = ({ project, related, isRTL, dir }) => {
   const [nextProject, ...moreProjects] = related;
 
   return (
-    <div className="bg-white text-[#0D1117] min-h-screen overflow-x-hidden" dir={dir}>
+    <div className="bg-surface-white text-content-primary min-h-screen overflow-x-hidden" dir={dir}>
       <Header onStartProject={() => setIsFormOpen(true)} />
       <ScrollProgress isRTL={isRTL} />
 

@@ -35,11 +35,11 @@ const SORTS = [
 ];
 
 const SkeletonCard = ({ featured }) => (
-  <div className={`bg-white border border-[#E8EBF0] rounded-2xl overflow-hidden animate-pulse ${featured ? 'sm:col-span-2 sm:row-span-2' : ''}`}>
-    <div className={`bg-[#F0F2F5] ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`} />
+  <div className={`bg-surface-white border border-[rgb(var(--border))] rounded-2xl overflow-hidden animate-pulse ${featured ? 'sm:col-span-2 sm:row-span-2' : ''}`}>
+    <div className={`bg-[rgb(var(--border-light))] ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`} />
     <div className="p-5 space-y-2">
-      <div className="h-4 w-3/4 bg-[#F0F2F5] rounded" />
-      <div className="h-3 w-1/2 bg-[#F0F2F5] rounded" />
+      <div className="h-4 w-3/4 bg-[rgb(var(--border-light))] rounded" />
+      <div className="h-3 w-1/2 bg-[rgb(var(--border-light))] rounded" />
     </div>
   </div>
 );
@@ -199,7 +199,7 @@ const Portfolio = () => {
   const showFeaturedSpotlight = category === 'All' && !industry && !tag && !featuredOnly && !search;
 
   return (
-    <div className="bg-white text-[#0D1117] min-h-screen overflow-x-hidden" dir={dir}>
+    <div className="bg-surface-white text-[rgb(var(--text-primary))] min-h-screen overflow-x-hidden" dir={dir}>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
@@ -208,17 +208,17 @@ const Portfolio = () => {
           className="absolute inset-0 opacity-[0.018] pointer-events-none"
           style={{
             backgroundImage:
-              'linear-gradient(#2563EB 1px,transparent 1px),linear-gradient(90deg,#2563EB 1px,transparent 1px)',
+              'linear-gradient(rgb(var(--accent)) 1px,transparent 1px),linear-gradient(90deg,rgb(var(--accent)) 1px,transparent 1px)',
             backgroundSize: '80px 80px',
           }}
         />
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.04] pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #2563EB 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--accent)) 0%, transparent 70%)' }}
         />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <p data-hero className="text-xs tracking-[0.4em] text-[#2563EB]/60 uppercase mb-6 opacity-0">
+          <p data-hero className="text-xs tracking-[0.4em] text-[rgb(var(--accent))]/60 uppercase mb-6 opacity-0">
             {isRTL ? 'معرض الأعمال' : 'Portfolio'}
           </p>
           <h1
@@ -228,9 +228,9 @@ const Portfolio = () => {
           >
             {isRTL ? 'أعمالنا الحقيقية' : 'Real work,'}
             <br />
-            <span className="text-[#2563EB]">{isRTL ? 'نتائج حقيقية' : 'real results.'}</span>
+            <span className="text-[rgb(var(--accent))]">{isRTL ? 'نتائج حقيقية' : 'real results.'}</span>
           </h1>
-          <p data-hero className="opacity-0 text-[#5C6370] font-normal text-base sm:text-xl max-w-2xl">
+          <p data-hero className="opacity-0 text-[rgb(var(--text-secondary))] font-normal text-base sm:text-xl max-w-2xl">
             {isRTL
               ? 'مشاريع رقمية أطلقناها لعملاء حقيقيين في مجالات مختلفة.'
               : "Digital products we've shipped for real clients across different industries."}
@@ -239,7 +239,7 @@ const Portfolio = () => {
       </section>
 
       {/* ── FILTER BAR ────────────────────────────────────────────────────── */}
-      <div className="sticky top-[72px] z-30 bg-white/95 backdrop-blur-md border-b border-[#E8EBF0] px-4 sm:px-8 py-4">
+      <div className="sticky top-[72px] z-30 bg-surface-white/95 backdrop-blur-md border-b border-[rgb(var(--border))] px-4 sm:px-8 py-4">
         <div className="max-w-7xl mx-auto flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
             {/* Category chips */}
@@ -251,8 +251,8 @@ const Portfolio = () => {
                     onClick={() => setCategory(cat.en)}
                     className="px-4 py-1.5 text-[11px] font-medium tracking-widest uppercase border rounded-full transition-all duration-300 whitespace-nowrap"
                     style={{
-                      borderColor: category === cat.en ? '#2563EB' : '#E8EBF0',
-                      color: category === cat.en ? '#2563EB' : '#5C6370',
+                      borderColor: category === cat.en ? 'rgb(var(--accent))' : 'rgb(var(--border))',
+                      color: category === cat.en ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
                       background: category === cat.en ? 'rgba(37,99,235,0.08)' : 'transparent',
                     }}
                   >
@@ -269,27 +269,27 @@ const Portfolio = () => {
                 aria-pressed={featuredOnly}
                 className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
                 style={{
-                  borderColor: featuredOnly ? '#2563EB' : '#E8EBF0',
-                  color: featuredOnly ? '#2563EB' : '#5C6370',
+                  borderColor: featuredOnly ? 'rgb(var(--accent))' : 'rgb(var(--border))',
+                  color: featuredOnly ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
                   background: featuredOnly ? 'rgba(37,99,235,0.08)' : 'transparent',
                 }}
               >
-                <Star className="w-3 h-3" fill={featuredOnly ? '#2563EB' : 'none'} />
+                <Star className="w-3 h-3" fill={featuredOnly ? 'rgb(var(--accent))' : 'none'} />
                 {isRTL ? 'مميز فقط' : 'Featured only'}
               </button>
 
               <div className="relative">
-                <Search className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" style={{ [isRTL ? 'right' : 'left']: 10 }} />
+                <Search className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgb(var(--text-tertiary))]" style={{ [isRTL ? 'right' : 'left']: 10 }} />
                 <input
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder={isRTL ? 'ابحث في المشاريع...' : 'Search projects...'}
-                  className="w-40 sm:w-56 text-xs font-light border border-[#E8EBF0] rounded-full py-2 focus:outline-none focus:border-[#2563EB]/50 transition-colors"
+                  className="w-40 sm:w-56 text-xs font-light border border-[rgb(var(--border))] rounded-full py-2 focus:outline-none focus:border-[rgb(var(--accent))]/50 transition-colors"
                   style={{ [isRTL ? 'paddingRight' : 'paddingLeft']: 30, [isRTL ? 'paddingLeft' : 'paddingRight']: 12 }}
                 />
                 {searchInput && (
                   <button onClick={() => setSearchInput('')} className="absolute top-1/2 -translate-y-1/2" style={{ [isRTL ? 'left' : 'right']: 10 }}>
-                    <X className="w-3.5 h-3.5 text-[#9CA3AF] hover:text-[#0D1117]" />
+                    <X className="w-3.5 h-3.5 text-[rgb(var(--text-tertiary))] hover:text-[rgb(var(--text-primary))]" />
                   </button>
                 )}
               </div>
@@ -298,7 +298,7 @@ const Portfolio = () => {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
-                  className="text-[11px] font-medium tracking-widest uppercase border border-[#E8EBF0] rounded-full px-3 py-2 text-[#5C6370] focus:outline-none focus:border-[#2563EB]/50 bg-white"
+                  className="text-[11px] font-medium tracking-widest uppercase border border-[rgb(var(--border))] rounded-full px-3 py-2 text-[rgb(var(--text-secondary))] focus:outline-none focus:border-[rgb(var(--accent))]/50 bg-surface-white"
                 >
                   {SORTS.map((s) => <option key={s.value} value={s.value}>{isRTL ? s.ar : s.en}</option>)}
                 </select>
@@ -313,7 +313,7 @@ const Portfolio = () => {
                 <button
                   onClick={() => setIndustry('')}
                   className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
-                  style={{ borderColor: !industry ? '#0D1117' : '#E8EBF0', color: !industry ? '#0D1117' : '#6B7280', background: !industry ? '#F6F7F9' : 'transparent' }}
+                  style={{ borderColor: !industry ? 'rgb(var(--text-primary))' : 'rgb(var(--border))', color: !industry ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', background: !industry ? 'rgb(var(--bg-surface))' : 'transparent' }}
                 >
                   {isRTL ? 'كل الصناعات' : 'All industries'}
                 </button>
@@ -322,7 +322,7 @@ const Portfolio = () => {
                     key={ind}
                     onClick={() => setIndustry(ind)}
                     className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
-                    style={{ borderColor: industry === ind ? '#0D1117' : '#E8EBF0', color: industry === ind ? '#0D1117' : '#6B7280', background: industry === ind ? '#F6F7F9' : 'transparent' }}
+                    style={{ borderColor: industry === ind ? 'rgb(var(--text-primary))' : 'rgb(var(--border))', color: industry === ind ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', background: industry === ind ? 'rgb(var(--bg-surface))' : 'transparent' }}
                   >
                     {ind}
                   </button>
@@ -336,14 +336,14 @@ const Portfolio = () => {
           {tags.length > 0 && (
             <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
               <div className={`flex items-center gap-1.5 min-w-max ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-[9.5px] font-semibold tracking-widest uppercase text-[#9CA3AF] flex-shrink-0">
+                <span className="text-[9.5px] font-semibold tracking-widest uppercase text-[rgb(var(--text-tertiary))] flex-shrink-0">
                   {isRTL ? 'التقنيات' : 'Tech'}
                 </span>
                 {tag && (
                   <button
                     onClick={() => setTag('')}
                     className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap"
-                    style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #DBEAFE' }}
+                    style={{ background: 'rgb(var(--accent-light))', color: 'rgb(var(--accent))', border: '1px solid rgb(var(--accent-muted))' }}
                   >
                     {tag} <X className="w-2.5 h-2.5" />
                   </button>
@@ -352,7 +352,7 @@ const Portfolio = () => {
                   <button
                     key={t}
                     onClick={() => setTag(t)}
-                    className="px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap border border-transparent text-[#9CA3AF] hover:text-[#5C6370] hover:border-[#E8EBF0] transition-colors"
+                    className="px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap border border-transparent text-[rgb(var(--text-tertiary))] hover:text-[rgb(var(--text-secondary))] hover:border-[rgb(var(--border))] transition-colors"
                   >
                     {t}
                   </button>
@@ -373,21 +373,21 @@ const Portfolio = () => {
             </div>
           ) : error ? (
             <div className="text-center py-32">
-              <p className="text-[#6B7280] font-light text-lg mb-6">
+              <p className="text-[rgb(var(--text-secondary))] font-light text-lg mb-6">
                 {isRTL ? 'تعذر تحميل المشاريع. حاول مرة أخرى.' : "Couldn't load projects. Please try again."}
               </p>
-              <button onClick={loadFirstPage} className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 rounded-full px-6 py-3 hover:bg-[#2563EB]/08 transition-all">
+              <button onClick={loadFirstPage} className="text-[rgb(var(--accent))] text-xs tracking-widest uppercase border border-[rgb(var(--accent))]/30 rounded-full px-6 py-3 hover:bg-[rgb(var(--accent))]/08 transition-all">
                 {isRTL ? 'إعادة المحاولة' : 'Retry'}
               </button>
             </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-32">
-              <p className="text-[#6B7280] font-light text-xl mb-6">
+              <p className="text-[rgb(var(--text-secondary))] font-light text-xl mb-6">
                 {isRTL ? 'لا توجد مشاريع مطابقة.' : 'No matching projects yet.'}
               </p>
               <button
                 onClick={() => { setCategory('All'); setIndustry(''); setTag(''); setFeaturedOnly(false); setSearchInput(''); }}
-                className="text-[#2563EB] text-xs tracking-widest uppercase border border-[#2563EB]/30 rounded-full px-6 py-3 hover:bg-[#2563EB]/08 transition-all"
+                className="text-[rgb(var(--accent))] text-xs tracking-widest uppercase border border-[rgb(var(--accent))]/30 rounded-full px-6 py-3 hover:bg-[rgb(var(--accent))]/08 transition-all"
               >
                 {isRTL ? 'مسح كل الفلاتر' : 'Clear all filters'}
               </button>
@@ -410,7 +410,7 @@ const Portfolio = () => {
               {!search && hasMore && (
                 <div ref={sentinelRef} className="flex justify-center py-12">
                   {loadingMore && (
-                    <div className="w-6 h-6 border-2 border-[#2563EB]/20 border-t-[#2563EB] rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-[rgb(var(--accent))]/20 border-t-[rgb(var(--accent))] rounded-full animate-spin" />
                   )}
                 </div>
               )}
@@ -428,22 +428,22 @@ const Portfolio = () => {
         <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-black/5 to-transparent" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          <p className="text-[10px] tracking-[0.5em] text-[#2563EB]/50 uppercase mb-6">
+          <p className="text-[10px] tracking-[0.5em] text-[rgb(var(--accent))]/50 uppercase mb-6">
             {isRTL ? 'الخطوة التالية' : "What's next"}
           </p>
 
           <h2
-            className="font-bold tracking-tight leading-[1.08] mb-6 text-[#0D1117]"
+            className="font-bold tracking-tight leading-[1.08] mb-6 text-[rgb(var(--text-primary))]"
             style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', letterSpacing: '-0.03em' }}
           >
             {isRTL ? (
-              <>مشروعك القادم<br /><span className="text-[#2563EB]">يستحق الأفضل</span></>
+              <>مشروعك القادم<br /><span className="text-[rgb(var(--accent))]">يستحق الأفضل</span></>
             ) : (
-              <>Your next project<br /><span className="text-[#2563EB]">deserves the best.</span></>
+              <>Your next project<br /><span className="text-[rgb(var(--accent))]">deserves the best.</span></>
             )}
           </h2>
 
-          <p className="text-[#5C6370] font-light text-base sm:text-lg mb-12 max-w-xl mx-auto leading-relaxed">
+          <p className="text-[rgb(var(--text-secondary))] font-light text-base sm:text-lg mb-12 max-w-xl mx-auto leading-relaxed">
             {isRTL
               ? 'تواصل معنا مباشرة على واتساب وابدأ رحلتك الرقمية.'
               : "Reach out on WhatsApp and let's start building something great together."}
@@ -452,7 +452,7 @@ const Portfolio = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setIsFormOpen(true)}
-              className="group inline-flex items-center gap-3 px-10 py-5 bg-[#2563EB] text-white text-xs font-light tracking-widest uppercase hover:bg-[#1D4ED8] transition-all duration-500 rounded-full"
+              className="group inline-flex items-center gap-3 px-10 py-5 bg-[rgb(var(--accent))] text-white text-xs font-light tracking-widest uppercase hover:bg-[rgb(var(--accent-hover))] transition-all duration-500 rounded-full"
             >
               {isRTL ? 'ابدأ مشروعك' : 'Start Your Project'}
               <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -463,7 +463,7 @@ const Portfolio = () => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackWhatsAppClick('portfolio')}
-              className="group inline-flex items-center gap-3 px-10 py-5 border border-[#2563EB] text-[#2563EB] text-xs font-light tracking-widest uppercase hover:bg-[#2563EB] hover:text-white transition-all duration-500 rounded-full"
+              className="group inline-flex items-center gap-3 px-10 py-5 border border-[rgb(var(--accent))] text-[rgb(var(--accent))] text-xs font-light tracking-widest uppercase hover:bg-[rgb(var(--accent))] hover:text-white transition-all duration-500 rounded-full"
             >
               <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -472,7 +472,7 @@ const Portfolio = () => {
             </a>
           </div>
 
-          <p className="mt-6 text-[#6B7280] text-[11px] tracking-widest">
+          <p className="mt-6 text-[rgb(var(--text-secondary))] text-[11px] tracking-widest">
             {isRTL ? 'رد خلال 24 ساعة' : 'We reply within 24 hours'}
           </p>
         </div>

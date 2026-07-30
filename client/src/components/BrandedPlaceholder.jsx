@@ -24,7 +24,7 @@ const darken = (hex, amount) => {
   return `rgb(${r},${g},${b})`;
 };
 
-const GeneratedPlaceholder = ({ icon: Icon = Sparkles, label = '', color = '#2563EB', isRTL = false, variant = 'card' }) => {
+const GeneratedPlaceholder = ({ icon: Icon = Sparkles, label = '', color = 'rgb(var(--accent))', isRTL = false, variant = 'card' }) => {
   const v = VARIANT[variant] || VARIANT.card;
   const particles = useMemo(() => (
     Array.from({ length: 4 }, (_, i) => ({

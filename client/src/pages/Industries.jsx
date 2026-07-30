@@ -96,7 +96,7 @@ const INDUSTRIES = [
   },
   {
     key: 'realestate',
-    accent: '#2563EB',
+    accent: 'rgb(var(--accent))',
     titleEN: 'Real Estate',
     titleAR: 'العقارات',
     problemEN: 'Listings scattered across spreadsheets and WhatsApp, with high-value leads falling through the cracks.',
@@ -174,8 +174,8 @@ const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {
   return (
     <div
       style={{
-        background: '#FFFFFF',
-        border: '1px solid #E8EBF0',
+        background: 'rgb(var(--bg-elevated))',
+        border: '1px solid rgb(var(--border))',
         borderRadius: 16,
         padding: 'clamp(22px, 2.5vw, 32px)',
         display: 'flex',
@@ -186,12 +186,12 @@ const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {
         transition: `opacity 0.55s ${delay}s cubic-bezier(0.16,1,0.3,1), transform 0.55s ${delay}s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, border-color 0.25s ease`,
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = `0 12px 40px ${industry.accent}18, 0 2px 8px rgba(0,0,0,0.04)`;
+        e.currentTarget.style.boxShadow = `0 12px 40px ${industry.accent}18, 0 2px 8px rgb(var(--hover-overlay) / 0.04)`;
         e.currentTarget.style.borderColor = `${industry.accent}40`;
       }}
       onMouseLeave={e => {
         e.currentTarget.style.boxShadow = 'none';
-        e.currentTarget.style.borderColor = '#E8EBF0';
+        e.currentTarget.style.borderColor = 'rgb(var(--border))';
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
@@ -203,7 +203,7 @@ const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {
           {ICONS[industry.key]}
         </div>
         <h3 style={{
-          margin: 0, fontSize: 'clamp(1rem, 1.3vw, 1.125rem)', fontWeight: 700, color: '#0D1117',
+          margin: 0, fontSize: 'clamp(1rem, 1.3vw, 1.125rem)', fontWeight: 700, color: 'rgb(var(--text-primary))',
           letterSpacing: isRTL ? 0 : '-0.02em', lineHeight: 1.25,
           fontFamily: isRTL ? FONT_AR : FONT_EN, textAlign: isRTL ? 'right' : 'left',
         }}>
@@ -212,7 +212,7 @@ const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {
       </div>
 
       <p style={{
-        margin: 0, fontSize: 13, color: '#5C6370', lineHeight: 1.7,
+        margin: 0, fontSize: 13, color: 'rgb(var(--text-secondary))', lineHeight: 1.7,
         textAlign: isRTL ? 'right' : 'left', fontFamily: isRTL ? FONT_AR : FONT_EN,
       }}>
         {isRTL ? industry.problemAR : industry.problemEN}
@@ -222,12 +222,12 @@ const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {
         {(isRTL ? industry.solutionsAR : industry.solutionsEN).map((f, i) => (
           <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, flexDirection: isRTL ? 'row-reverse' : 'row', textAlign: isRTL ? 'right' : 'left' }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: industry.accent, flexShrink: 0 }} aria-hidden />
-            <span style={{ fontSize: 12.5, color: '#374151', fontWeight: 500, fontFamily: isRTL ? FONT_AR : FONT_EN }}>{f}</span>
+            <span style={{ fontSize: 12.5, color: 'rgb(var(--text-secondary))', fontWeight: 500, fontFamily: isRTL ? FONT_AR : FONT_EN }}>{f}</span>
           </li>
         ))}
       </ul>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #F0F2F5', paddingTop: 14, marginTop: 4 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid rgb(var(--border-light))', paddingTop: 14, marginTop: 4 }}>
         {cs && (
           <Link
             to={`/case-studies/${cs.slug}`}
@@ -245,7 +245,7 @@ const IndustryCard = ({ industry, isRTL, onStartProject, visible, delay }) => {
           onClick={onStartProject}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
-            fontSize: 12.5, fontWeight: 600, color: '#5C6370', background: 'transparent',
+            fontSize: 12.5, fontWeight: 600, color: 'rgb(var(--text-secondary))', background: 'transparent',
             border: 'none', cursor: 'pointer', padding: 0, fontFamily: isRTL ? FONT_AR : FONT_EN,
             flexDirection: isRTL ? 'row-reverse' : 'row',
           }}
@@ -301,7 +301,7 @@ const Industries = () => {
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main dir={isRTL ? 'rtl' : 'ltr'} style={{ background: '#FFFFFF', overflowX: 'hidden' }}>
+      <main dir={isRTL ? 'rtl' : 'ltr'} style={{ background: 'rgb(var(--bg-elevated))', overflowX: 'hidden' }}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
         <section style={{
@@ -316,14 +316,14 @@ const Industries = () => {
             </span>
             <h1 style={{
               fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.05,
-              letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117',
+              letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))',
               margin: '0 0 clamp(1.25rem, 2.5vw, 1.75rem)', maxWidth: '18ch',
               fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL ? 'مبني لطريقة عملك الفعلية.' : 'Built for the business you actually run.'}
             </h1>
             <p style={{
-              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: '#5C6370', lineHeight: 1.75,
+              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: 'rgb(var(--text-secondary))', lineHeight: 1.75,
               margin: 0, maxWidth: '58ch', fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL
@@ -366,7 +366,7 @@ const Industries = () => {
         <SolutionsShowcase onStartProject={() => setIsFormOpen(true)} />
 
         {/* ── STATS BAR ─────────────────────────────────────────── */}
-        <section style={{ background: '#FAFAFA', borderBottom: '1px solid #E8EBF0' }}>
+        <section style={{ background: 'rgb(var(--bg-secondary))', borderBottom: '1px solid rgb(var(--border))' }}>
           <div style={{
             maxWidth: 1280, margin: '0 auto',
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
@@ -377,12 +377,12 @@ const Industries = () => {
               <div key={i} style={{
                 padding: 'clamp(1.5rem, 3.5vw, 2.25rem) clamp(1.25rem, 3vw, 2rem)',
                 textAlign: 'center',
-                borderInlineEnd: i < stats.length - 1 ? '1px solid #E8EBF0' : 'none',
+                borderInlineEnd: i < stats.length - 1 ? '1px solid rgb(var(--border))' : 'none',
               }}>
-                <div style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 800, color: '#0D1117', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5, fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 800, color: 'rgb(var(--text-primary))', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 5, fontVariantNumeric: 'tabular-nums' }}>
                   {s.num}
                 </div>
-                <div style={{ fontSize: 'clamp(11px, 1vw, 12.5px)', fontWeight: 700, color: '#374151' }}>{s.label}</div>
+                <div style={{ fontSize: 'clamp(11px, 1vw, 12.5px)', fontWeight: 700, color: 'rgb(var(--text-secondary))' }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -400,13 +400,13 @@ const Industries = () => {
               {isRTL ? 'لا تجد قطاعك؟' : "Don't See Your Industry?"}
             </span>
             <h2 style={{
-              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: '#0D1117',
+              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: 'rgb(var(--text-primary))',
               lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 1.5rem',
               fontFamily: isRTL ? FONT_AR : FONT_EN,
             }}>
               {isRTL ? 'إذا كان لديك عمل، يمكننا بناء نظامه.' : "If you run a business, we can build its system."}
             </h2>
-            <p style={{ fontSize: '0.95rem', color: '#5C6370', lineHeight: 1.8, margin: '0 0 2.5rem', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
+            <p style={{ fontSize: '0.95rem', color: 'rgb(var(--text-secondary))', lineHeight: 1.8, margin: '0 0 2.5rem', fontFamily: isRTL ? FONT_AR : FONT_EN }}>
               {isRTL ? 'استشارة مجانية 30 دقيقة — نساعدك تحدد الحل المناسب.' : "Free 30-minute consultation — we'll help you figure out the right solution."}
             </p>
             <button onClick={() => setIsFormOpen(true)} className="btn-primary" style={{ fontSize: '13.5px', padding: '14px 32px' }}>

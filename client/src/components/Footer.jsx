@@ -40,20 +40,20 @@ const SocialLink = (props) => (
     style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       width: 32, height: 32, borderRadius: '8px',
-      border: '1px solid #E8EBF0', background: '#FFFFFF',
-      color: '#5C6370', textDecoration: 'none',
+      border: '1px solid rgb(var(--border))', background: 'rgb(var(--bg-elevated))',
+      color: 'rgb(var(--text-secondary))', textDecoration: 'none',
       transition: 'border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s',
     }}
     onMouseEnter={e => {
       e.currentTarget.style.color = props.hoverColor;
-      e.currentTarget.style.borderColor = '#C9CDD6';
-      e.currentTarget.style.background = '#FAFAFA';
+      e.currentTarget.style.borderColor = 'rgb(var(--border-strong))';
+      e.currentTarget.style.background = 'rgb(var(--bg-secondary))';
       e.currentTarget.style.transform = 'translateY(-1px)';
     }}
     onMouseLeave={e => {
-      e.currentTarget.style.color = '#5C6370';
-      e.currentTarget.style.borderColor = '#E8EBF0';
-      e.currentTarget.style.background = '#FFFFFF';
+      e.currentTarget.style.color = 'rgb(var(--text-secondary))';
+      e.currentTarget.style.borderColor = 'rgb(var(--border))';
+      e.currentTarget.style.background = 'rgb(var(--bg-elevated))';
       e.currentTarget.style.transform = 'translateY(0)';
     }}
   >
@@ -66,12 +66,12 @@ const FooterLink = ({ to, label }) => (
     <Link
       to={to}
       style={{
-        fontSize: 13, color: '#5C6370', textDecoration: 'none',
+        fontSize: 13, color: 'rgb(var(--text-secondary))', textDecoration: 'none',
         display: 'inline-block', lineHeight: 1.5,
         transition: 'color 0.18s',
       }}
-      onMouseEnter={e => e.currentTarget.style.color = '#0D1117'}
-      onMouseLeave={e => e.currentTarget.style.color = '#5C6370'}
+      onMouseEnter={e => e.currentTarget.style.color = 'rgb(var(--text-primary))'}
+      onMouseLeave={e => e.currentTarget.style.color = 'rgb(var(--text-secondary))'}
     >
       {label}
     </Link>
@@ -101,7 +101,7 @@ const Footer = () => {
 
   const SOCIALS = [
     { href: 'https://www.instagram.com/yansyteach/', icon: InstagramIcon, label: 'Instagram', hoverColor: '#E1306C' },
-    { href: 'https://www.tiktok.com/@yansytech',    icon: TikTokIcon,    label: 'TikTok',    hoverColor: '#0D1117' },
+    { href: 'https://www.tiktok.com/@yansytech',    icon: TikTokIcon,    label: 'TikTok',    hoverColor: 'rgb(var(--text-primary))' },
     { href: 'https://www.facebook.com/share/1AduSCztUH/', icon: FacebookIcon, label: 'Facebook', hoverColor: '#1877F2' },
     { href: whatsappUrl, icon: WhatsAppIcon, label: 'WhatsApp', hoverColor: '#25D366' },
   ];
@@ -110,13 +110,13 @@ const Footer = () => {
     <footer
       dir={dir}
       style={{
-        background: '#FAFAFA',
-        borderTop: '1px solid #E8EBF0',
+        background: 'rgb(var(--bg-secondary))',
+        borderTop: '1px solid rgb(var(--border))',
       }}
     >
       {/* Top brand statement */}
       <div style={{
-        borderBottom: '1px solid #E8EBF0',
+        borderBottom: '1px solid rgb(var(--border))',
         paddingTop: 'clamp(3.5rem, 7vw, 6rem)',
         paddingBottom: 'clamp(3.5rem, 7vw, 6rem)',
         paddingLeft:  'clamp(1.25rem, 5vw, 3rem)',
@@ -138,13 +138,14 @@ const Footer = () => {
                   width={54}
                   height={36}
                   loading="lazy"
+                  className="site-logo"
                   style={{ height: 36, width: 'auto', objectFit: 'contain' }}
                 />
               </Link>
               <p style={{
                 fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)',
                 fontWeight: 700,
-                color: '#0D1117',
+                color: 'rgb(var(--text-primary))',
                 letterSpacing: '-0.025em',
                 lineHeight: 1.25,
                 margin: 0,
@@ -164,8 +165,8 @@ const Footer = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: '#16a34a' }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgb(var(--success))', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: 'rgb(var(--success))' }}>
                   {isRTL ? 'نقبل مشاريع جديدة' : 'Accepting new projects'}
                 </span>
               </div>
@@ -180,7 +181,7 @@ const Footer = () => {
         paddingBottom: 'clamp(2.5rem, 5vw, 4rem)',
         paddingLeft:  'clamp(1.25rem, 5vw, 3rem)',
         paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
-        borderBottom: '1px solid #E8EBF0',
+        borderBottom: '1px solid rgb(var(--border))',
       }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{
@@ -191,7 +192,7 @@ const Footer = () => {
             {/* Resources */}
             <div>
               <h3 style={{
-                fontSize: 10, fontWeight: 800, color: '#0D1117',
+                fontSize: 10, fontWeight: 800, color: 'rgb(var(--text-primary))',
                 letterSpacing: '0.1em', textTransform: 'uppercase',
                 marginBottom: 18,
                 textAlign: isRTL ? 'right' : 'left',
@@ -206,7 +207,7 @@ const Footer = () => {
             {/* Company */}
             <div>
               <h3 style={{
-                fontSize: 10, fontWeight: 800, color: '#0D1117',
+                fontSize: 10, fontWeight: 800, color: 'rgb(var(--text-primary))',
                 letterSpacing: '0.1em', textTransform: 'uppercase',
                 marginBottom: 18,
                 textAlign: isRTL ? 'right' : 'left',
@@ -221,7 +222,7 @@ const Footer = () => {
             {/* Contact */}
             <div>
               <h3 style={{
-                fontSize: 10, fontWeight: 800, color: '#0D1117',
+                fontSize: 10, fontWeight: 800, color: 'rgb(var(--text-primary))',
                 letterSpacing: '0.1em', textTransform: 'uppercase',
                 marginBottom: 18,
                 textAlign: isRTL ? 'right' : 'left',
@@ -257,11 +258,11 @@ const Footer = () => {
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.09)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.04)'}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#16a34a', fontSize: 12.5, fontWeight: 600 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgb(var(--success))', fontSize: 12.5, fontWeight: 600 }}>
                     <MessageCircle style={{ width: 13, height: 13 }} />
                     {t('landing.footer.whatsapp', 'WhatsApp Support')}
                   </span>
-                  <ArrowUpRight style={{ width: 12, height: 12, color: '#16a34a', opacity: 0.6 }} />
+                  <ArrowUpRight style={{ width: 12, height: 12, color: 'rgb(var(--success))', opacity: 0.6 }} />
                 </a>
               </div>
             </div>
@@ -286,12 +287,12 @@ const Footer = () => {
             gap: 12,
             flexDirection: isRTL ? 'row-reverse' : 'row',
           }}>
-            <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>
+            <p style={{ fontSize: 12, color: 'rgb(var(--text-secondary))', margin: 0 }}>
               {t('landing.footer.copyright', '© 2025 YANSY Tech. All rights reserved.')}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               {[1, 0.5, 0.25].map((o, i) => (
-                <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: '#2563EB', opacity: o }} aria-hidden />
+                <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgb(var(--accent))', opacity: o }} aria-hidden />
               ))}
             </div>
           </div>

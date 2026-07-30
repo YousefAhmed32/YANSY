@@ -6,7 +6,7 @@ import {
   Calendar, Activity, Globe, LogOut, Menu, X, ChevronDown, Settings,
   BarChart3, Users, ClipboardList, Lightbulb, Image, Search, FileText, Shield,
   DollarSign, UserCheck, Bell, Target, LineChart, Bot, Brain, Layers, Video,
-  Clapperboard, Star, Clock, PanelLeft, PanelLeftClose, GripVertical, Sparkles,
+  Clapperboard, Star, Clock, PanelLeft, PanelLeftClose, GripVertical, Sparkles, Award,
 } from 'lucide-react';
 import { TK, RADIUS, SHADOW, MOTION } from './tokens';
 
@@ -36,6 +36,7 @@ const buildAdminNav = (t, language) => {
     { to: '/app/admin/portfolio',        label: ar ? 'معرض الأعمال'     : 'Portfolio',             icon: Image,           group: g.content },
     { to: '/app/admin/intro',            label: ar ? 'المقدمة السينمائية' : 'Intro Video',          icon: Video,           group: g.content },
     { to: '/app/admin/homepage-video',   label: ar ? 'فيديو الصفحة الرئيسية' : 'Video Showcase',    icon: Clapperboard,    group: g.content },
+    { to: '/app/admin/client-logos',     label: ar ? 'العملاء الموثوقون'  : 'Trusted By',           icon: Award,           group: g.content },
     { to: '/app/admin/start-project',    label: ar ? 'تدفق بدء المشروع' : 'Start Project Flow',   icon: Target,          group: g.content },
 
     { to: '/app/admin/users',            label: t('users.title'),                                  icon: Users,           group: g.people },

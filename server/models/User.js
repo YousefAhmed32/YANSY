@@ -13,8 +13,13 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     default: null,
+    select: false,
     minlength: [6, 'Password must be at least 6 characters'],
-    // Not required at schema level — controllers enforce it for email/password flow
+    // Not required at schema level — controllers enforce it for email/password flow.
+    // select:false means every read site that needs the hash (login, change/
+    // delete-account password checks, the google-only detection in
+    // forgotPassword) must explicitly `.select('+password')` — this is enforced
+    // by schema now rather than by every future query remembering `-password`.
   },
   fullName: {
     type: String,

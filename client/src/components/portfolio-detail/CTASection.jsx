@@ -96,7 +96,7 @@ const CTASection = ({ project, title, isRTL, onStartProject }) => {
         : `"${title}" started exactly where you are right now. A short brief, a senior strategist, and a plan you'll actually understand.`);
 
   return (
-    <section className="section-shell cta-close" style={{ background: '#0D1117', borderTop: 'none', position: 'relative', overflow: 'hidden' }} dir={isRTL ? 'rtl' : 'ltr'}>
+    <section className="section-shell cta-close" style={{ background: 'rgb(var(--bg-contrast))', borderTop: 'none', position: 'relative', overflow: 'hidden' }} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Layered background: dot-grid texture + soft accent glow, matching ContactSection's dark-panel treatment */}
       <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '32px 32px', pointerEvents: 'none' }} />
       <div aria-hidden style={{ position: 'absolute', top: '-10%', insetInlineEnd: '-8%', width: 480, height: 480, borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />

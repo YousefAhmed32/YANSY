@@ -6,7 +6,7 @@ const CATEGORIES = [
     nameEN: 'Frontend',    nameAR: 'الواجهة الأمامية',
     tech: [
       { name: 'React',       desc: 'UI Library',    color: '#61DAFB' },
-      { name: 'Next.js',     desc: 'SSR / SSG',     color: '#0D1117' },
+      { name: 'Next.js',     desc: 'SSR / SSG',     color: 'rgb(var(--text-primary))' },
       { name: 'TypeScript',  desc: 'Type Safety',   color: '#3178C6' },
       { name: 'Tailwind',    desc: 'Styling',       color: '#06B6D4' },
     ],
@@ -25,8 +25,8 @@ const CATEGORIES = [
     tech: [
       { name: 'AWS',        desc: 'Cloud',         color: '#FF9900' },
       { name: 'Docker',     desc: 'Containers',    color: '#2496ED' },
-      { name: 'GitHub CI',  desc: 'DevOps',        color: '#0D1117' },
-      { name: 'Vercel',     desc: 'Deployment',    color: '#0D1117' },
+      { name: 'GitHub CI',  desc: 'DevOps',        color: 'rgb(var(--text-primary))' },
+      { name: 'Vercel',     desc: 'Deployment',    color: 'rgb(var(--text-primary))' },
     ],
   },
   {
@@ -74,7 +74,7 @@ const TechSection = ({ sectionRef, isRTL }) => {
           font-weight: 800;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          color: #9BA3AE;
+          color: rgb(var(--text-tertiary));
           margin-bottom: 14px;
         }
         [dir="rtl"] .tech-cat-name { letter-spacing: 0; text-transform: none; }
@@ -83,12 +83,12 @@ const TechSection = ({ sectionRef, isRTL }) => {
           align-items: center;
           gap: 10px;
           padding: 9px 0;
-          border-bottom: 1px solid #F0F2F5;
+          border-bottom: 1px solid rgb(var(--border-light));
           cursor: default;
           transition: background 0.15s;
         }
         .tech-item:last-child { border-bottom: none; }
-        .tech-item:hover { background: #FAFAFA; border-radius: 6px; padding-inline: 6px; margin-inline: -6px; }
+        .tech-item:hover { background: rgb(var(--bg-secondary)); border-radius: 6px; padding-inline: 6px; margin-inline: -6px; }
         .tech-dot {
           width: 8px; height: 8px;
           border-radius: 50%;
@@ -99,18 +99,18 @@ const TechSection = ({ sectionRef, isRTL }) => {
         .tech-name {
           font-size: 13.5px;
           font-weight: 600;
-          color: #0D1117;
+          color: rgb(var(--text-primary));
           flex: 1;
         }
         .tech-desc {
           font-size: 11.5px;
           font-weight: 500;
-          color: #9BA3AE;
+          color: rgb(var(--text-tertiary));
           white-space: nowrap;
         }
         .tech-philosophy-box {
-          background: #FAFAFA;
-          border: 1px solid #E8EBF0;
+          background: rgb(var(--bg-secondary));
+          border: 1px solid rgb(var(--border));
           border-radius: 16px;
           padding: clamp(20px, 2.5vw, 28px);
           margin-top: clamp(1.5rem, 3vw, 2.5rem);
@@ -118,8 +118,8 @@ const TechSection = ({ sectionRef, isRTL }) => {
         .tech-philosophy-icon {
           width: 38px; height: 38px;
           border-radius: 10px;
-          background: #EFF6FF;
-          border: 1px solid #DBEAFE;
+          background: rgb(var(--accent-light));
+          border: 1px solid rgb(var(--accent-muted));
           display: flex; align-items: center; justify-content: center;
           margin-bottom: 14px;
         }
@@ -139,7 +139,7 @@ const TechSection = ({ sectionRef, isRTL }) => {
             </h2>
             <p style={{
               fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-              color: '#5C6370',
+              color: 'rgb(var(--text-secondary))',
               lineHeight: 1.75,
               margin: 0,
               fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
@@ -151,14 +151,14 @@ const TechSection = ({ sectionRef, isRTL }) => {
 
             <div className="tech-philosophy-box">
               <div className="tech-philosophy-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.5" width="18" height="18" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgb(var(--accent))" strokeWidth="1.5" width="18" height="18" aria-hidden>
                   <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
                 </svg>
               </div>
-              <p style={{ fontSize: 13.5, fontWeight: 600, color: '#0D1117', margin: '0 0 5px' }}>
+              <p style={{ fontSize: 13.5, fontWeight: 600, color: 'rgb(var(--text-primary))', margin: '0 0 5px' }}>
                 {rtl ? 'نختار الأدوات، لا نتبعها عمياً' : 'We choose tools — not follow trends'}
               </p>
-              <p style={{ fontSize: 12.5, color: '#5C6370', margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 12.5, color: 'rgb(var(--text-secondary))', margin: 0, lineHeight: 1.6 }}>
                 {rtl
                   ? 'كل تقنية في قائمتنا اخترناها لأنها تحل مشكلة حقيقية — الأداء، الأمان، قابلية التوسع.'
                   : 'Every technology we use was chosen because it solves a real problem — performance, security, or scalability.'}

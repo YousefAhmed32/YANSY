@@ -27,22 +27,22 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
         <Reveal distance={16}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 26, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
             <span className="section-label">{isRTL ? 'معرض المشروع' : 'Project Gallery'}</span>
-            <span dir="ltr" style={{ [isRTL ? 'marginRight' : 'marginLeft']: 'auto', fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+            <span dir="ltr" style={{ [isRTL ? 'marginRight' : 'marginLeft']: 'auto', fontSize: 11, color: 'rgb(var(--text-tertiary))', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
               {activeImg + 1} / {images.length}
             </span>
           </div>
 
-          <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)', background: '#fff' }}>
+          <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid rgb(var(--border))', boxShadow: 'var(--shadow-lg)', background: '#fff' }}>
             {/* Browser chrome bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgb(var(--bg-surface))', borderBottom: '1px solid rgb(var(--border))' }}>
               <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} aria-hidden>
                 {TRAFFIC.map((c) => <span key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.85 }} />)}
               </div>
               {domain && (
                 <div style={{
                   flex: 1, maxWidth: 320, margin: '0 auto', textAlign: 'center',
-                  padding: '4px 12px', borderRadius: 999, background: '#fff', border: '1px solid var(--border)',
-                  fontSize: 11.5, color: 'var(--text-tertiary)', fontFamily: "'Inter',system-ui,sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  padding: '4px 12px', borderRadius: 999, background: '#fff', border: '1px solid rgb(var(--border))',
+                  fontSize: 11.5, color: 'rgb(var(--text-tertiary))', fontFamily: "'Inter',system-ui,sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }} dir="ltr">
                   {domain}
                 </div>
@@ -65,8 +65,8 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
                 imgClassName="transition-transform duration-700 group-hover:scale-[1.02]"
                 priority={activeImg === 0}
               />
-              <div className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border border-[#E8EBF0] bg-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full">
-                <ZoomIn className="w-4 h-4 text-[#0D1117]" />
+              <div className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border border-border bg-surface-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full">
+                <ZoomIn className="w-4 h-4 text-content-primary" />
               </div>
 
               {images.length > 1 && (
@@ -74,10 +74,10 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
                   {/* Physically-left/right controls swap which action they perform
                       under RTL, matching the Lightbox's keyboard-arrow semantics —
                       reading direction reverses which side is "back". */}
-                  <button onClick={(e) => { e.stopPropagation(); isRTL ? onNext() : onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/90 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة التالية' : 'Previous'}>
+                  <button onClick={(e) => { e.stopPropagation(); isRTL ? onNext() : onPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-border bg-surface-white/90 text-content-secondary hover:text-content-primary hover:border-border-strong transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة التالية' : 'Previous'}>
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); isRTL ? onPrev() : onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] bg-white/90 text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة السابقة' : 'Next'}>
+                  <button onClick={(e) => { e.stopPropagation(); isRTL ? onPrev() : onNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-border bg-surface-white/90 text-content-secondary hover:text-content-primary hover:border-border-strong transition-all opacity-0 group-hover:opacity-100 rounded-full" aria-label={isRTL ? 'الصورة السابقة' : 'Next'}>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </>
@@ -94,7 +94,7 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
                   onClick={() => setActiveImg(i)}
                   style={{
                     flexShrink: 0, width: 108, aspectRatio: '16/9', overflow: 'hidden', borderRadius: 8,
-                    border: `2px solid ${i === activeImg ? 'var(--accent)' : 'transparent'}`,
+                    border: `2px solid ${i === activeImg ? 'rgb(var(--accent))' : 'transparent'}`,
                     opacity: i === activeImg ? 1 : 0.55, transition: 'all 0.25s', cursor: 'pointer', padding: 0, background: 'none',
                   }}
                   aria-label={isRTL ? `عرض الصورة ${i + 1}` : `View image ${i + 1}`}

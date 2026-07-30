@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   Filter, ChevronDown, ChevronUp, Calendar, User, Building2,
@@ -14,7 +13,6 @@ import toast from 'react-hot-toast';
 
 const ProjectRequests = () => {
   const { t } = useTranslation();
-  const { isDark } = useTheme();
   const { isRTL, dir } = useLanguage();
 
   const [requests, setRequests] = useState([]);
@@ -38,16 +36,15 @@ const ProjectRequests = () => {
   const titleRef = useRef(null);
   const statsRef = useRef(null);
 
-  // Theme classes
-  const bgClass      = isDark ? 'bg-black'      : 'bg-white';
-  const textClass    = isDark ? 'text-white/90'  : 'text-gray-900';
-  const textMuted    = isDark ? 'text-white/60'  : 'text-gray-600';
-  const textSecondary= isDark ? 'text-white/50'  : 'text-gray-500';
-  const surfaceClass = isDark ? 'bg-white/5'     : 'bg-black/5';
-  const borderClass  = isDark ? 'border-white/10': 'border-gray-200';
-  const borderLight  = isDark ? 'border-white/20': 'border-gray-300';
-  const hoverSurface = isDark ? 'hover:bg-white/5': 'hover:bg-black/5';
-  const inputBg      = isDark ? 'bg-black text-white hover:bg-white/5' : 'bg-white text-gray-900 hover:bg-gray-50';
+  const bgClass       = 'bg-white';
+  const textClass     = 'text-gray-900';
+  const textMuted     = 'text-gray-600';
+  const textSecondary = 'text-gray-500';
+  const surfaceClass  = 'bg-black/5';
+  const borderClass   = 'border-gray-200';
+  const borderLight   = 'border-gray-300';
+  const hoverSurface  = 'hover:bg-black/5';
+  const inputBg       = 'bg-white text-gray-900 hover:bg-gray-50';
 
   // ─── Label maps ──────────────────────────────────────────────────────────────
 
@@ -82,16 +79,12 @@ const ProjectRequests = () => {
     new: {
       label: t('projectRequests.new', 'New'),
       icon: Circle,
-      color: isDark
-        ? 'text-blue-400 bg-blue-400/10 border-blue-400/30'
-        : 'text-blue-600 bg-blue-50 border-blue-200',
+      color: 'text-blue-600 bg-blue-50 border-blue-200',
     },
     'in-progress': {
       label: t('projectRequests.inProgress', 'In Progress'),
       icon: Clock,
-      color: isDark
-        ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30'
-        : 'text-yellow-600 bg-yellow-50 border-yellow-200',
+      color: 'text-yellow-600 bg-yellow-50 border-yellow-200',
     },
     completed: {
       label: t('projectRequests.completed', 'Completed'),
@@ -175,9 +168,7 @@ const ProjectRequests = () => {
   };
 
   const Pill = ({ label }) => (
-    <span className={`inline-block px-2.5 py-1 text-xs font-light tracking-wide border rounded-full ${
-      isDark ? 'border-white/15 text-white/50 bg-white/5' : 'border-gray-200 text-gray-500 bg-gray-50'
-    }`}>
+    <span className="inline-block px-2.5 py-1 text-xs font-light tracking-wide border rounded-full border-gray-200 text-gray-500 bg-gray-50">
       {label}
     </span>
   );
@@ -218,7 +209,7 @@ const ProjectRequests = () => {
   if (loading && requests.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className={`w-10 h-10 border-2 ${isDark ? 'border-[#2563EB]/30 border-t-[#2563EB]' : 'border-[#2563EB]/50 border-t-[#2563EB]'} rounded-full animate-spin`} />
+        <div className="w-10 h-10 border-2 border-[#2563EB]/50 border-t-[#2563EB] rounded-full animate-spin" />
       </div>
     );
   }
@@ -249,13 +240,13 @@ const ProjectRequests = () => {
           />
           <StatCard
             icon={Circle}
-            iconClass={isDark ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : 'bg-blue-100 border-blue-200 text-blue-600'}
+            iconClass="bg-blue-100 border-blue-200 text-blue-600"
             label={t('projectRequests.new', 'New')}
             value={stats.byStatus?.new || 0}
           />
           <StatCard
             icon={Clock}
-            iconClass={isDark ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400' : 'bg-yellow-100 border-yellow-200 text-yellow-600'}
+            iconClass="bg-yellow-100 border-yellow-200 text-yellow-600"
             label={t('projectRequests.inProgress', 'In Progress')}
             value={stats.byStatus?.['in-progress'] || 0}
           />
@@ -434,7 +425,7 @@ const ProjectRequests = () => {
 
                       {request.projectType && (
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded-sm text-xs font-light tracking-wide ${
-                          isDark ? 'border-white/15 text-white/50' : 'border-gray-200 text-gray-500'
+                          'border-gray-200 text-gray-500'
                         }`}>
                           <Layers className="w-3 h-3" />
                           {projectTypeLabels[request.projectType] || request.projectType}
@@ -443,7 +434,7 @@ const ProjectRequests = () => {
 
                       {request.timeline && (
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded-sm text-xs font-light tracking-wide ${
-                          isDark ? 'border-white/15 text-white/50' : 'border-gray-200 text-gray-500'
+                          'border-gray-200 text-gray-500'
                         }`}>
                           <Timer className="w-3 h-3" />
                           {timelineLabels[request.timeline] || request.timeline}
@@ -513,7 +504,7 @@ const ProjectRequests = () => {
                           <h4 className={`text-xs font-light ${textClass} mb-2 tracking-widest uppercase`}>
                             {t('projectRequests.projectDescription', 'Project Description')}
                           </h4>
-                          <p className={`${isDark ? 'text-white/70' : 'text-gray-700'} font-light text-sm whitespace-pre-wrap leading-relaxed`}>
+                          <p className="text-gray-700 font-light text-sm whitespace-pre-wrap leading-relaxed">
                             {request.projectDescription}
                           </p>
                         </div>
@@ -550,7 +541,7 @@ const ProjectRequests = () => {
                             <h4 className={`text-xs font-light ${textClass} mb-2 tracking-widest uppercase`}>
                               {t('projectRequests.adminNotes', 'Admin Notes')}
                             </h4>
-                            <p className={`${isDark ? 'text-white/70' : 'text-gray-700'} font-light text-sm whitespace-pre-wrap leading-relaxed`}>
+                            <p className="text-gray-700 font-light text-sm whitespace-pre-wrap leading-relaxed">
                               {request.adminNotes}
                             </p>
                           </div>
@@ -586,7 +577,7 @@ const ProjectRequests = () => {
 
       {/* ── Status modal ── */}
       {showStatusModal && selectedRequest && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isDark ? 'bg-black/80' : 'bg-black/60'} backdrop-blur-sm`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className={`${bgClass} border ${borderLight} max-w-md w-full p-8 transition-colors duration-300`}>
             <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <h3 className={`text-xl font-light ${textClass}`}>
@@ -624,7 +615,7 @@ const ProjectRequests = () => {
                   value={statusUpdate.adminNotes}
                   onChange={e => setStatusUpdate(p => ({ ...p, adminNotes: e.target.value }))}
                   rows={4}
-                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} ${isDark ? 'placeholder-white/30' : 'placeholder-gray-400'} font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-300 resize-none`}
+                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} placeholder-gray-400 font-light focus:outline-none focus:border-[#2563EB] transition-colors duration-300 resize-none`}
                   placeholder={t('projectRequests.addNotes', 'Add notes about this request...')}
                 />
               </div>

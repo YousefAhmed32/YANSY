@@ -76,7 +76,7 @@ const FAQS = [
 ];
 
 const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
-  <div style={{ borderBottom: '1px solid #E8EBF0' }}>
+  <div style={{ borderBottom: '1px solid rgb(var(--border))' }}>
     <button
       onClick={onToggle}
       aria-expanded={isOpen}
@@ -101,7 +101,7 @@ const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
       <span style={{
         fontSize: 10,
         fontWeight: 800,
-        color: isOpen ? '#2563EB' : '#C9CDD6',
+        color: isOpen ? 'rgb(var(--accent))' : 'rgb(var(--border-strong))',
         letterSpacing: '0.06em',
         fontVariantNumeric: 'tabular-nums',
         transition: 'color 0.2s',
@@ -115,7 +115,7 @@ const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
         margin: 0,
         fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
         fontWeight: 600,
-        color: isOpen ? '#0D1117' : '#374151',
+        color: isOpen ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))',
         letterSpacing: isRTL ? 0 : '-0.015em',
         fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
         lineHeight: 1.4,
@@ -129,11 +129,11 @@ const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
         flexShrink: 0,
         width: 28, height: 28,
         borderRadius: '50%',
-        border: `1.5px solid ${isOpen ? '#0D1117' : '#E8EBF0'}`,
-        background: isOpen ? '#0D1117' : 'transparent',
+        border: `1.5px solid ${isOpen ? 'rgb(var(--text-primary))' : 'rgb(var(--border))'}`,
+        background: isOpen ? 'rgb(var(--text-primary))' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.22s ease',
-        color: isOpen ? '#FFFFFF' : '#9BA3AE',
+        color: isOpen ? 'rgb(var(--bg-elevated))' : 'rgb(var(--text-tertiary))',
       }} aria-hidden>
         {isOpen
           ? <Minus style={{ width: 12, height: 12 }} />
@@ -155,7 +155,7 @@ const FAQItem = ({ faq, isOpen, onToggle, isRTL, idx }) => (
       <p style={{
         margin: '0 0 clamp(18px, 2.5vw, 26px)',
         fontSize: 'clamp(0.875rem, 1vw, 1rem)',
-        color: '#5C6370',
+        color: 'rgb(var(--text-secondary))',
         lineHeight: 1.8,
         fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
         paddingInlineStart: 'clamp(36px, 5vw, 44px)',
@@ -209,7 +209,7 @@ const FAQ = ({ onStartProject }) => {
             </h2>
             <p style={{
               fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-              color: '#5C6370',
+              color: 'rgb(var(--text-secondary))',
               lineHeight: 1.75,
               margin: '0 0 clamp(1.75rem, 3.5vw, 2.5rem)',
               fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
@@ -231,17 +231,17 @@ const FAQ = ({ onStartProject }) => {
             <div style={{
               marginTop: 'clamp(2rem, 4vw, 3rem)',
               padding: 'clamp(16px, 2vw, 22px)',
-              background: '#FAFAFA',
-              border: '1px solid #E8EBF0',
+              background: 'rgb(var(--bg-secondary))',
+              border: '1px solid rgb(var(--border))',
               borderRadius: 14,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgb(var(--success))', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgb(var(--success))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {isRTL ? 'نقبل مشاريع جديدة' : 'Accepting new projects'}
                 </span>
               </div>
-              <p style={{ fontSize: 12.5, color: '#5C6370', margin: 0, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
+              <p style={{ fontSize: 12.5, color: 'rgb(var(--text-secondary))', margin: 0, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
                 {isRTL
                   ? 'استشارة مجانية · رد خلال ساعتين · لا التزام'
                   : 'Free consultation · Reply within 2h · No commitment'}

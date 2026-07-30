@@ -15,7 +15,7 @@ import { categoryLabel } from '../utils/portfolioTaxonomy';
  */
 const SkeletonCard = ({ featured = false }) => (
   <div
-    className={`rounded-2xl overflow-hidden bg-white border border-[#E8EBF0] ${featured ? 'sm:col-span-2 sm:row-span-2' : ''}`}
+    className={`rounded-2xl overflow-hidden bg-surface-white border border-[rgb(var(--border))] ${featured ? 'sm:col-span-2 sm:row-span-2' : ''}`}
     aria-hidden
   >
     <div className={`skeleton ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`} />
@@ -76,29 +76,29 @@ const PortfolioSection = () => {
         .portfolio-filter {
           font-size: 12px; font-weight: 600;
           padding: 6px 16px; border-radius: 100px;
-          cursor: pointer; background: #FFFFFF;
-          border: 1.5px solid var(--border);
-          color: var(--text-secondary);
+          cursor: pointer; background: rgb(var(--bg-elevated));
+          border: 1.5px solid rgb(var(--border));
+          color: rgb(var(--text-secondary));
           transition: border-color 0.18s, background 0.18s, color 0.18s;
         }
-        .portfolio-filter:hover { border-color: var(--border-strong); color: var(--text-primary); }
+        .portfolio-filter:hover { border-color: rgb(var(--border-strong)); color: rgb(var(--text-primary)); }
         .portfolio-filter[aria-pressed="true"] {
-          background: var(--text-primary);
-          border-color: var(--text-primary);
-          color: #FFFFFF;
+          background: rgb(var(--text-primary));
+          border-color: rgb(var(--text-primary));
+          color: rgb(var(--bg-elevated));
         }
         .portfolio-viewall {
           display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
           font-size: 13px; font-weight: 600; text-decoration: none;
-          color: var(--text-primary);
-          border: 1.5px solid var(--border);
+          color: rgb(var(--text-primary));
+          border: 1.5px solid rgb(var(--border));
           border-radius: 8px; padding: 9px 18px;
           transition: border-color 0.2s, background 0.2s, color 0.2s;
         }
         .portfolio-viewall:hover {
-          background: var(--text-primary);
-          border-color: var(--text-primary);
-          color: #FFFFFF;
+          background: rgb(var(--text-primary));
+          border-color: rgb(var(--text-primary));
+          color: rgb(var(--bg-elevated));
         }
         .portfolio-viewall svg { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
         .portfolio-viewall:hover svg { transform: translate(2px, -2px); }
@@ -160,16 +160,16 @@ const PortfolioSection = () => {
             <div style={{
               textAlign: 'center',
               padding: 'clamp(3rem, 7vw, 5rem) 1.5rem',
-              border: '1px dashed var(--border)',
+              border: '1px dashed rgb(var(--border))',
               borderRadius: 16,
-              background: 'var(--bg-secondary)',
+              background: 'rgb(var(--bg-secondary))',
             }}>
-              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'rgb(var(--text-primary))', margin: '0 0 6px' }}>
                 {failed
                   ? (isRTL ? 'تعذر تحميل الأعمال' : "Couldn't load our work")
                   : (isRTL ? 'لا توجد مشاريع في هذه الفئة' : 'No projects in this category')}
               </p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 18px' }}>
+              <p style={{ fontSize: 13, color: 'rgb(var(--text-secondary))', margin: '0 0 18px' }}>
                 {failed
                   ? (isRTL ? 'تصفح معرض الأعمال الكامل بدلاً من ذلك.' : 'Browse the full portfolio instead.')
                   : (isRTL ? 'جرّب فئة أخرى أو تصفح كل الأعمال.' : 'Try another category, or browse everything.')}

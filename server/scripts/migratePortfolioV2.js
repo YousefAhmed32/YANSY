@@ -12,13 +12,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const { getBucket, initGridFS } = require('../config/gridfs');
 const { uploadPortfolioImage } = require('../utils/portfolioMedia');
-
-const slugify = (str) =>
-  (str || '')
-    .toString().trim().toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+const { slugify } = require('../utils/slugify');
 
 const downloadGridFSFile = (bucket, fileId) =>
   new Promise((resolve, reject) => {

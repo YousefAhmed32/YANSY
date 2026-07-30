@@ -80,7 +80,7 @@ const NextProject = ({ nextProject, moreProjects, isRTL }) => {
 
         {moreProjects?.length > 0 && (
           <Reveal distance={16} style={{ marginTop: 'clamp(3rem, 6vw, 4.5rem)' }}>
-            <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-tertiary)', fontWeight: 700, marginBottom: 20, textAlign: isRTL ? 'right' : 'left' }}>
+            <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', fontWeight: 700, marginBottom: 20, textAlign: isRTL ? 'right' : 'left' }}>
               {isRTL ? 'المزيد من أعمالنا' : 'More Work'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -94,7 +94,7 @@ const NextProject = ({ nextProject, moreProjects, isRTL }) => {
 
       <style>{`
         .next-project-panel:hover .next-project-image { transform: scale(1.045); }
-        .next-project-panel:hover .next-project-arrow { transform: scale(1.08) ${isRTL ? 'rotate(45deg)' : 'rotate(-45deg)'}; background: var(--accent); border-color: var(--accent); }
+        .next-project-panel:hover .next-project-arrow { transform: scale(1.08) ${isRTL ? 'rotate(45deg)' : 'rotate(-45deg)'}; background: rgb(var(--accent)); border-color: rgb(var(--accent)); }
         @media (max-width: 640px) { .next-project-panel { aspect-ratio: 4 / 5 !important; } }
         @media (prefers-reduced-motion: reduce) {
           .next-project-image, .next-project-arrow { transition: none !important; }

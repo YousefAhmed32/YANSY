@@ -68,7 +68,7 @@ const Header = ({ onStartProject }) => {
           position: relative;
           font-size: 13px;
           font-weight: 500;
-          color: #5C6370;
+          color: rgb(var(--text-secondary));
           text-decoration: none;
           background: none;
           border: none;
@@ -85,13 +85,13 @@ const Header = ({ onStartProject }) => {
           inset-inline-start: 0;
           inset-inline-end: 0;
           height: 1.5px;
-          background: #0D1117;
+          background: rgb(var(--text-primary));
           transform: scaleX(0);
           transform-origin: ${isRTL ? 'right' : 'left'};
           transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
           border-radius: 1px;
         }
-        .ynav-link:hover { color: #0D1117; }
+        .ynav-link:hover { color: rgb(var(--text-primary)); }
         .ynav-link:hover::after, .ynav-link.active::after { transform: scaleX(1); }
 
         .desk-nav, .desk-right { display: none; }
@@ -115,8 +115,8 @@ const Header = ({ onStartProject }) => {
           right:        0,
           zIndex:       1000,
           height:       '68px',
-          background:   '#FFFFFF',
-          borderBottom: scrolled ? '1px solid #E8EBF0' : '1px solid transparent',
+          background:   'rgb(var(--bg))',
+          borderBottom: scrolled ? '1px solid rgb(var(--border))' : '1px solid transparent',
           boxShadow:    scrolled ? '0 1px 16px rgba(0,0,0,0.05)' : 'none',
           transition:   'border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.45s ease',
           opacity:      mounted ? 1 : 0,
@@ -144,6 +144,7 @@ const Header = ({ onStartProject }) => {
               alt="YANSY"
               width={90}
               height={60}
+              className="site-logo"
               style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
             />
           </Link>
@@ -165,7 +166,7 @@ const Header = ({ onStartProject }) => {
           {/* Desktop right */}
           <div className="desk-right" style={{ alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             <LanguageSelector />
-            <div style={{ width: '1px', height: '16px', background: '#E8EBF0', margin: '0 4px' }} aria-hidden />
+            <div style={{ width: '1px', height: '16px', background: 'rgb(var(--border))', margin: '0 4px' }} aria-hidden />
 
             {isAuthenticated ? (
               <Link
@@ -181,12 +182,12 @@ const Header = ({ onStartProject }) => {
                 <Link
                   to="/login"
                   style={{
-                    fontSize: '13px', fontWeight: 500, color: '#5C6370',
+                    fontSize: '13px', fontWeight: 500, color: 'rgb(var(--text-secondary))',
                     textDecoration: 'none', padding: '4px 12px',
                     transition: 'color 0.18s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#0D1117'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#5C6370'}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgb(var(--text-primary))'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgb(var(--text-secondary))'}
                 >
                   {t('common.login', 'Sign in')}
                 </Link>
@@ -228,12 +229,12 @@ const Header = ({ onStartProject }) => {
               aria-controls="mobile-menu"
               style={{
                 width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'none', border: '1px solid #E8EBF0', borderRadius: '8px',
-                cursor: 'pointer', color: '#374151', flexShrink: 0,
+                background: 'none', border: '1px solid rgb(var(--border))', borderRadius: '8px',
+                cursor: 'pointer', color: 'rgb(var(--text-secondary))', flexShrink: 0,
                 transition: 'background 0.18s, border-color 0.18s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#F6F7F9'; e.currentTarget.style.borderColor = '#C9CDD6'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = '#E8EBF0'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; e.currentTarget.style.borderColor = 'rgb(var(--border-strong))'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgb(var(--border))'; }}
             >
               {mobileMenuOpen
                 ? <X style={{ width: 15, height: 15 }} aria-hidden />
@@ -255,7 +256,7 @@ const Header = ({ onStartProject }) => {
           aria-label="Navigation menu"
           style={{
             position: 'fixed', inset: 0, zIndex: 999,
-            background: '#FFFFFF',
+            background: 'rgb(var(--bg))',
             paddingTop: '68px',
             display: 'flex', flexDirection: 'column',
             overflowY: 'auto',
@@ -268,8 +269,8 @@ const Header = ({ onStartProject }) => {
               {NAV.map((item, i) => {
                 const styles = {
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '18px 0', borderBottom: '1px solid #F0F2F5',
-                  color: '#0D1117', textDecoration: 'none', background: 'none',
+                  padding: '18px 0', borderBottom: '1px solid rgb(var(--border-light))',
+                  color: 'rgb(var(--text-primary))', textDecoration: 'none', background: 'none',
                   border: 'none', width: '100%', cursor: 'pointer',
                   fontSize: 'clamp(1.25rem, 5vw, 1.625rem)', fontWeight: 700,
                   letterSpacing: '-0.025em', textAlign: isRTL ? 'right' : 'left',
@@ -283,7 +284,7 @@ const Header = ({ onStartProject }) => {
                     style={{ ...styles }}
                   >
                     <span>{t(item.labelKey, item.def)}</span>
-                    <ArrowUpRight style={{ width: 18, height: 18, color: '#9BA3AE', flexShrink: 0 }} aria-hidden />
+                    <ArrowUpRight style={{ width: 18, height: 18, color: 'rgb(var(--text-tertiary))', flexShrink: 0 }} aria-hidden />
                   </Link>
                 );
               })}
@@ -291,8 +292,8 @@ const Header = ({ onStartProject }) => {
 
             {/* Utilities */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', flex: 1, border: '1px solid #E8EBF0', borderRadius: '10px' }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#5C6370', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', flex: 1, border: '1px solid rgb(var(--border))', borderRadius: '10px' }}>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgb(var(--text-secondary))', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                   {isRTL ? 'اللغة' : 'Lang'}
                 </span>
                 <LanguageSelector />
@@ -325,8 +326,8 @@ const Header = ({ onStartProject }) => {
                       onClick={() => setMobileMenuOpen(false)}
                       style={{
                         display: 'block', textAlign: 'center', padding: '14px',
-                        fontSize: '13px', fontWeight: 500, color: '#5C6370',
-                        border: '1px solid #E8EBF0', borderRadius: '10px', textDecoration: 'none',
+                        fontSize: '13px', fontWeight: 500, color: 'rgb(var(--text-secondary))',
+                        border: '1px solid rgb(var(--border))', borderRadius: '10px', textDecoration: 'none',
                       }}
                     >
                       {t('common.admin', 'Admin Panel')}
@@ -338,7 +339,7 @@ const Header = ({ onStartProject }) => {
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                       padding: '16px', fontSize: '14px', fontWeight: 700,
-                      color: '#FFFFFF', background: '#0D1117', borderRadius: '10px',
+                      color: 'rgb(var(--on-strong))', background: 'rgb(var(--surface-strong))', borderRadius: '10px',
                       textDecoration: 'none',
                     }}
                   >
@@ -353,12 +354,12 @@ const Header = ({ onStartProject }) => {
                     onClick={() => setMobileMenuOpen(false)}
                     style={{
                       display: 'block', textAlign: 'center', padding: '14px',
-                      fontSize: '14px', fontWeight: 500, color: '#374151',
-                      border: '1px solid #E8EBF0', borderRadius: '10px', textDecoration: 'none',
+                      fontSize: '14px', fontWeight: 500, color: 'rgb(var(--text-secondary))',
+                      border: '1px solid rgb(var(--border))', borderRadius: '10px', textDecoration: 'none',
                       transition: 'border-color 0.18s',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = '#0D1117'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = '#E8EBF0'}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgb(var(--text-primary))'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgb(var(--border))'}
                   >
                     {t('common.login', 'Sign In')}
                   </Link>
@@ -367,7 +368,7 @@ const Header = ({ onStartProject }) => {
                     style={{
                       width: '100%', padding: '16px',
                       fontSize: '14px', fontWeight: 700,
-                      color: '#FFFFFF', background: '#0D1117',
+                      color: 'rgb(var(--on-strong))', background: 'rgb(var(--surface-strong))',
                       border: 'none', borderRadius: '10px', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                     }}
@@ -381,13 +382,13 @@ const Header = ({ onStartProject }) => {
 
             {/* Footer note */}
             <div style={{
-              marginTop: '36px', paddingTop: '20px', borderTop: '1px solid #F0F2F5',
+              marginTop: '36px', paddingTop: '20px', borderTop: '1px solid rgb(var(--border-light))',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <p style={{ fontSize: '11.5px', color: '#6B7280', margin: 0 }}>© 2025 YANSY Tech</p>
+              <p style={{ fontSize: '11.5px', color: 'rgb(var(--text-secondary))', margin: 0 }}>© 2025 YANSY Tech</p>
               <div style={{ display: 'flex', gap: '4px' }} aria-hidden>
                 {[1, 0.5, 0.25].map((o, i) => (
-                  <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: '#2563EB', opacity: o }} />
+                  <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgb(var(--accent))', opacity: o }} />
                 ))}
               </div>
             </div>

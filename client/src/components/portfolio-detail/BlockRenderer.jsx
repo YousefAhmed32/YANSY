@@ -32,9 +32,11 @@ const toEmbedUrl = (url) => {
 
 const FRAME_STYLE = {
   none:    {},
-  browser: { padding: '28px 12px 12px', background: '#F6F7F9', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' },
-  mobile:  { padding: '32px 10px', background: '#0D1117', borderRadius: 32, maxWidth: 340, margin: '0 auto' },
-  tablet:  { padding: '20px 16px', background: '#0D1117', borderRadius: 24, maxWidth: 620, margin: '0 auto' },
+  browser: { padding: '28px 12px 12px', background: 'rgb(var(--bg-surface))', borderRadius: 'var(--radius-lg)', border: '1px solid rgb(var(--border))' },
+  // Device bezels stay fixed near-black in both themes — they're mimicking a
+  // real phone/tablet's physical bezel, not a themeable page surface.
+  mobile:  { padding: '32px 10px', background: 'rgb(var(--bg-contrast))', borderRadius: 32, maxWidth: 340, margin: '0 auto' },
+  tablet:  { padding: '20px 16px', background: 'rgb(var(--bg-contrast))', borderRadius: 24, maxWidth: 620, margin: '0 auto' },
 };
 
 const FrameChrome = ({ frame }) => {
@@ -55,14 +57,14 @@ const Caption = ({ text, textAr, isRTL, font }) => {
   const value = isRTL ? (textAr || text) : (text || textAr);
   if (!value) return null;
   return (
-    <p style={{ fontFamily: font, fontSize: 12.5, color: 'var(--text-tertiary)', textAlign: 'center', marginTop: 12 }}>{value}</p>
+    <p style={{ fontFamily: font, fontSize: 12.5, color: 'rgb(var(--text-tertiary))', textAlign: 'center', marginTop: 12 }}>{value}</p>
   );
 };
 
 const FramedMedia = ({ asset, frame, isRTL }) => (
   <div style={{ position: 'relative', ...FRAME_STYLE[frame || 'none'] }}>
     <FrameChrome frame={frame} />
-    <div style={{ borderRadius: frame === 'none' ? 'var(--radius-lg)' : 12, overflow: 'hidden', border: frame === 'none' ? '1px solid var(--border)' : 'none' }}>
+    <div style={{ borderRadius: frame === 'none' ? 'var(--radius-lg)' : 12, overflow: 'hidden', border: frame === 'none' ? '1px solid rgb(var(--border))' : 'none' }}>
       <ProgressiveImage asset={asset} alt={isRTL ? asset?.altAr : asset?.alt} className="w-full" isRTL={isRTL} />
     </div>
   </div>
@@ -85,7 +87,7 @@ const BlockRenderer = ({ blocks, isRTL }) => {
               <Tag key={key} style={{
                 fontFamily: font, fontWeight: block.level === 3 ? 700 : 800,
                 fontSize: block.level === 3 ? 'clamp(1.25rem,2.2vw,1.625rem)' : 'clamp(1.625rem,3vw,2.25rem)',
-                color: 'var(--text-primary)', letterSpacing: isRTL ? 0 : '-0.02em', lineHeight: 1.2, margin: 0,
+                color: 'rgb(var(--text-primary))', letterSpacing: isRTL ? 0 : '-0.02em', lineHeight: 1.2, margin: 0,
                 textAlign: isRTL ? 'right' : 'left',
               }}>
                 {text}
@@ -99,7 +101,7 @@ const BlockRenderer = ({ blocks, isRTL }) => {
             return (
               <p key={key} style={{
                 fontFamily: font, fontSize: 'clamp(1rem,1.4vw,1.125rem)', fontWeight: 400,
-                color: 'var(--text-secondary)', lineHeight: 1.85, whiteSpace: 'pre-line',
+                color: 'rgb(var(--text-secondary))', lineHeight: 1.85, whiteSpace: 'pre-line',
                 textAlign: isRTL ? 'right' : 'left', maxWidth: '72ch',
               }}>
                 {text}
@@ -128,7 +130,7 @@ const BlockRenderer = ({ blocks, isRTL }) => {
                     : { display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.images.length, 3)}, 1fr)`, gap: 12 }}
                 >
                   {block.images.map((img, i) => (
-                    <div key={i} style={{ flexShrink: 0, width: block.layout === 'carousel' ? 280 : undefined, aspectRatio: '4/3', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <div key={i} style={{ flexShrink: 0, width: block.layout === 'carousel' ? 280 : undefined, aspectRatio: '4/3', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid rgb(var(--border))' }}>
                       <ProgressiveImage asset={img} alt="" className="w-full h-full" fill isRTL={isRTL} />
                     </div>
                   ))}
@@ -143,16 +145,16 @@ const BlockRenderer = ({ blocks, isRTL }) => {
             if (!text) return null;
             return (
               <blockquote key={key} style={{
-                margin: 0, borderInlineStart: '2px solid var(--accent-muted)', paddingInlineStart: 'clamp(1.25rem,3vw,2rem)',
+                margin: 0, borderInlineStart: '2px solid rgb(var(--accent-muted))', paddingInlineStart: 'clamp(1.25rem,3vw,2rem)',
                 textAlign: isRTL ? 'right' : 'left',
               }}>
-                <p style={{ fontFamily: font, fontSize: 'clamp(1.125rem,2vw,1.375rem)', fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.6, margin: 0 }}>
+                <p style={{ fontFamily: font, fontSize: 'clamp(1.125rem,2vw,1.375rem)', fontWeight: 300, color: 'rgb(var(--text-primary))', lineHeight: 1.6, margin: 0 }}>
                   {text}
                 </p>
                 {(block.author || block.role) && (
                   <footer style={{ marginTop: 12, fontFamily: font, fontSize: 13 }}>
-                    {block.author && <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{block.author}</strong>}
-                    {block.role && <span style={{ color: 'var(--text-tertiary)', marginInlineStart: 8 }}>— {block.role}</span>}
+                    {block.author && <strong style={{ color: 'rgb(var(--text-primary))', fontWeight: 700 }}>{block.author}</strong>}
+                    {block.role && <span style={{ color: 'rgb(var(--text-tertiary))', marginInlineStart: 8 }}>— {block.role}</span>}
                   </footer>
                 )}
               </blockquote>
@@ -164,12 +166,12 @@ const BlockRenderer = ({ blocks, isRTL }) => {
             return (
               <div key={key} style={{
                 display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.stats.length, 4)}, 1fr)`, gap: 1,
-                background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)',
+                background: 'rgb(var(--border))', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid rgb(var(--border))',
               }}>
                 {block.stats.map((s, i) => (
-                  <div key={i} style={{ background: 'var(--bg-surface)', padding: '20px 16px', textAlign: 'center' }}>
-                    <div dir="ltr" style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.25rem,2.5vw,1.75rem)', fontWeight: 800, color: 'var(--accent)' }}>{s.value}</div>
-                    <div style={{ fontFamily: font, fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, textTransform: isRTL ? 'none' : 'uppercase', letterSpacing: isRTL ? 0 : '0.06em' }}>
+                  <div key={i} style={{ background: 'rgb(var(--bg-surface))', padding: '20px 16px', textAlign: 'center' }}>
+                    <div dir="ltr" style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.25rem,2.5vw,1.75rem)', fontWeight: 800, color: 'rgb(var(--accent))' }}>{s.value}</div>
+                    <div style={{ fontFamily: font, fontSize: 11, color: 'rgb(var(--text-tertiary))', marginTop: 4, textTransform: isRTL ? 'none' : 'uppercase', letterSpacing: isRTL ? 0 : '0.06em' }}>
                       {isRTL && s.labelAr ? s.labelAr : s.label}
                     </div>
                   </div>
@@ -185,10 +187,10 @@ const BlockRenderer = ({ blocks, isRTL }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   {[{ asset: block.before, label: block.beforeLabel || (isRTL ? 'قبل' : 'Before') }, { asset: block.after, label: block.afterLabel || (isRTL ? 'بعد' : 'After') }].map((side, i) => (
                     <div key={i}>
-                      <div style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
+                      <div style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid rgb(var(--border))', position: 'relative' }}>
                         <ProgressiveImage asset={side.asset} alt="" fill isRTL={isRTL} />
                       </div>
-                      <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', textAlign: 'center', marginTop: 8 }}>{side.label}</p>
+                      <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', textAlign: 'center', marginTop: 8 }}>{side.label}</p>
                     </div>
                   ))}
                 </div>
@@ -202,7 +204,7 @@ const BlockRenderer = ({ blocks, isRTL }) => {
             if (!block.asset?.url && !embedUrl) return null;
             return (
               <figure key={key} style={{ margin: 0 }}>
-                <div style={{ aspectRatio: '16/9', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)', background: '#000' }}>
+                <div style={{ aspectRatio: '16/9', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid rgb(var(--border))', background: '#000' }}>
                   {embedUrl
                     ? <iframe src={embedUrl} title={block.caption || 'Project video'} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen style={{ width: '100%', height: '100%', border: 'none' }} />
                     : <video src={mediaSrc(block.asset)} poster={mediaSrc(block.poster)} controls playsInline style={{ width: '100%', height: '100%' }} />}
@@ -216,7 +218,7 @@ const BlockRenderer = ({ blocks, isRTL }) => {
             if (!block.url) return null;
             return (
               <figure key={key} style={{ margin: 0 }}>
-                <div style={{ aspectRatio: '16/10', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                <div style={{ aspectRatio: '16/10', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid rgb(var(--border))' }}>
                   <iframe src={block.url} title={block.title || 'Embedded content'} loading="lazy" style={{ width: '100%', height: '100%', border: 'none' }} />
                 </div>
                 <Caption text={block.caption} textAr={block.captionAr} isRTL={isRTL} font={font} />
@@ -225,7 +227,7 @@ const BlockRenderer = ({ blocks, isRTL }) => {
           }
 
           case 'divider':
-            return <hr key={key} aria-hidden style={{ border: 'none', borderTop: '1px solid var(--border)', margin: 0 }} />;
+            return <hr key={key} aria-hidden style={{ border: 'none', borderTop: '1px solid rgb(var(--border))', margin: 0 }} />;
 
           default:
             return null;

@@ -56,7 +56,7 @@ const STATIC = [
 ];
 
 const AVATAR_PALETTE = [
-  ['#DBEAFE', '#1D4ED8'],
+  ['rgb(var(--accent-muted))', 'rgb(var(--accent-hover))'],
   ['#D1FAE5', '#059669'],
   ['#EDE9FE', '#6D28D9'],
   ['#FEF3C7', '#B45309'],
@@ -84,7 +84,7 @@ const Avatar = ({ initials = '?', idx = 0 }) => {
 const Stars = ({ count = 5 }) => (
   <div style={{ display: 'flex', gap: 2 }} aria-label={`${count} out of 5 stars`}>
     {Array.from({ length: 5 }).map((_, i) => (
-      <svg key={i} viewBox="0 0 20 20" width="12" height="12" fill={i < count ? '#F59E0B' : '#E8EBF0'} aria-hidden>
+      <svg key={i} viewBox="0 0 20 20" width="12" height="12" fill={i < count ? '#F59E0B' : 'rgb(var(--border))'} aria-hidden>
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     ))}
@@ -106,8 +106,8 @@ const TestimonialCard = ({ t, idx }) => {
       }}>
         <Stars count={t.rating} />
         <span style={{
-          fontSize: 10, fontWeight: 700, color: '#2563EB',
-          background: '#EFF6FF', border: '1px solid #DBEAFE',
+          fontSize: 10, fontWeight: 700, color: 'rgb(var(--accent))',
+          background: 'rgb(var(--accent-light))', border: '1px solid rgb(var(--accent-muted))',
           padding: '3px 9px', borderRadius: '100px',
           whiteSpace: 'nowrap',
         }}>
@@ -120,7 +120,7 @@ const TestimonialCard = ({ t, idx }) => {
       <blockquote style={{
         fontSize: 'clamp(0.875rem, 1vw, 0.9375rem)',
         lineHeight: isRTL ? 1.9 : 1.75,
-        color: '#374151',
+        color: 'rgb(var(--text-secondary))',
         margin: 0,
         flex: 1,
         fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter', system-ui, sans-serif",
@@ -137,15 +137,15 @@ const TestimonialCard = ({ t, idx }) => {
         alignItems: 'center',
         gap: 12,
         paddingTop: 16,
-        borderTop: '1px solid #F0F2F5',
+        borderTop: '1px solid rgb(var(--border-light))',
         flexDirection: isRTL ? 'row-reverse' : 'row',
       }}>
         <Avatar initials={t.initials} idx={idx} />
         <div style={{ flex: 1, minWidth: 0, textAlign: isRTL ? 'right' : 'left' }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0D1117', marginBottom: 2 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: 'rgb(var(--text-primary))', marginBottom: 2 }}>
             {t.name}
           </div>
-          <div style={{ fontSize: 12, color: '#9BA3AE', lineHeight: 1.3 }}>
+          <div style={{ fontSize: 12, color: 'rgb(var(--text-tertiary))', lineHeight: 1.3 }}>
             {isRTL ? (t.roleAR || t.role) : t.role}
           </div>
         </div>
@@ -189,8 +189,8 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
            320ms before lifting, and any re-render (a language switch, say)
            wiped the hover styles the handlers had written. */
         .testimonial-card {
-          background: #FFFFFF;
-          border: 1px solid var(--border);
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
           border-radius: 16px;
           padding: clamp(22px, 2.5vw, 32px);
           display: flex;
@@ -205,7 +205,7 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
         }
         .testimonial-card:hover {
           box-shadow: 0 12px 36px rgba(0,0,0,0.08);
-          border-color: var(--border-strong);
+          border-color: rgb(var(--border-strong));
           transform: translateY(-3px);
         }
       `}</style>
@@ -224,7 +224,7 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
               flexDirection: rtl ? 'row-reverse' : 'row',
             }}>
               <Stars count={5} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgb(var(--text-secondary))' }}>
                 {rtl ? '5/5 متوسط التقييم' : '5/5 average rating'}
               </span>
             </div>

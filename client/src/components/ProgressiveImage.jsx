@@ -20,7 +20,7 @@ import GeneratedPlaceholder from './BrandedPlaceholder';
  */
 const ProgressiveImage = ({
   asset, alt = '', className = '', imgClassName = '', sizes = CARD_SIZES, priority = false, style, fill = false,
-  fallbackIcon, fallbackLabel, fallbackColor = '#2563EB', fallbackVariant = 'card', isRTL = false,
+  fallbackIcon, fallbackLabel, fallbackColor = 'rgb(var(--accent))', fallbackVariant = 'card', isRTL = false,
 }) => {
   const [loaded, setLoaded] = useState(false);
   // The wrapper's own position varies by `fill`; the <img> inside it is always absolutely
@@ -30,7 +30,7 @@ const ProgressiveImage = ({
 
   if (!asset?.url) {
     return (
-      <div className={className} style={{ ...wrapperPosition, overflow: 'hidden', background: '#0D1117', ...style }}>
+      <div className={className} style={{ ...wrapperPosition, overflow: 'hidden', background: 'rgb(var(--bg-contrast))', ...style }}>
         <GeneratedPlaceholder icon={fallbackIcon} label={fallbackLabel} color={fallbackColor} isRTL={isRTL} variant={fallbackVariant} />
       </div>
     );
@@ -41,7 +41,7 @@ const ProgressiveImage = ({
   return (
     <div
       className={className}
-      style={{ ...wrapperPosition, overflow: 'hidden', background: asset.dominantColor || '#F0F2F5', ...style }}
+      style={{ ...wrapperPosition, overflow: 'hidden', background: asset.dominantColor || 'rgb(var(--border-light))', ...style }}
     >
       {asset.blurDataURL && (
         <img

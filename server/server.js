@@ -32,6 +32,7 @@ const feedbackRoutes = require('./routes/feedback');
 const portfolioRoutes = require('./routes/portfolio.routes');
 const introRoutes = require('./routes/intro.routes');
 const homepageVideoRoutes = require('./routes/homepageVideo.routes');
+const clientLogosRoutes = require('./routes/clientLogos.routes');
 const startProjectRoutes = require('./routes/startProject.routes');
 const notificationRoutes = require('./routes/notifications');
 
@@ -308,6 +309,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/intro', introRoutes);
 app.use('/api/homepage-video', homepageVideoRoutes);
+app.use('/api/client-logos', clientLogosRoutes);
 app.use('/api/start-project', startProjectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity',      activityRoutes);
@@ -401,6 +403,58 @@ app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 
 /* ================== SERVER ================== */
 const PORT = process.env.PORT || 5000;
+
+/* ================== CRASH SAFETY & GRACEFUL SHUTDOWN ==================
+ * Previously absent entirely — an unhandled rejection anywhere in the app
+ * would just vanish into Node's default handler with no log line, and a
+ * deploy/restart (or PM2 recycling the process) would hard-kill in-flight
+ * requests and the Mongo connection instead of draining them. PM2's
+ * `autorestart: true` is a crash safety net, not a substitute for this: it
+ * only helps *after* the process has already died uncleanly.
+ */
+let shuttingDown = false;
+const gracefulShutdown = (signal) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`\n${signal} received — shutting down gracefully…`);
+
+  const forceExitTimer = setTimeout(() => {
+    console.error('⚠️  Graceful shutdown timed out — forcing exit.');
+    process.exit(1);
+  }, 10000);
+  forceExitTimer.unref();
+
+  httpServer.close(async () => {
+    try {
+      await mongoose.connection.close(false);
+      console.log('✅ HTTP server and MongoDB connection closed.');
+      clearTimeout(forceExitTimer);
+      process.exit(0);
+    } catch (err) {
+      console.error('❌ Error during shutdown:', err.message);
+      process.exit(1);
+    }
+  });
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+
+// A rejected promise with no .catch() anywhere in the call chain — log it
+// with full context rather than letting it disappear silently or crash the
+// whole process (Node's default for unhandledRejection varies by version).
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled Promise Rejection:', reason instanceof Error ? reason.stack : reason);
+});
+
+// An uncaught synchronous throw means the process may be in a corrupted
+// state (per Node's own guidance) — log it and exit so PM2 restarts into a
+// clean process, rather than continuing to serve requests from one that
+// might have partially-broken internal state.
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err.stack || err);
+  process.exit(1);
+});
 
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);

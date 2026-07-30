@@ -132,7 +132,7 @@ const WhyYANSY = ({ onStartProject }) => {
         .comparison-table {
           width: 100%;
           border-collapse: collapse;
-          border: 1px solid #E8EBF0;
+          border: 1px solid rgb(var(--border));
           border-radius: 16px;
           overflow: hidden;
         }
@@ -144,40 +144,40 @@ const WhyYANSY = ({ onStartProject }) => {
         }
         .comparison-table th {
           padding: clamp(14px, 2vw, 20px) clamp(12px, 1.5vw, 18px);
-          border-bottom: 1px solid #E8EBF0;
-          border-inline-end: 1px solid #E8EBF0;
+          border-bottom: 1px solid rgb(var(--border));
+          border-inline-end: 1px solid rgb(var(--border));
           font-size: 12px;
           font-weight: 700;
-          color: #374151;
+          color: rgb(var(--text-secondary));
           text-align: center;
-          background: #FAFAFA;
+          background: rgb(var(--bg-secondary));
         }
         .comparison-table th:last-child { border-inline-end: none; }
         .comparison-table th.yansy-col {
-          background: #EFF6FF;
-          color: #2563EB;
-          border-color: #DBEAFE;
+          background: rgb(var(--accent-light));
+          color: rgb(var(--accent));
+          border-color: rgb(var(--accent-muted));
         }
         .comparison-table td {
           padding: clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px);
-          border-bottom: 1px solid #F0F2F5;
-          border-inline-end: 1px solid #F0F2F5;
+          border-bottom: 1px solid rgb(var(--border-light));
+          border-inline-end: 1px solid rgb(var(--border-light));
           text-align: center;
           font-size: 12.5px;
-          color: #5C6370;
+          color: rgb(var(--text-secondary));
           font-weight: 500;
         }
         .comparison-table td:last-child { border-inline-end: none; }
         .comparison-table td.criteria-col {
           text-align: ${isRTL ? 'right' : 'left'};
-          color: #374151;
-          background: #FAFAFA;
+          color: rgb(var(--text-secondary));
+          background: rgb(var(--bg-secondary));
           font-weight: 600;
           font-size: 12px;
         }
         .comparison-table td.yansy-cell {
-          background: #F8FBFF;
-          border-inline-end: 1px solid #DBEAFE;
+          background: rgb(var(--accent-light));
+          border-inline-end: 1px solid rgb(var(--accent-muted));
         }
         .comparison-table tr:last-child td { border-bottom: none; }
         .why-statement {
@@ -190,8 +190,8 @@ const WhyYANSY = ({ onStartProject }) => {
           .why-statement { grid-template-columns: 1fr; }
         }
         .why-statement-card {
-          background: #FAFAFA;
-          border: 1px solid #E8EBF0;
+          background: rgb(var(--bg-secondary));
+          border: 1px solid rgb(var(--border));
           border-radius: 12px;
           padding: clamp(14px, 2vw, 20px);
           text-align: ${isRTL ? 'right' : 'left'};
@@ -200,11 +200,11 @@ const WhyYANSY = ({ onStartProject }) => {
           transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1), border-color 0.2s, background 0.2s;
         }
         .why-statement-card.visible { opacity: 1; transform: translateY(0); }
-        .why-statement-card:hover { background: #FFFFFF; border-color: #C9CDD6; }
+        .why-statement-card:hover { background: rgb(var(--bg-elevated)); border-color: rgb(var(--border-strong)); }
         .why-note-row {
           display: flex;
           gap: 0;
-          border-top: 1px solid #E8EBF0;
+          border-top: 1px solid rgb(var(--border));
         }
         @media (max-width: 560px) {
           .why-note-row { min-width: 480px; }
@@ -212,16 +212,16 @@ const WhyYANSY = ({ onStartProject }) => {
         .why-note-cell {
           flex: 1;
           padding: clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px);
-          border-inline-end: 1px solid #F0F2F5;
+          border-inline-end: 1px solid rgb(var(--border-light));
           font-size: 11px;
-          color: #9BA3AE;
+          color: rgb(var(--text-tertiary));
           line-height: 1.4;
           text-align: center;
         }
         .why-note-cell:last-child { border-inline-end: none; }
         .why-note-cell.yansy-note {
-          color: #2563EB;
-          background: #F8FBFF;
+          color: rgb(var(--accent));
+          background: rgb(var(--accent-light));
           font-weight: 600;
         }
       `}</style>
@@ -239,7 +239,7 @@ const WhyYANSY = ({ onStartProject }) => {
             </h2>
             <p style={{
               fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-              color: '#5C6370',
+              color: 'rgb(var(--text-secondary))',
               lineHeight: 1.75,
               margin: '0 0 clamp(1.5rem, 3vw, 2.5rem)',
               fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
@@ -267,14 +267,14 @@ const WhyYANSY = ({ onStartProject }) => {
                 >
                   <div style={{ fontSize: 20, marginBottom: 10 }} aria-hidden>{card.icon}</div>
                   <div style={{
-                    fontSize: 12.5, fontWeight: 700, color: '#0D1117',
+                    fontSize: 12.5, fontWeight: 700, color: 'rgb(var(--text-primary))',
                     marginBottom: 5,
                     fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
                   }}>
                     {card.title}
                   </div>
                   <div style={{
-                    fontSize: 12, color: '#5C6370', lineHeight: 1.6,
+                    fontSize: 12, color: 'rgb(var(--text-secondary))', lineHeight: 1.6,
                     fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
                   }}>
                     {card.body}

@@ -63,10 +63,9 @@ subscriptionSchema.virtual('isPaidActive').get(function () {
   return ['active', 'trialing'].includes(this.status);
 });
 
-// Indexes
-subscriptionSchema.index({ user: 1 }, { unique: true });
-subscriptionSchema.index({ stripeSubscriptionId: 1 });
-subscriptionSchema.index({ stripeCustomerId: 1 });
+// Indexes — `user`, `stripeSubscriptionId`, and `stripeCustomerId` are
+// already indexed via their field-level `unique`/`index: true` above;
+// re-declaring them here triggered Mongoose duplicate-index boot warnings.
 subscriptionSchema.index({ status: 1 });
 subscriptionSchema.index({ trialEndsAt: 1 });
 

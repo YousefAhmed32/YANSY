@@ -51,7 +51,8 @@ planSchema.virtual('monthlyUSD').get(function () {
   return this.price.monthly / 100;
 });
 
-planSchema.index({ name: 1 }, { unique: true });
+// `name` is already indexed via the field-level `unique: true` above —
+// declaring it again here triggered a Mongoose duplicate-index boot warning.
 planSchema.index({ isActive: 1, order: 1 });
 
 module.exports = mongoose.model('Plan', planSchema);

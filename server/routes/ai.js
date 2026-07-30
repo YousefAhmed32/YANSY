@@ -4,11 +4,11 @@ const router  = express.Router();
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { requirePlan } = require('../middleware/requirePlan');
 const { aiRateLimit } = require('../middleware/aiRateLimit');
+const { rateLimitAIChat } = require('../middleware/rateLimit');
 const ctrl = require('../controllers/aiController');
 
 // ── Public chat (no auth required — rate limited by IP) ───────────────────────
-// Note: server-level rate limiter handles IP-based limits for this route
-router.post('/chat', ctrl.chat);
+router.post('/chat', rateLimitAIChat, ctrl.chat);
 
 // ── Authenticated user AI features (PROFESSIONAL plan required) ───────────────
 const aiAuth = [authenticate, requirePlan('PROFESSIONAL'), aiRateLimit];

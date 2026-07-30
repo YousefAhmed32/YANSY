@@ -31,7 +31,7 @@
   const BACKGROUNDS = {
     dark:     '#0A0B0D',
     black:    '#000000',
-    light:    '#F6F7F9',
+    light:    'rgb(var(--bg-surface))',
     gradient: 'radial-gradient(120% 120% at 50% 0%, #12151C 0%, #05060A 60%, #000000 100%)',
   };
 
@@ -60,13 +60,13 @@
   const CtaLink = ({ link, label, onClick, isRTL }) => {
     const style = {
       display: 'inline-flex', alignItems: 'center', gap: 10,
-      padding: '15px 34px', background: '#2563EB', color: '#fff',
+      padding: '15px 34px', background: 'rgb(var(--accent))', color: '#fff',
       fontSize: 13, fontWeight: 500, letterSpacing: '0.04em',
       borderRadius: 999, textDecoration: 'none',
       transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1), background 0.3s',
     };
-    const onEnter = (e) => { e.currentTarget.style.background = '#1D4ED8'; e.currentTarget.style.transform = 'translateY(-2px)'; };
-    const onLeave = (e) => { e.currentTarget.style.background = '#2563EB'; e.currentTarget.style.transform = 'translateY(0)'; };
+    const onEnter = (e) => { e.currentTarget.style.background = 'rgb(var(--accent-hover))'; e.currentTarget.style.transform = 'translateY(-2px)'; };
+    const onLeave = (e) => { e.currentTarget.style.background = 'rgb(var(--accent))'; e.currentTarget.style.transform = 'translateY(0)'; };
     const arrow = <ArrowUpRight style={{ width: 16, height: 16, transform: isRTL ? 'scaleX(-1)' : 'none' }} />;
 
     if (!link) {
@@ -337,10 +337,10 @@
                 background: isLight ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.08)',
                 border: `1px solid ${isLight ? 'rgba(37,99,235,0.18)' : 'rgba(255,255,255,0.14)'}`,
               }}>
-                <span aria-hidden style={{ width: 5, height: 5, borderRadius: '50%', background: '#2563EB' }} />
+                <span aria-hidden style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgb(var(--accent))' }} />
                 <span style={{
                   fontSize: 10.5, fontWeight: 600, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase',
-                  color: isLight ? '#2563EB' : 'rgba(255,255,255,0.85)',
+                  color: isLight ? 'rgb(var(--accent))' : 'rgba(255,255,255,0.85)',
                 }}>
                   {isRTL ? 'قدراتنا الرقمية' : 'Our Capabilities'}
                 </span>
@@ -348,7 +348,7 @@
               {title && (
                 <h2 style={{
                   fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.05,
-                  color: isLight ? '#0D1117' : '#FFFFFF', margin: '0 0 18px',
+                  color: isLight ? 'rgb(var(--text-primary))' : 'rgb(var(--bg-elevated))', margin: '0 0 18px',
                 }}>
                   {title}
                 </h2>
@@ -356,7 +356,7 @@
               {subtitle && (
                 <p style={{
                   fontSize: 'clamp(1rem, 1.6vw, 1.25rem)', fontWeight: 300, lineHeight: 1.6,
-                  color: isLight ? '#5C6370' : 'rgba(255,255,255,0.65)', margin: 0,
+                  color: isLight ? 'rgb(var(--text-secondary))' : 'rgba(255,255,255,0.65)', margin: 0,
                 }}>
                   {subtitle}
                 </p>
@@ -364,7 +364,7 @@
               {description && (
                 <p style={{
                   fontSize: '0.9375rem', fontWeight: 300, lineHeight: 1.7, marginTop: 14,
-                  color: isLight ? '#9CA3AF' : 'rgba(255,255,255,0.4)',
+                  color: isLight ? 'rgb(var(--text-tertiary))' : 'rgba(255,255,255,0.4)',
                 }}>
                   {description}
                 </p>
@@ -486,7 +486,7 @@
                       }}
                       style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.25)', borderRadius: 999, cursor: 'pointer', position: 'relative' }}
                     >
-                      <div style={{ position: 'absolute', [isRTL ? 'right' : 'left']: 0, top: 0, bottom: 0, width: `${progress}%`, background: '#2563EB', borderRadius: 999 }} />
+                      <div style={{ position: 'absolute', [isRTL ? 'right' : 'left']: 0, top: 0, bottom: 0, width: `${progress}%`, background: 'rgb(var(--accent))', borderRadius: 999 }} />
                     </div>
                   )}
 

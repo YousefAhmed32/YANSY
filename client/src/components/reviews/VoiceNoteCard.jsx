@@ -88,8 +88,8 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
     <div ref={cardRef} className="vn-card">
       <style>{`
         .vn-card {
-          background: #FFFFFF;
-          border: 1px solid var(--border);
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
           border-radius: var(--radius-lg);
           padding: 18px 20px;
           display: flex;
@@ -101,25 +101,25 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
         }
         .vn-card:hover {
           box-shadow: 0 12px 36px rgba(0,0,0,0.08);
-          border-color: var(--border-strong);
+          border-color: rgb(var(--border-strong));
           transform: translateY(-2px);
         }
         .vn-play {
           width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
-          background: var(--accent);
+          background: rgb(var(--accent));
           border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           transition: background 0.2s ease, transform 0.2s ease;
         }
-        .vn-play:hover { background: var(--accent-hover); transform: scale(1.06); }
+        .vn-play:hover { background: rgb(var(--accent-hover)); transform: scale(1.06); }
         .vn-bar {
           width: 2.5px;
           border-radius: 2px;
-          background: var(--border-strong);
+          background: rgb(var(--border-strong));
           transition: background 0.25s ease;
           flex-shrink: 0;
         }
-        .vn-bar.played { background: var(--accent); }
+        .vn-bar.played { background: rgb(var(--accent)); }
         @media (prefers-reduced-motion: reduce) {
           .vn-card, .vn-play { transition: none; }
         }
@@ -140,11 +140,11 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           marginBottom: 6, flexDirection: isRTL ? 'row-reverse' : 'row',
         }}>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{label}</span>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
-            fontSize: 10, fontWeight: 600, color: '#0EA85F',
-            background: '#ECFDF5', border: '1px solid #D1FAE5',
+            fontSize: 10, fontWeight: 600, color: 'rgb(var(--success))',
+            background: 'rgb(var(--success-light))', border: '1px solid rgb(var(--success) / 0.35)',
             padding: '2px 7px', borderRadius: 100,
             flexDirection: isRTL ? 'row-reverse' : 'row',
           }}>
@@ -186,7 +186,7 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
         {/* Locked LTR — inside an RTL ancestor, the bidi algorithm treats
             "0:00" and "0:14" as separate neutral-direction runs around the
             slash and visually swaps their order (duration before elapsed). */}
-        <div dir="ltr" style={{ fontSize: 10.5, color: 'var(--text-tertiary)', marginTop: 4, fontVariantNumeric: 'tabular-nums', textAlign: isRTL ? 'right' : 'left' }}>
+        <div dir="ltr" style={{ fontSize: 10.5, color: 'rgb(var(--text-tertiary))', marginTop: 4, fontVariantNumeric: 'tabular-nums', textAlign: isRTL ? 'right' : 'left' }}>
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
       </div>

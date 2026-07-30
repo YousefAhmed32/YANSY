@@ -82,7 +82,7 @@ const CaseStudies = () => {
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-white text-[#0D1117] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <main className="bg-surface-white text-[rgb(var(--text-primary))] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
         <style>{`.au-card-hover-zoom:hover .au-zoom-layer { transform: scale(1.06); }`}</style>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
@@ -93,7 +93,7 @@ const CaseStudies = () => {
           />
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <div data-hero-anim className="opacity-0 flex items-center gap-3 mb-6" style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
-              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, #2563EB, transparent)', display: 'inline-block' }} />
+              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, rgb(var(--accent)), transparent)', display: 'inline-block' }} />
               <span className="eyebrow">{isRTL ? 'أعمالنا' : 'Our Work'}</span>
             </div>
             <h1 data-hero-anim className="opacity-0" style={{
@@ -102,14 +102,14 @@ const CaseStudies = () => {
               fontWeight: 700,
               lineHeight: 1.04,
               letterSpacing: isRTL ? 0 : '-0.03em',
-              color: '#0D1117',
+              color: 'rgb(var(--text-primary))',
               maxWidth: isRTL ? '14ch' : '16ch',
               marginBottom: '1.5rem',
               marginInlineStart: isRTL ? 'auto' : 0,
             }}>
               {isRTL ? 'منتجات ' : "Products We've "}
               <span style={{
-                backgroundImage: 'linear-gradient(135deg, #2563EB 0%, rgba(0,0,0,0.8) 55%)',
+                backgroundImage: 'linear-gradient(135deg, rgb(var(--accent)) 0%, rgba(0,0,0,0.8) 55%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -121,7 +121,7 @@ const CaseStudies = () => {
               fontFamily: font,
               fontSize: 'clamp(0.95rem,2vw,1.1rem)',
               fontWeight: 400,
-              color: 'rgba(0,0,0,0.45)',
+              color: 'rgb(var(--hover-overlay) / 0.45)',
               lineHeight: 1.8,
               maxWidth: '56ch',
               marginBottom: '3rem',
@@ -140,9 +140,9 @@ const CaseStudies = () => {
                   onClick={() => setActive(ind.key)}
                   style={{
                     padding: '7px 18px',
-                    border: `1px solid ${active === ind.key ? 'rgba(37,99,235,0.5)' : 'rgba(0,0,0,0.08)'}`,
+                    border: `1px solid ${active === ind.key ? 'rgba(37,99,235,0.5)' : 'rgb(var(--hover-overlay) / 0.08)'}`,
                     background: active === ind.key ? 'rgba(37,99,235,0.08)' : 'transparent',
-                    color: active === ind.key ? '#2563EB' : 'rgba(0,0,0,0.42)',
+                    color: active === ind.key ? 'rgb(var(--accent))' : 'rgb(var(--hover-overlay) / 0.42)',
                     fontFamily: font,
                     fontSize: 11,
                     fontWeight: 400,
@@ -162,18 +162,18 @@ const CaseStudies = () => {
         {/* ── GRID ──────────────────────────────────────────────── */}
         <section ref={gridRef} style={{ paddingBottom: 'clamp(5rem,10vw,8rem)' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
               {filtered.map((cs) => (
                 <Link
                   key={cs.slug}
                   to={`/case-studies/${cs.slug}`}
                   data-card
-                  style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
+                  style={{ background: 'rgb(var(--bg-surface))', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
                 >
                   {/* Image */}
-                  <div className="au-card-hover-zoom" style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#0A0D14' }}>
+                  <div className="au-card-hover-zoom" style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: 'rgb(var(--bg-contrast))' }}>
                     <div className="au-zoom-layer" style={{ position: 'absolute', inset: 0, transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)' }}>
                       <CaseStudyVisual
                         slug={cs.slug}
@@ -205,21 +205,21 @@ const CaseStudies = () => {
                   {/* Content */}
                   <div style={{ padding: 'clamp(1.25rem, 3vw, 2rem)', flex: 1, display: 'flex', flexDirection: 'column', textAlign: isRTL ? 'right' : 'left' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-                      <span style={{ fontFamily: font, fontSize: 10, fontWeight: 400, color: 'rgba(0,0,0,0.35)', letterSpacing: isRTL ? 0 : '0.15em', textTransform: isRTL ? 'none' : 'uppercase' }}>{isRTL ? cs.duration.ar : cs.duration.en} · {cs.year}</span>
-                      <ArrowUpRight size={14} style={{ color: 'rgba(0,0,0,0.25)', transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+                      <span style={{ fontFamily: font, fontSize: 10, fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.35)', letterSpacing: isRTL ? 0 : '0.15em', textTransform: isRTL ? 'none' : 'uppercase' }}>{isRTL ? cs.duration.ar : cs.duration.en} · {cs.year}</span>
+                      <ArrowUpRight size={14} style={{ color: 'rgb(var(--hover-overlay) / 0.25)', transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
                     </div>
-                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.3rem, 2.5vw, 1.7rem)', fontWeight: 500, color: '#0D1117', lineHeight: 1.2, marginBottom: '0.75rem' }}>
+                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.3rem, 2.5vw, 1.7rem)', fontWeight: 500, color: 'rgb(var(--text-primary))', lineHeight: 1.2, marginBottom: '0.75rem' }}>
                       {cs.title}
                     </h3>
-                    <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgba(0,0,0,0.42)', lineHeight: 1.75, marginBottom: '1.5rem', flex: 1 }}>
+                    <p style={{ fontFamily: font, fontSize: '0.875rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.42)', lineHeight: 1.75, marginBottom: '1.5rem', flex: 1 }}>
                       {isRTL ? cs.tagline.ar : cs.tagline.en}
                     </p>
                     {/* Result pills */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {cs.results.slice(0, 2).map((r, i) => (
-                        <div key={i} style={{ padding: '5px 12px', border: '1px solid rgba(0,0,0,0.06)', background: 'rgba(0,0,0,0.02)' }}>
-                          <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1rem', fontWeight: 700, color: '#2563EB', fontVariantNumeric: 'tabular-nums' }}>{r.metric}</span>
-                          <span style={{ fontFamily: font, fontSize: 10, color: 'rgba(0,0,0,0.35)', marginInlineStart: 6, letterSpacing: isRTL ? 0 : '0.05em' }}>{isRTL ? r.label.ar : r.label.en}</span>
+                        <div key={i} style={{ padding: '5px 12px', border: '1px solid rgb(var(--hover-overlay) / 0.06)', background: 'rgb(var(--hover-overlay) / 0.02)' }}>
+                          <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1rem', fontWeight: 700, color: 'rgb(var(--accent))', fontVariantNumeric: 'tabular-nums' }}>{r.metric}</span>
+                          <span style={{ fontFamily: font, fontSize: 10, color: 'rgb(var(--hover-overlay) / 0.35)', marginInlineStart: 6, letterSpacing: isRTL ? 0 : '0.05em' }}>{isRTL ? r.label.ar : r.label.en}</span>
                         </div>
                       ))}
                     </div>
@@ -231,26 +231,26 @@ const CaseStudies = () => {
         </section>
 
         {/* ── BOTTOM CTA ────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(5rem,10vw,7rem) 0', borderTop: '1px solid #E8EBF0', textAlign: 'center' }}>
+        <section style={{ padding: 'clamp(5rem,10vw,7rem) 0', borderTop: '1px solid rgb(var(--border))', textAlign: 'center' }}>
           <div className="max-w-xl mx-auto px-5">
             <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'مشروعك القادم' : 'Your Project Next'}</span>
-            <h2 style={{ fontFamily: font, fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 700, color: '#0D1117', lineHeight: 1.1, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontFamily: font, fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 700, color: 'rgb(var(--text-primary))', lineHeight: 1.1, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '1.5rem' }}>
               {isRTL ? 'جاهز لتكون دراسة الحالة القادمة؟' : 'Ready to Become a Case Study?'}
             </h2>
-            <p style={{ fontFamily: font, fontSize: '0.95rem', fontWeight: 400, color: 'rgba(0,0,0,0.45)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
+            <p style={{ fontFamily: font, fontSize: '0.95rem', fontWeight: 400, color: 'rgb(var(--hover-overlay) / 0.45)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
               {isRTL ? 'استشارة مجانية. نطاق عمل وجدول زمني صريحان. بلا التزام.' : 'Free consultation. Honest scope and timeline. No obligation.'}
             </p>
             <button
               onClick={() => setIsFormOpen(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                padding: '16px 40px', background: '#2563EB', border: '2px solid #2563EB',
-                color: '#FFFFFF', fontFamily: font,
+                padding: '16px 40px', background: 'rgb(var(--accent))', border: '2px solid rgb(var(--accent))',
+                color: 'rgb(var(--bg-elevated))', fontFamily: font,
                 fontSize: 10, fontWeight: 500, letterSpacing: isRTL ? 0 : '0.22em', textTransform: isRTL ? 'none' : 'uppercase',
                 cursor: 'pointer', transition: 'background 0.3s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1D4ED8'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--accent-hover))'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--accent))'; }}
             >
               {isRTL ? 'ابدأ مشروعك' : 'Start a Project'} <ArrowUpRight size={14} style={{ transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
             </button>

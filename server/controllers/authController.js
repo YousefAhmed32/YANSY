@@ -26,7 +26,13 @@ const setTokenCookie = (res, token) => {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     maxAge: COOKIE_MAX_AGE_MS,
-    sameSite: isProd ? 'none' : 'lax',
+    // 'none' was only ever needed if the API lived on a different *site*
+    // (eTLD+1) than the frontend. It's deployed as api.yansytech.com behind
+    // yansytech.com (see deploy/nginx) — same registrable domain, so 'lax'
+    // still attaches the cookie on legitimate cross-subdomain fetches while
+    // actually blocking the cross-site form-POST CSRF vector 'none' opened
+    // up (there's no CSRF token anywhere in this app to otherwise guard it).
+    sameSite: 'lax',
     secure: isProd,
     path: '/',
   });
@@ -37,7 +43,7 @@ const clearTokenCookie = (res) => {
   res.clearCookie(COOKIE_NAME, {
     path: '/',
     httpOnly: true,
-    sameSite: isProd ? 'none' : 'lax',
+    sameSite: 'lax',
     secure: isProd,
   });
 };
@@ -294,7 +300,7 @@ exports.login = async (req, res) => {
     }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() })
-      .select('+loginAttempts +lockUntil')
+      .select('+password +loginAttempts +lockUntil')
       .maxTimeMS(DB_QUERY_TIMEOUT);
 
     if (!user) {
@@ -616,7 +622,7 @@ exports.forgotPassword = async (req, res) => {
     }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() })
-      .select('+passwordResetToken +passwordResetExpires')
+      .select('+password +passwordResetToken +passwordResetExpires')
       .maxTimeMS(DB_QUERY_TIMEOUT);
 
     // Always respond 200 to prevent email enumeration

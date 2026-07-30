@@ -126,7 +126,7 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           font-weight: 800;
           line-height: 0.98;
           letter-spacing: -0.045em;
-          color: #0F172A;
+          color: rgb(var(--text-primary));
           margin: 0 0 clamp(18px, 2.5vh, 30px);
           font-family: 'Inter', system-ui, sans-serif;
         }
@@ -145,9 +145,9 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
         .hero-service-pill {
           font-size: 11px;
           font-weight: 600;
-          color: #374151;
-          background: #FFFFFF;
-          border: 1px solid #E8EBF0;
+          color: rgb(var(--text-secondary));
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
           padding: 5px 12px;
           border-radius: 100px;
           white-space: nowrap;
@@ -156,8 +156,8 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           cursor: default;
         }
         .hero-service-pill:hover {
-          border-color: #C9CDD6;
-          color: #0D1117;
+          border-color: rgb(var(--border-strong));
+          color: rgb(var(--text-primary));
         }
         .hero-cta-group {
           display: flex;
@@ -171,9 +171,9 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           padding: 12px 22px;
           font-size: 13.5px;
           font-weight: 600;
-          color: #374151;
-          background: #FFFFFF;
-          border: 1.5px solid #E8EBF0;
+          color: rgb(var(--text-secondary));
+          background: rgb(var(--bg-elevated));
+          border: 1.5px solid rgb(var(--border));
           border-radius: 10px;
           cursor: pointer;
           text-decoration: none;
@@ -182,9 +182,9 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
         .hero-cta-wa:hover {
-          border-color: #C9CDD6;
-          background: #F6F7F9;
-          color: #0D1117;
+          border-color: rgb(var(--border-strong));
+          background: rgb(var(--bg-surface));
+          color: rgb(var(--text-primary));
           transform: translateY(-1px);
         }
 
@@ -197,32 +197,32 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           margin: clamp(2.5rem, 5vh, 4rem) auto 0;
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          border-top: 1px solid rgba(13,17,23,0.08);
+          border-top: 1px solid rgb(var(--border));
         }
         .hero-stat {
           padding: clamp(1rem, 2.2vh, 1.5rem) clamp(0.5rem, 1.5vw, 1.25rem);
-          border-inline-end: 1px solid rgba(13,17,23,0.06);
+          border-inline-end: 1px solid rgb(var(--border-light));
         }
         .hero-stat:last-child { border-inline-end: none; }
         .hero-stat-num {
           font-size: clamp(1.375rem, 2.2vw, 1.875rem);
           font-weight: 800;
-          color: #0D1117;
+          color: rgb(var(--text-primary));
           letter-spacing: -0.035em;
           line-height: 1.1;
           font-variant-numeric: tabular-nums;
           margin-bottom: 2px;
         }
         [dir="rtl"] .hero-stat-num { letter-spacing: 0; }
-        .hero-stat-label { font-size: 12px; font-weight: 700; color: #374151; line-height: 1.35; }
-        .hero-stat-sub   { font-size: 10.5px; color: #9BA3AE; font-weight: 500; line-height: 1.4; margin-top: 1px; }
+        .hero-stat-label { font-size: 12px; font-weight: 700; color: rgb(var(--text-secondary)); line-height: 1.35; }
+        .hero-stat-sub   { font-size: 10.5px; color: rgb(var(--text-tertiary)); font-weight: 500; line-height: 1.4; margin-top: 1px; }
 
         /* Two-up below the tablet breakpoint; the 4-across rail can't hold
            legible numbers and two lines of label under ~640px. */
         @media (max-width: 640px) {
           .hero-stats { grid-template-columns: repeat(2, 1fr); }
           .hero-stat:nth-child(2) { border-inline-end: none; }
-          .hero-stat:nth-child(-n+2) { border-bottom: 1px solid rgba(13,17,23,0.06); }
+          .hero-stat:nth-child(-n+2) { border-bottom: 1px solid rgb(var(--border-light)); }
           .hero-stat-sub { display: none; }
         }
         /* Short viewports (landscape phones, small laptops) can't fit hero copy
@@ -250,30 +250,30 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 7,
                   padding: '6px 13px', borderRadius: '100px',
-                  border: '1px solid #BBF7D0',
-                  background: '#FFFFFF',
+                  border: '1px solid rgb(var(--success) / 0.3)',
+                  background: 'rgb(var(--bg-elevated))',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                   flexDirection: isRTL ? 'row-reverse' : 'row',
                 }}>
                   <span style={{
                     display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
-                    background: '#22C55E', animation: 'pulse-dot 2s ease-in-out infinite',
+                    background: 'rgb(var(--success))', animation: 'pulse-dot 2s ease-in-out infinite',
                   }} aria-hidden />
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: '#15803D' }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: 'rgb(var(--success))' }}>
                     {isRTL ? 'نقبل مشاريع جديدة — الشهر الحالي' : 'Accepting new projects — this month'}
                   </span>
                 </div>
               </div>
 
               {/* H1 */}
-              <h1 className="hero-h1" style={fly(0.07)}>
+              <h1 className="hero-h1 line-through-1" style={fly(0.07)}>
                 {isRTL ? (
                   <>
                     نبني المواقع والتطبيقات{' '}
                     {stackHeadline && <br />}
                     والأنظمة الرقمية{' '}
                     {stackHeadline && <br />}
-                    <span style={{ color: '#2563EB', lineHeight: 'inherit' }}>لتنمية عملك.</span>
+                    <span style={{ color: 'rgb(var(--accent))', lineHeight: 'inherit' }}>لتنمية عملك.</span>
                   </>
                 ) : (
                   <>
@@ -281,7 +281,7 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                     {stackHeadline && <br />}
                     apps & digital systems{' '}
                     {stackHeadline && <br />}
-                    <span style={{ color: '#2563EB', lineHeight: 'inherit' }}>for growing businesses.</span>
+                    <span style={{ color: 'rgb(var(--accent))', lineHeight: 'inherit' }}>for growing businesses.</span>
                   </>
                 )}
               </h1>
@@ -292,7 +292,7 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                 fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
                 fontSize: 'clamp(0.9375rem, 1.15vw, 1.0625rem)',
                 fontWeight: 400,
-                color: '#4B5563',
+                color: 'rgb(var(--text-secondary))',
                 lineHeight: isRTL ? 1.9 : 1.75,
                 maxWidth: 520,
                 margin: '0 0 clamp(22px, 3vh, 32px)',

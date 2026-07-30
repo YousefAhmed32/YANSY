@@ -12,9 +12,9 @@ const Toast = () => {
       toastOptions={{
         duration: 4000,
         style: {
-          background: '#FFFFFF',
-          color: '#0D1117',
-          border: '1px solid #E8EBF0',
+          background: 'rgb(var(--bg-elevated))',
+          color: 'rgb(var(--text-primary))',
+          border: '1px solid rgb(var(--border))',
           borderRadius: '10px',
           fontSize: '13px',
           fontWeight: 500,
@@ -24,28 +24,28 @@ const Toast = () => {
         },
         success: {
           duration: 3000,
-          iconTheme: { primary: '#10B981', secondary: '#fff' },
+          iconTheme: { primary: 'rgb(var(--success))', secondary: '#fff' },
           style: {
-            background: '#F0FDF4',
-            color: '#166534',
-            border: '1px solid #86EFAC',
+            background: 'rgb(var(--success-light))',
+            color: 'rgb(var(--success))',
+            border: '1px solid rgb(var(--success) / 0.35)',
           },
         },
         error: {
           duration: 4000,
-          iconTheme: { primary: '#EF4444', secondary: '#fff' },
+          iconTheme: { primary: 'rgb(var(--danger))', secondary: '#fff' },
           style: {
-            background: '#FEF2F2',
-            color: '#991B1B',
-            border: '1px solid #FECACA',
+            background: 'rgb(var(--danger-light))',
+            color: 'rgb(var(--danger))',
+            border: '1px solid rgb(var(--danger) / 0.35)',
           },
         },
         loading: {
-          iconTheme: { primary: '#2563EB', secondary: '#EFF6FF' },
+          iconTheme: { primary: 'rgb(var(--accent))', secondary: 'rgb(var(--accent-light))' },
           style: {
-            background: '#EFF6FF',
-            color: '#1D4ED8',
-            border: '1px solid #DBEAFE',
+            background: 'rgb(var(--accent-light))',
+            color: 'rgb(var(--accent-hover))',
+            border: '1px solid rgb(var(--accent-muted))',
           },
         },
       }}

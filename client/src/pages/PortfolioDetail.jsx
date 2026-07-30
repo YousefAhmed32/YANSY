@@ -16,13 +16,13 @@ import PortfolioDetailView from '../components/portfolio-detail/PortfolioDetailV
 
 /* ── Skeleton ─────────────────────────────────────────────────────────────── */
 const Skeleton = () => (
-  <div className="bg-white min-h-screen">
+  <div className="bg-surface-white min-h-screen">
     <div style={{ paddingTop: 'calc(68px + 3rem)' }} className="max-w-7xl mx-auto px-6">
-      <div className="h-3 w-40 bg-[#F0F2F5] animate-pulse rounded mb-8" />
-      <div className="h-3 w-24 bg-[#F0F2F5] animate-pulse rounded mb-6" />
-      <div className="h-14 w-3/4 bg-[#F0F2F5] animate-pulse rounded mb-6" />
-      <div className="h-5 w-2/3 bg-[#F6F7F9] animate-pulse rounded mb-12" />
-      <div className="aspect-[16/9] w-full bg-[#F6F7F9] animate-pulse rounded-2xl" />
+      <div className="h-3 w-40 bg-[rgb(var(--border-light))] animate-pulse rounded mb-8" />
+      <div className="h-3 w-24 bg-[rgb(var(--border-light))] animate-pulse rounded mb-6" />
+      <div className="h-14 w-3/4 bg-[rgb(var(--border-light))] animate-pulse rounded mb-6" />
+      <div className="h-5 w-2/3 bg-[rgb(var(--bg-surface))] animate-pulse rounded mb-12" />
+      <div className="aspect-[16/9] w-full bg-[rgb(var(--bg-surface))] animate-pulse rounded-2xl" />
     </div>
   </div>
 );
@@ -89,9 +89,9 @@ const PortfolioDetail = () => {
 
   if (loading) return <Skeleton />;
   if (!project) return (
-    <div className="bg-white text-[#0D1117] min-h-screen flex items-center justify-center" dir={dir}>
+    <div className="bg-surface-white text-[rgb(var(--text-primary))] min-h-screen flex items-center justify-center" dir={dir}>
       <div className="text-center">
-        <p className="text-[#6B7280] font-light mb-6">{isRTL ? 'المشروع غير موجود' : 'Project not found'}</p>
+        <p className="text-[rgb(var(--text-secondary))] font-light mb-6">{isRTL ? 'المشروع غير موجود' : 'Project not found'}</p>
         <Link to="/portfolio" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex' }}>
           {isRTL ? '← العودة للمحفظة' : '← Back to Portfolio'}
         </Link>

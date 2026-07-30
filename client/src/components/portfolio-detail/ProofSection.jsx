@@ -45,7 +45,7 @@ const ProofSection = ({ project, isRTL }) => {
             <div className="proof-grid">
               {audioSrc && (
                 <div className="proof-panel">
-                  <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 14 }}>
+                  <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', marginBottom: 14 }}>
                     {isRTL ? 'رسالة صوتية' : 'Voice Note'}
                   </p>
                   <VoiceNoteCard
@@ -63,7 +63,7 @@ const ProofSection = ({ project, isRTL }) => {
 
               {screenshots.length > 0 && (
                 <div className="proof-panel">
-                  <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 14 }}>
+                  <p style={{ fontFamily: font, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', marginBottom: 14 }}>
                     {isRTL ? 'محادثة واتساب' : 'WhatsApp Conversation'}
                   </p>
                   <div className="proof-shots-grid">
@@ -90,14 +90,14 @@ const ProofSection = ({ project, isRTL }) => {
             <div style={{
               display: 'flex', flexWrap: 'wrap', gap: 12,
               paddingTop: (audioSrc || screenshots.length) ? 'clamp(1.75rem, 3vw, 2.5rem)' : 0,
-              borderTop: (audioSrc || screenshots.length) ? '1px solid var(--border)' : 'none',
+              borderTop: (audioSrc || screenshots.length) ? '1px solid rgb(var(--border))' : 'none',
             }}>
               {awards.map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-                  <Award style={{ width: 16, height: 16, color: 'var(--accent)', flexShrink: 0 }} aria-hidden />
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderRadius: 'var(--radius-md)', border: '1px solid rgb(var(--border))', background: 'rgb(var(--bg-surface))' }}>
+                  <Award style={{ width: 16, height: 16, color: 'rgb(var(--accent))', flexShrink: 0 }} aria-hidden />
                   <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0, fontFamily: font }}>{isRTL && a.titleAr ? a.titleAr : a.title}</p>
-                    {(a.org || a.year) && <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: 0 }}>{[a.org, a.year].filter(Boolean).join(' · ')}</p>}
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'rgb(var(--text-primary))', margin: 0, fontFamily: font }}>{isRTL && a.titleAr ? a.titleAr : a.title}</p>
+                    {(a.org || a.year) && <p style={{ fontSize: 11, color: 'rgb(var(--text-tertiary))', margin: 0 }}>{[a.org, a.year].filter(Boolean).join(' · ')}</p>}
                   </div>
                 </div>
               ))}

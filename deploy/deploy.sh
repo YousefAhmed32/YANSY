@@ -22,6 +22,14 @@ npm ci --production=false
 npm run build
 cd ..
 
+# 1b. Regenerate the portfolio-items block of the built sitemap.xml from
+#     live DB data — portfolio is admin-managed and goes stale in the
+#     sitemap otherwise (see server/scripts/generateSitemap.js). Non-fatal:
+#     if this fails, the deploy still proceeds with the base static sitemap
+#     rather than blocking the whole release over an SEO nicety.
+echo "==> Regenerating sitemap.xml portfolio entries..."
+(cd server && node scripts/generateSitemap.js) || echo "⚠️  Sitemap regeneration failed — continuing with static sitemap."
+
 # 2. Copy frontend to web root
 echo "==> Deploying frontend to /var/www/yansytech.com..."
 sudo mkdir -p /var/www/yansytech.com

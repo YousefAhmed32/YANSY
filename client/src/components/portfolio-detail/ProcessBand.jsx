@@ -22,14 +22,14 @@ const ProcessBand = ({ project, isRTL }) => {
       <div className="section-inner" style={{ maxWidth: 760, textAlign: 'center' }}>
         <Reveal distance={14}>
           <span className="section-label" style={{ marginBottom: 24 }}>{isRTL ? 'كيف وصلنا لهذا' : 'How We Got There'}</span>
-          <div aria-hidden style={{ width: 32, height: 2, background: 'var(--accent)', margin: '0 auto 28px', borderRadius: 2 }} />
+          <div aria-hidden style={{ width: 32, height: 2, background: 'rgb(var(--accent))', margin: '0 auto 28px', borderRadius: 2 }} />
           <p style={{
             fontFamily: font, fontSize: 'clamp(1.25rem, 2.4vw, 1.75rem)', fontWeight: 600,
-            color: 'var(--text-primary)', lineHeight: 1.6, letterSpacing: isRTL ? 0 : '-0.015em', whiteSpace: 'pre-line',
+            color: 'rgb(var(--text-primary))', lineHeight: 1.6, letterSpacing: isRTL ? 0 : '-0.015em', whiteSpace: 'pre-line',
           }}>
             {process}
           </p>
-          <div aria-hidden style={{ width: 32, height: 2, background: 'var(--accent)', margin: '28px auto 0', borderRadius: 2 }} />
+          <div aria-hidden style={{ width: 32, height: 2, background: 'rgb(var(--accent))', margin: '28px auto 0', borderRadius: 2 }} />
         </Reveal>
       </div>
     </section>

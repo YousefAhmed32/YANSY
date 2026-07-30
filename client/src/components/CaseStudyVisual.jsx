@@ -29,7 +29,7 @@ const INDUSTRY_META = {
   'hospitality':  { Icon: BedDouble,        en: 'Hospitality',        ar: 'الضيافة' },
 };
 
-const CaseStudyVisual = ({ slug, industryKey, color = '#2563EB', variant = 'card', isRTL = false, alt = '', style }) => {
+const CaseStudyVisual = ({ slug, industryKey, color = 'rgb(var(--accent))', variant = 'card', isRTL = false, alt = '', style }) => {
   const candidates = useMemo(() => [
     slug && `/placeholders/case-studies/${slug}.jpg`,
     industryKey && `/placeholders/industries/${industryKey}.jpg`,

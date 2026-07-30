@@ -83,8 +83,8 @@ const SwipeHint = () => {
             fill="none" xmlns="http://www.w3.org/2000/svg"
             style={{ flexShrink: 0, animation: "fingerBounce 1.6s ease-in-out 1.4s infinite" }}
           >
-            <path d="M10 14V8" stroke="#2563EB" strokeWidth="1.2" strokeLinecap="round"/>
-            <path d="M7.5 10.5L10 8L12.5 10.5" stroke="#2563EB" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 14V8" stroke="rgb(var(--accent))" strokeWidth="1.2" strokeLinecap="round"/>
+            <path d="M7.5 10.5L10 8L12.5 10.5" stroke="rgb(var(--accent))" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             <rect x="5" y="11" width="10" height="7" rx="2" stroke="rgba(37,99,235,0.35)" strokeWidth="1"/>
             <circle cx="10" cy="14.5" r="1" fill="rgba(37,99,235,0.4)"/>
           </svg>

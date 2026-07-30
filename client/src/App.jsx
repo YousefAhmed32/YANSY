@@ -46,9 +46,8 @@ const PortfolioWizard = lazy(() => import('./pages/PortfolioWizard'));
 const PortfolioPreview = lazy(() => import('./pages/PortfolioPreview'));
 const AdminIntro      = lazy(() => import('./pages/AdminIntro'));
 const AdminHomepageVideo = lazy(() => import('./pages/AdminHomepageVideo'));
+const AdminClientLogos = lazy(() => import('./pages/AdminClientLogos'));
 const AdminStartProject  = lazy(() => import('./pages/AdminStartProject'));
-const Profile         = lazy(() => import('./pages/Profile'));
-const Settings        = lazy(() => import('./pages/Settings'));
 const ForgotPassword  = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword   = lazy(() => import('./pages/ResetPassword'));
 const Invoices        = lazy(() => import('./pages/Invoices'));
@@ -129,7 +128,7 @@ const AnimatedRoutes = () => {
         */}
         <Routes location={location} key={location.pathname}>
 
-          {/* ── Public — wrapped in PageTransition for cinematic navigation ── */}
+          {/* ── Public — wrapped in PageTransition for cinematic navigation. ── */}
           <Route path="/"          element={<PageTransition><Home /></PageTransition>} />
           <Route path="/home"      element={<PageTransition><Home /></PageTransition>} />
           <Route path="/case-studies" element={<PageTransition><CaseStudies /></PageTransition>} />
@@ -141,10 +140,10 @@ const AnimatedRoutes = () => {
           <Route path="/industries" element={<PageTransition><Industries /></PageTransition>} />
           <Route path="/why-yansy" element={<PageTransition><WhyYansyPage /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+          <Route path="/feedback"  element={<PageTransition><FeedbackForm /></PageTransition>} />
           {/* /process retired — its content lives on the homepage and inside the Contact page's process timeline */}
           <Route path="/process"  element={<Navigate to="/contact" replace />} />
           <Route path="/pricing"  element={<Navigate to="/contact" replace />} />
-          <Route path="/feedback"  element={<PageTransition><FeedbackForm /></PageTransition>} />
 
           {/* ── Auth — no transition, instant ── */}
           <Route path="/login"           element={<Login />} />
@@ -222,6 +221,10 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/homepage-video"
               element={<ProtectedRoute requireAdmin><AdminHomepageVideo /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/client-logos"
+              element={<ProtectedRoute requireAdmin><AdminClientLogos /></ProtectedRoute>}
             />
             <Route
               path="admin/start-project"

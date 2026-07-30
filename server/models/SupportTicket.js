@@ -8,7 +8,7 @@ const noteSchema = new mongoose.Schema({
 }, { _id: false });
 
 const supportTicketSchema = new mongoose.Schema({
-  ticketId: { type: String, unique: true, index: true },
+  ticketId: { type: String, unique: true }, // `unique: true` already creates the index
 
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,

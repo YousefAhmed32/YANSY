@@ -52,7 +52,7 @@ const StoryBeats = ({ project, isRTL }) => {
                 <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>{b.label}</span>
                 <p style={{
                   fontFamily: font, fontSize: 'clamp(1.125rem, 2vw, 1.5rem)', fontWeight: isRTL ? 500 : 400,
-                  color: 'var(--text-primary)', lineHeight: 1.7, whiteSpace: 'pre-line', letterSpacing: isRTL ? 0 : '-0.01em',
+                  color: 'rgb(var(--text-primary))', lineHeight: 1.7, whiteSpace: 'pre-line', letterSpacing: isRTL ? 0 : '-0.01em',
                 }}>
                   {b.content}
                 </p>
@@ -65,17 +65,17 @@ const StoryBeats = ({ project, isRTL }) => {
           <Reveal distance={16}>
             <div style={{
               marginTop: beats.length ? 'clamp(3rem, 6vw, 4.5rem)' : 0, paddingTop: beats.length ? 'clamp(1.75rem, 3vw, 2.5rem)' : 0,
-              borderTop: beats.length ? '1px solid var(--border)' : 'none',
+              borderTop: beats.length ? '1px solid rgb(var(--border))' : 'none',
               display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
               flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start',
             }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginInlineEnd: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', marginInlineEnd: 4 }}>
                 {isRTL ? 'التقنيات' : 'Built With'}
               </span>
               {tags.map((tag, i) => (
                 <span key={`${tag}-${i}`} style={{
                   fontSize: 12, padding: '6px 14px', borderRadius: 999,
-                  border: '1px solid var(--accent-muted)', background: 'var(--accent-light)',
+                  border: '1px solid rgb(var(--accent-muted))', background: 'rgb(var(--accent-light))',
                   color: '#1E40AF', fontWeight: 500, fontFamily: font,
                 }}>
                   {tag}
@@ -93,14 +93,14 @@ const StoryBeats = ({ project, isRTL }) => {
           grid-template-columns: 1fr;
           gap: 1.25rem;
           padding: clamp(2.25rem, 5vw, 3.25rem) 0;
-          border-top: 1px solid var(--border);
+          border-top: 1px solid rgb(var(--border));
         }
         .story-beat__num {
           font-family: 'Inter',system-ui,sans-serif;
           font-size: clamp(3.5rem, 8vw, 6.5rem);
           font-weight: 800;
           line-height: 0.8;
-          color: var(--border-strong);
+          color: rgb(var(--border-strong));
           opacity: 0.55;
           font-variant-numeric: tabular-nums;
         }

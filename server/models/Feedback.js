@@ -101,7 +101,9 @@ feedbackSchema.virtual('averageRating').get(function() {
 });
 
 // Indexes for efficient queries
-feedbackSchema.index({ userId: 1, projectId: 1 });
+// (userId+projectId lookups are served by the unique partial index below —
+// this plain duplicate of the same key combination triggered a Mongoose
+// boot-time duplicate-index warning.)
 feedbackSchema.index({ projectId: 1 });
 feedbackSchema.index({ isDeleted: 1, isHighlighted: 1 });
 feedbackSchema.index({ createdAt: -1 });

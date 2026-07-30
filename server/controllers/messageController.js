@@ -78,14 +78,18 @@ exports.getThreads = async (req, res, next) => {
         .populate('assignedTo', 'fullName email')
         .sort({ isPinned: -1, lastActivity: -1 })
         .limit(limit)
-        .skip((page - 1) * limit),
+        .skip((page - 1) * limit)
+        .lean(),
       MessageThread.countDocuments(query),
     ]);
 
     const userId = req.user._id.toString();
+    // .lean() already returns plain objects (no .toObject() needed) and
+    // serializes the `unreadCounts` Map field as a plain object, not a Map
+    // instance — hence the bracket lookup instead of .get().
     let enriched = threads.map(t => ({
-      ...t.toObject(),
-      unreadCount: t.unreadCounts?.get(userId) || 0,
+      ...t,
+      unreadCount: t.unreadCounts?.[userId] || 0,
     }));
 
     // Filter unread-only client-side (avoids complex query)
@@ -378,6 +382,12 @@ exports.updateThreadStatus = async (req, res, next) => {
     if (!THREAD_STATUSES.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
     }
+    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN';
+    const existing = await MessageThread.findById(req.params.id).select('participants');
+    if (!existing) return res.status(404).json({ error: 'Thread not found' });
+    if (!isAdmin && !existing.participants.some((p) => p.toString() === req.user._id.toString())) {
+      return res.status(404).json({ error: 'Thread not found' });
+    }
     const thread = await MessageThread.findByIdAndUpdate(
       req.params.id,
       { status },
@@ -414,6 +424,12 @@ exports.updateThreadPriority = async (req, res, next) => {
 exports.archiveThread = async (req, res, next) => {
   try {
     const { archived = true } = req.body;
+    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN';
+    const existing = await MessageThread.findById(req.params.id).select('participants');
+    if (!existing) return res.status(404).json({ error: 'Thread not found' });
+    if (!isAdmin && !existing.participants.some((p) => p.toString() === req.user._id.toString())) {
+      return res.status(404).json({ error: 'Thread not found' });
+    }
     const thread = await MessageThread.findByIdAndUpdate(
       req.params.id,
       { isArchived: archived },
@@ -426,14 +442,21 @@ exports.archiveThread = async (req, res, next) => {
 };
 
 // ── PATCH /threads/:id/pin ────────────────────────────────────────────────────
+// Pinning is an admin inbox-triage concept (sorts to top of the admin list) —
+// no customer-facing equivalent exists, so unlike status/archive this is
+// restricted to admins rather than opened up to thread participants.
 exports.pinThread = async (req, res, next) => {
   try {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
     const { pinned = true } = req.body;
     const thread = await MessageThread.findByIdAndUpdate(
       req.params.id,
       { isPinned: pinned },
       { new: true }
     );
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
     res.json({ thread });
   } catch (error) {
     next(error);

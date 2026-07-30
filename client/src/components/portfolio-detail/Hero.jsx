@@ -62,23 +62,23 @@ const Hero = ({ project, title, desc, isRTL }) => {
 
         {/* Breadcrumb */}
         <nav data-fade aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} style={{ opacity: 0, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
-          <Link to="/" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'var(--text-tertiary)', textDecoration: 'none' }}>{isRTL ? 'الرئيسية' : 'Home'}</Link>
-          <span aria-hidden style={{ color: 'var(--border-strong)' }}>{isRTL ? '‹' : '›'}</span>
-          <Link to="/portfolio" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'var(--text-tertiary)', textDecoration: 'none' }}>{isRTL ? 'المحفظة' : 'Portfolio'}</Link>
-          <span aria-hidden style={{ color: 'var(--border-strong)' }}>{isRTL ? '‹' : '›'}</span>
-          <span style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'var(--accent)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
+          <Link to="/" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgb(var(--text-tertiary))', textDecoration: 'none' }}>{isRTL ? 'الرئيسية' : 'Home'}</Link>
+          <span aria-hidden style={{ color: 'rgb(var(--border-strong))' }}>{isRTL ? '‹' : '›'}</span>
+          <Link to="/portfolio" style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgb(var(--text-tertiary))', textDecoration: 'none' }}>{isRTL ? 'المحفظة' : 'Portfolio'}</Link>
+          <span aria-hidden style={{ color: 'rgb(var(--border-strong))' }}>{isRTL ? '‹' : '›'}</span>
+          <span style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.16em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgb(var(--accent))', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
         </nav>
 
         {/* Eyebrow badges */}
         <div data-fade style={{ opacity: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
           <span className="section-label">{categoryLabel(project.category, isRTL ? 'ar' : 'en')}</span>
           {project.industry && (
-            <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)', fontFamily: font }}>{project.industry}</span>
+            <span style={{ fontSize: 11.5, color: 'rgb(var(--text-tertiary))', fontFamily: font }}>{project.industry}</span>
           )}
           {project.year && (
             <>
-              <span aria-hidden style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--border-strong)' }} />
-              <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)' }}>{project.year}</span>
+              <span aria-hidden style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgb(var(--border-strong))' }} />
+              <span style={{ fontSize: 11.5, color: 'rgb(var(--text-tertiary))' }}>{project.year}</span>
             </>
           )}
         </div>
@@ -89,18 +89,18 @@ const Hero = ({ project, title, desc, isRTL }) => {
             {clientName ? (
               <>
                 {project.clientLogo?.url && (
-                  <img src={mediaSrc(project.clientLogo)} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', border: '1px solid var(--border)', background: '#fff' }} />
+                  <img src={mediaSrc(project.clientLogo)} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', border: '1px solid rgb(var(--border))', background: '#fff' }} />
                 )}
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: font }}>{clientName}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'rgb(var(--text-primary))', fontFamily: font }}>{clientName}</span>
               </>
             ) : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: font }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgb(var(--text-tertiary))', fontFamily: font }}>
                 <ShieldCheck style={{ width: 13, height: 13 }} aria-hidden />
                 {isRTL ? 'تفاصيل العميل سرية' : 'Client details confidential'}
               </span>
             )}
             {location && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-tertiary)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgb(var(--text-tertiary))' }}>
                 <MapPin style={{ width: 12, height: 12 }} aria-hidden /> {location}
               </span>
             )}
@@ -110,7 +110,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
         {/* Title */}
         <h1 data-fade style={{
           opacity: 0, fontFamily: font, fontSize: 'clamp(2.5rem, 6vw, 5.25rem)', fontWeight: 800,
-          lineHeight: isRTL ? 1.18 : 1.02, letterSpacing: isRTL ? 0 : '-0.035em', color: 'var(--text-primary)',
+          lineHeight: isRTL ? 1.18 : 1.02, letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))',
           maxWidth: '18ch', marginBottom: tagline ? 14 : 22, marginInlineStart: isRTL ? 'auto' : 0,
         }}>
           {title}
@@ -121,7 +121,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
         {tagline && (
           <p data-fade style={{
             opacity: 0, fontFamily: font, fontSize: 'clamp(1.125rem, 2.2vw, 1.5rem)', fontWeight: 500,
-            color: 'var(--accent)', lineHeight: 1.4, maxWidth: '48ch', marginBottom: 14,
+            color: 'rgb(var(--accent))', lineHeight: 1.4, maxWidth: '48ch', marginBottom: 14,
             marginInlineStart: isRTL ? 'auto' : 0,
           }}>
             {tagline}
@@ -131,7 +131,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
         {desc && (
           <p data-fade style={{
             opacity: 0, fontFamily: font, fontSize: 'clamp(1rem, 1.6vw, 1.1875rem)', fontWeight: 400,
-            color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '56ch', marginBottom: 'clamp(2.5rem, 5vw, 3.5rem)',
+            color: 'rgb(var(--text-secondary))', lineHeight: 1.6, maxWidth: '56ch', marginBottom: 'clamp(2.5rem, 5vw, 3.5rem)',
             marginInlineStart: isRTL ? 'auto' : 0,
           }}>
             {desc}
@@ -145,7 +145,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
           className="hero-panel"
           style={{
             opacity: 0, position: 'relative', width: '100%', borderRadius: 'var(--radius-xl)',
-            overflow: 'hidden', boxShadow: 'var(--shadow-hero)', border: '1px solid var(--border)',
+            overflow: 'hidden', boxShadow: 'var(--shadow-hero)', border: '1px solid rgb(var(--border))',
           }}
         >
           <div ref={imgWrapRef} style={{ position: 'absolute', inset: '-5% 0', willChange: 'transform' }}>
@@ -180,7 +180,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
               background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
               border: '1px solid rgba(255,255,255,0.22)',
             }}>
-              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} />
+              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgb(var(--accent))' }} />
               <span style={{ fontFamily: font, fontSize: 11, fontWeight: 500, color: '#fff', letterSpacing: isRTL ? 0 : '0.08em', textTransform: isRTL ? 'none' : 'uppercase' }}>
                 {project.industry}
               </span>
@@ -236,15 +236,15 @@ const Hero = ({ project, title, desc, isRTL }) => {
 };
 
 /* ── Spec strip ───────────────────────────────────────────────────────────── */
-const LINK_PILL = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, border: '1px solid var(--border)', transition: 'border-color 0.2s, color 0.2s' };
+const LINK_PILL = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: 'rgb(var(--text-secondary))', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, border: '1px solid rgb(var(--border))', transition: 'border-color 0.2s, color 0.2s' };
 
 const SpecItem = ({ Icon, label, children, isRTL }) => (
   <div className="spec-item" style={{ display: 'flex', alignItems: 'center', gap: 12, flexDirection: isRTL ? 'row-reverse' : 'row', textAlign: isRTL ? 'right' : 'left' }}>
-    <div aria-hidden style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Icon style={{ width: 15, height: 15, color: 'var(--accent)' }} />
+    <div aria-hidden style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'rgb(var(--accent-light))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon style={{ width: 15, height: 15, color: 'rgb(var(--accent))' }} />
     </div>
     <div style={{ minWidth: 0 }}>
-      <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 3, fontWeight: 600 }}>{label}</p>
+      <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', marginBottom: 3, fontWeight: 600 }}>{label}</p>
       {children}
     </div>
   </div>
@@ -275,7 +275,7 @@ const MetaStrip = ({ project, isRTL, font }) => {
   if (!fields.length && !links.length && !project.team?.length) return null;
 
   return (
-    <div style={{ borderBottom: '1px solid var(--border)', marginTop: 'clamp(2.5rem, 5vw, 3.5rem)' }}>
+    <div style={{ borderBottom: '1px solid rgb(var(--border))', marginTop: 'clamp(2.5rem, 5vw, 3.5rem)' }}>
       <div className="max-w-7xl mx-auto spec-strip" style={{
         padding: 'clamp(22px, 3vw, 32px) clamp(1.25rem, 5vw, 3rem)',
         display: 'flex', flexWrap: 'wrap', gap: '22px clamp(28px, 4vw, 48px)', alignItems: 'center', justifyContent: 'space-between',
@@ -283,7 +283,7 @@ const MetaStrip = ({ project, isRTL, font }) => {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '22px clamp(28px, 4vw, 48px)', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
           {fields.map((f, i) => (
             <SpecItem key={i} Icon={f.Icon} label={f.label} isRTL={isRTL}>
-              <p style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, fontFamily: font }}>{f.value}</p>
+              <p style={{ fontSize: 14, color: 'rgb(var(--text-primary))', fontWeight: 600, fontFamily: font }}>{f.value}</p>
             </SpecItem>
           ))}
 
@@ -296,9 +296,9 @@ const MetaStrip = ({ project, isRTL, font }) => {
                     title={`${m.name}${m.role ? ` — ${isRTL ? (m.roleAr || m.role) : m.role}` : ''}`}
                     style={{
                       width: 26, height: 26, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                      border: '2px solid #fff', boxShadow: '0 0 0 1px var(--border)',
+                      border: '2px solid #fff', boxShadow: '0 0 0 1px rgb(var(--border))',
                       marginInlineStart: i > 0 ? -8 : 0,
-                      background: 'var(--accent-light)', color: 'var(--accent)',
+                      background: 'rgb(var(--accent-light))', color: 'rgb(var(--accent))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 10, fontWeight: 700,
                     }}
@@ -318,8 +318,8 @@ const MetaStrip = ({ project, isRTL, font }) => {
               return (
                 <a
                   key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={LINK_PILL}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgb(var(--border-strong))'; e.currentTarget.style.color = 'rgb(var(--text-primary))'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgb(var(--border))'; e.currentTarget.style.color = 'rgb(var(--text-secondary))'; }}
                 >
                   <LinkIcon style={{ width: 14, height: 14 }} aria-hidden />
                   {link.label}
@@ -336,7 +336,7 @@ const MetaStrip = ({ project, isRTL, font }) => {
           .spec-strip > div:first-child { position: relative; }
           .spec-strip .spec-item:not(:last-child)::after {
             content: ''; position: absolute; top: 50%; transform: translateY(-50%);
-            inset-inline-end: calc(-1 * clamp(14px, 2vw, 24px)); width: 1px; height: 28px; background: var(--border);
+            inset-inline-end: calc(-1 * clamp(14px, 2vw, 24px)); width: 1px; height: 28px; background: rgb(var(--border));
           }
         }
       `}</style>

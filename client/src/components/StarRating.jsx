@@ -68,7 +68,7 @@ const StarRating = ({
   const getStarColor = (index) => {
     const activeValue = hoveredStar || value;
     if (index <= activeValue) {
-      return 'text-[#2563EB] fill-[#2563EB]';
+      return 'text-[rgb(var(--accent))] fill-[rgb(var(--accent))]';
     }
     return 'text-white/20 fill-white/10';
   };

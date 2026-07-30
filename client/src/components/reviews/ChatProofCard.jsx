@@ -14,8 +14,8 @@ const ChatProofCard = ({ src, index, label, tag, isRTL, onOpen }) => {
     <div className="cp-card">
       <style>{`
         .cp-card {
-          background: #FFFFFF;
-          border: 1px solid var(--border);
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
           border-radius: var(--radius-lg);
           overflow: hidden;
           transition: box-shadow 0.28s cubic-bezier(0.16,1,0.3,1),
@@ -24,7 +24,7 @@ const ChatProofCard = ({ src, index, label, tag, isRTL, onOpen }) => {
         }
         .cp-card:hover {
           box-shadow: 0 12px 36px rgba(0,0,0,0.08);
-          border-color: var(--border-strong);
+          border-color: rgb(var(--border-strong));
           transform: translateY(-2px);
         }
         .cp-frame {
@@ -87,7 +87,7 @@ const ChatProofCard = ({ src, index, label, tag, isRTL, onOpen }) => {
         />
         <div className="cp-zoom" aria-hidden>
           <div className="cp-zoom-icon">
-            <ZoomIn style={{ width: 17, height: 17, color: '#0D1117' }} />
+            <ZoomIn style={{ width: 17, height: 17, color: 'rgb(var(--text-primary))' }} />
           </div>
         </div>
       </div>
@@ -96,11 +96,11 @@ const ChatProofCard = ({ src, index, label, tag, isRTL, onOpen }) => {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '12px 14px', flexDirection: isRTL ? 'row-reverse' : 'row',
       }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{label}</span>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
-          fontSize: 10, fontWeight: 600, color: '#0EA85F',
-          background: '#ECFDF5', border: '1px solid #D1FAE5',
+          fontSize: 10, fontWeight: 600, color: 'rgb(var(--success))',
+          background: 'rgb(var(--success-light))', border: '1px solid rgb(var(--success) / 0.35)',
           padding: '2px 7px', borderRadius: 100,
           flexDirection: isRTL ? 'row-reverse' : 'row',
         }}>

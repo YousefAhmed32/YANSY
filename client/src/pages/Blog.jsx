@@ -65,20 +65,20 @@ const Blog = () => {
     return () => ctx.revert();
   }, [active]);
 
-  const categoryColor = (slug) => CATEGORIES.find(c => c.slug === slug)?.color || '#2563EB';
+  const categoryColor = (slug) => CATEGORIES.find(c => c.slug === slug)?.color || 'rgb(var(--accent))';
 
   return (
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-white text-[#0D1117] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <main className="bg-surface-white text-[rgb(var(--text-primary))] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
         <section ref={heroRef} style={{ paddingTop: '128px', paddingBottom: '5rem' }}>
           <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.25), transparent)' }} />
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
             <div data-hero-anim className="opacity-0 flex items-center gap-3 mb-6">
-              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, #2563EB, transparent)', display: 'inline-block' }} />
+              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, rgb(var(--accent)), transparent)', display: 'inline-block' }} />
               <span className="eyebrow">{isRTL ? 'رؤى وأدلة' : 'Insights & Guides'}</span>
             </div>
             <h1  data-hero-anim className="opacity-0 " style={{
@@ -87,7 +87,7 @@ const Blog = () => {
               fontWeight: 700,
               lineHeight: 1.04,
               letterSpacing: isRTL ? 0 : '-0.03em',
-              color: '#0D1117',
+              color: 'rgb(var(--text-primary))',
               maxWidth: '16ch',
               marginBottom: '1.5rem',
             }}>
@@ -95,7 +95,7 @@ const Blog = () => {
                 <>
                   مدونة{' '}
                   <span  style={{
-                    backgroundImage: 'linear-gradient(135deg, #2563EB 0%, rgba(0,0,0,0.8) 55%)',
+                    backgroundImage: 'linear-gradient(135deg, rgb(var(--accent)) 0%, rgba(0,0,0,0.8) 55%)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', padding:' 0 0 10px 0px'
                   }}>
                     يانسي تك
@@ -105,7 +105,7 @@ const Blog = () => {
                 <>
                   The{' '}
                   <span style={{
-                    backgroundImage: 'linear-gradient(135deg, #2563EB 0%, rgba(0,0,0,0.8) 55%)',
+                    backgroundImage: 'linear-gradient(135deg, rgb(var(--accent)) 0%, rgba(0,0,0,0.8) 55%)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
                   }}>
                     YANSY TECH
@@ -118,7 +118,7 @@ const Blog = () => {
               fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter', system-ui, sans-serif",
               fontSize: 'clamp(0.95rem,2vw,1.1rem)',
               fontWeight: 400,
-              color: 'rgba(0,0,0,0.6)',
+              color: 'rgb(var(--hover-overlay) / 0.6)',
               lineHeight: 1.8,
               maxWidth: '52ch',
               marginBottom: '3rem',
@@ -134,9 +134,9 @@ const Blog = () => {
                 onClick={() => setActive('all')}
                 style={{
                   padding: '7px 18px',
-                  border: `1px solid ${active === 'all' ? 'rgba(37,99,235,0.5)' : 'rgba(0,0,0,0.08)'}`,
+                  border: `1px solid ${active === 'all' ? 'rgba(37,99,235,0.5)' : 'rgb(var(--hover-overlay) / 0.08)'}`,
                   background: active === 'all' ? 'rgba(37,99,235,0.08)' : 'transparent',
-                  color: active === 'all' ? '#2563EB' : '#5C6370',
+                  color: active === 'all' ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
                   fontFamily: "'Inter', sans-serif",
                   fontSize: 11, fontWeight: 400, letterSpacing: '0.12em', textTransform: 'uppercase',
                   cursor: 'pointer', transition: 'all 0.25s',
@@ -150,9 +150,9 @@ const Blog = () => {
                   onClick={() => setActive(cat.slug)}
                   style={{
                     padding: '7px 18px',
-                    border: `1px solid ${active === cat.slug ? `${cat.color}50` : 'rgba(0,0,0,0.08)'}`,
+                    border: `1px solid ${active === cat.slug ? `${cat.color}50` : 'rgb(var(--hover-overlay) / 0.08)'}`,
                     background: active === cat.slug ? `${cat.color}10` : 'transparent',
-                    color: active === cat.slug ? cat.color : '#5C6370',
+                    color: active === cat.slug ? cat.color : 'rgb(var(--text-secondary))',
                     fontFamily: "'Inter', sans-serif",
                     fontSize: 11, fontWeight: 400, letterSpacing: '0.12em', textTransform: 'uppercase',
                     cursor: 'pointer', transition: 'all 0.25s',
@@ -171,11 +171,11 @@ const Blog = () => {
             <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
               <Link
                 to={`/blog/${posts[0].slug}`}
-                style={{ textDecoration: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', background: 'rgba(0,0,0,0.02)', border: '1px solid #E8EBF0', transition: 'border-color 0.35s, background 0.35s' }}
+                style={{ textDecoration: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', background: 'rgb(var(--hover-overlay) / 0.02)', border: '1px solid rgb(var(--border))', transition: 'border-color 0.35s, background 0.35s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.2)'; e.currentTarget.style.background = 'rgba(37,99,235,0.02)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.04)'; e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgb(var(--hover-overlay) / 0.04)'; e.currentTarget.style.background = 'rgb(var(--hover-overlay) / 0.02)'; }}
               >
-                <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#F6F7F9', minWidth: 0 }}>
+                <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: 'rgb(var(--bg-surface))', minWidth: 0 }}>
                   <BlogVisual icon={CATEGORIES.find(c => c.slug === posts[0].category)?.icon} label={categoryLabel(posts[0].category)} color={categoryColor(posts[0].category)} variant="card" isRTL={isRTL} />
                 </div>
                 <div style={{ padding: 'clamp(2rem,5vw,3.5rem)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -183,17 +183,17 @@ const Blog = () => {
                     <span style={{ padding: '4px 12px', border: `1px solid ${categoryColor(posts[0].category)}30`, background: `${categoryColor(posts[0].category)}10`, color: categoryColor(posts[0].category), fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                       {categoryLabel(posts[0].category)}
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: '#5C6370', letterSpacing: '0.1em' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgb(var(--text-secondary))', letterSpacing: '0.1em' }}>
                       <Clock size={11} aria-hidden /> {posts[0].readTime} {isRTL ? 'د قراءة' : 'min read'}
                     </span>
                   </div>
-                  <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.375rem,2.5vw,2rem)', fontWeight: 600, color: '#0D1117', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+                  <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.375rem,2.5vw,2rem)', fontWeight: 600, color: 'rgb(var(--text-primary))', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
                     {posts[0].title}
                   </h2>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 400, color: '#5C6370', lineHeight: 1.8, marginBottom: '1.5rem' }}>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 400, color: 'rgb(var(--text-secondary))', lineHeight: 1.8, marginBottom: '1.5rem' }}>
                     {posts[0].excerpt}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2563EB', fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgb(var(--accent))', fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                     {isRTL ? 'اقرأ المقال' : 'Read Article'} <ArrowUpRight size={13} aria-hidden style={{ transform: isRTL ? 'scaleX(-1)' : 'none' }} />
                   </div>
                 </div>
@@ -205,17 +205,17 @@ const Blog = () => {
         {/* ── GRID ──────────────────────────────────────────────── */}
         <section ref={gridRef} style={{ paddingBottom: 'clamp(5rem,10vw,8rem)' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
               {posts.slice(1).map(post => (
                 <Link
                   key={post.slug}
                   to={`/blog/${post.slug}`}
                   data-card
-                  style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
+                  style={{ background: 'rgb(var(--bg-surface))', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
                 >
-                  <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: '#F6F7F9' }}>
+                  <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: 'rgb(var(--bg-surface))' }}>
                     <BlogVisual icon={CATEGORIES.find(c => c.slug === post.category)?.icon} label={categoryLabel(post.category)} color={categoryColor(post.category)} variant="card" isRTL={isRTL} />
                   </div>
                   <div style={{ padding: 'clamp(1.25rem,3vw,1.75rem)', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -223,17 +223,17 @@ const Blog = () => {
                       <span style={{ padding: '3px 10px', border: `1px solid ${categoryColor(post.category)}25`, background: `${categoryColor(post.category)}08`, color: categoryColor(post.category), fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                         {categoryLabel(post.category)}
                       </span>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: '#6B7280', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgb(var(--text-secondary))', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 3 }}>
                         <Clock size={9} aria-hidden /> {post.readTime}{isRTL ? 'د' : 'm'}
                       </span>
                     </div>
-                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.1rem,2vw,1.35rem)', fontWeight: 400, color: '#0D1117', lineHeight: 1.25, marginBottom: '0.75rem', flex: 1 }}>
+                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.1rem,2vw,1.35rem)', fontWeight: 400, color: 'rgb(var(--text-primary))', lineHeight: 1.25, marginBottom: '0.75rem', flex: 1 }}>
                       {post.title}
                     </h3>
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: '#5C6370', lineHeight: 1.7, marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: 'rgb(var(--text-secondary))', lineHeight: 1.7, marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {post.excerpt}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#2563EB', fontFamily: "'Inter', sans-serif", fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgb(var(--accent))', fontFamily: "'Inter', sans-serif", fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                       {isRTL ? 'اقرأ' : 'Read'} <ArrowUpRight size={11} aria-hidden style={{ transform: isRTL ? 'scaleX(-1)' : 'none' }} />
                     </div>
                   </div>
@@ -244,12 +244,12 @@ const Blog = () => {
         </section>
 
         {/* ── CTA ───────────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid #E8EBF0' }}>
+        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid rgb(var(--border))' }}>
           <div className="max-w-xl mx-auto px-5">
             <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>
               {isRTL ? 'جاهز للبناء؟' : 'Ready to Build?'}
             </span>
-            <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: '#0D1117', lineHeight: 1.15, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
+            <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: 'rgb(var(--text-primary))', lineHeight: 1.15, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
               {isRTL ? 'حوّل هذه المعرفة إلى منتج حقيقي.' : 'Turn This Knowledge Into a Product'}
             </h2>
             <button onClick={() => setIsFormOpen(true)} className="btn-primary" style={{ fontSize: '13.5px', padding: '14px 32px' }}>

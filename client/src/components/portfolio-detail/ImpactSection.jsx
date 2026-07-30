@@ -40,7 +40,7 @@ const ImpactSection = ({ project, isRTL }) => {
   if (!results && !metrics.length && !perf.length && !quote) return null;
 
   return (
-    <section className="section-shell impact-section" style={{ background: '#0D1117', borderTop: 'none', position: 'relative', overflow: 'hidden' }} dir={isRTL ? 'rtl' : 'ltr'}>
+    <section className="section-shell impact-section" style={{ background: 'rgb(var(--bg-contrast))', borderTop: 'none', position: 'relative', overflow: 'hidden' }} dir={isRTL ? 'rtl' : 'ltr'}>
       <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '32px 32px', pointerEvents: 'none' }} />
       <div aria-hidden style={{ position: 'absolute', top: '20%', insetInlineStart: '50%', transform: 'translateX(-50%)', width: 620, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(37,99,235,0.16) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
 

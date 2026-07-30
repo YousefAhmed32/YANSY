@@ -12,8 +12,7 @@ const supportConversationSchema = new mongoose.Schema({
   sessionId: {
     type:    String,
     default: uuid,
-    unique:  true,
-    index:   true,
+    unique:  true, // `unique: true` already creates the index — `index: true` alongside it was a duplicate
   },
   messages: [msgSchema],
   lang: { type: String, default: 'en' },
@@ -95,12 +94,20 @@ const supportConversationSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-supportConversationSchema.index({ 'lead.detected': 1, createdAt: -1 });
 supportConversationSchema.index({ sentiment: 1 });
 supportConversationSchema.index({ primaryIntent: 1 });
 supportConversationSchema.index({ userId: 1 });
 supportConversationSchema.index({ userType: 1, createdAt: -1 });
-supportConversationSchema.index({ leadScore: -1 });
-supportConversationSchema.index({ 'escalation.needed': 1 });
+
+// Match the admin leads-list query exactly (supportController.js `getLeads`):
+// find({'lead.detected':true, isArchived:false, ...}).sort({leadScore:-1, updatedAt:-1}).
+// The old `{'lead.detected':1, createdAt:-1}` index didn't cover `isArchived`
+// or the actual sort fields, so this was a full collection scan + in-memory
+// sort on the fastest-growing collection in the app (every AI chat logs here).
+supportConversationSchema.index({ 'lead.detected': 1, isArchived: 1, leadScore: -1, updatedAt: -1 });
+
+// Match the admin escalations-list query (supportController.js `getEscalations`):
+// find({'escalation.needed':true, isArchived:false}).sort({'escalation.flaggedAt':-1}).
+supportConversationSchema.index({ 'escalation.needed': 1, isArchived: 1, 'escalation.flaggedAt': -1 });
 
 module.exports = mongoose.model('SupportConversation', supportConversationSchema);

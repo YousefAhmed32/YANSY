@@ -12,7 +12,7 @@ const STEPS = [
     descAR: 'استشارة مجانية 30 دقيقة. نستمع لأهدافك ونفهم عملك قبل كتابة أي سطر كود.',
     tagEN: 'Free · 30 minutes',
     tagAR: 'مجاناً · 30 دقيقة',
-    accentColor: '#2563EB',
+    accentColor: 'rgb(var(--accent))',
   },
   {
     num: '02',
@@ -97,8 +97,8 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
 
         .process-card {
           position: relative;
-          background: #FFFFFF;
-          border: 1px solid var(--border);
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
           border-radius: 16px;
           padding: clamp(20px, 2.2vw, 26px);
           height: 100%;
@@ -122,8 +122,8 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
           transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
         }
         .process-card:hover {
-          border-color: #D8DDE6;
-          box-shadow: 0 14px 36px rgba(13,17,23,0.07), 0 2px 8px rgba(13,17,23,0.03);
+          border-color: rgb(var(--border-strong));
+          box-shadow: var(--shadow-card-hover);
           transform: translateY(-3px);
         }
         .process-card:hover::before { transform: scaleX(1); }
@@ -141,19 +141,19 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
           font-size: 12px; font-weight: 800;
           font-variant-numeric: tabular-nums;
           flex-shrink: 0;
-          background: color-mix(in srgb, var(--step-accent) 9%, #FFFFFF);
-          border: 1px solid color-mix(in srgb, var(--step-accent) 22%, #FFFFFF);
+          background: color-mix(in srgb, var(--step-accent) 9%, rgb(var(--bg-elevated)));
+          border: 1px solid color-mix(in srgb, var(--step-accent) 22%, rgb(var(--bg-elevated)));
           color: var(--step-accent);
           transition: background 0.3s ease, color 0.3s ease;
         }
         .process-card:hover .process-num-chip {
           background: var(--step-accent);
-          color: #FFFFFF;
+          color: rgb(var(--bg-elevated));
         }
         .process-tag {
           display: inline-flex; align-items: center; gap: 5px;
           font-size: 10.5px; font-weight: 700;
-          color: var(--text-tertiary);
+          color: rgb(var(--text-tertiary));
           text-transform: uppercase;
           letter-spacing: 0.07em;
           min-width: 0;
@@ -164,7 +164,7 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
         .process-title {
           font-size: clamp(0.9375rem, 1.15vw, 1.0625rem);
           font-weight: 700;
-          color: var(--text-primary);
+          color: rgb(var(--text-primary));
           margin: 0 0 8px;
           letter-spacing: -0.02em;
           line-height: 1.3;
@@ -176,7 +176,7 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
         }
         .process-desc {
           font-size: 13px;
-          color: var(--text-secondary);
+          color: rgb(var(--text-secondary));
           line-height: 1.65;
           margin: 0;
         }
@@ -204,8 +204,8 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
                 : ['6 milestones', '14d average', 'Weekly updates']
               ).map((item, i) => (
                 <div key={i} className="process-meta-item">
-                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} aria-hidden />
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-secondary)' }}>{item}</span>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgb(var(--accent))', flexShrink: 0 }} aria-hidden />
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: 'rgb(var(--text-secondary))' }}>{item}</span>
                 </div>
               ))}
             </div>
@@ -243,7 +243,7 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
           gap: 14,
           marginTop: 'clamp(3rem, 6vw, 4.5rem)',
           paddingTop: 'clamp(2.5rem, 5vw, 3.5rem)',
-          borderTop: '1px solid var(--border)',
+          borderTop: '1px solid rgb(var(--border))',
         }}>
           <button
             onClick={onStartProject}
@@ -253,7 +253,7 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
             {rtl ? 'ابدأ عملية المشروع' : 'Start the Project Process'}
             <ArrowUpRight style={{ width: 15, height: 15, transform: rtl ? 'scaleX(-1)' : 'none' }} aria-hidden />
           </button>
-          <p style={{ fontSize: 12.5, color: 'var(--text-tertiary)', margin: 0, textAlign: 'center' }}>
+          <p style={{ fontSize: 12.5, color: 'rgb(var(--text-tertiary))', margin: 0, textAlign: 'center' }}>
             {rtl ? 'استشارة مجانية · لا التزام · رد خلال ساعتين' : 'Free consultation · No commitment · Reply within 2 hours'}
           </p>
         </div>

@@ -127,8 +127,8 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 0;
-          border-top: 1px solid #E8EBF0;
-          border-bottom: 1px solid #E8EBF0;
+          border-top: 1px solid rgb(var(--border));
+          border-bottom: 1px solid rgb(var(--border));
           margin-bottom: clamp(3rem, 6vw, 4.5rem);
         }
         @media (max-width: 860px) {
@@ -139,26 +139,26 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
         }
         .metric-cell {
           padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem);
-          border-inline-end: 1px solid #E8EBF0;
+          border-inline-end: 1px solid rgb(var(--border));
           text-align: ${rtl ? 'right' : 'left'};
           transition: background 0.25s;
         }
         .metric-cell:last-child { border-inline-end: none; }
         @media (max-width: 860px) {
           .metric-cell:nth-child(2n) { border-inline-end: none; }
-          .metric-cell:nth-child(-n+2) { border-bottom: 1px solid #E8EBF0; }
+          .metric-cell:nth-child(-n+2) { border-bottom: 1px solid rgb(var(--border)); }
         }
         @media (max-width: 480px) {
-          .metric-cell { border-inline-end: none; border-bottom: 1px solid #E8EBF0; }
+          .metric-cell { border-inline-end: none; border-bottom: 1px solid rgb(var(--border)); }
           .metric-cell:last-child { border-bottom: none; }
         }
-        .metric-cell:hover { background: #FFFFFF; }
-        .metric-cell:hover .metric-num { color: #2563EB; }
+        .metric-cell:hover { background: rgb(var(--bg-elevated)); }
+        .metric-cell:hover .metric-num { color: rgb(var(--accent)); }
         .metric-num {
           font-size: clamp(3.5rem, 6vw, 5.5rem);
           font-weight: 800;
           letter-spacing: -0.04em;
-          color: #0D1117;
+          color: rgb(var(--text-primary));
           line-height: 0.95;
           margin-bottom: clamp(16px, 2vw, 24px);
           font-variant-numeric: tabular-nums;
@@ -167,7 +167,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
         .metric-label {
           font-size: clamp(0.8125rem, 1vw, 0.9375rem);
           font-weight: 700;
-          color: #0D1117;
+          color: rgb(var(--text-primary));
           line-height: 1.3;
           letter-spacing: -0.01em;
           margin-bottom: 8px;
@@ -176,7 +176,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
         [dir="rtl"] .metric-label { letter-spacing: 0; }
         .metric-sub {
           font-size: clamp(11px, 0.85vw, 12.5px);
-          color: #9BA3AE;
+          color: rgb(var(--text-tertiary));
           line-height: 1.5;
           margin-bottom: 10px;
         }
@@ -186,16 +186,16 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
           gap: 5px;
           font-size: 10.5px;
           font-weight: 700;
-          color: #5C6370;
+          color: rgb(var(--text-secondary));
           text-transform: uppercase;
           letter-spacing: 0.07em;
           transition: color 0.18s;
         }
-        a.metric-note:hover { color: #2563EB; }
+        a.metric-note:hover { color: rgb(var(--accent)); }
         [dir="rtl"] .metric-note { letter-spacing: 0; text-transform: none; }
         .metric-note-dot {
           width: 4px; height: 4px; border-radius: 50%;
-          background: #2563EB; flex-shrink: 0;
+          background: rgb(var(--accent)); flex-shrink: 0;
         }
       `}</style>
 
@@ -239,7 +239,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
             <p style={{
               fontSize: 'clamp(1.125rem, 1.5vw, 1.375rem)',
               fontWeight: 700,
-              color: '#0D1117',
+              color: 'rgb(var(--text-primary))',
               margin: '0 0 6px',
               letterSpacing: rtl ? 0 : '-0.02em',
               fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
@@ -248,7 +248,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
             </p>
             <p style={{
               fontSize: 13.5,
-              color: '#9BA3AE',
+              color: 'rgb(var(--text-tertiary))',
               margin: 0,
               fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
             }}>

@@ -15,7 +15,7 @@ const NotFound = () => {
   useSEO({
     title: isRTL ? 'الصفحة غير موجودة | يانسي تك' : 'Page Not Found | YANSY TECH',
     description: isRTL ? 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.' : "The page you're looking for doesn't exist or has been moved.",
-    noindex: true,
+    noIndex: true,
   });
 
   return (

@@ -65,8 +65,8 @@ const ContactItem = ({ icon, value, label, toastMessage }) => {
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
         padding: '8px 12px', borderRadius: '8px',
-        border: `1px solid ${active ? '#C9CDD6' : '#E8EBF0'}`,
-        background: active ? '#FFFFFF' : '#FAFAFA',
+        border: `1px solid ${active ? 'rgb(var(--border-strong))' : 'rgb(var(--border))'}`,
+        background: active ? 'rgb(var(--bg-elevated))' : 'rgb(var(--bg-secondary))',
         cursor: 'pointer',
         transform: active ? 'scale(1.02)' : 'scale(1)',
         transformOrigin: 'center left',
@@ -75,12 +75,12 @@ const ContactItem = ({ icon, value, label, toastMessage }) => {
     >
       <span style={{
         display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
-        color: active ? '#0D1117' : '#374151', fontSize: 12.5,
+        color: active ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', fontSize: 12.5,
         transition: 'color 0.26s ease',
       }}>
         <Icon style={{
           width: 13, height: 13, flexShrink: 0,
-          color: active ? '#2563EB' : '#9BA3AE',
+          color: active ? 'rgb(var(--accent))' : 'rgb(var(--text-tertiary))',
           transition: 'color 0.26s ease',
         }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
@@ -89,8 +89,8 @@ const ContactItem = ({ icon, value, label, toastMessage }) => {
       {/* Fixed-size slot so the copy/check icon fading in on hover never shifts layout */}
       <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 14, height: 14, flexShrink: 0 }} aria-hidden>
         {copied
-          ? <Check style={{ width: 13, height: 13, color: '#16a34a' }} />
-          : <Copy style={{ width: 13, height: 13, color: '#2563EB', opacity: active ? 1 : 0, transition: 'opacity 0.22s ease' }} />}
+          ? <Check style={{ width: 13, height: 13, color: 'rgb(var(--success))' }} />
+          : <Copy style={{ width: 13, height: 13, color: 'rgb(var(--accent))', opacity: active ? 1 : 0, transition: 'opacity 0.22s ease' }} />}
       </span>
     </div>
   );

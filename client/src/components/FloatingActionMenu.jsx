@@ -16,9 +16,9 @@ const WhatsAppGlyph = () => (
 const CSS = `
   .fab-main {
     width: 56px; height: 56px; border-radius: 50%;
-    background: #FFFFFF; border: 1px solid #E8EBF0;
+    background: rgb(var(--bg-elevated)); border: 1px solid rgb(var(--border));
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; padding: 0; color: #111827; flex-shrink: 0;
+    cursor: pointer; padding: 0; color: rgb(var(--text-primary)); flex-shrink: 0;
     box-shadow: 0 8px 28px rgba(13,17,23,0.14), 0 2px 8px rgba(13,17,23,0.06);
     transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s cubic-bezier(.34,1.56,.64,1),
                 border-color .25s ease, color .25s ease;
@@ -26,7 +26,7 @@ const CSS = `
   .fab-main:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(13,17,23,0.18), 0 3px 10px rgba(13,17,23,0.08); }
   .fab-main[aria-expanded="true"] {
     border-color: rgba(37,99,235,.35);
-    color: #2563EB;
+    color: rgb(var(--accent));
     box-shadow: 0 8px 28px rgba(37,99,235,0.18), 0 2px 8px rgba(37,99,235,0.08);
   }
   .fab-main-icon { display: block; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
@@ -34,7 +34,7 @@ const CSS = `
   .fab-item {
     display: flex; align-items: center; gap: 10px;
     height: 48px; padding-inline-start: 6px; padding-inline-end: 16px;
-    background: #FFFFFF; border: 1px solid #E8EBF0; border-radius: 999px;
+    background: rgb(var(--bg-elevated)); border: 1px solid rgb(var(--border)); border-radius: 999px;
     cursor: pointer; white-space: nowrap; margin: 0;
     box-shadow: 0 4px 20px rgba(13,17,23,0.10), 0 1px 4px rgba(13,17,23,0.05);
     opacity: 0; transform: translateY(10px) scale(.94); pointer-events: none;
@@ -49,11 +49,11 @@ const CSS = `
     width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
   }
-  .fab-item-label { font-size: 13px; font-weight: 600; color: #0D1117; letter-spacing: -.005em; font-family: 'Inter', system-ui, sans-serif; }
+  .fab-item-label { font-size: 13px; font-weight: 600; color: rgb(var(--text-primary)); letter-spacing: -.005em; font-family: 'Inter', system-ui, sans-serif; }
   .fab-item[dir="rtl"] .fab-item-label { font-family: 'IBM Plex Sans Arabic', 'Alexandria', system-ui, sans-serif; letter-spacing: 0 !important; }
 
   .fab-main:focus-visible, .fab-item:focus-visible {
-    outline: 2px solid #2563EB; outline-offset: 2px;
+    outline: 2px solid rgb(var(--accent)); outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -141,8 +141,8 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
     {
       id: 'ai',
       label: isRTL ? 'يانسي AI' : 'YANSY AI',
-      color: '#2563EB',
-      tint: '#EFF6FF',
+      color: 'rgb(var(--accent))',
+      tint: 'rgb(var(--accent-light))',
       border: 'rgba(37,99,235,.3)',
       icon: <Sparkles size={16} strokeWidth={2.25} />,
       delay: 55,
@@ -155,9 +155,9 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
     {
       id: 'top',
       label: isRTL ? 'العودة للأعلى' : 'Back to top',
-      color: '#374151',
-      tint: '#F6F7F9',
-      border: '#E8EBF0',
+      color: 'rgb(var(--text-secondary))',
+      tint: 'rgb(var(--bg-surface))',
+      border: 'rgb(var(--border))',
       icon: <ArrowUp size={16} strokeWidth={2.25} />,
       delay: 110,
       onSelect: () => {

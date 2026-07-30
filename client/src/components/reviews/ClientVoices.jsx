@@ -15,8 +15,9 @@ const CHAT_SCREENSHOTS = [
 ];
 
 const VOICE_NOTES = [
+  '/assets/review/recorde-1-r.mp3',
   '/assets/review/recorde-1.mp3',
-  '/assets/review/recorde-2.wav',
+  '/assets/review/recorde-2.mp3',
   '/assets/review/recorde-3.mp3',
 ];
 
@@ -61,8 +62,8 @@ const ClientVoices = ({ isRTL: isRTLProp }) => {
           .rp-grid { grid-template-columns: 1fr; }
         }
         .rp-panel {
-          background: var(--bg-surface);
-          border: 1px solid var(--border);
+          background: rgb(var(--bg-surface));
+          border: 1px solid rgb(var(--border));
           border-radius: var(--radius-xl);
           padding: clamp(18px, 2.5vw, 28px);
           display: flex;
@@ -71,7 +72,7 @@ const ClientVoices = ({ isRTL: isRTLProp }) => {
         .rp-kicker {
           display: flex; align-items: center; gap: 8px;
           font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-          color: var(--text-tertiary);
+          color: rgb(var(--text-tertiary));
           margin-bottom: 16px;
         }
         [dir="rtl"] .rp-kicker { letter-spacing: 0; text-transform: none; }

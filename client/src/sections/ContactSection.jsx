@@ -24,7 +24,7 @@ const Field = ({ id, label, error, required, rtl, children }) => (
       <p
         id={`${id}-err`}
         style={{
-          fontSize: 12, color: '#B91C1C', margin: '6px 2px 0',
+          fontSize: 12, color: 'rgb(var(--danger))', margin: '6px 2px 0',
           textAlign: rtl ? 'right' : 'left',
           display: 'flex', alignItems: 'center', gap: 5,
           flexDirection: rtl ? 'row-reverse' : 'row',
@@ -158,7 +158,10 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
       dir={rtl ? 'rtl' : 'ltr'}
       className="section-shell"
       style={{
-        background: '#0D1117',
+        /* Fixed near-black in both themes on purpose — this is the site's one
+           deliberately-dark "spotlight" band, not a surface that should invert
+           when the rest of the page goes dark (see --bg-contrast in index.css). */
+        background: 'rgb(var(--bg-contrast))',
         borderTop: 'none',   /* the dark block is its own boundary */
         position: 'relative',
         overflow: 'hidden',
@@ -188,7 +191,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
           border: 1.5px solid rgba(255,255,255,0.1);
           background: rgba(255,255,255,0.05);
           font-size: 14px;
-          color: #FFFFFF;
+          color: rgb(var(--on-contrast));
           outline: none;
           box-sizing: border-box;
           font-family: inherit;
@@ -201,15 +204,15 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
           border-color: rgba(255,255,255,0.3);
           background: rgba(255,255,255,0.08);
         }
-        .contact-field option { background: #1F2937; color: #FFFFFF; }
+        .contact-field option { background: #1F2937; color: rgb(var(--on-contrast)); }
         .contact-field-light {
           width: 100%;
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1.5px solid #E8EBF0;
-          background: #FAFAFA;
+          border: 1.5px solid rgb(var(--border));
+          background: rgb(var(--bg-secondary));
           font-size: 14px;
-          color: #0D1117;
+          color: rgb(var(--text-primary));
           outline: none;
           box-sizing: border-box;
           font-family: inherit;
@@ -219,10 +222,10 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
           -webkit-appearance: none;
           -moz-appearance: none;
         }
-        .contact-field-light::placeholder { color: #9BA3AE; }
+        .contact-field-light::placeholder { color: rgb(var(--text-tertiary)); }
         .contact-field-light:focus {
-          border-color: #0D1117;
-          background: #FFFFFF;
+          border-color: rgb(var(--text-primary));
+          background: rgb(var(--bg-elevated));
         }
         .contact-guarantee {
           display: flex;
@@ -276,7 +279,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
               fontWeight: 800,
               lineHeight: 1.0,
               letterSpacing: rtl ? 0 : '-0.04em',
-              color: '#FFFFFF',
+              color: 'rgb(var(--on-contrast))',
               margin: '0 0 clamp(16px, 2.5vw, 24px)',
               fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
             }}>
@@ -347,7 +350,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
 
           {/* Right: Form */}
           <div style={{
-            background: '#FFFFFF',
+            background: 'rgb(var(--bg-elevated))',
             borderRadius: 20,
             padding: 'clamp(24px, 3.5vw, 44px)',
           }}>
@@ -355,17 +358,17 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
               <div role="status" style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 60px) 0' }}>
                 <div style={{
                   width: 60, height: 60, borderRadius: '50%',
-                  background: '#DCFCE7', margin: '0 auto 20px',
+                  background: 'rgb(var(--success-light))', margin: '0 auto 20px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" width="26" height="26" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="rgb(var(--success))" strokeWidth="2.5" width="26" height="26" aria-hidden>
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <h3 style={{ fontSize: 22, fontWeight: 700, color: '#0D1117', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+                <h3 style={{ fontSize: 22, fontWeight: 700, color: 'rgb(var(--text-primary))', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
                   {rtl ? 'تم الإرسال!' : 'Message sent!'}
                 </h3>
-                <p style={{ fontSize: 14, color: '#5C6370', margin: 0 }}>
+                <p style={{ fontSize: 14, color: 'rgb(var(--text-secondary))', margin: 0 }}>
                   {rtl ? 'سنرد عليك خلال ساعتين.' : "We'll get back to you within 2 hours."}
                 </p>
               </div>
@@ -374,14 +377,14 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                 <div style={{ textAlign: rtl ? 'right' : 'left', marginBottom: 24 }}>
                   <h3 style={{
                     fontSize: 'clamp(1.125rem, 1.5vw, 1.375rem)',
-                    fontWeight: 700, color: '#0D1117',
+                    fontWeight: 700, color: 'rgb(var(--text-primary))',
                     margin: '0 0 6px',
                     letterSpacing: rtl ? 0 : '-0.02em',
                     fontFamily: rtl ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
                   }}>
                     {rtl ? 'أخبرنا عن مشروعك' : 'Tell us about your project'}
                   </h3>
-                  <p style={{ fontSize: 13, color: '#5C6370', margin: 0 }}>
+                  <p style={{ fontSize: 13, color: 'rgb(var(--text-secondary))', margin: 0 }}>
                     {rtl ? 'مجاني · بدون التزام · رد خلال ساعتين' : 'Free · No commitment · Reply within 2 hours'}
                   </p>
                 </div>
@@ -433,7 +436,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                       className="contact-field-light"
                       style={{
                         cursor: 'pointer',
-                        color: form.projectType ? '#0D1117' : '#9BA3AE',
+                        color: form.projectType ? 'rgb(var(--text-primary))' : 'rgb(var(--text-tertiary))',
                         paddingInlineEnd: 36,
                       }}
                     >
@@ -445,7 +448,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                       ))}
                     </select>
                     <svg
-                      viewBox="0 0 24 24" fill="none" stroke="#9BA3AE" strokeWidth="2"
+                      viewBox="0 0 24 24" fill="none" stroke="rgb(var(--text-tertiary))" strokeWidth="2"
                       width="14" height="14" aria-hidden
                       style={{
                         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -481,9 +484,9 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                   <p
                     role="alert"
                     style={{
-                      fontSize: 12.5, color: '#B91C1C', margin: '0 0 12px',
+                      fontSize: 12.5, color: 'rgb(var(--danger))', margin: '0 0 12px',
                       textAlign: rtl ? 'right' : 'left',
-                      background: '#FEF2F2', border: '1px solid #FECACA',
+                      background: 'rgb(var(--danger-light))', border: '1px solid rgb(var(--danger) / 0.25)',
                       borderRadius: 8, padding: '10px 12px',
                     }}
                   >
@@ -513,7 +516,7 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
                 </button>
 
                 <p style={{
-                  fontSize: 11.5, color: '#6B7280', textAlign: 'center',
+                  fontSize: 11.5, color: 'rgb(var(--text-secondary))', textAlign: 'center',
                   margin: '14px 0 0',
                 }}>
                   {rtl ? 'نرد في الغالب خلال ساعتين' : 'We typically respond within 2 hours'}

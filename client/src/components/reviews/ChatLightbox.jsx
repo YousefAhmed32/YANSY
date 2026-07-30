@@ -56,7 +56,7 @@ const ChatLightbox = ({ images, active, onClose, onPrev, onNext, isRTL }) => {
   return (
     <div
       data-chat-lightbox
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-white/95"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-surface-white/95"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -65,13 +65,13 @@ const ChatLightbox = ({ images, active, onClose, onPrev, onNext, isRTL }) => {
       <button
         ref={closeBtnRef}
         onClick={onClose}
-        className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all z-10 bg-white"
+        className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center border border-border text-content-secondary hover:text-content-primary hover:border-border-strong transition-all z-10 bg-surface-white"
         aria-label={isRTL ? 'إغلاق' : 'Close'}
       >
         <X className="w-4 h-4" />
       </button>
 
-      <span dir="ltr" className="absolute top-5 left-5 text-[10px] tracking-widest uppercase text-[#6B7280] z-10">
+      <span dir="ltr" className="absolute top-5 left-5 text-[10px] tracking-widest uppercase text-content-secondary z-10">
         {active + 1} / {images.length}
       </span>
 
@@ -84,17 +84,21 @@ const ChatLightbox = ({ images, active, onClose, onPrev, onNext, isRTL }) => {
 
       {images.length > 1 && (
         <>
+          {/* Physically-left/right buttons swap which direction they trigger
+              under RTL, matching the keyboard handler above (and the
+              sibling portfolio Lightbox) — otherwise Left-arrow-key and
+              clicking the left button would move in opposite directions. */}
           <button
-            onClick={(e) => { e.stopPropagation(); onPrev(); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all bg-white"
-            aria-label={isRTL ? 'المحادثة السابقة' : 'Previous conversation'}
+            onClick={(e) => { e.stopPropagation(); isRTL ? onNext() : onPrev(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-border text-content-secondary hover:text-content-primary hover:border-border-strong transition-all bg-surface-white"
+            aria-label={isRTL ? 'المحادثة التالية' : 'Previous conversation'}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onNext(); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-[#E8EBF0] text-[#6B7280] hover:text-[#0D1117] hover:border-[#C9CDD6] transition-all bg-white"
-            aria-label={isRTL ? 'المحادثة التالية' : 'Next conversation'}
+            onClick={(e) => { e.stopPropagation(); isRTL ? onPrev() : onNext(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center border border-border text-content-secondary hover:text-content-primary hover:border-border-strong transition-all bg-surface-white"
+            aria-label={isRTL ? 'المحادثة السابقة' : 'Next conversation'}
           >
             <ChevronRight className="w-5 h-5" />
           </button>

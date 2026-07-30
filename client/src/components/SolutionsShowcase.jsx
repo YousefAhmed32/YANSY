@@ -17,7 +17,7 @@ const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
    those answer "who do you build for", this answers "what do you build". */
 const SOLUTIONS = [
   {
-    icon: Globe, accent: '#2563EB',
+    icon: Globe, accent: 'rgb(var(--accent))',
     titleEN: 'Websites & Landing Pages', titleAR: 'مواقع ويب وصفحات هبوط',
     tagEN: 'Convert visitors into customers', tagAR: 'حوّل الزوار إلى عملاء',
     descEN: 'High-converting websites built for speed, SEO, and lead generation.', descAR: 'مواقع عالية التحويل مبنية للسرعة وSEO وجذب العملاء.',
@@ -104,7 +104,7 @@ const SolutionRow = ({ solution, index, isRTL, onStartProject }) => {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onStartProject(); }}
       style={{
         position: 'relative', cursor: 'pointer', overflow: 'hidden',
-        borderBottom: index < SOLUTIONS.length - 1 ? '1px solid #E8EBF0' : 'none',
+        borderBottom: index < SOLUTIONS.length - 1 ? '1px solid rgb(var(--border))' : 'none',
         padding: 'clamp(1.5rem, 3vw, 2.25rem) clamp(0.5rem, 1.5vw, 1rem)',
         background: hovered ? `${solution.accent}06` : 'transparent',
         transition: 'background 0.35s ease',
@@ -127,7 +127,7 @@ const SolutionRow = ({ solution, index, isRTL, onStartProject }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
           <span style={{
             fontSize: 'clamp(1.5rem, 2.6vw, 2.25rem)', fontWeight: 800, lineHeight: 1,
-            color: hovered ? `${solution.accent}55` : '#E8EBF0', fontVariantNumeric: 'tabular-nums',
+            color: hovered ? `${solution.accent}55` : 'rgb(var(--border))', fontVariantNumeric: 'tabular-nums',
             transition: 'color 0.3s ease', fontFamily: "'Inter',system-ui,sans-serif",
           }}>
             {String(index + 1).padStart(2, '0')}
@@ -138,7 +138,7 @@ const SolutionRow = ({ solution, index, isRTL, onStartProject }) => {
             background: hovered ? solution.accent : `${solution.accent}0D`,
             border: `1px solid ${hovered ? solution.accent : `${solution.accent}22`}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: hovered ? '#FFFFFF' : solution.accent,
+            color: hovered ? 'rgb(var(--bg-elevated))' : solution.accent,
             transform: hovered ? 'scale(1.06) rotate(-3deg)' : 'scale(1) rotate(0deg)',
             transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
           }}>
@@ -150,7 +150,7 @@ const SolutionRow = ({ solution, index, isRTL, onStartProject }) => {
         <div style={{ textAlign: isRTL ? 'right' : 'left', minWidth: 0, flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
             <h3 style={{
-              margin: 0, fontSize: 'clamp(1.05rem, 1.6vw, 1.3rem)', fontWeight: 700, color: '#0D1117',
+              margin: 0, fontSize: 'clamp(1.05rem, 1.6vw, 1.3rem)', fontWeight: 700, color: 'rgb(var(--text-primary))',
               letterSpacing: isRTL ? 0 : '-0.02em', fontFamily: font,
             }}>
               {isRTL ? solution.titleAR : solution.titleEN}
@@ -164,7 +164,7 @@ const SolutionRow = ({ solution, index, isRTL, onStartProject }) => {
             </span>
           </div>
           <p style={{
-            margin: '0 0 10px', fontSize: 13, color: '#5C6370', lineHeight: 1.65,
+            margin: '0 0 10px', fontSize: 13, color: 'rgb(var(--text-secondary))', lineHeight: 1.65,
             fontFamily: font, maxWidth: '62ch',
           }}>
             {isRTL ? solution.descAR : solution.descEN}
@@ -172,8 +172,8 @@ const SolutionRow = ({ solution, index, isRTL, onStartProject }) => {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
             {(isRTL ? solution.featuresAR : solution.featuresEN).map((f, i) => (
               <span key={i} style={{
-                fontSize: 11, fontWeight: 500, color: '#6B7280',
-                background: '#F6F7F9', padding: '3px 10px', borderRadius: 999, fontFamily: font,
+                fontSize: 11, fontWeight: 500, color: 'rgb(var(--text-secondary))',
+                background: 'rgb(var(--bg-surface))', padding: '3px 10px', borderRadius: 999, fontFamily: font,
               }}>
                 {f}
               </span>
@@ -232,7 +232,7 @@ const SolutionsShowcase = ({ onStartProject }) => {
       ref={sectionRef}
       dir={isRTL ? 'rtl' : 'ltr'}
       style={{
-        background: '#FAFAFA', borderTop: '1px solid #E8EBF0', borderBottom: '1px solid #E8EBF0',
+        background: 'rgb(var(--bg-secondary))', borderTop: '1px solid rgb(var(--border))', borderBottom: '1px solid rgb(var(--border))',
         paddingTop: 'clamp(5rem, 10vw, 8rem)', paddingBottom: 'clamp(5rem, 10vw, 8rem)',
         paddingLeft: 'clamp(1.25rem, 5vw, 3rem)', paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
       }}
@@ -252,11 +252,11 @@ const SolutionsShowcase = ({ onStartProject }) => {
           </span>
           <h2 style={{
             fontSize: 'var(--text-5xl)', fontWeight: 800, lineHeight: 1.06,
-            letterSpacing: isRTL ? 0 : '-0.035em', color: '#0D1117', margin: '0 0 16px', fontFamily: font,
+            letterSpacing: isRTL ? 0 : '-0.035em', color: 'rgb(var(--text-primary))', margin: '0 0 16px', fontFamily: font,
           }}>
             {isRTL ? 'الحلول الرقمية وراء كل قطاع.' : 'The Digital Solutions Behind Every Industry.'}
           </h2>
-          <p style={{ fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: '#5C6370', lineHeight: 1.75, margin: 0, fontFamily: font }}>
+          <p style={{ fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)', color: 'rgb(var(--text-secondary))', lineHeight: 1.75, margin: 0, fontFamily: font }}>
             {isRTL
               ? 'من المواقع إلى الذكاء الاصطناعي — هذه الأدوات التي نستخدمها لحل مشاكل القطاعات أعلاه، مهما كان تعقيد التحدي.'
               : "From websites to AI — this is the toolkit we draw from to solve the industry problems above, whatever the challenge looks like."}
@@ -264,7 +264,7 @@ const SolutionsShowcase = ({ onStartProject }) => {
         </div>
 
         {/* List */}
-        <div ref={listRef} style={{ borderTop: '1px solid #E8EBF0' }}>
+        <div ref={listRef} style={{ borderTop: '1px solid rgb(var(--border))' }}>
           {SOLUTIONS.map((solution, i) => (
             <SolutionRow key={solution.titleEN} solution={solution} index={i} isRTL={isRTL} onStartProject={onStartProject} />
           ))}
@@ -273,9 +273,9 @@ const SolutionsShowcase = ({ onStartProject }) => {
         {/* Footer note */}
         <div style={{
           display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-          marginTop: 'clamp(2rem, 4vw, 3rem)', paddingTop: 'clamp(1.5rem, 3vw, 2rem)', borderTop: '1px solid #E8EBF0',
+          marginTop: 'clamp(2rem, 4vw, 3rem)', paddingTop: 'clamp(1.5rem, 3vw, 2rem)', borderTop: '1px solid rgb(var(--border))',
         }}>
-          <p style={{ margin: 0, fontSize: 13, color: '#9BA3AE', fontFamily: font, textAlign: isRTL ? 'right' : 'left' }}>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgb(var(--text-tertiary))', fontFamily: font, textAlign: isRTL ? 'right' : 'left' }}>
             {isRTL ? 'لا تجد ما تحتاجه؟ تواصل معنا — نبنيه.' : "Don't see what you need? Contact us — we'll build it."}
           </p>
           <button

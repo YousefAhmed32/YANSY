@@ -30,7 +30,7 @@ const BlogPost = () => {
 
   const category = post ? CATEGORIES.find(c => c.slug === post.category) : null;
   const categoryLabel = post ? (isRTL ? category?.labelAr : category?.label) || post.category : '';
-  const categoryColor = category?.color || '#2563EB';
+  const categoryColor = category?.color || 'rgb(var(--accent))';
 
   useSEO({
     title      : post ? `${post.title} | YANSY TECH` : (isRTL ? 'مقال | يانسي تك' : 'Blog Post | YANSY TECH'),
@@ -78,17 +78,17 @@ const BlogPost = () => {
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-white text-[#0D1117] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <main className="bg-surface-white text-[rgb(var(--text-primary))] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
         {/* ── HERO ──────────────────────────────────────────────── */}
-        <section ref={heroRef} style={{ paddingTop: '100px', paddingBottom: '3rem', position: 'relative', overflow: 'hidden', background: '#FFFFFF' }}>
+        <section ref={heroRef} style={{ paddingTop: '100px', paddingBottom: '3rem', position: 'relative', overflow: 'hidden', background: 'rgb(var(--bg-elevated))' }}>
           <div className="max-w-3xl mx-auto px-5 sm:px-8" style={{ position: 'relative', zIndex: 2 }}>
             {/* Back + breadcrumb */}
             <nav data-hero-anim className="opacity-0 flex items-center gap-2 mb-8">
-              <Link to="/blog" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#5C6370', fontFamily: "'Inter', sans-serif", textDecoration: 'none' }}>
+              <Link to="/blog" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgb(var(--text-secondary))', fontFamily: "'Inter', sans-serif", textDecoration: 'none' }}>
                 {isRTL ? <ArrowRight size={12} aria-hidden /> : <ArrowLeft size={12} aria-hidden />} {isRTL ? 'المدونة' : 'Blog'}
               </Link>
-              <span style={{ color: '#9BA3AE' }}>›</span>
+              <span style={{ color: 'rgb(var(--text-tertiary))' }}>›</span>
               <span style={{ fontSize: 11, letterSpacing: '0.12em', color: categoryColor, fontFamily: "'Inter', sans-serif" }}>{categoryLabel}</span>
             </nav>
 
@@ -101,10 +101,10 @@ const BlogPost = () => {
               }}>
                 {categoryLabel}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: '#5C6370', letterSpacing: '0.08em' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgb(var(--text-secondary))', letterSpacing: '0.08em' }}>
                 <Clock size={11} aria-hidden /> {post.readTime} {isRTL ? 'د قراءة' : 'min read'}
               </span>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: '#6B7280' }}>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgb(var(--text-secondary))' }}>
                 {new Date(post.publishDate).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
@@ -116,7 +116,7 @@ const BlogPost = () => {
               fontWeight: 700,
               lineHeight: 1.1,
               letterSpacing: '-0.03em',
-              color: '#0D1117',
+              color: 'rgb(var(--text-primary))',
               marginBottom: '1.5rem',
               textAlign: 'left',
             }}>
@@ -128,7 +128,7 @@ const BlogPost = () => {
               fontFamily: "'Inter',system-ui,sans-serif",
               fontSize: 'clamp(1.05rem, 2vw, 1.35rem)',
               fontWeight: 400,
-              color: '#374151',
+              color: 'rgb(var(--text-secondary))',
               lineHeight: 1.6,
               fontStyle: 'italic',
               marginBottom: '2.5rem',
@@ -141,8 +141,8 @@ const BlogPost = () => {
             <div data-hero-anim className="opacity-0 flex flex-wrap gap-2">
               {post.tags.map(tag => (
                 <span key={tag} style={{
-                  padding: '4px 12px', border: '1px solid #E8EBF0',
-                  color: '#5C6370',
+                  padding: '4px 12px', border: '1px solid rgb(var(--border))',
+                  color: 'rgb(var(--text-secondary))',
                   fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 400, letterSpacing: '0.1em',
                 }}>
                   {tag}
@@ -154,14 +154,14 @@ const BlogPost = () => {
 
         {/* ── HERO VISUAL — generated on-brand placeholder, no stock photography ── */}
         <div className="max-w-3xl mx-auto px-5 sm:px-8" style={{ marginBottom: '3rem' }}>
-          <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: '#F6F7F9', borderRadius: 12 }}>
+          <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: 'rgb(var(--bg-surface))', borderRadius: 12 }}>
             <BlogVisual icon={category?.icon} label={categoryLabel} color={categoryColor} variant="hero" isRTL={isRTL} />
           </div>
         </div>
 
         {/* ── ARTICLE BODY ──────────────────────────────────────── */}
         <article className="max-w-3xl mx-auto px-5 sm:px-8" style={{ paddingBottom: 'clamp(4rem,8vw,7rem)' }}>
-          <div style={{ borderTop: '1px solid #E8EBF0', paddingTop: '3rem' }}>
+          <div style={{ borderTop: '1px solid rgb(var(--border))', paddingTop: '3rem' }}>
             {post.content.map((section, i) => (
               <section key={i} style={{ marginBottom: '3rem' }}>
                 <h2 data-speakable dir="ltr" style={{
@@ -170,7 +170,7 @@ const BlogPost = () => {
                   fontWeight: 600,
                   lineHeight: 1.2,
                   letterSpacing: '-0.02em',
-                  color: '#0D1117',
+                  color: 'rgb(var(--text-primary))',
                   marginBottom: '1.25rem',
                   textAlign: 'left',
                 }}>
@@ -180,7 +180,7 @@ const BlogPost = () => {
                   fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
                   fontWeight: 400,
-                  color: '#374151',
+                  color: 'rgb(var(--text-secondary))',
                   lineHeight: 1.9,
                   letterSpacing: '0.01em',
                   textAlign: 'left',
@@ -192,16 +192,16 @@ const BlogPost = () => {
           </div>
 
           {/* Author / attribution */}
-          <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #E8EBF0', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid rgb(var(--border))', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 20, fontWeight: 400, color: '#2563EB' }}>Y</span>
+              <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 20, fontWeight: 400, color: 'rgb(var(--accent))' }}>Y</span>
             </div>
             <div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 500, color: '#0D1117', marginBottom: 2 }}>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 500, color: 'rgb(var(--text-primary))', marginBottom: 2 }}>
                 {isRTL ? 'فريق يانسي تك' : 'YANSY TECH Team'}
               </div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: '#5C6370' }}>
-                {isRTL ? 'استوديو منتجات رقمية متكامل' : 'Premium Digital Product Studio'} · <Link to="/portfolio" style={{ color: '#2563EB', textDecoration: 'none' }}>{isRTL ? 'شاهد أعمالنا' : 'View Our Work'}</Link>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: 'rgb(var(--text-secondary))' }}>
+                {isRTL ? 'استوديو منتجات رقمية متكامل' : 'Premium Digital Product Studio'} · <Link to="/portfolio" style={{ color: 'rgb(var(--accent))', textDecoration: 'none' }}>{isRTL ? 'شاهد أعمالنا' : 'View Our Work'}</Link>
               </div>
             </div>
           </div>
@@ -209,31 +209,31 @@ const BlogPost = () => {
 
         {/* ── RELATED POSTS ─────────────────────────────────────── */}
         {related.length > 0 && (
-          <section style={{ padding: 'clamp(4rem,8vw,6rem) 0', borderTop: '1px solid #E8EBF0' }}>
+          <section style={{ padding: 'clamp(4rem,8vw,6rem) 0', borderTop: '1px solid rgb(var(--border))' }}>
             <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
               <div className="mb-10">
                 <span className="eyebrow" style={{ display: 'block', marginBottom: '0.75rem' }}>{isRTL ? 'تابع القراءة' : 'Continue Reading'}</span>
-                <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.25rem,2.5vw,1.75rem)', fontWeight: 600, color: '#0D1117', letterSpacing: isRTL ? 0 : '-0.02em' }}>
+                <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.25rem,2.5vw,1.75rem)', fontWeight: 600, color: 'rgb(var(--text-primary))', letterSpacing: isRTL ? 0 : '-0.02em' }}>
                   {isRTL ? 'مقالات ذات صلة' : 'Related Articles'}
                 </h2>
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgba(0,0,0,0.03)' }}>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
                 {related.map(p => {
                   const rc = CATEGORIES.find(c => c.slug === p.category);
-                  const color = rc?.color || '#2563EB';
+                  const color = rc?.color || 'rgb(var(--accent))';
                   return (
                     <Link key={p.slug} to={`/blog/${p.slug}`}
-                      style={{ background: '#F6F7F9', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s', padding: 'clamp(1.25rem,3vw,2rem)' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#F0F2F5'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#F6F7F9'; }}
+                      style={{ background: 'rgb(var(--bg-surface))', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s', padding: 'clamp(1.25rem,3vw,2rem)' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                         <span style={{ padding: '3px 10px', border: `1px solid ${color}25`, background: `${color}08`, color, fontFamily: "'Inter', sans-serif", fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                           {isRTL ? rc?.labelAr : rc?.label}
                         </span>
-                        <ArrowUpRight size={14} style={{ color: '#9BA3AE', flexShrink: 0, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+                        <ArrowUpRight size={14} style={{ color: 'rgb(var(--text-tertiary))', flexShrink: 0, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
                       </div>
-                      <h3 dir="ltr" style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1.1rem', fontWeight: 500, color: '#0D1117', lineHeight: 1.3, textAlign: 'left' }}>{p.title}</h3>
+                      <h3 dir="ltr" style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1.1rem', fontWeight: 500, color: 'rgb(var(--text-primary))', lineHeight: 1.3, textAlign: 'left' }}>{p.title}</h3>
                     </Link>
                   );
                 })}
@@ -243,10 +243,10 @@ const BlogPost = () => {
         )}
 
         {/* ── CTA ───────────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid #E8EBF0' }}>
+        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid rgb(var(--border))' }}>
           <div className="max-w-xl mx-auto px-5">
             <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>{isRTL ? 'جاهز للبناء؟' : 'Ready to Build?'}</span>
-            <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: '#0D1117', lineHeight: 1.15, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
+            <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: 'rgb(var(--text-primary))', lineHeight: 1.15, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
               {isRTL ? 'حوّل هذه المعرفة إلى منتج حقيقي.' : 'Turn This Knowledge Into a Product'}
             </h2>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>

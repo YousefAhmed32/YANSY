@@ -1,21 +1,58 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertTriangle, Trash2 } from 'lucide-react';
 import { TK, RADIUS, SHADOW } from './tokens';
 import { Button } from './Primitives';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const useEscClose = (open, onClose) => {
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Escape-to-close, Tab-trap, initial-focus, and focus-restore for a
+ * portal-rendered dialog — previously this admin-ui primitive only handled
+ * Escape, unlike every public-facing modal in the codebase (ChatLightbox,
+ * the portfolio gallery Lightbox, ProjectRequestForm), which all trap focus
+ * and restore it to the trigger on close. Every admin dialog built on
+ * <Modal>/<Drawer> inherited that gap.
+ */
+const useDialogA11y = (open, containerRef, onClose) => {
+  const triggerElRef = useRef(null);
+
   useEffect(() => {
     if (!open) return;
-    const h = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', h);
-    return () => document.removeEventListener('keydown', h);
-  }, [open, onClose]);
+    triggerElRef.current = document.activeElement;
+
+    // Deferred a frame for the same reason as ChatLightbox/Lightbox: opening
+    // via a keyboard Enter/Space on the trigger can leave that key's keyup
+    // still pending, and focusing a button synchronously risks it re-firing.
+    const raf = requestAnimationFrame(() => {
+      const nodes = containerRef.current?.querySelectorAll(FOCUSABLE_SELECTOR);
+      (nodes?.[0] || containerRef.current)?.focus();
+    });
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab' || !containerRef.current) return;
+      const nodes = Array.from(containerRef.current.querySelectorAll(FOCUSABLE_SELECTOR));
+      if (!nodes.length) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('keydown', onKey);
+      triggerElRef.current?.focus?.();
+    };
+  }, [open, onClose, containerRef]);
 };
 
 export const Modal = ({ open, onClose, title, children, footer, width = '480px' }) => {
-  useEscClose(open, onClose);
+  const containerRef = useRef(null);
+  useDialogA11y(open, containerRef, onClose);
   const { isRTL } = useLanguage();
   if (!open) return null;
   return createPortal(
@@ -25,12 +62,14 @@ export const Modal = ({ open, onClose, title, children, footer, width = '480px' 
     >
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(13,17,23,0.4)', backdropFilter: 'blur(4px)', animation: 'au-fadeIn 0.15s ease' }} />
       <div
+        ref={containerRef}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         dir={isRTL ? 'rtl' : 'ltr'}
         style={{
           position: 'relative', width, maxWidth: '100%', maxHeight: '86vh', overflowY: 'auto',
           background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.xl,
-          boxShadow: SHADOW.lg, animation: 'au-popIn 0.2s cubic-bezier(0.34,1.56,0.64,1)',
+          boxShadow: SHADOW.lg, animation: 'au-popIn 0.2s cubic-bezier(0.34,1.56,0.64,1)', outline: 'none',
         }}
         className="au-scroll"
       >
@@ -86,20 +125,23 @@ export const ConfirmDialog = ({ open, onClose, onConfirm, title, description, co
 };
 
 export const Drawer = ({ open, onClose, title, children, width = '440px', side = 'right' }) => {
-  useEscClose(open, onClose);
+  const containerRef = useRef(null);
+  useDialogA11y(open, containerRef, onClose);
   const { isRTL } = useLanguage();
   if (!open) return null;
   return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 999 }} role="dialog" aria-modal="true">
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(13,17,23,0.35)', backdropFilter: 'blur(3px)', animation: 'au-fadeIn 0.18s ease' }} />
       <div
+        ref={containerRef}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         dir={isRTL ? 'rtl' : 'ltr'}
         style={{
           position: 'absolute', top: 0, bottom: 0, [side]: 0, width, maxWidth: '92vw',
           background: TK.surface, borderLeft: side === 'right' ? `1px solid ${TK.border}` : 'none',
           borderRight: side === 'left' ? `1px solid ${TK.border}` : 'none',
-          boxShadow: SHADOW.lg, display: 'flex', flexDirection: 'column',
+          boxShadow: SHADOW.lg, display: 'flex', flexDirection: 'column', outline: 'none',
           animation: `au-slideIn${side === 'right' ? 'Right' : 'Left'} 0.24s cubic-bezier(0.4,0,0.2,1)`,
         }}
       >

@@ -1,4 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+
+// Semantic colors resolve through CSS variables (defined in index.css :root)
+// instead of static hex, so every component consuming these tokens shares one
+// source of truth. `<alpha-value>` lets Tailwind's opacity modifiers (e.g.
+// bg-surface/50) keep working.
+function themeColor(cssVar) {
+  return `rgb(var(${cssVar}) / <alpha-value>)`;
+}
+
 export default {
   content: [
     "./index.html",
@@ -7,33 +16,43 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Accent — single modern blue (consistent, never mixed)
+        // Accent — single modern blue (consistent, never mixed; identical in both themes)
         accent: {
-          DEFAULT:  '#2563EB',
-          light:    '#EFF6FF',
-          muted:    '#DBEAFE',
-          hover:    '#1D4ED8',
-          subtle:   '#BFDBFE',
+          DEFAULT:  themeColor('--accent'),
+          light:    themeColor('--accent-light'),
+          muted:    themeColor('--accent-muted'),
+          hover:    themeColor('--accent-hover'),
+          subtle:   themeColor('--accent-subtle'),
         },
         // Semantic surface tokens
         surface: {
-          DEFAULT:   '#F6F7F9',
-          secondary: '#FAFAFA',
-          white:     '#FFFFFF',
+          DEFAULT:   themeColor('--bg-surface'),
+          secondary: themeColor('--bg-secondary'),
+          white:     themeColor('--bg-elevated'),
+          strong:    themeColor('--surface-strong'),
         },
         // Border tokens
         border: {
-          DEFAULT: '#E7EAF0',
-          light:   '#F1F3F7',
-          strong:  '#D1D5DB',
+          DEFAULT: themeColor('--border'),
+          light:   themeColor('--border-light'),
+          strong:  themeColor('--border-strong'),
+          input:   themeColor('--input'),
         },
         // Content tokens
         content: {
-          primary:   '#111827',
-          secondary: '#6B7280',
-          tertiary:  '#9CA3AF',
-          inverse:   '#FFFFFF',
+          primary:   themeColor('--text-primary'),
+          secondary: themeColor('--text-secondary'),
+          tertiary:  themeColor('--text-tertiary'),
+          inverse:   themeColor('--text-inverse'),
+          onstrong:  themeColor('--on-strong'),
         },
+        // Status tokens
+        success: { DEFAULT: themeColor('--success'), light: themeColor('--success-light') },
+        warning: { DEFAULT: themeColor('--warning'), light: themeColor('--warning-light') },
+        danger:  { DEFAULT: themeColor('--danger'),  light: themeColor('--danger-light') },
+        ring:    { DEFAULT: themeColor('--ring') },
+        // Reserved for tiny premium decorative touches only — never a primary/CTA color.
+        gold: { DEFAULT: themeColor('--gold'), light: themeColor('--gold-light') },
       },
       fontFamily: {
         sans:    ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
