@@ -58,30 +58,53 @@ describe('emailService', () => {
   });
 });
 
-// ── cloudStorage ──────────────────────────────────────────────────────────────
-describe('cloudStorage', () => {
-  it('exports uploadToCloud and deleteFromCloud', () => {
-    const storage = require('../utils/cloudStorage');
-    expect(typeof storage.uploadToCloud).toBe('function');
-    expect(typeof storage.deleteFromCloud).toBe('function');
+// ── mediaValidators ───────────────────────────────────────────────────────────
+// Pure functions only — GridFS I/O (media.service/gridfsRepository) needs a live
+// Mongo connection and is verified via the manual checklist, not unit tests here.
+describe('mediaValidators', () => {
+  const {
+    isAllowedMime, extensionFor, sanitizeFilename, sha256Hex, assertSize, assertMagicBytes,
+  } = require('../media/mediaValidators');
+  const { IMAGE_ONLY_MIMES } = require('../media/mediaConstants');
+
+  it('isAllowedMime checks membership in the given allow-set', () => {
+    expect(isAllowedMime('image/png', IMAGE_ONLY_MIMES)).toBe(true);
+    expect(isAllowedMime('application/zip', IMAGE_ONLY_MIMES)).toBe(false);
   });
 
-  it('uploadToCloud falls back to local in non-production without credentials', async () => {
-    // In test environment, CLOUDINARY_CLOUD_NAME is not set
-    // CLOUD_PROVIDER defaults to cloudinary → should fail to cloudinary and use local fallback
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development'; // ensure non-production
-    process.env.CLOUD_PROVIDER = 'local'; // force local for this test
+  it('extensionFor derives an extension from a known mime, empty string otherwise', () => {
+    expect(extensionFor('image/png')).toBe('.png');
+    expect(extensionFor('application/x-made-up')).toBe('');
+  });
 
-    const { uploadToCloud } = require('../utils/cloudStorage');
-    const fakeBuffer = Buffer.from('fake file content');
+  it('sanitizeFilename strips path separators and prefixes a uuid', () => {
+    const safe = sanitizeFilename('../../etc/passwd');
+    expect(safe).not.toMatch(/[./\\]{2}/);
+    expect(safe).toMatch(/^[0-9a-f-]{36}-/);
+  });
 
-    const result = await uploadToCloud(fakeBuffer, 'test.txt', 'text/plain');
-    expect(result).toHaveProperty('url');
-    expect(result).toHaveProperty('cloudId');
-    expect(result).toHaveProperty('provider', 'local');
+  it('sha256Hex is deterministic for the same bytes', () => {
+    const buf = Buffer.from('hello world');
+    expect(sha256Hex(buf)).toBe(sha256Hex(Buffer.from('hello world')));
+    expect(sha256Hex(buf)).not.toBe(sha256Hex(Buffer.from('goodbye world')));
+  });
 
-    process.env.NODE_ENV = originalEnv;
-    delete process.env.CLOUD_PROVIDER;
+  it('assertSize throws when the buffer exceeds the limit', () => {
+    const buf = Buffer.alloc(10);
+    expect(() => assertSize(buf, 5)).toThrow();
+    expect(() => assertSize(buf, 10)).not.toThrow();
+  });
+
+  it('assertMagicBytes rejects a mime not in the allow-set before even checking bytes', async () => {
+    await expect(assertMagicBytes(Buffer.from('irrelevant'), 'application/zip', IMAGE_ONLY_MIMES))
+      .rejects.toThrow(/not allowed/);
+  });
+
+  it('assertMagicBytes accepts a real PNG buffer claiming image/png', async () => {
+    const png1x1 = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64'
+    );
+    await expect(assertMagicBytes(png1x1, 'image/png', IMAGE_ONLY_MIMES)).resolves.toBeUndefined();
   });
 });

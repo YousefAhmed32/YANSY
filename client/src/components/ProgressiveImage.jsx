@@ -4,7 +4,9 @@ import GeneratedPlaceholder from './BrandedPlaceholder';
 
 /**
  * Renders a media asset with a blur-up / dominant-color placeholder that fades into
- * the real image once it loads, using Cloudinary-generated responsive sources when available.
+ * the real image once it loads. Responsive srcset sources are only ever populated for
+ * assets with a transform pipeline (historically Cloudinary); GridFS-stored assets have
+ * none, so `mediaSrcSet` returns undefined and this falls back to a single `src`.
  *
  * When there's no usable asset at all (missing/broken upload), falls back to a premium
  * on-brand generated placeholder — never an empty box — via the fallback* props.

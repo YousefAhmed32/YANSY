@@ -6,7 +6,9 @@ const posterSchema = new mongoose.Schema(
   {
     url:           { type: String, default: null },
     publicId:      { type: String, default: null },
-    provider:      { type: String, enum: ['cloudinary', 'local'], default: 'cloudinary' },
+    // 'cloudinary'/'local' kept only so pre-GridFS documents still deserialize —
+    // every new upload writes 'gridfs' (see server/media/media.service.js).
+    provider:      { type: String, enum: ['cloudinary', 'local', 'gridfs'], default: 'gridfs' },
     width:         { type: Number, default: null },
     height:        { type: Number, default: null },
     blurDataURL:   { type: String, default: null },
@@ -29,7 +31,7 @@ const homepageVideoSettingsSchema = new mongoose.Schema(
     videoSource:    { type: String, enum: ['intro', 'own'], default: 'intro' },
     videoUrl:       { type: String, default: null },
     videoPublicId:  { type: String, default: null },
-    videoProvider:  { type: String, enum: ['cloudinary', 'local'], default: 'cloudinary' },
+    videoProvider:  { type: String, enum: ['cloudinary', 'local', 'gridfs'], default: 'gridfs' },
     videoSizeBytes: { type: Number, default: null },
     poster: posterSchema,
 

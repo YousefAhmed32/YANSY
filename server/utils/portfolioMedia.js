@@ -1,49 +1,25 @@
 'use strict';
-const axios = require('axios');
-const { uploadToCloud, deleteFromCloud } = require('./cloudStorage');
+const mediaService = require('../media/media.service');
+const { PORTFOLIO_MIMES, PORTFOLIO_MAX_BYTES } = require('../media/mediaConstants');
 
 /**
- * Insert a Cloudinary transformation string into a delivery URL, right after `/upload/`.
- * No-op for non-Cloudinary URLs (e.g. the local dev fallback), which have no transform pipeline.
+ * GridFS has no on-the-fly transform pipeline (that was a Cloudinary-only
+ * feature), so responsive srcset variants are no longer generated. Kept as a
+ * no-op function (rather than removed) so `withResponsiveMedia` in
+ * portfolio.routes.js — which already treats a null return as "no responsive
+ * variant available", the same as it always has for the 'local' fallback
+ * provider — needs no changes.
  */
-const withTransform = (url, transform) => {
-  const marker = '/upload/';
-  const idx = url?.indexOf(marker);
-  if (!url || idx === -1) return url;
-  return `${url.slice(0, idx + marker.length)}${transform}/${url.slice(idx + marker.length)}`;
-};
+const buildResponsiveUrl = () => null;
 
 /**
- * Build a responsive delivery URL (auto format/quality, capped width) for a stored media asset.
- * Used by the API to hand the client a ready-to-use `srcset` source per breakpoint.
- *
- * Only Cloudinary assets can actually be resized this way — for any other provider there is no
- * transform pipeline, so this returns null rather than echoing back `asset.url`. The decorator
- * that calls this (`withResponsiveMedia`) would otherwise duplicate the raw url into srcSm/srcMd/srcLg,
- * quadrupling the payload for every non-Cloudinary asset (catastrophic for inline data: URIs).
+ * Blur-up placeholders required fetching a Cloudinary `e_blur` transform —
+ * no equivalent exists without real pixel decoding (sharp/jimp), which this
+ * codebase deliberately avoids adding. New uploads get no blur placeholder;
+ * already-generated ones on existing documents are self-contained base64
+ * data: URIs and keep rendering regardless.
  */
-const buildResponsiveUrl = (asset, { width, quality = 'auto', format = 'auto' } = {}) => {
-  if (!asset?.url || asset.provider !== 'cloudinary') return null;
-  const parts = [`f_${format}`, `q_${quality}`, 'c_limit'];
-  if (width) parts.push(`w_${width}`);
-  return withTransform(asset.url, parts.join(','));
-};
-
-/**
- * Download a tiny, heavily-blurred rendition of a Cloudinary image and inline it as a base64
- * data URI — used as the blur-up placeholder while the real image lazy-loads.
- */
-const generateBlurDataURL = async (url, provider) => {
-  if (provider !== 'cloudinary') return null;
-  try {
-    const tinyUrl = withTransform(url, 'f_jpg,q_1,w_16,e_blur:2000');
-    const res = await axios.get(tinyUrl, { responseType: 'arraybuffer', timeout: 8000 });
-    return `data:image/jpeg;base64,${Buffer.from(res.data).toString('base64')}`;
-  } catch (err) {
-    console.warn('[portfolioMedia] blur placeholder generation failed:', err.message);
-    return null;
-  }
-};
+const generateBlurDataURL = async () => null;
 
 const KIND_FOR_MIME = (mimeType) => {
   if (mimeType.startsWith('video/')) return 'video';
@@ -56,31 +32,23 @@ const KIND_FOR_MIME = (mimeType) => {
  * asset ready to store on any mediaAssetSchema field — cover, gallery,
  * testimonial.avatar/audio, proofScreenshots, team[].avatar, or a block's
  * asset/images/before/after/poster.
- *
- * The blur-up placeholder only makes sense for images (it's a blurred still
- * frame), so it's skipped for video/audio — `generateBlurDataURL` already
- * no-ops for non-Cloudinary assets, but here it's skipped before the network
- * round-trip even happens rather than after.
  */
 const uploadPortfolioMedia = async (fileBuffer, filename, mimeType) => {
-  const kind = KIND_FOR_MIME(mimeType);
-  const uploaded = await uploadToCloud(fileBuffer, filename, mimeType, {
-    folder: 'yansy/portfolio',
-    tags:   ['yansy-portfolio'],
+  const asset = await mediaService.uploadMedia(fileBuffer, filename, mimeType, {
+    allowedMimes: PORTFOLIO_MIMES,
+    maxSizeBytes: PORTFOLIO_MAX_BYTES,
   });
 
-  const blurDataURL = kind === 'image' ? await generateBlurDataURL(uploaded.url, uploaded.provider) : null;
-
   return {
-    url:           uploaded.url,
-    publicId:      uploaded.cloudId,
-    provider:      uploaded.provider,
-    kind,
-    width:         uploaded.width,
-    height:        uploaded.height,
-    duration:      uploaded.duration,
-    dominantColor: uploaded.dominantColor,
-    blurDataURL,
+    url:           asset.url,
+    publicId:      asset.publicId,
+    provider:      asset.provider,
+    kind:          asset.kind || KIND_FOR_MIME(mimeType),
+    width:         asset.width,
+    height:        asset.height,
+    duration:      undefined,   // was Cloudinary-derived; not available for GridFS uploads
+    dominantColor: undefined,   // was Cloudinary-derived; not available for GridFS uploads
+    blurDataURL:   null,
     alt: '', altAr: '',
     caption: '', captionAr: '',
   };
@@ -92,7 +60,7 @@ const uploadPortfolioImage = uploadPortfolioMedia;
 
 const deletePortfolioImage = async (asset) => {
   if (!asset?.publicId) return;
-  await deleteFromCloud(asset.publicId, asset.provider);
+  await mediaService.deleteMedia(asset.publicId, asset.provider);
 };
 
 module.exports = {

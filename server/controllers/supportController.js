@@ -7,7 +7,8 @@ const { PDFParse }                 = require('pdf-parse');
 const mammoth                      = require('mammoth');
 const openai              = require('../utils/openaiService');
 const claude               = require('../utils/claudeService');
-const { uploadToCloud }     = require('../utils/cloudStorage');
+const mediaService          = require('../media/media.service');
+const { IMAGE_ONLY_MIMES, GENERIC_FILE_MAX_BYTES } = require('../media/mediaConstants');
 const { logAiCost }          = require('../utils/aiCost');
 const knowledge              = require('./knowledgeController');
 const SupportConversation = require('../models/SupportConversation');
@@ -854,14 +855,15 @@ exports.uploadFiles = async (req, res) => {
     const results = await Promise.all(files.map(async (file) => {
       try {
         if (file.mimetype.startsWith('image/')) {
-          const uploaded = await uploadToCloud(file.buffer, file.originalname, file.mimetype, { folder: 'yansy/ai-chat' });
-          // Vision needs a URL OpenAI's servers can actually reach — Cloudinary
-          // URLs qualify, but the local-dev fallback (http://localhost:...) never
-          // will. Also attach a base64 data URL (capped at 4MB raw) so vision
-          // analysis works correctly regardless of storage backend/environment.
-          const dataUrl = file.buffer.length <= 4 * 1024 * 1024
-            ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}`
-            : undefined;
+          const uploaded = await mediaService.uploadMedia(file.buffer, file.originalname, file.mimetype, {
+            allowedMimes: IMAGE_ONLY_MIMES,
+            maxSizeBytes: GENERIC_FILE_MAX_BYTES,
+          });
+          // GridFS URLs are always relative (/api/media/:id) — never externally
+          // fetchable by OpenAI's servers, unlike the old Cloudinary URLs. So the
+          // base64 data URL is now the only way vision analysis can see the image,
+          // for every size this endpoint accepts (not just a sub-cap "fast path").
+          const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
           return { kind: 'image', url: uploaded.url, dataUrl, name: file.originalname };
         }
 

@@ -23,8 +23,10 @@ const fileSchema = new mongoose.Schema({
   },
   cloudProvider: {
     type: String,
-    enum: ['cloudinary', 's3', 'firebase'],
-    default: 'cloudinary'
+    // 'cloudinary'/'s3'/'firebase' kept only so pre-GridFS documents still
+    // deserialize — every new upload writes 'gridfs' (see server/media/media.service.js).
+    enum: ['cloudinary', 's3', 'firebase', 'gridfs'],
+    default: 'gridfs'
   },
   cloudId: {
     type: String // Cloud provider's file ID

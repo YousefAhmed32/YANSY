@@ -10,7 +10,10 @@ const introSettingsSchema = new mongoose.Schema(
     // Media
     videoUrl:      { type: String, default: '/Logo reveal luxury AI company.mp4' },
     videoPublicId: { type: String, default: null },
-    videoProvider: { type: String, enum: ['static', 'cloudinary', 'local'], default: 'static' },
+    // 'static' = the bundled default intro clip (no upload). 'cloudinary'/'local'
+    // kept only so pre-GridFS documents still deserialize — every new admin
+    // upload writes 'gridfs' (see server/media/media.service.js).
+    videoProvider: { type: String, enum: ['static', 'cloudinary', 'local', 'gridfs'], default: 'static' },
     videoSizeBytes:{ type: Number, default: null },
 
     // Targeting

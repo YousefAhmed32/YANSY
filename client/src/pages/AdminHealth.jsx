@@ -9,7 +9,7 @@ const SERVICE_ICONS = {
   'Database':                Database,
   'Stripe':                  Cpu,
   'Email (SMTP)':            Mail,
-  'File Storage (Cloudinary)': Cloud,
+  'File Storage (GridFS)':   Cloud,
   'File Storage':            Cloud,
   'AI (Claude)':             Cpu,
   'Server':                  Server,

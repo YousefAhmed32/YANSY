@@ -195,6 +195,11 @@ app.use((req, res, next) => {
 app.use(sanitizeBody);
 app.use(sanitizeQuery);
 
+/* ================== MEDIA (GridFS streaming) ================== */
+// Mounted before the /api rate limiter below — a single portfolio gallery page
+// can easily fire more than the global per-minute cap in image requests alone.
+app.use('/api/media', require('./media/media.routes'));
+
 /* ================== RATE LIMITING ================== */
 if (rateLimit) {
   const authLimiter = rateLimit({

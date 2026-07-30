@@ -1,24 +1,25 @@
 'use strict';
-const { uploadToCloud, deleteFromCloud } = require('./cloudStorage');
+const mediaService = require('../media/media.service');
+const { IMAGE_ONLY_MIMES, LOGO_MAX_BYTES } = require('../media/mediaConstants');
 
 const uploadClientLogo = async (fileBuffer, filename, mimeType) => {
-  const uploaded = await uploadToCloud(fileBuffer, filename, mimeType, {
-    folder: 'yansy/client-logos',
-    tags:   ['yansy-client-logo'],
+  const asset = await mediaService.uploadMedia(fileBuffer, filename, mimeType, {
+    allowedMimes: IMAGE_ONLY_MIMES,
+    maxSizeBytes: LOGO_MAX_BYTES,
   });
 
   return {
-    url:      uploaded.url,
-    publicId: uploaded.cloudId,
-    provider: uploaded.provider,
-    width:    uploaded.width,
-    height:   uploaded.height,
+    url:      asset.url,
+    publicId: asset.publicId,
+    provider: asset.provider,
+    width:    asset.width,
+    height:   asset.height,
   };
 };
 
 const deleteClientLogo = async (asset) => {
   if (!asset?.publicId) return;
-  await deleteFromCloud(asset.publicId, asset.provider);
+  await mediaService.deleteMedia(asset.publicId, asset.provider);
 };
 
 module.exports = { uploadClientLogo, deleteClientLogo };

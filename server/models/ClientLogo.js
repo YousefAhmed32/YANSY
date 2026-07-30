@@ -6,7 +6,9 @@ const logoAssetSchema = new mongoose.Schema(
   {
     url:      { type: String, required: true },
     publicId: { type: String },
-    provider: { type: String, enum: ['cloudinary', 'local'], default: 'cloudinary' },
+    // 'cloudinary'/'local' kept only so pre-GridFS documents still deserialize —
+    // every new upload writes 'gridfs' (see server/media/media.service.js).
+    provider: { type: String, enum: ['cloudinary', 'local', 'gridfs'], default: 'gridfs' },
     width:    { type: Number },
     height:   { type: Number },
   },

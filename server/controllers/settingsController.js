@@ -158,16 +158,13 @@ exports.getHealth = async (req, res, next) => {
     checks.push({ name: 'Email (SMTP)', status: 'error', message: err.message });
   }
 
-  // 4. Cloudinary
+  // 4. File Storage (GridFS)
   try {
-    const cloudOk = Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY);
-    checks.push({
-      name:    'File Storage (Cloudinary)',
-      status:  cloudOk ? 'ok' : 'warning',
-      message: cloudOk ? 'Configured' : 'Not configured (local fallback active)',
-    });
+    const { getBucket } = require('../config/gridfs');
+    getBucket(); // throws if initGridFS() hasn't run yet (only possible in the brief window right after boot, before Mongo connects)
+    checks.push({ name: 'File Storage (GridFS)', status: 'ok', message: 'Initialized' });
   } catch (err) {
-    checks.push({ name: 'File Storage', status: 'error', message: err.message });
+    checks.push({ name: 'File Storage (GridFS)', status: 'error', message: err.message });
   }
 
   // 5. AI (Anthropic)

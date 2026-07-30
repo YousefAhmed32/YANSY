@@ -30,7 +30,9 @@ const mediaAssetSchema = new mongoose.Schema(
       },
     },
     publicId:    { type: String },
-    provider:    { type: String, enum: ['cloudinary', 'local'], default: 'cloudinary' },
+    // 'cloudinary'/'local' kept only so pre-GridFS documents still deserialize —
+    // every new upload writes 'gridfs' (see server/media/media.service.js).
+    provider:    { type: String, enum: ['cloudinary', 'local', 'gridfs'], default: 'gridfs' },
     // 'image' (default) | 'video' | 'audio' — lets the client pick a renderer
     // without sniffing file extensions. Cloudinary's resource_type already
     // distinguishes these at upload time (see uploadPortfolioMedia).

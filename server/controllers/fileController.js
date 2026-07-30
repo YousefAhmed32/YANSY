@@ -2,51 +2,22 @@
 const File = require('../models/File');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
-const { uploadToCloud, deleteFromCloud } = require('../utils/cloudStorage');
-
-// Allowed MIME types (verified against buffer magic bytes after upload)
-const ALLOWED_MIMES = new Set([
-  'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/zip',
-  'text/plain',
-]);
+const mediaService = require('../media/media.service');
+const { GENERIC_FILE_MIMES, GENERIC_FILE_MAX_BYTES } = require('../media/mediaConstants');
 
 // Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: GENERIC_FILE_MAX_BYTES },
   fileFilter: (req, file, cb) => {
-    // First-pass filter by MIME type claim (not trusted — magic bytes checked after upload)
-    if (ALLOWED_MIMES.has(file.mimetype)) {
+    // First-pass filter by MIME type claim (not trusted — media.service re-verifies
+    // against actual magic bytes after upload).
+    if (GENERIC_FILE_MIMES.has(file.mimetype)) {
       return cb(null, true);
     }
     cb(new Error(`File type '${file.mimetype}' is not allowed.`));
   },
 }).array('files', 10);
-
-// Validate file buffer using magic bytes (actual file signature)
-const validateMagicBytes = async (buffer, claimedMime) => {
-  // Try to use file-type package for real magic byte detection
-  try {
-    const { fileTypeFromBuffer } = await import('file-type');
-    const detected = await fileTypeFromBuffer(buffer);
-    if (!detected) {
-      // No magic bytes found — could be plain text/PDF
-      if (claimedMime === 'text/plain') return true;
-      if (claimedMime === 'application/pdf' && buffer.slice(0, 4).toString() === '%PDF') return true;
-      return false;
-    }
-    return ALLOWED_MIMES.has(detected.mime);
-  } catch {
-    // file-type package not installed — fall back to basic header check
-    return ALLOWED_MIMES.has(claimedMime);
-  }
-};
 
 // Upload files
 exports.uploadFiles = async (req, res, next) => {
@@ -63,28 +34,28 @@ exports.uploadFiles = async (req, res, next) => {
       const uploadedFiles = [];
 
       for (const file of req.files) {
-        // Validate actual file content (magic bytes)
-        const isValid = await validateMagicBytes(file.buffer, file.mimetype);
-        if (!isValid) {
-          return res.status(400).json({
-            error: `File '${file.originalname}' failed content validation. Actual file type does not match claimed type.`,
+        let asset;
+        try {
+          // Validates size + actual magic bytes (not just the claimed Content-Type)
+          // and stores the file in GridFS.
+          asset = await mediaService.uploadMedia(file.buffer, file.originalname, file.mimetype, {
+            allowedMimes: GENERIC_FILE_MIMES,
+            maxSizeBytes: GENERIC_FILE_MAX_BYTES,
+          });
+        } catch (validationErr) {
+          return res.status(validationErr.status || 400).json({
+            error: `File '${file.originalname}': ${validationErr.message}`,
           });
         }
-
-        const { url, cloudId, provider } = await uploadToCloud(
-          file.buffer,
-          file.originalname,
-          file.mimetype
-        );
 
         const fileDoc = await File.create({
           filename:      `${uuidv4()}-${file.originalname}`,
           originalName:  file.originalname,
           mimeType:      file.mimetype,
           size:          file.size,
-          url,
-          cloudId,
-          cloudProvider: provider || process.env.CLOUD_PROVIDER || 'cloudinary',
+          url:           asset.url,
+          cloudId:       asset.publicId,
+          cloudProvider: asset.provider,
           uploadedBy:    req.user._id,
           project:       req.body.project || null,
           isPublic:      req.body.isPublic === 'true',
@@ -175,7 +146,7 @@ exports.deleteFile = async (req, res, next) => {
       return res.status(403).json({ error: 'Permission denied.' });
     }
 
-    await deleteFromCloud(file.cloudId, file.cloudProvider);
+    await mediaService.deleteMedia(file.cloudId, file.cloudProvider);
     await File.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'File deleted successfully.' });
