@@ -1,6 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../utils/api';
 
+// A 401 only proves the session is actually gone when the server tags it
+// with one of these codes (see server/middleware/auth.js). Any other failure
+// — 500, 503, network down, timeout — is an infrastructure hiccup, not an
+// expired/invalid token, and must never cause a logout.
+const SESSION_INVALID_CODES = new Set([
+  'TOKEN_EXPIRED',
+  'TOKEN_INVALID',
+  'TOKEN_MISSING',
+  'USER_NOT_FOUND',
+]);
+const isSessionInvalid = (error) =>
+  error?.response?.status === 401 && SESSION_INVALID_CODES.has(error?.response?.data?.code);
+
 // ─── Helper: extract the best error message from an Axios error ──────────────
 const extractError = (error, fallback) => {
   // Server returned a JSON { error: "..." } body
@@ -70,7 +83,10 @@ export const getMe = createAsyncThunk(
       }
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(extractError(error, 'Failed to get user information.'));
+      return rejectWithValue({
+        message:       extractError(error, 'Failed to get user information.'),
+        sessionInvalid: isSessionInvalid(error),
+      });
     }
   }
 );
@@ -158,12 +174,16 @@ const authSlice = createSlice({
         state.user            = action.payload;
         state.isAuthenticated = true;
       })
-      .addCase(getMe.rejected, (state) => {
-        state.loading         = false;
-        state.user            = null;
-        state.isAuthenticated = false;
-        state.token           = null;
-        localStorage.removeItem('token');
+      .addCase(getMe.rejected, (state, action) => {
+        state.loading = false;
+        // Only tear down the session when the server actually said the token
+        // is bad — a transient DB/network failure must leave the user logged in.
+        if (action.payload?.sessionInvalid) {
+          state.user            = null;
+          state.isAuthenticated = false;
+          state.token           = null;
+          localStorage.removeItem('token');
+        }
       })
 
       // ── Google Login ──────────────────────────────────────────────────────

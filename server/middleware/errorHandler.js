@@ -72,5 +72,9 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
+// Exposed so other middleware (e.g. the auth guard) can classify an error the
+// same way this handler does, instead of maintaining a second copy of the list.
+errorHandler.isDbError = isDbError;
+
 module.exports = errorHandler;
 

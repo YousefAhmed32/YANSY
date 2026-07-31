@@ -297,7 +297,9 @@ function App() {
     if (token) {
       dispatch(getMe())
         .unwrap()
-        .catch(() => localStorage.removeItem('token'))
+        // Only drop the stored token when the server confirmed it's actually
+        // invalid/expired — not on a transient DB/network failure during boot.
+        .catch((err) => { if (err?.sessionInvalid) localStorage.removeItem('token'); })
         .finally(() => setAppReady(true));
     } else {
       setAppReady(true);

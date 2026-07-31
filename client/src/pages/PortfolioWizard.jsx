@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ChevronLeft, ChevronRight, Copy, Eye, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, Eye, ExternalLink, Sparkles } from 'lucide-react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
-import { TK, PageSpinner, Badge, Button } from '../admin-ui';
+import { TK, PageSpinner, Badge, Button, ConfirmDialog } from '../admin-ui';
 import SectionNav from '../components/portfolio-wizard/SectionNav';
 import OverviewSection from '../components/portfolio-wizard/OverviewSection';
 import StorySection from '../components/portfolio-wizard/StorySection';
@@ -13,6 +13,8 @@ import MediaSection from '../components/portfolio-wizard/MediaSection';
 import BlocksEditor from '../components/portfolio-wizard/BlocksEditor';
 import ProofResultsSection from '../components/portfolio-wizard/ProofResultsSection';
 import SeoPublishSection from '../components/portfolio-wizard/SeoPublishSection';
+import GenerateDemoModal from '../components/portfolio-wizard/GenerateDemoModal';
+import { generateDemoProject } from '../utils/demoGenerators';
 
 const EMPTY_FORM = {
   title: '', titleAr: '', tagline: '', taglineAr: '', category: 'Other', industry: '',
@@ -70,6 +72,8 @@ const PortfolioWizard = () => {
   const [pendingUploads, setPendingUploads] = useState([]);
   const [publishing, setPublishing] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
+  const [confirmDemoKey, setConfirmDemoKey] = useState(null); // pending category — asks first if the draft already has content
 
   const savingRef = useRef(false);
   const skipNextAutosave = useRef(Boolean(routeId)); // don't autosave the instant we load an existing project
@@ -85,6 +89,11 @@ const PortfolioWizard = () => {
     duplicated: isRTL ? 'تم الإنشاء — جارٍ فتح النسخة' : 'Duplicated — opening the copy',
     duplicateFailed: isRTL ? 'فشل النسخ' : 'Duplicate failed',
     duplicate: isRTL ? 'نسخ' : 'Duplicate',
+    generateDemo: isRTL ? 'بيانات تجريبية' : 'Demo Data',
+    demoGenerated: isRTL ? 'تم إنشاء بيانات المشروع التجريبي' : 'Demo project data generated',
+    demoOverwriteTitle: isRTL ? 'استبدال محتوى المسودة الحالية؟' : 'Overwrite the current draft?',
+    demoOverwriteDesc: isRTL ? 'يحتوي هذا المشروع بالفعل على محتوى. سيؤدي إنشاء بيانات تجريبية إلى استبدال كل الحقول بمحتوى تجريبي جديد.' : 'This project already has content. Generating demo data will overwrite every field with new sample content.',
+    demoOverwriteConfirm: isRTL ? 'استبدال' : 'Overwrite',
     preview: isRTL ? 'معاينة' : 'Preview',
     viewLive: isRTL ? 'عرض مباشر' : 'View live',
     unpublish: isRTL ? 'إلغاء النشر' : 'Unpublish',
@@ -215,6 +224,21 @@ const PortfolioWizard = () => {
     }
   };
 
+  // ── Generate Demo Data ────────────────────────────────────────────────────
+  const applyDemoData = (categoryKey) => {
+    const generated = generateDemoProject(categoryKey);
+    setForm((f) => ({ ...EMPTY_FORM, ...generated, status: f.status === 'published' ? f.status : 'draft' }));
+    setActiveSection('overview');
+    setConfirmDemoKey(null);
+    toast.success(L.demoGenerated);
+  };
+
+  const handleSelectDemoCategory = (categoryKey) => {
+    setDemoModalOpen(false);
+    if (form.title?.trim()) setConfirmDemoKey(categoryKey);
+    else applyDemoData(categoryKey);
+  };
+
   const percent = useMemo(() => calcCompletion(form), [form]);
   const sections = useMemo(() => SECTION_DEFS.map((s) => ({
     key: s.key,
@@ -251,6 +275,8 @@ const PortfolioWizard = () => {
           </div>
 
           <Badge tone={STATUS_TONE[form.status] || 'neutral'} dot>{isRTL ? STATUS_LABEL[form.status]?.ar : STATUS_LABEL[form.status]?.en}</Badge>
+
+          <Button variant="secondary" size="sm" icon={Sparkles} onClick={() => setDemoModalOpen(true)}>{L.generateDemo}</Button>
 
           {projectId && (
             <>
@@ -300,6 +326,17 @@ const PortfolioWizard = () => {
           {activeSection === 'seo' && <SeoPublishSection form={form} set={set} projectId={projectId} isRTL={isRTL} />}
         </div>
       </div>
+
+      <GenerateDemoModal open={demoModalOpen} onClose={() => setDemoModalOpen(false)} onSelect={handleSelectDemoCategory} isRTL={isRTL} />
+      <ConfirmDialog
+        open={Boolean(confirmDemoKey)}
+        onClose={() => setConfirmDemoKey(null)}
+        onConfirm={() => applyDemoData(confirmDemoKey)}
+        danger={false}
+        title={L.demoOverwriteTitle}
+        description={L.demoOverwriteDesc}
+        confirmLabel={L.demoOverwriteConfirm}
+      />
 
       <style>{`
         @media (max-width: 860px) {

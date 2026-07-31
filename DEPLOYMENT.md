@@ -63,7 +63,7 @@ Use the same variable in `.env` on the server so connection works for both local
 | Error | Cause | Fix |
 |-------|--------|-----|
 | **Invalid email/password** | Wrong credentials or user not found. | Check email/password; ensure user exists and password hash matches. |
-| **Token expired** | JWT past `JWT_EXPIRES_IN`. | User must log in again; optionally increase `JWT_EXPIRES_IN` (e.g. `7d`). |
+| **Token expired** | JWT past `JWT_EXPIRES_IN`. | User must log in again; optionally adjust `JWT_EXPIRES_IN` (currently `180d`). |
 | **Database connection error** | Wrong `MONGODB_URI`, network, or Atlas IP allowlist. | Verify URI, network, and Atlas “Network Access” allowlist (e.g. `0.0.0.0/0` for VPS). |
 | **Not allowed by CORS** | Frontend origin not in `CLIENT_URL`. | Add the exact frontend origin (e.g. `https://yansytech.com`) to `CLIENT_URL`. |
 | **401 on protected routes** | No token/cookie or invalid/expired token. | Ensure login sets cookie and/or localStorage; use HTTPS so secure cookies work; clear cache/cookies and log in again. |
@@ -84,7 +84,7 @@ NODE_ENV=production
 MONGODB_URI=mongodb+srv://USER:PASS@cluster.mongodb.net/yansy?retryWrites=true&w=majority
 
 JWT_SECRET=<strong-secret e.g. openssl rand -base64 32>
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=180d
 
 # Exact frontend origin(s), comma-separated
 CLIENT_URL=https://yansytech.com

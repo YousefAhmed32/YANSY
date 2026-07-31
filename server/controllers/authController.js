@@ -13,12 +13,12 @@ const generateEmailVerificationToken = () => {
 };
 
 const COOKIE_NAME        = 'token';
-const COOKIE_MAX_AGE_MS  = 7 * 24 * 60 * 60 * 1000; // 7 days
+const COOKIE_MAX_AGE_MS  = 180 * 24 * 60 * 60 * 1000; // 180 days — keep in sync with JWT_EXPIRES_IN below
 const DB_QUERY_TIMEOUT   = 8_000;
 
 const generateToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    expiresIn: process.env.JWT_EXPIRES_IN || '180d',
   });
 
 const setTokenCookie = (res, token) => {

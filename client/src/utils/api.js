@@ -33,16 +33,30 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// A 401 only means "log this user out" when the server explicitly says the
+// *token* is the problem. A 401 with no code (e.g. wrong password on the
+// login form itself) or a 500/503 from a DB/network hiccup must NOT clear a
+// perfectly valid session — see server/middleware/auth.js, which now returns
+// 503/500 (not 401) for infrastructure failures precisely so this check works.
+const SESSION_INVALID_CODES = new Set([
+  'TOKEN_EXPIRED',
+  'TOKEN_INVALID',
+  'TOKEN_MISSING',
+  'USER_NOT_FOUND',
+]);
+
 // ─── Response interceptor: normalize errors ────────────────────────────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status  = error.response?.status;
+    const code    = error.response?.data?.code;
     const message = error.response?.data?.error;
 
-    // 401 — clear token and redirect (but not on auth pages)
-    if (status === 401) {
-      console.warn('[API] 401 Unauthorized — clearing token');
+    // 401 with a recognized token-failure code — the session really is gone.
+    // Clear it and redirect (but not on auth pages).
+    if (status === 401 && SESSION_INVALID_CODES.has(code)) {
+      console.warn('[API] Session invalid —', code, '— clearing token');
       localStorage.removeItem('token');
 
       const path = window.location.pathname;
