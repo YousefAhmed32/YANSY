@@ -1,5 +1,6 @@
 import { useLanguage } from '../contexts/LanguageContext';
 import { RevealItems } from '../components/Reveal';
+import ImagePlaceholder from '../components/ImagePlaceholder';
 
 const CATEGORIES = [
   {
@@ -64,10 +65,24 @@ const TechSection = ({ sectionRef, isRTL }) => {
         .tech-categories {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: clamp(1.5rem, 3vw, 2.5rem) clamp(2rem, 4vw, 3rem);
+          gap: clamp(1rem, 2vw, 1.5rem);
         }
         @media (max-width: 480px) {
           .tech-categories { grid-template-columns: 1fr; }
+        }
+        .tech-cat-card {
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
+          border-radius: 16px;
+          padding: clamp(18px, 2vw, 22px);
+          height: 100%;
+          box-sizing: border-box;
+          transition: border-color 0.25s ease, box-shadow 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        .tech-cat-card:hover {
+          border-color: rgb(var(--border-strong));
+          box-shadow: var(--shadow-card-hover);
+          transform: translateY(-3px);
         }
         .tech-cat-name {
           font-size: 10px;
@@ -78,17 +93,21 @@ const TechSection = ({ sectionRef, isRTL }) => {
           margin-bottom: 14px;
         }
         [dir="rtl"] .tech-cat-name { letter-spacing: 0; text-transform: none; }
+        .tech-item-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
         .tech-item {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 9px 0;
-          border-bottom: 1px solid rgb(var(--border-light));
+          padding: 7px 8px;
+          border-radius: 8px;
           cursor: default;
           transition: background 0.15s;
         }
-        .tech-item:last-child { border-bottom: none; }
-        .tech-item:hover { background: rgb(var(--bg-secondary)); border-radius: 6px; padding-inline: 6px; margin-inline: -6px; }
+        .tech-item:hover { background: rgb(var(--bg-secondary)); }
         .tech-dot {
           width: 8px; height: 8px;
           border-radius: 50%;
@@ -167,26 +186,38 @@ const TechSection = ({ sectionRef, isRTL }) => {
           </div>
 
           {/* Right: Tech categories */}
-          <RevealItems className="tech-categories" distance={16} step={0.06}>
-            {CATEGORIES.map((cat, ci) => (
-              <div key={ci}>
-                <div className="tech-cat-name">
-                  {rtl ? cat.nameAR : cat.nameEN}
-                </div>
-                {cat.tech.map((tech, ti) => (
-                  <div key={ti} className="tech-item">
-                    <span
-                      className="tech-dot"
-                      style={{ background: tech.color }}
-                      aria-hidden
-                    />
-                    <span className="tech-name">{tech.name}</span>
-                    <span className="tech-desc">{tech.desc}</span>
+          <div>
+            <RevealItems className="tech-categories" distance={16} step={0.06}>
+              {CATEGORIES.map((cat, ci) => (
+                <div key={ci} className="tech-cat-card">
+                  <div className="tech-cat-name">
+                    {rtl ? cat.nameAR : cat.nameEN}
                   </div>
-                ))}
-              </div>
-            ))}
-          </RevealItems>
+                  <div className="tech-item-list">
+                    {cat.tech.map((tech, ti) => (
+                      <div key={ti} className="tech-item">
+                        <span
+                          className="tech-dot"
+                          style={{ background: tech.color }}
+                          aria-hidden
+                        />
+                        <span className="tech-name">{tech.name}</span>
+                        <span className="tech-desc">{tech.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </RevealItems>
+
+            {/* <ImagePlaceholder
+              minHeight={200}
+              style={{ marginTop: 'clamp(1rem, 2vw, 1.5rem)' }}
+              prompt={rtl
+                ? 'رسم توضيحي بمنظور آيزومتري لبنية معمارية مصغرة (Microservices) تظهر خدمات متصلة بخطوط بيانات متوهجة حول نواة مركزية. ألوان زرقاء وبيضاء، تصميم بسيط، زجاجية ناعمة، خلفية شفافة PNG، دقة فائقة.'
+                : 'Isometric illustration of a microservices architecture — small connected service nodes linked by glowing data lines around a central core. Blue and white palette, minimal, soft glassmorphism, transparent PNG, ultra HD.'}
+            /> */}
+          </div>
 
         </div>
 

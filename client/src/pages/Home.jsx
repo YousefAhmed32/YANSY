@@ -16,6 +16,7 @@ import Testimonials     from '../components/Testimonials';
 import FloatingActionMenu from '../components/FloatingActionMenu';
 
 import MetricsSection  from '../sections/MetricsSection';
+import CustomSoftwareSection from '../sections/CustomSoftwareSection';
 
 // Below-the-fold and non-critical — kept out of the eager Home bundle so
 // visitors to every OTHER route (not just "/") don't pay for them too. Home
@@ -112,6 +113,11 @@ const Home = () => {
 
       {/* 01 — Promise. Hero carries the proof-stat rail (was a standalone strip). */}
       <HeroSection onStartProject={open} isRTL={isRTL} t={t} />
+
+      {/* 01.6 — Why custom software, not a template. Answers the objection
+              before the proof sections below ask the visitor to already
+              believe a bespoke build was the right call. */}
+      <CustomSoftwareSection isRTL={isRTL} />
 
       {/* 01.5 — Immediate credibility: brand logo wall, admin-managed, hidden
               entirely when empty/disabled. Renders nothing until fetched, so

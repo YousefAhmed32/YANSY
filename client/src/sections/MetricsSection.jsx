@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader';
+import ImagePlaceholder from '../components/ImagePlaceholder';
 
 const useCountUp = (end, duration = 1800, start = false) => {
   const [value, setValue] = useState(0);
@@ -206,11 +207,35 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
             read as two different designs. SectionHeader mirrors one layout. */}
         <SectionHeader
           eyebrow={rtl ? 'النتائج' : 'Results'}
-          title={rtl ? 'أرقام لا تكذب.' : "Numbers that\ndon't lie."}
+          title={rtl ? 'نتائج نفتخر بها.' : "Results we're\nproud of."}
           lead={rtl
             ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
             : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
           maxLeadWidth={400}
+action={
+  <div
+    style={{
+      maxWidth: 420,
+      width: "100%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <img
+       src="/Arabic Analytics Dashboard Scene.png"
+      alt={rtl ? "لوحة تحليلات" : "Analytics Illustration"}
+      loading="lazy"
+      style={{
+        width: "100%",
+        height: "auto",
+        objectFit: "contain",
+        userSelect: "none",
+        pointerEvents: "none",
+      }}
+    />
+  </div>
+}
         />
 
         {/* Metrics grid */}

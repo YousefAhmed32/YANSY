@@ -1,6 +1,7 @@
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import ImagePlaceholder from './ImagePlaceholder';
 
 const CheckIcon = ({ color = '#22c55e' }) => (
   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden>
@@ -29,7 +30,7 @@ const CRITERIA_EN = [
   'Fixed-price milestones',
   'Full code ownership',
   'Post-delivery support',
-  '14-day average launch',
+  'Fast, scope-based launch',
 ];
 
 const CRITERIA_AR = [
@@ -38,7 +39,7 @@ const CRITERIA_AR = [
   'مراحل بسعر ثابت',
   'ملكية كاملة للكود',
   'دعم ما بعد التسليم',
-  'إطلاق متوسط 14 يوماً',
+  'إطلاق سريع حسب النطاق',
 ];
 
 const COLUMNS_EN = [
@@ -252,11 +253,11 @@ const WhyYANSY = ({ onStartProject }) => {
             {/* 3 statement cards */}
             <div className="why-statement">
               {(isRTL ? [
-                { icon: '⚡', title: 'سرعة الشركة الناشئة', body: 'نتيجة في 14 يوماً في المتوسط — بدون التضحية بالجودة، وقد ننجز أسرع حسب نطاق مشروعك' },
+                { icon: '⚡', title: 'سرعة الشركة الناشئة', body: 'بأسرع وقت يسمح به نطاق مشروعك — دون التضحية بالجودة أبداً' },
                 { icon: '🏗', title: 'هيكل الوكالة', body: 'فريق متخصص، عملية واضحة، مراحل تسليم منظمة' },
                 { icon: '🔑', title: 'ملكية كاملة', body: 'الكود ملكك بعد التسليم — لا قفل، لا رسوم مستمرة' },
               ] : [
-                { icon: '⚡', title: 'Startup speed', body: '14 days on average — never at the expense of quality, and often faster depending on scope' },
+                { icon: '⚡', title: 'Startup speed', body: 'As fast as your project scope allows — never at the expense of quality' },
                 { icon: '🏗', title: 'Agency structure', body: 'Dedicated team, clear process, organized delivery milestones' },
                 { icon: '🔑', title: 'Full ownership', body: 'The code is yours after delivery — no lock-in, no recurring fees' },
               ]).map((card, i) => (
@@ -351,6 +352,19 @@ const WhyYANSY = ({ onStartProject }) => {
                 ))}
               </div>
             </div>
+
+<img
+  src="/Champagne Ribbon with Blue Light Trails.png"
+  alt={isRTL ? "مقارنة بين الخيارات" : "Comparison Illustration"}
+  loading="lazy"
+  style={{
+    width: "100%",
+    marginTop: "clamp(1.25rem, 2.5vw, 1.75rem)",
+    height: "auto",
+    objectFit: "contain",
+    display: "block",
+  }}
+/>
           </div>
 
         </div>

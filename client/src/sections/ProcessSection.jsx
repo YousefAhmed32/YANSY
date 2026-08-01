@@ -2,6 +2,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader';
 import { RevealItems } from '../components/Reveal';
+import ImagePlaceholder from '../components/ImagePlaceholder';
 
 const STEPS = [
   {
@@ -200,8 +201,8 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
           action={
             <div className="process-meta">
               {(rtl
-                ? ['6 مراحل', '14 يوم متوسط', 'تحديثات أسبوعية']
-                : ['6 milestones', '14d average', 'Weekly updates']
+                ? ['6 مراحل', 'حسب نطاق مشروعك', 'تحديثات أسبوعية']
+                : ['6 milestones', 'Scoped to your project', 'Weekly updates']
               ).map((item, i) => (
                 <div key={i} className="process-meta-item">
                   <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgb(var(--accent))', flexShrink: 0 }} aria-hidden />
@@ -211,6 +212,19 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
             </div>
           }
         />
+
+ <img
+  src="/Luminous Modular Architecture.png"
+  alt={rtl ? "مراحل تنفيذ المشروع" : "Project Workflow"}
+  loading="lazy"
+  style={{
+    width: "100%",
+    marginBottom: "clamp(1.75rem, 3.5vw, 2.75rem)",
+    height: "auto",
+    objectFit: "contain",
+    display: "block",
+  }}
+/>
 
         <RevealItems className="process-grid" step={0.06}>
           {STEPS.map((step) => (

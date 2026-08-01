@@ -3,6 +3,7 @@ import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import SectionHeader from './SectionHeader';
 import Reveal from './Reveal';
+import ImagePlaceholder from './ImagePlaceholder';
 
 const STATIC = [
   {
@@ -225,10 +226,18 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
             }}>
               <Stars count={5} />
               <span style={{ fontSize: 12, fontWeight: 600, color: 'rgb(var(--text-secondary))' }}>
-                {rtl ? '5/5 متوسط التقييم' : '5/5 average rating'}
+                {rtl ? '4.9/5 متوسط التقييم' : '4.9/5 average rating'}
               </span>
             </div>
           }
+        />
+
+        <ImagePlaceholder
+          minHeight={180}
+          style={{ marginBottom: 'clamp(1.75rem, 3.5vw, 2.75rem)' }}
+          prompt={rtl
+            ? 'رسم توضيحي بمنظور آيزومتري لعلامة اقتباس عملاقة عائمة محاطة بفقاعات محادثة صغيرة ونجوم تقييم متلألئة. ألوان زرقاء وبيضاء، تصميم بسيط، زجاجية ناعمة، خلفية شفافة PNG، دقة فائقة.'
+            : 'Isometric illustration of a large floating quotation mark surrounded by small chat bubbles and glowing star ratings. Blue and white palette, minimal, soft glassmorphism, transparent PNG, ultra HD.'}
         />
 
         <Reveal stagger className="testimonials-grid" step={0.06} itemClassName="testimonial-slot">

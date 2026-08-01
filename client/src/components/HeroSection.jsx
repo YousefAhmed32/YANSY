@@ -12,16 +12,16 @@ const SERVICES_AR = ['مواقع ويب', 'متاجر إلكترونية', 'SaaS
    numbers on the page below the fold. The hero is min-height:100vh and its
    content only filled ~750px of that, so this occupies space that was empty. */
 const STATS_EN = [
-  { num: '50+',  label: 'Projects delivered',  sub: 'Across 6+ industries' },
-  { num: '98%',  label: 'Client satisfaction', sub: 'Measured retention' },
-  { num: '14d',  label: 'Average launch',      sub: 'Contract to live' },
-  { num: '4+',   label: 'Years building',      sub: 'Since 2020' },
+  { num: '50+',      label: 'Projects delivered',   sub: 'Across 6+ industries' },
+  { num: '⭐ 4.9/5',  label: 'Average client rating', sub: 'Based on client reviews' },
+  { num: 'Fast',     label: 'Launch, scoped to you', sub: 'No fixed-day promises' },
+  { num: '5+',       label: 'Years building',        sub: 'Since 2020' },
 ];
 const STATS_AR = [
-  { num: '50+',       label: 'مشروع مُسلَّم',     sub: 'في أكثر من 6 قطاعات' },
-  { num: '98%',       label: 'رضا العملاء',       sub: 'معدل احتفاظ مقاس' },
-  { num: '14 يوم',    label: 'متوسط الإطلاق',     sub: 'من العقد للنشر' },
-  { num: '4+',        label: 'سنوات خبرة',        sub: 'منذ 2020' },
+  { num: '50+',       label: 'مشروع مُسلَّم',       sub: 'في أكثر من 6 قطاعات' },
+  { num: '⭐ 4.9/5',   label: 'تقييم العملاء',       sub: 'بناءً على آراء العملاء' },
+  { num: 'سريع',      label: 'حسب نطاق مشروعك',     sub: 'بدون وعود بمدة ثابتة' },
+  { num: '5+',        label: 'سنوات خبرة',           sub: 'منذ 2020' },
 ];
 
 const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
@@ -298,8 +298,8 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                 margin: '0 0 clamp(22px, 3vh, 32px)',
               }}>
                 {isRTL
-                  ? 'من صفحة هبوط إلى نظام ERP كامل — نصمم ونبرمج ونطلق منتجك الرقمي خلال 14 يوماً في المتوسط. لا تجاوز للميزانية. لا أسابيع صامتة. ملكية كاملة للكود.'
-                  : 'From a landing page to a full ERP platform — we design, build, and launch your digital product in as little as 14 days on average. No budget overruns. No silent weeks. Full code ownership.'}
+                  ? 'من صفحة هبوط إلى نظام ERP كامل — نطوّر منتجك الرقمي بأعلى جودة وفي أسرع وقت يناسب حجم مشروعك، بميزانية واضحة بدون مفاجآت. لا أسابيع صامتة. ملكية كاملة للكود.'
+                  : 'From a landing page to a full ERP platform — we build your digital product to the highest quality, delivered as fast as your project\'s scope allows, with a clear budget and no surprises. No silent weeks. Full code ownership.'}
               </p>
 
               {/* Service pills */}

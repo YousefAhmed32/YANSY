@@ -178,7 +178,11 @@ const AdminDashboard = () => {
 
     const token = localStorage.getItem('token');
     if (token && user?._id) {
-      const url = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+      const url =
+        import.meta.env.VITE_SOCKET_URL ||
+        (import.meta.env.DEV
+          ? 'http://localhost:5000'
+          : 'https://api.yansytech.com');
       const socket = io(url, { auth: { token }, transports: ['websocket', 'polling'] });
       socket.on('connect', () => socket.emit('join', user._id));
       socket.on('project-created',  () => fetchAll(true));

@@ -33,7 +33,12 @@ const Layout = () => {
     if (!user) return;
     const token = localStorage.getItem('token');
     if (!token) return;
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      import.meta.env.VITE_API_URL?.replace('/api', '') ||
+      (import.meta.env.DEV
+        ? 'http://localhost:5000'
+        : 'https://api.yansytech.com');
     const socket = io(socketUrl, { auth: { token }, transports: ['websocket', 'polling'] });
     socket.on('connect', () => { if (user._id) socket.emit('join', user._id); });
     socket.on('notification', (notif) => {

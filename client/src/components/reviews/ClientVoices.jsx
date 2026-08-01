@@ -3,6 +3,7 @@ import { MessageCircle, Mic } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import SectionHeader from '../SectionHeader';
 import Reveal from '../Reveal';
+import ImagePlaceholder from '../ImagePlaceholder';
 import VoiceNoteCard from './VoiceNoteCard';
 import ChatProofCard from './ChatProofCard';
 import ChatLightbox from './ChatLightbox';
@@ -94,14 +95,30 @@ const ClientVoices = ({ isRTL: isRTLProp }) => {
       `}</style>
 
       <div className="section-inner">
-        <SectionHeader
-          eyebrow={isRTL ? 'مباشرة من واتساب' : 'Straight From WhatsApp'}
-          title={isRTL ? 'عملاء حقيقيون.\nردود فعل بدون تجميل.' : 'Real clients.\nRaw reactions.'}
-          lead={isRTL
-            ? 'بدون سيناريو ولا صياغة تسويقية — مجرد رسائل صوتية ومحادثات واتساب وصلتنا من عملائنا بعد إطلاق مشاريعهم.'
-            : 'No scripts, no marketing polish — just voice notes and WhatsApp messages clients sent us after their projects went live.'}
-          maxLeadWidth={400}
-        />
+    <SectionHeader
+  eyebrow={isRTL ? 'مباشرة من واتساب' : 'Straight From WhatsApp'}
+  title={isRTL ? 'عملاء حقيقيون.\nردود فعل بدون تجميل.' : 'Real clients.\nRaw reactions.'}
+  lead={
+    isRTL
+      ? 'بدون سيناريو ولا صياغة تسويقية — مجرد رسائل صوتية ومحادثات واتساب وصلتنا من عملائنا بعد إطلاق مشاريعهم.'
+      : 'No scripts, no marketing polish — just voice notes and WhatsApp messages clients sent us after their projects went live.'
+  }
+  maxLeadWidth={400}
+  action={
+    <img
+      src="/Marble Chat Experience in Blue Glow.png"
+      alt={isRTL ? "محادثات واتساب" : "WhatsApp Conversations"}
+      loading="lazy"
+      style={{
+        width: "100%",
+        maxWidth: 340,
+        height: "auto",
+        objectFit: "contain",
+        display: "block",
+      }}
+    />
+  }
+/>
 
         <Reveal stagger className="rp-grid" step={0.12}>
           {/* Real conversations */}
