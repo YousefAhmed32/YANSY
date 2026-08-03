@@ -232,13 +232,15 @@ const Testimonials = ({ isRTL: isRTLProp }) => {
           }
         />
 
-        <ImagePlaceholder
-          minHeight={180}
-          style={{ marginBottom: 'clamp(1.75rem, 3.5vw, 2.75rem)' }}
-          prompt={rtl
-            ? 'رسم توضيحي بمنظور آيزومتري لعلامة اقتباس عملاقة عائمة محاطة بفقاعات محادثة صغيرة ونجوم تقييم متلألئة. ألوان زرقاء وبيضاء، تصميم بسيط، زجاجية ناعمة، خلفية شفافة PNG، دقة فائقة.'
-            : 'Isometric illustration of a large floating quotation mark surrounded by small chat bubbles and glowing star ratings. Blue and white palette, minimal, soft glassmorphism, transparent PNG, ultra HD.'}
-        />
+        <div className="relative w-full aspect-[21/6] max-h-[220px] rounded-2xl overflow-hidden border border-[rgb(var(--border))] mb-8 shadow-md group">
+          <img
+            src="/placeholders/testimonials-3d.jpg"
+            alt={rtl ? 'عملاء حقيقيون ونتائج مثبتة - يانسي تك' : 'Real clients and proven results - YANSY TECH'}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 pointer-events-none" />
+        </div>
 
         <Reveal stagger className="testimonials-grid" step={0.06} itemClassName="testimonial-slot">
           {shown.map((t, i) => (

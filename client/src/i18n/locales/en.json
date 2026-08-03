@@ -1,5 +1,7 @@
 {
   "common": {
+    "or": "or",
+    "backHome": "Home",
     "welcome": "Welcome back",
     "login": "Sign In",
     "logout": "Sign Out",
@@ -57,10 +59,22 @@
     "signIn": "Sign In",
     "createAccount": "Create Account",
     "fillAllFields": "Please fill in all fields to continue",
-    "loginFailed": "We couldn't sign you in. Please try again."
+    "loginFailed": "We couldn't sign you in. Please try again.",
+    "continueWithGoogle": "Continue with Google",
+    "googleFailed": "Google sign-in failed. Please try again.",
+    "googleCancelled": "Google sign-in was cancelled or failed.",
+    "login": "Log In",
+    "emailRequired": "Email address is required.",
+    "passwordRequired": "Password is required.",
+    "invalidEmail": "Please enter a valid email address.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "register": {
     "subtitle": "Join YANSY — where great digital products are built",
+    "orSignUpWithEmail": "or sign up with email",
+    "fullNameRequired": "Full name is required.",
+    "atLeastOne": "At least one of brand name or company name is required.",
     "personalInfo": "About You",
     "businessInfo": "Your Business",
     "fullName": "Full Name",

@@ -36,12 +36,14 @@ const auditLogSchema = new mongoose.Schema({
       'file.upload', 'file.delete',
       // Report / moderation actions
       'report.created', 'report.updated', 'report.deleted',
+      // Blog actions
+      'blog.create', 'blog.update', 'blog.delete',
     ],
   },
 
   entityType: {
     type: String,
-    enum: ['User', 'Project', 'Feedback', 'PortfolioProject', 'Invoice', 'File', 'System', 'Report', 'IntroSettings', 'HomepageVideoSettings'],
+    enum: ['User', 'Project', 'Feedback', 'PortfolioProject', 'Invoice', 'File', 'System', 'Report', 'IntroSettings', 'HomepageVideoSettings', 'BlogPost'],
     required: true,
   },
 

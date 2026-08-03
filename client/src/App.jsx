@@ -72,6 +72,7 @@ const VerifyEmail         = lazy(() => import('./pages/VerifyEmail'));
 const OnboardingWizard    = lazy(() => import('./pages/OnboardingWizard'));
 const Meetings            = lazy(() => import('./pages/Meetings'));
 const ActivityTimeline    = lazy(() => import('./pages/ActivityTimeline'));
+const AdminBlog           = lazy(() => import('./pages/AdminBlog'));
 
 /* ── Branded page loader ──────────────────────────────────────────────────── */
 const PageLoader = () => (
@@ -277,6 +278,10 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/analytics"
               element={<ProtectedRoute requireAdmin><AdminAnalytics /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/blog"
+              element={<ProtectedRoute requireAdmin><AdminBlog /></ProtectedRoute>}
             />
           </Route>
 

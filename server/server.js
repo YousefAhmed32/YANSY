@@ -40,7 +40,7 @@ const notificationRoutes = require('./routes/notifications');
 const activityRoutes = require('./routes/activity');
 
 // Optional routes — loaded only when their files exist
-let auditRoutes, invoiceRoutes, searchRoutes, billingRoutes, aiRoutes, settingsRoutes, reportRoutes, supportRoutes;
+let auditRoutes, invoiceRoutes, searchRoutes, billingRoutes, aiRoutes, settingsRoutes, reportRoutes, supportRoutes, blogRoutes;
 let billingController;
 try { auditRoutes    = require('./routes/audit');    } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] audit:',    e.message); }
 try { invoiceRoutes  = require('./routes/invoices'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] invoices:', e.message); }
@@ -53,6 +53,7 @@ try { aiRoutes       = require('./routes/ai');       } catch (e) { if (e.code !=
 try { settingsRoutes = require('./routes/settings'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] settings:', e.message); }
 try { reportRoutes   = require('./routes/reports');  } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] reports:',  e.message); }
 try { supportRoutes  = require('./routes/support');  } catch (e) { console.error('[routes] support:', e.message); }
+try { blogRoutes     = require('./routes/blog.routes.js'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') console.error('[routes] blog:', e.message); }
 
 const app = express();
 const httpServer = createServer(app);
@@ -94,8 +95,8 @@ mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 3000,   // fail fast — surface DB errors to callers quickly
   connectTimeoutMS: 5000,
   socketTimeoutMS: 45000,
-  maxPoolSize: 10,
-  minPoolSize: 2,
+  maxPoolSize: 50,
+  minPoolSize: 5,
 })
   .then(() => {
     console.log('✅ MongoDB connected');
@@ -327,6 +328,7 @@ if (aiRoutes)       app.use('/api/ai',             aiRoutes);
 if (settingsRoutes) app.use('/api/admin/settings', settingsRoutes);
 if (reportRoutes)   app.use('/api/reports',        reportRoutes);
 if (supportRoutes)  app.use('/api/support',        supportRoutes);
+if (blogRoutes)     app.use('/api/blog',           blogRoutes);
 
 app.get('/api/health', (req, res) => {
   const dbState  = mongoose.connection.readyState;

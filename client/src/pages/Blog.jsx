@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { ArrowUpRight, Clock } from 'lucide-react';
-import { BLOG_POSTS, CATEGORIES, getBlogPostsByCategory } from '../data/blogPosts';
+import { Search, Clock, ArrowUpRight, Sparkles, Filter, Mail, CheckCircle2, TrendingUp, BookOpen } from 'lucide-react';
+import { BLOG_POSTS, CATEGORIES } from '../data/blogPosts';
+import { getLocalizedPost } from '../utils/blogUtils';
 import { useSEO } from '../hooks/useSEO';
 import { useLanguage } from '../contexts/LanguageContext';
 import Header from '../components/Header';
@@ -11,251 +12,363 @@ import ProjectRequestForm from '../components/ProjectRequestForm';
 import BlogVisual from '../components/BlogVisual';
 
 const Blog = () => {
-  const { isRTL } = useLanguage();
-  const [active, setActive]   = useState('all');
+  const { isRTL, language } = useLanguage();
+  const lang = isRTL ? 'ar' : 'en';
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [emailSubscribed, setEmailSubscribed] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  
   const heroRef = useRef(null);
   const gridRef = useRef(null);
 
-  const posts = active === 'all' ? BLOG_POSTS : getBlogPostsByCategory(active);
-  const categoryLabel = (cat) => {
-    const c = CATEGORIES.find(c => c.slug === cat);
-    if (!c) return cat;
+  // Normalize all posts with localized fields
+  const localizedPosts = useMemo(() => {
+    return BLOG_POSTS.map(post => getLocalizedPost(post, lang));
+  }, [lang]);
+
+  // Filter posts based on active category and search query
+  const filteredPosts = useMemo(() => {
+    return localizedPosts.filter(post => {
+      const matchCategory = activeCategory === 'all' || post.category === activeCategory;
+      const q = searchQuery.toLowerCase().trim();
+      const matchSearch = !q || (
+        post.title.toLowerCase().includes(q) ||
+        post.excerpt.toLowerCase().includes(q) ||
+        post.tags.some(t => t.toLowerCase().includes(q))
+      );
+      return matchCategory && matchSearch;
+    });
+  }, [localizedPosts, activeCategory, searchQuery]);
+
+  const featuredPost = localizedPosts[0];
+  const trendingPosts = localizedPosts.slice(1, 4);
+
+  const categoryLabel = (catSlug) => {
+    const c = CATEGORIES.find(c => c.slug === catSlug);
+    if (!c) return catSlug;
     return isRTL ? c.labelAr : c.label;
   };
 
   useSEO({
-    title      : isRTL ? 'المدونة | يانسي تك' : 'Blog | YANSY TECH',
+    title: isRTL ? 'المدونة والهندسة البرمجية | يانسي تك' : 'Blog & Engineering Insights | YANSY TECH',
     description: isRTL
-      ? 'مقالات عملية عن تطوير الويب، SaaS، تصميم المنتج، التجارة الإلكترونية، ونمو الأعمال الرقمية من فريق يانسي تك.'
-      : 'Insights on web development, SaaS, product design, e-commerce, and digital business growth from the YANSY TECH team. 30+ expert articles.',
-    keywords   : 'web development blog, SaaS development insights, product design articles, e-commerce tips, startup growth, YANSY TECH blog',
-    canonical  : 'https://yansytech.com/blog',
+      ? 'أدلة عملية ومقالات هندسية متخصصة في تطوير الويب، تطبيقات SaaS، التجارة الإلكترونية، وأتمتة الأعمال من خبراء يانسي تك.'
+      : 'Expert articles on React, Next.js, SaaS architecture, web performance, product design, and e-commerce strategy from YANSY TECH.',
+    keywords: isRTL
+      ? 'مدونة تطوير الويب, هندسة البرمجيات, تطوير SaaS, تجربة المستخدم, أداء الويب'
+      : 'web development blog, SaaS architecture, React performance, Next.js guide, UI/UX design',
+    canonical: 'https://yansytech.com/blog',
+    ogLocale: isRTL ? 'ar_SA' : 'en_US',
     schema: {
       '@context': 'https://schema.org',
       '@type': 'Blog',
-      'url': 'https://yansytech.com/blog',
-      'name': 'YANSY TECH Blog',
-      'description': 'Expert insights on web development, SaaS, product design, and digital business growth.',
-      'publisher': { '@id': 'https://yansytech.com/#organization' },
-      'isPartOf': { '@id': 'https://yansytech.com/#website' },
-      'breadcrumb': {
-        '@type': 'BreadcrumbList',
-        'itemListElement': [
-          { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://yansytech.com/' },
-          { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': 'https://yansytech.com/blog' },
-        ],
-      },
+      url: 'https://yansytech.com/blog',
+      name: isRTL ? 'مدونة يانسي تك' : 'YANSY TECH Blog',
+      description: isRTL ? 'مقالات وأدلة هندسية متخصصة' : 'Engineering insights & technology guides',
     },
   });
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('[data-hero-anim]', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.09, ease: 'power3.out', delay: 0.1 });
+      gsap.fromTo('[data-hero-anim]', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: 'power3.out' });
     }, heroRef);
     return () => ctx.revert();
   }, []);
 
-  useEffect(() => {
-    const cards = gridRef.current?.querySelectorAll('[data-card]');
-    if (!cards?.length) return;
-    const ctx = gsap.context(() => {
-      gsap.from(cards, { opacity: 0, y: 16, duration: 0.5, stagger: 0.05, ease: 'power3.out' });
-    }, gridRef);
-    return () => ctx.revert();
-  }, [active]);
-
-  const categoryColor = (slug) => CATEGORIES.find(c => c.slug === slug)?.color || 'rgb(var(--accent))';
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      setEmailSubscribed(true);
+      setEmailInput('');
+    }
+  };
 
   return (
     <>
       <Header onStartProject={() => setIsFormOpen(true)} />
 
-      <main className="bg-surface-white text-[rgb(var(--text-primary))] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
-
-        {/* ── HERO ──────────────────────────────────────────────── */}
-        <section ref={heroRef} style={{ paddingTop: '128px', paddingBottom: '5rem' }}>
-          <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.25), transparent)' }} />
-          <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div data-hero-anim className="opacity-0 flex items-center gap-3 mb-6">
-              <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, rgb(var(--accent)), transparent)', display: 'inline-block' }} />
-              <span className="eyebrow">{isRTL ? 'رؤى وأدلة' : 'Insights & Guides'}</span>
+      <main className="bg-surface-white text-[rgb(var(--text-primary))] overflow-x-hidden pt-28 pb-20" dir={isRTL ? 'rtl' : 'ltr'}>
+        
+        {/* ── HERO HEADER ──────────────────────────────────────────────── */}
+        <section ref={heroRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+          <div className="text-center max-w-3xl mx-auto">
+            <div data-hero-anim className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgb(var(--accent-light))] border border-[rgba(37,99,235,0.2)] text-[rgb(var(--accent))] text-xs font-semibold mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{isRTL ? 'المعرفة والرؤى الهندسية' : 'Engineering Insights & Knowledge'}</span>
             </div>
-            <h1  data-hero-anim className="opacity-0 " style={{
-              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-              fontSize: 'clamp(2.8rem, 7vw, 6.5rem)',
-              fontWeight: 700,
-              lineHeight: 1.04,
-              letterSpacing: isRTL ? 0 : '-0.03em',
-              color: 'rgb(var(--text-primary))',
-              maxWidth: '16ch',
-              marginBottom: '1.5rem',
-            }}>
+            
+            <h1 data-hero-anim className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[rgb(var(--text-primary))] tracking-tight mb-4 leading-tight">
               {isRTL ? (
-                <>
-                  مدونة{' '}
-                  <span  style={{
-                    backgroundImage: 'linear-gradient(135deg, rgb(var(--accent)) 0%, rgba(0,0,0,0.8) 55%)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', padding:' 0 0 10px 0px'
-                  }}>
-                    يانسي تك
-                  </span>
-                </>
+                <>مقالات وأدلة <span className="text-[rgb(var(--accent))]">بناء المنتجات الرقمية</span></>
               ) : (
-                <>
-                  The{' '}
-                  <span style={{
-                    backgroundImage: 'linear-gradient(135deg, rgb(var(--accent)) 0%, rgba(0,0,0,0.8) 55%)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                  }}>
-                    YANSY TECH
-                  </span>{' '}
-                  Blog
-                </>
+                <>Insights for <span className="text-[rgb(var(--accent))]">Digital Product</span> Builders</>
               )}
             </h1>
-            <p data-hero-anim className="opacity-0" style={{
-              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter', system-ui, sans-serif",
-              fontSize: 'clamp(0.95rem,2vw,1.1rem)',
-              fontWeight: 400,
-              color: 'rgb(var(--hover-overlay) / 0.6)',
-              lineHeight: 1.8,
-              maxWidth: '52ch',
-              marginBottom: '3rem',
-            }}>
+
+            <p data-hero-anim className="text-sm sm:text-lg text-[rgb(var(--text-secondary))] leading-relaxed mb-8">
               {isRTL
-                ? 'أدلة عملية عن تطوير الويب، SaaS، تصميم المنتج، التجارة الإلكترونية، وبناء أعمال رقمية قابلة للتوسع — بقلم الفريق الذي يبنيها فعلياً.'
-                : 'Practical guides on web development, SaaS, product design, e-commerce, and building digital businesses that scale. Written by the team that builds them.'}
+                ? 'خبرات عملية وأكواد برمجية مجربة في تطوير الويب، منصات SaaS، الأداء الفائق، وتجارب المستخدم الاستثنائية.'
+                : 'Deep dives, architectural playbooks, and practical insights on building high-performance web applications and scaling SaaS.'}
             </p>
 
-            {/* Category filter */}
-            <div data-hero-anim className="opacity-0 flex flex-wrap gap-2">
-              <button
-                onClick={() => setActive('all')}
-                style={{
-                  padding: '7px 18px',
-                  border: `1px solid ${active === 'all' ? 'rgba(37,99,235,0.5)' : 'rgb(var(--hover-overlay) / 0.08)'}`,
-                  background: active === 'all' ? 'rgba(37,99,235,0.08)' : 'transparent',
-                  color: active === 'all' ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 11, fontWeight: 400, letterSpacing: '0.12em', textTransform: 'uppercase',
-                  cursor: 'pointer', transition: 'all 0.25s',
-                }}
-              >
-                {isRTL ? 'كل الموضوعات' : 'All Topics'}
-              </button>
-              {CATEGORIES.map(cat => (
+            {/* Search & Filter Bar */}
+            <div data-hero-anim className="relative max-w-xl mx-auto mb-8">
+              <Search className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-5 h-5 text-[rgb(var(--text-tertiary))]`} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isRTL ? 'ابحث في المقالات، التقنيات، المواضيع...' : 'Search articles, tags, topics...'}
+                className={`w-full py-3.5 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} rounded-2xl bg-[rgb(var(--bg-elevated))] border border-[rgb(var(--border))] text-sm font-medium focus:outline-none focus:border-[rgb(var(--accent))] transition-all shadow-xs`}
+              />
+            </div>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex items-center justify-center flex-wrap gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setActiveCategory('all')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                activeCategory === 'all'
+                  ? 'bg-[rgb(var(--text-primary))] text-[rgb(var(--bg-elevated))] shadow-sm'
+                  : 'bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] border border-[rgb(var(--border))] hover:border-[rgb(var(--border-strong))]'
+              }`}
+            >
+              {isRTL ? 'جميع المقالات' : 'All Articles'} ({localizedPosts.length})
+            </button>
+
+            {CATEGORIES.map(cat => {
+              const active = activeCategory === cat.slug;
+              const count = localizedPosts.filter(p => p.category === cat.slug).length;
+              return (
                 <button
                   key={cat.slug}
-                  onClick={() => setActive(cat.slug)}
-                  style={{
-                    padding: '7px 18px',
-                    border: `1px solid ${active === cat.slug ? `${cat.color}50` : 'rgb(var(--hover-overlay) / 0.08)'}`,
-                    background: active === cat.slug ? `${cat.color}10` : 'transparent',
-                    color: active === cat.slug ? cat.color : 'rgb(var(--text-secondary))',
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 11, fontWeight: 400, letterSpacing: '0.12em', textTransform: 'uppercase',
-                    cursor: 'pointer', transition: 'all 0.25s',
-                  }}
+                  type="button"
+                  onClick={() => setActiveCategory(cat.slug)}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                    active
+                      ? 'bg-[rgb(var(--accent))] text-white shadow-sm'
+                      : 'bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-secondary))] border border-[rgb(var(--border))] hover:border-[rgb(var(--border-strong))]'
+                  }`}
                 >
-                  {isRTL ? cat.labelAr : cat.label}
+                  {isRTL ? cat.labelAr : cat.label} ({count})
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* ── FEATURED POST (first) ─────────────────────────────── */}
-        {posts.length > 0 && (
-          <section style={{ paddingBottom: '3rem' }}>
-            <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-              <Link
-                to={`/blog/${posts[0].slug}`}
-                style={{ textDecoration: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', background: 'rgb(var(--hover-overlay) / 0.02)', border: '1px solid rgb(var(--border))', transition: 'border-color 0.35s, background 0.35s' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.2)'; e.currentTarget.style.background = 'rgba(37,99,235,0.02)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgb(var(--hover-overlay) / 0.04)'; e.currentTarget.style.background = 'rgb(var(--hover-overlay) / 0.02)'; }}
-              >
-                <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: 'rgb(var(--bg-surface))', minWidth: 0 }}>
-                  <BlogVisual icon={CATEGORIES.find(c => c.slug === posts[0].category)?.icon} label={categoryLabel(posts[0].category)} color={categoryColor(posts[0].category)} variant="card" isRTL={isRTL} />
+        {/* ── FEATURED HERO ARTICLE ──────────────────────────────────── */}
+        {featuredPost && activeCategory === 'all' && !searchQuery && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div className="rounded-3xl border border-[rgb(var(--border))] bg-gradient-to-br from-[rgb(var(--bg-elevated))] to-surface-white overflow-hidden shadow-xl hover:border-[rgb(var(--border-strong))] transition-all duration-300">
+              <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
+                
+                {/* Visual */}
+                <div className="lg:col-span-6 relative aspect-[16/10] lg:aspect-auto lg:h-full min-h-[300px] overflow-hidden bg-slate-900">
+                  <BlogVisual icon={CATEGORIES.find(c => c.slug === featuredPost.category)?.icon} color={CATEGORIES.find(c => c.slug === featuredPost.category)?.color} title={featuredPost.title} slug={featuredPost.slug} coverImage={featuredPost.coverImage} />
+                  <span className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} px-3 py-1 rounded-full text-xs font-bold bg-black/60 text-white backdrop-blur-md border border-white/20`}>
+                    🌟 {isRTL ? 'مقالة مميزة' : 'Featured Article'}
+                  </span>
                 </div>
-                <div style={{ padding: 'clamp(2rem,5vw,3.5rem)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.25rem' }}>
-                    <span style={{ padding: '4px 12px', border: `1px solid ${categoryColor(posts[0].category)}30`, background: `${categoryColor(posts[0].category)}10`, color: categoryColor(posts[0].category), fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                      {categoryLabel(posts[0].category)}
+
+                {/* Content */}
+                <div className="lg:col-span-6 p-6 sm:p-10 space-y-4">
+                  <div className="flex items-center gap-3 text-xs text-[rgb(var(--text-tertiary))] font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-[rgb(var(--accent-light))] text-[rgb(var(--accent))] font-bold">
+                      {categoryLabel(featuredPost.category)}
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgb(var(--text-secondary))', letterSpacing: '0.1em' }}>
-                      <Clock size={11} aria-hidden /> {posts[0].readTime} {isRTL ? 'د قراءة' : 'min read'}
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {featuredPost.readTime} {isRTL ? 'دقائق قراءة' : 'min read'}
                     </span>
                   </div>
-                  <h2 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.375rem,2.5vw,2rem)', fontWeight: 600, color: 'rgb(var(--text-primary))', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1rem' }}>
-                    {posts[0].title}
+
+                  <h2 className="text-xl sm:text-3xl font-extrabold text-[rgb(var(--text-primary))] leading-tight hover:text-[rgb(var(--accent))] transition-colors">
+                    <Link to={`/blog/${featuredPost.slug}`}>
+                      {featuredPost.title}
+                    </Link>
                   </h2>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 400, color: 'rgb(var(--text-secondary))', lineHeight: 1.8, marginBottom: '1.5rem' }}>
-                    {posts[0].excerpt}
+
+                  <p className="text-sm sm:text-base text-[rgb(var(--text-secondary))] leading-relaxed line-clamp-3">
+                    {featuredPost.excerpt}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgb(var(--accent))', fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                    {isRTL ? 'اقرأ المقال' : 'Read Article'} <ArrowUpRight size={13} aria-hidden style={{ transform: isRTL ? 'scaleX(-1)' : 'none' }} />
+
+                  <div className="pt-4 flex items-center justify-between border-t border-[rgb(var(--border-light))]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs uppercase">
+                        {featuredPost.author.name.charAt(0)}
+                      </div>
+                      <div>
+                        <span className="block text-xs font-bold text-[rgb(var(--text-primary))]">{featuredPost.author.name}</span>
+                        <span className="block text-[11px] text-[rgb(var(--text-tertiary))]">{featuredPost.author.role}</span>
+                      </div>
+                    </div>
+
+                    <Link
+                      to={`/blog/${featuredPost.slug}`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[rgb(var(--text-primary))] text-[rgb(var(--bg-elevated))] text-xs font-bold hover:opacity-90 transition-opacity"
+                    >
+                      <span>{isRTL ? 'قراءة المقال' : 'Read Article'}</span>
+                      <ArrowUpRight className={`w-4 h-4 ${isRTL ? '-scale-x-100' : ''}`} />
+                    </Link>
                   </div>
+
                 </div>
-              </Link>
+
+              </div>
             </div>
           </section>
         )}
 
-        {/* ── GRID ──────────────────────────────────────────────── */}
-        <section ref={gridRef} style={{ paddingBottom: 'clamp(5rem,10vw,8rem)' }}>
-          <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
-              {posts.slice(1).map(post => (
-                <Link
+        {/* ── ARTICLES GRID ────────────────────────────────────────────── */}
+        <section ref={gridRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+          
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-[rgb(var(--border-light))]">
+            <h3 className="text-lg sm:text-xl font-bold text-[rgb(var(--text-primary))] flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-[rgb(var(--accent))]" />
+              <span>
+                {searchQuery 
+                  ? (isRTL ? `نتائج البحث عن "${searchQuery}"` : `Search Results for "${searchQuery}"`)
+                  : (isRTL ? 'أحدث المقالات الهندسية' : 'Latest Engineering Articles')}
+              </span>
+            </h3>
+            <span className="text-xs font-semibold text-[rgb(var(--text-tertiary))]">
+              {filteredPosts.length} {isRTL ? 'مقال متاح' : 'articles'}
+            </span>
+          </div>
+
+          {filteredPosts.length === 0 ? (
+            <div className="text-center py-16 px-4 border border-dashed border-[rgb(var(--border))] rounded-3xl bg-[rgb(var(--bg-elevated))]">
+              <p className="text-base font-bold text-[rgb(var(--text-primary))] mb-2">
+                {isRTL ? 'لم نجد أي مقالات تطابق بحثك' : 'No articles match your search'}
+              </p>
+              <p className="text-xs text-[rgb(var(--text-secondary))] mb-6">
+                {isRTL ? 'جرب البحث بكلمات أخرى أو اختر فئة مختلفة.' : 'Try adjusting your search query or clear filters.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
+                className="px-4 py-2 rounded-xl bg-[rgb(var(--accent))] text-white text-xs font-bold cursor-pointer"
+              >
+                {isRTL ? 'عرض جميع المقالات' : 'Reset All Filters'}
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {filteredPosts.map(post => (
+                <article
                   key={post.slug}
-                  to={`/blog/${post.slug}`}
                   data-card
-                  style={{ background: 'rgb(var(--bg-surface))', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
+                  className="group flex flex-col bg-surface-white rounded-3xl border border-[rgb(var(--border))] overflow-hidden hover:border-[rgb(var(--border-strong))] hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
-                  <div style={{ position: 'relative', paddingTop: '52%', overflow: 'hidden', background: 'rgb(var(--bg-surface))' }}>
-                    <BlogVisual icon={CATEGORIES.find(c => c.slug === post.category)?.icon} label={categoryLabel(post.category)} color={categoryColor(post.category)} variant="card" isRTL={isRTL} />
-                  </div>
-                  <div style={{ padding: 'clamp(1.25rem,3vw,1.75rem)', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.75rem' }}>
-                      <span style={{ padding: '3px 10px', border: `1px solid ${categoryColor(post.category)}25`, background: `${categoryColor(post.category)}08`, color: categoryColor(post.category), fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 400, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  {/* Thumbnail */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                    <BlogVisual icon={CATEGORIES.find(c => c.slug === post.category)?.icon} color={CATEGORIES.find(c => c.slug === post.category)?.color} title={post.title} slug={post.slug} coverImage={post.coverImage} />
+                    <div className="absolute top-3 right-3 left-3 flex justify-between items-center">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-white/95 backdrop-blur-md border border-[rgb(var(--border))] text-[rgb(var(--text-primary))]">
                         {categoryLabel(post.category)}
                       </span>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: 'rgb(var(--text-secondary))', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <Clock size={9} aria-hidden /> {post.readTime}{isRTL ? 'د' : 'm'}
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/50 text-white backdrop-blur-md flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {post.readTime} {isRTL ? 'د' : 'min'}
                       </span>
                     </div>
-                    <h3 style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.1rem,2vw,1.35rem)', fontWeight: 400, color: 'rgb(var(--text-primary))', lineHeight: 1.25, marginBottom: '0.75rem', flex: 1 }}>
-                      {post.title}
-                    </h3>
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', fontWeight: 400, color: 'rgb(var(--text-secondary))', lineHeight: 1.7, marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {post.excerpt}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgb(var(--accent))', fontFamily: "'Inter', sans-serif", fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                      {isRTL ? 'اقرأ' : 'Read'} <ArrowUpRight size={11} aria-hidden style={{ transform: isRTL ? 'scaleX(-1)' : 'none' }} />
-                    </div>
                   </div>
-                </Link>
+
+                  {/* Body */}
+                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-[rgb(var(--text-primary))] group-hover:text-[rgb(var(--accent))] transition-colors line-clamp-2 mb-2 leading-snug">
+                        <Link to={`/blog/${post.slug}`}>
+                          {post.title}
+                        </Link>
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[rgb(var(--text-secondary))] leading-relaxed line-clamp-3 mb-4">
+                        {post.excerpt}
+                      </p>
+                    </div>
+
+                    {/* Tags & Footer */}
+                    <div>
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {post.tags.slice(0, 3).map((tag, tIdx) => (
+                            <span key={tIdx} className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-tertiary))] border border-[rgb(var(--border-light))]">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="pt-3 border-t border-[rgb(var(--border-light))] flex items-center justify-between text-xs text-[rgb(var(--text-tertiary))]">
+                        <span className="font-medium">{post.author.name}</span>
+                        <Link
+                          to={`/blog/${post.slug}`}
+                          className="font-bold text-[rgb(var(--accent))] flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                        >
+                          <span>{isRTL ? 'اقرأ المزيد' : 'Read'}</span>
+                          <ArrowUpRight className={`w-3.5 h-3.5 ${isRTL ? '-scale-x-100' : ''}`} />
+                        </Link>
+                      </div>
+                    </div>
+
+                  </div>
+                </article>
               ))}
             </div>
-          </div>
+          )}
+
         </section>
 
-        {/* ── CTA ───────────────────────────────────────────────── */}
-        <section style={{ padding: 'clamp(5rem,10vw,8rem) 0', textAlign: 'center', borderTop: '1px solid rgb(var(--border))' }}>
-          <div className="max-w-xl mx-auto px-5">
-            <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>
-              {isRTL ? 'جاهز للبناء؟' : 'Ready to Build?'}
-            </span>
-            <h2 style={{ fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.75rem,4vw,2.75rem)', fontWeight: 700, color: 'rgb(var(--text-primary))', lineHeight: 1.15, letterSpacing: isRTL ? 0 : '-0.03em', marginBottom: '2rem' }}>
-              {isRTL ? 'حوّل هذه المعرفة إلى منتج حقيقي.' : 'Turn This Knowledge Into a Product'}
-            </h2>
-            <button onClick={() => setIsFormOpen(true)} className="btn-primary" style={{ fontSize: '13.5px', padding: '14px 32px' }}>
-              {isRTL ? 'ابدأ مشروعك' : 'Start a Project'}
-              <ArrowUpRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
-            </button>
+        {/* ── NEWSLETTER SUBSCRIPTION ──────────────────────────────────── */}
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 mb-16">
+          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden shadow-2xl border border-slate-700/50">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto">
+                <Mail className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-xl sm:text-3xl font-extrabold text-white">
+                {isRTL ? 'اشترك في النشرة البرمجية الأسبوعية' : 'Subscribe to Engineering Weekly'}
+              </h3>
+
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                {isRTL
+                  ? 'أحدث التطورات الهندسية، تقنيات React & Next.js، وإشعارات المقالات الجديدة مباشرة إلى بريدك الإلكتروني.'
+                  : 'Get our latest architectural guides, React benchmarks, and SaaS strategies delivered to your inbox every week.'}
+              </p>
+
+              {emailSubscribed ? (
+                <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <span>{isRTL ? 'تم اشتراكك بنجاح! شكراً لانضمامك.' : 'Subscribed successfully! Thank you.'}</span>
+                </div>
+              ) : (
+                <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <input
+                    type="email"
+                    required
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder={isRTL ? 'أدخل بريدك الإلكتروني...' : 'Enter your email address...'}
+                    className="flex-1 px-4 py-3.5 rounded-2xl bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    type="submit"
+                    className="px-6 py-3.5 rounded-2xl bg-[rgb(var(--accent))] hover:bg-blue-600 text-white text-xs sm:text-sm font-extrabold transition-colors cursor-pointer"
+                  >
+                    {isRTL ? 'اشترك الآن' : 'Subscribe'}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </section>
 

@@ -34,6 +34,7 @@ const buildAdminNav = (t, language) => {
     { to: '/app/admin/reports',          label: ar ? 'التقارير'         : 'Reports',               icon: Layers,          group: g.overview },
 
     { to: '/app/admin/portfolio',        label: ar ? 'معرض الأعمال'     : 'Portfolio',             icon: Image,           group: g.content },
+    { to: '/app/admin/blog',             label: ar ? 'إدارة المدونة'      : 'Blog System',           icon: Globe,           group: g.content },
     { to: '/app/admin/intro',            label: ar ? 'المقدمة السينمائية' : 'Intro Video',          icon: Video,           group: g.content },
     { to: '/app/admin/homepage-video',   label: ar ? 'فيديو الصفحة الرئيسية' : 'Video Showcase',    icon: Clapperboard,    group: g.content },
     { to: '/app/admin/client-logos',     label: ar ? 'العملاء الموثوقون'  : 'Trusted By',           icon: Award,           group: g.content },

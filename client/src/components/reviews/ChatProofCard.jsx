@@ -1,109 +1,65 @@
 import { useState } from 'react';
 import { ZoomIn, MessageCircle } from 'lucide-react';
+import s from './ClientVoices.module.css';
 
 /**
- * WhatsApp screenshot thumbnail — cropped to the conversation (the phone
- * status bar / nav bar in the source screenshot is cropped out via
- * object-position, not removed from the file), click or Enter/Space to open
- * the full screenshot in <ChatLightbox>.
+ * WhatsApp screenshot thumbnail — masonry-ready with varying aspect ratios.
+ *
+ * Premium redesign:
+ * - `variant` prop controls height ('tall' or 'short') for organic masonry feel
+ * - Deeper shadows and blue-accent border glow on hover
+ * - Frosted-glass zoom indicator
+ * - Smooth scale transition on hover
+ * - Click/Enter/Space opens the full screenshot in <ChatLightbox>
  */
-const ChatProofCard = ({ src, index, label, tag, isRTL, onOpen }) => {
+const ChatProofCard = ({ src, index, label, tag, isRTL, onOpen, variant = 'tall' }) => {
   const [loaded, setLoaded] = useState(false);
 
-  return (
-    <div className="cp-card">
-      <style>{`
-        .cp-card {
-          background: rgb(var(--bg-elevated));
-          border: 1px solid rgb(var(--border));
-          border-radius: var(--radius-lg);
-          overflow: hidden;
-          transition: box-shadow 0.28s cubic-bezier(0.16,1,0.3,1),
-                      border-color 0.22s ease,
-                      transform 0.28s cubic-bezier(0.16,1,0.3,1);
-        }
-        .cp-card:hover {
-          box-shadow: 0 12px 36px rgba(0,0,0,0.08);
-          border-color: rgb(var(--border-strong));
-          transform: translateY(-2px);
-        }
-        .cp-frame {
-          position: relative;
-          aspect-ratio: 9 / 13;
-          overflow: hidden;
-          background: #0B141A;
-          cursor: pointer;
-        }
-        .cp-frame img {
-          width: 100%; height: 100%;
-          object-fit: cover;
-          object-position: top center;
-          display: block;
-          transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease;
-          opacity: 0;
-        }
-        .cp-frame img.loaded { opacity: 1; }
-        .cp-frame:hover img { transform: scale(1.045); }
-        .cp-zoom {
-          position: absolute; inset: 0;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(13,17,23,0);
-          transition: background 0.3s ease;
-          pointer-events: none;
-        }
-        .cp-frame:hover .cp-zoom, .cp-frame:focus-visible .cp-zoom {
-          background: rgba(13,17,23,0.28);
-        }
-        .cp-zoom-icon {
-          width: 38px; height: 38px; border-radius: 50%;
-          background: rgba(255,255,255,0.92);
-          display: flex; align-items: center; justify-content: center;
-          opacity: 0; transform: scale(0.85);
-          transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .cp-frame:hover .cp-zoom-icon, .cp-frame:focus-visible .cp-zoom-icon {
-          opacity: 1; transform: scale(1);
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .cp-card, .cp-frame img, .cp-zoom, .cp-zoom-icon { transition: none; }
-        }
-      `}</style>
+  const frameClass = variant === 'short' ? s.cpFrameShort : s.cpFrameTall;
 
+  return (
+    <div className={s.cpCard}>
       <div
-        className="cp-frame"
+        className={frameClass}
         role="button"
         tabIndex={0}
         onClick={onOpen}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
-        aria-label={isRTL ? `فتح لقطة شاشة محادثة واتساب ${index + 1}` : `Open WhatsApp conversation screenshot ${index + 1}`}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onOpen();
+          }
+        }}
+        aria-label={
+          isRTL
+            ? `فتح لقطة شاشة محادثة واتساب ${index + 1}`
+            : `Open WhatsApp conversation screenshot ${index + 1}`
+        }
       >
         <img
           src={src}
           alt=""
           loading="lazy"
           decoding="async"
-          className={loaded ? 'loaded' : ''}
+          className={loaded ? s.cpImgLoaded : s.cpImg}
           onLoad={() => setLoaded(true)}
         />
-        <div className="cp-zoom" aria-hidden>
-          <div className="cp-zoom-icon">
+        <div className={s.cpZoom} aria-hidden>
+          <div className={s.cpZoomIcon}>
             <ZoomIn style={{ width: 17, height: 17, color: 'rgb(var(--text-primary))' }} />
           </div>
         </div>
       </div>
 
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 14px', flexDirection: isRTL ? 'row-reverse' : 'row',
-      }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{label}</span>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          fontSize: 10, fontWeight: 600, color: 'rgb(var(--success))',
-          background: 'rgb(var(--success-light))', border: '1px solid rgb(var(--success) / 0.35)',
-          padding: '2px 7px', borderRadius: 100,
-          flexDirection: isRTL ? 'row-reverse' : 'row',
-        }}>
+      <div
+        className={s.cpFooter}
+        style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}
+      >
+        <span className={s.cpLabel}>{label}</span>
+        <span
+          className={s.cpBadge}
+          style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}
+        >
           <MessageCircle style={{ width: 9, height: 9 }} aria-hidden />
           {tag}
         </span>

@@ -6,10 +6,10 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSEO } from '../hooks/useSEO';
 import { login, googleLogin, clearError } from '../store/authSlice';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Mail, Lock, Sparkles, ShieldCheck } from 'lucide-react';
 
 const GoogleIcon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -32,54 +32,145 @@ const BrandPanel = ({ isRTL }) => (
     display: 'none',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    padding: '48px',
-    background: '#F6F7F9',
-    borderRight: '1px solid #E8EBF0',
+    padding: '44px 48px',
+    background: '#070B14',
     position: 'relative',
     overflow: 'hidden',
   }} className="auth-brand-panel">
-    <div>
-      <Link to="/" style={{ textDecoration: 'none' }}>
-        <span style={{ fontSize: '16px', fontWeight: 700, letterSpacing: '0.08em', color: '#0D1117' }}>YANSY</span>
-        <span style={{ display: 'block', fontSize: '10px', letterSpacing: '0.2em', color: '#6B7280', textTransform: 'uppercase', marginTop: '2px' }}>TECH</span>
+    {/* Full-bleed 3D Artwork Background */}
+    <img
+      src="/placeholders/auth-fullbleed-3d.jpg"
+      alt="YANSY TECH 3D Security Portal"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        opacity: 0.65,
+        filter: 'brightness(0.9) contrast(1.1)',
+        transform: 'scale(1.03)',
+      }}
+    />
+    <div style={{
+      position: 'absolute',
+      inset: 0,
+      background: 'linear-gradient(180deg, rgba(7,11,20,0.85) 0%, rgba(7,11,20,0.4) 40%, rgba(7,11,20,0.92) 100%)',
+    }} />
+
+    {/* Glow Ambient Orbs */}
+    <div style={{ position: 'absolute', top: '20%', left: '10%', width: '350px', height: '350px', background: 'radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+    <div style={{ position: 'absolute', bottom: '15%', right: '5%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+
+    {/* Header */}
+    <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Link to="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+        <span style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '0.08em', color: '#FFFFFF' }}>YANSY</span>
+        <span style={{ display: 'block', fontSize: '10px', letterSpacing: '0.25em', color: '#60A5FA', textTransform: 'uppercase', marginTop: '1px', fontWeight: 800 }}>TECH</span>
       </Link>
-    </div>
 
-    <div>
-      <h2 style={{
-        fontSize: 'clamp(22px,2.5vw,30px)', fontWeight: 700,
-        letterSpacing: '-0.025em', color: '#0D1117', margin: '0 0 16px',
-        lineHeight: 1.15,
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: '8px',
+        padding: '6px 14px', borderRadius: '100px',
+        background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
       }}>
-        {isRTL
-          ? <><span style={{ color: '#2563EB' }}>منصتك الرقمية</span><br />لإدارة مشاريعك</>
-          : <>Your portal to<br /><span style={{ color: '#2563EB' }}>premium digital work.</span></>
-        }
-      </h2>
-      <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.7, margin: '0 0 32px', maxWidth: '300px' }}>
-        {isRTL
-          ? 'تابع مشاريعك، تواصل مع فريقنا، وتحقق من تقدم عملك في مكان واحد.'
-          : 'Track your projects, communicate with our team, and monitor progress — all in one place.'}
-      </p>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        {[
-          { num: '50+', label: isRTL ? 'مشروع مُسلَّم' : 'Projects delivered' },
-          { num: '98%', label: isRTL ? 'رضا العملاء'   : 'Client satisfaction' },
-          { num: '4+',  label: isRTL ? 'سنوات خبرة'    : 'Years of expertise'  },
-          { num: '24h', label: isRTL ? 'ضمان الرد'      : 'Response guarantee'  },
-        ].map((s) => (
-          <div key={s.num} style={{ padding: '16px', background: '#FFFFFF', border: '1px solid #E8EBF0', borderRadius: '10px' }}>
-            <p style={{ fontSize: '22px', fontWeight: 700, color: '#2563EB', margin: '0 0 2px', letterSpacing: '-0.03em' }}>{s.num}</p>
-            <p style={{ fontSize: '11px', color: '#6B7280', margin: 0, letterSpacing: '0.01em' }}>{s.label}</p>
-          </div>
-        ))}
+        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 12px #10B981' }} />
+        <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#F1F5F9', letterSpacing: '0.02em' }}>
+          {isRTL ? 'بوابة العملاء مشفّرة 100%' : '100% Encrypted Client Portal'}
+        </span>
       </div>
     </div>
 
-    <p style={{ fontSize: '11px', color: '#9CA3AF', margin: 0 }}>
-      {isRTL ? 'موثوق به من 50+ شركة ورائد أعمال.' : 'Trusted by 50+ businesses and founders.'}
-    </p>
+    {/* Center Interactive Glass Hero Card */}
+    <div style={{ position: 'relative', zIndex: 10, margin: 'auto 0', paddingTop: '32px', paddingBottom: '32px' }}>
+      <div style={{
+        padding: '32px', borderRadius: '24px',
+        background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: '0 30px 60px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
+      }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: '6px',
+          padding: '5px 12px', borderRadius: '8px',
+          background: 'rgba(37,99,235,0.2)', border: '1px solid rgba(59,130,246,0.3)',
+          color: '#93C5FD', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.08em', marginBottom: '18px',
+        }}>
+          <Sparkles size={13} />
+          {isRTL ? 'منصة إدارة وتتبع المشاريع' : 'NEXT-GEN CLIENT PORTAL'}
+        </div>
+
+        <h2 style={{
+          fontSize: 'clamp(24px,2.6vw,32px)', fontWeight: 800,
+          letterSpacing: '-0.03em', color: '#FFFFFF', margin: '0 0 14px',
+          lineHeight: 1.25,
+        }}>
+          {isRTL
+            ? <><span style={{ background: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>منصتك التفاعلية</span><br />لإدارة ومتابعة مشاريعك</>
+            : <>Your portal to<br /><span style={{ background: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>premium digital work.</span></>
+          }
+        </h2>
+        <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.75, margin: '0 0 24px' }}>
+          {isRTL
+            ? 'تواصل مباشر مع فريق المهندسين، تابع تسليمات المراحل لحظياً، واطلع على الفواتير في بيئة آمنة تضمن أعلى معايير الجودة.'
+            : 'Direct access to engineering teams, real-time milestone tracking, and secure invoice management.'}
+        </p>
+
+        {/* Live Grid Metrics */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+          {[
+            { num: '50+', label: isRTL ? 'مشروع' : 'Projects' },
+            { num: '98%', label: isRTL ? 'رضا العملاء' : 'Satisfaction' },
+            { num: '4+',  label: isRTL ? 'سنوات' : 'Years' },
+            { num: '<24h', label: isRTL ? 'استجابة' : 'SLA' },
+          ].map((s) => (
+            <div key={s.num} style={{
+              padding: '12px 10px', background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '18px', fontWeight: 800, color: '#60A5FA', margin: '0 0 2px', letterSpacing: '-0.02em' }}>{s.num}</p>
+              <p style={{ fontSize: '10.5px', color: '#94A3B8', margin: 0, fontWeight: 600 }}>{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Bottom Testimonial Banner */}
+    <div style={{
+      position: 'relative', zIndex: 10,
+      padding: '16px 20px', borderRadius: '18px',
+      background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255, 255, 255, 0.12)',
+      display: 'flex', alignItems: 'center', gap: '14px',
+    }}>
+      <div style={{
+        width: '42px', height: '42px', borderRadius: '50%',
+        background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#FFF', fontWeight: 800, fontSize: '14px', flexShrink: 0,
+        boxShadow: '0 4px 14px rgba(37,99,235,0.4)',
+      }}>
+        AR
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+          <div style={{ display: 'flex', gap: '2px' }}>
+            {[1,2,3,4,5].map(i => (
+              <svg key={i} width="11" height="11" viewBox="0 0 20 20" fill="#F59E0B">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
+          </div>
+          <span style={{ fontSize: '11.5px', color: '#E2E8F0', fontWeight: 700 }}>Ahmed Al-Rashidi</span>
+        </div>
+        <p style={{ fontSize: '11.5px', color: '#94A3B8', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {isRTL ? '«YANSY بنوا متجرنا بالكامل وارتفعت المبيعات 40٪ في أول 90 يوماً.»' : '“YANSY delivered our platform in 3 weeks — sales jumped 40%.”'}
+        </p>
+      </div>
+    </div>
   </div>
 );
 
@@ -88,7 +179,7 @@ const Login = () => {
   const navigate   = useNavigate();
   const { t }      = useTranslation();
   const { isRTL, dir } = useLanguage();
-  const { isAuthenticated, loading, error } = useSelector((s) => s.auth);
+  const { isAuthenticated, loading } = useSelector((s) => s.auth);
 
   useSEO({ title: `${t('auth.login', 'Log In')} | YANSY TECH`, noIndex: true });
 
@@ -98,17 +189,12 @@ const Login = () => {
   const [localError, setLocalError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const [focused, setFocused]       = useState(null);
-  // State, not a ref — isDisabled (below) reads this during render, and a
-  // ref mutation doesn't trigger the re-render needed for that to actually
-  // reflect in the UI (the button could stay clickable for a tick after
-  // submit, or stay stuck disabled after the request settles).
   const [submitting, setSubmitting] = useState(false);
 
   const formRef    = useRef(null);
 
   useEffect(() => { if (isAuthenticated) navigate('/app/dashboard'); }, [isAuthenticated, navigate]);
   useEffect(() => { dispatch(clearError()); }, [dispatch]);
-  useEffect(() => { if (error) setLocalError(error); }, [error]);
 
   const shakeForm = useCallback(() => {
     if (!formRef.current) return;
@@ -161,16 +247,17 @@ const Login = () => {
 
   const inputStyle = (name) => ({
     width: '100%',
-    padding: '11px 14px',
+    padding: '12px 16px',
     background: '#FFFFFF',
-    border: `1px solid ${focused === name ? '#2563EB' : '#E8EBF0'}`,
-    borderRadius: '8px',
-    color: '#0D1117',
+    border: `1.5px solid ${focused === name ? '#2563EB' : '#E2E8F0'}`,
+    boxShadow: focused === name ? '0 0 0 3.5px rgba(37,99,235,0.12)' : '0 1px 2px rgba(0,0,0,0.03)',
+    borderRadius: '10px',
+    color: '#0F172A',
     fontSize: '14px',
     outline: 'none',
-    transition: 'border-color 0.2s',
+    transition: 'all 0.2s ease',
     boxSizing: 'border-box',
-    fontFamily: "'Inter',system-ui,sans-serif",
+    fontFamily: isRTL ? "'IBM Plex Sans Arabic', system-ui, sans-serif" : "'Inter', system-ui, sans-serif",
   });
 
   return (
@@ -295,7 +382,7 @@ const Login = () => {
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   tabIndex={-1}
-                  aria-label={showPass ? 'Hide password' : 'Show password'}
+                  aria-label={showPass ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
                   style={{
                     position: 'absolute', [isRTL ? 'left' : 'right']: '12px', top: '50%',
                     transform: 'translateY(-50%)',
@@ -379,6 +466,19 @@ const Login = () => {
       <style>{`
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #0F172A !important;
+        }
+        .auth-3d-banner img {
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .auth-3d-banner:hover img {
+            transform: scale(1.06) !important;
+        }
         @media (min-width: 900px) {
           .auth-brand-panel { display: flex !important; width: 45%; }
           .auth-mobile-brand { display: none !important; }

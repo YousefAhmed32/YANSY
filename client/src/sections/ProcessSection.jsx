@@ -213,18 +213,15 @@ const ProcessSection = ({ sectionRef, isRTL, onStartProject }) => {
           }
         />
 
- <img
-  src="/Luminous Modular Architecture.png"
-  alt={rtl ? "مراحل تنفيذ المشروع" : "Project Workflow"}
-  loading="lazy"
-  style={{
-    width: "100%",
-    marginBottom: "clamp(1.75rem, 3.5vw, 2.75rem)",
-    height: "auto",
-    objectFit: "contain",
-    display: "block",
-  }}
-/>
+        <div className="relative w-full aspect-[21/7] max-h-[260px] rounded-2xl overflow-hidden border border-[rgb(var(--border))] mb-10 shadow-md group">
+          <img
+            src="/placeholders/process-3d.jpg"
+            alt={rtl ? 'من اليوم الأول تعرف ما يحدث - مراحل العمل في يانسي تك' : 'From day one you know exactly what is happening - YANSY TECH Workflow'}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 pointer-events-none" />
+        </div>
 
         <RevealItems className="process-grid" step={0.06}>
           {STEPS.map((step) => (

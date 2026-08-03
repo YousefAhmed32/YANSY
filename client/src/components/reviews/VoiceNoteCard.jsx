@@ -1,32 +1,37 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Play, Pause, Mic } from 'lucide-react';
+import s from './ClientVoices.module.css';
 
 const BAR_COUNT = 34;
 
-// Deterministic "amplitude" per card so the waveform doesn't reshuffle on
-// every re-render — a real decoded waveform isn't worth the payload for a
-// handful of short voice notes, but a static per-card shape reads as
-// intentional rather than random noise.
+/**
+ * Deterministic "amplitude" per card so the waveform shape is stable across
+ * re-renders — a real decoded waveform isn't worth the payload for a handful
+ * of short voice notes, but a static per-card shape reads as intentional
+ * rather than random noise.
+ */
 const seededHeight = (seed) => {
   const x = Math.sin(seed * 999.7) * 10000;
   const frac = x - Math.floor(x);
   return 0.22 + frac * 0.78; // 22%–100% of track height
 };
 
-const formatTime = (s) => {
-  if (!Number.isFinite(s)) return '0:00';
-  const m = Math.floor(s / 60);
-  const r = Math.floor(s % 60);
+const formatTime = (sec) => {
+  if (!Number.isFinite(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const r = Math.floor(sec % 60);
   return `${m}:${String(r).padStart(2, '0')}`;
 };
 
 /**
- * WhatsApp-style voice note bubble with a custom player. Audio itself is only
- * requested once the card scrolls into view (`shouldLoad`), and only at
- * preload="metadata" — enough for real duration, not the full file.
+ * WhatsApp-style voice note bubble with a custom player.
  *
- * Playback is exclusive across the section: starting one pauses whichever
- * other card owns `playingId`, coordinated by the parent via `onPlayRequest`.
+ * Premium redesign features:
+ * - Gradient play button with glow shadow
+ * - Animated waveform bars during playback
+ * - Glassmorphism card with hover glow
+ * - Lazy audio loading via IntersectionObserver
+ * - Exclusive playback — starting one pauses any other card
  */
 const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayRequest }) => {
   const cardRef = useRef(null);
@@ -43,6 +48,7 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
     [index]
   );
 
+  // Lazy load audio when card scrolls into view
   useEffect(() => {
     const el = cardRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return undefined;
@@ -53,7 +59,7 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
     return () => io.disconnect();
   }, []);
 
-  // Exclusive playback — another card claimed the "now playing" slot.
+  // Exclusive playback — another card claimed the "now playing" slot
   useEffect(() => {
     if (playingId !== id && audioRef.current && !audioRef.current.paused) {
       audioRef.current.pause();
@@ -85,48 +91,10 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
   const playedBars = Math.round(progress * BAR_COUNT);
 
   return (
-    <div ref={cardRef} className="vn-card">
-      <style>{`
-        .vn-card {
-          background: rgb(var(--bg-elevated));
-          border: 1px solid rgb(var(--border));
-          border-radius: var(--radius-lg);
-          padding: 18px 20px;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          transition: box-shadow 0.28s cubic-bezier(0.16,1,0.3,1),
-                      border-color 0.22s ease,
-                      transform 0.28s cubic-bezier(0.16,1,0.3,1);
-        }
-        .vn-card:hover {
-          box-shadow: 0 12px 36px rgba(0,0,0,0.08);
-          border-color: rgb(var(--border-strong));
-          transform: translateY(-2px);
-        }
-        .vn-play {
-          width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
-          background: rgb(var(--accent));
-          border: none; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: background 0.2s ease, transform 0.2s ease;
-        }
-        .vn-play:hover { background: rgb(var(--accent-hover)); transform: scale(1.06); }
-        .vn-bar {
-          width: 2.5px;
-          border-radius: 2px;
-          background: rgb(var(--border-strong));
-          transition: background 0.25s ease;
-          flex-shrink: 0;
-        }
-        .vn-bar.played { background: rgb(var(--accent)); }
-        @media (prefers-reduced-motion: reduce) {
-          .vn-card, .vn-play { transition: none; }
-        }
-      `}</style>
-
+    <div ref={cardRef} className={s.vnCard}>
+      {/* Play / Pause button */}
       <button
-        className="vn-play"
+        className={s.vnPlay}
         onClick={togglePlay}
         aria-label={isPlaying ? (isRTL ? 'إيقاف' : 'Pause') : (isRTL ? 'تشغيل' : 'Play')}
       >
@@ -135,24 +103,17 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
           : <Play style={{ width: 16, height: 16, color: '#fff', marginInlineStart: 2 }} fill="#fff" />}
       </button>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 6, flexDirection: isRTL ? 'row-reverse' : 'row',
-        }}>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{label}</span>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            fontSize: 10, fontWeight: 600, color: 'rgb(var(--success))',
-            background: 'rgb(var(--success-light))', border: '1px solid rgb(var(--success) / 0.35)',
-            padding: '2px 7px', borderRadius: 100,
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-          }}>
+      {/* Body: meta + waveform + time */}
+      <div className={s.vnBody}>
+        <div className={s.vnMeta} style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+          <span className={s.vnLabel}>{label}</span>
+          <span className={s.vnBadge} style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}>
             <Mic style={{ width: 9, height: 9 }} aria-hidden />
             {tag}
           </span>
         </div>
 
+        {/* Waveform track */}
         <div
           ref={trackRef}
           role="slider"
@@ -168,29 +129,37 @@ const VoiceNoteCard = ({ id, src, index, label, tag, isRTL, playingId, onPlayReq
             if (e.key === 'ArrowRight') audio.currentTime = Math.min(audio.currentTime + 3, duration || 0);
             if (e.key === 'ArrowLeft') audio.currentTime = Math.max(audio.currentTime - 3, 0);
           }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 2, height: 26, cursor: 'pointer',
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-          }}
+          className={s.vnTrack}
+          style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}
         >
-          {bars.map((h, i) => (
-            <span
-              key={i}
-              className={`vn-bar ${i < playedBars ? 'played' : ''}`}
-              style={{ height: `${h * 100}%` }}
-              aria-hidden
-            />
-          ))}
+          {bars.map((h, i) => {
+            const played = i < playedBars;
+            const shouldAnimate = isPlaying && played && i >= playedBars - 3;
+            return (
+              <span
+                key={i}
+                className={`${played ? s.vnBarPlayed : s.vnBar} ${shouldAnimate ? s.vnBarAnimated : ''}`}
+                style={{
+                  height: `${h * 100}%`,
+                  animationDelay: shouldAnimate ? `${(i % 3) * 0.12}s` : undefined,
+                }}
+                aria-hidden
+              />
+            );
+          })}
         </div>
 
-        {/* Locked LTR — inside an RTL ancestor, the bidi algorithm treats
-            "0:00" and "0:14" as separate neutral-direction runs around the
-            slash and visually swaps their order (duration before elapsed). */}
-        <div dir="ltr" style={{ fontSize: 10.5, color: 'rgb(var(--text-tertiary))', marginTop: 4, fontVariantNumeric: 'tabular-nums', textAlign: isRTL ? 'right' : 'left' }}>
+        {/* Time display — locked LTR to prevent bidi reordering of "0:00 / 0:14" */}
+        <div
+          dir="ltr"
+          className={s.vnTime}
+          style={{ textAlign: isRTL ? 'right' : 'left' }}
+        >
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
       </div>
 
+      {/* Audio element — only loaded when card is in viewport */}
       {shouldLoad && (
         <audio
           ref={audioRef}

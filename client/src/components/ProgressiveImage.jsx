@@ -24,10 +24,8 @@ const ProgressiveImage = ({
   asset, alt = '', className = '', imgClassName = '', sizes = CARD_SIZES, priority = false, style, fill = false,
   fallbackIcon, fallbackLabel, fallbackColor = 'rgb(var(--accent))', fallbackVariant = 'card', isRTL = false,
 }) => {
-  const [loaded, setLoaded] = useState(false);
-  // The wrapper's own position varies by `fill`; the <img> inside it is always absolutely
-  // positioned to fill whichever box the wrapper ends up with (stretched-to-parent when
-  // fill=true, or explicitly sized via className/style when fill=false).
+  const hasBlur = Boolean(asset.blurDataURL);
+  const [loaded, setLoaded] = useState(() => !hasBlur);
   const wrapperPosition = fill ? { position: 'absolute', inset: 0 } : { position: 'relative' };
 
   if (!asset?.url) {

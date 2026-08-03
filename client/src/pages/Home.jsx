@@ -33,6 +33,7 @@ const AIChatWidget          = lazy(() => import('../components/AIChatWidget'));
 const ProcessSection        = lazy(() => import('../sections/ProcessSection'));
 const TechSection           = lazy(() => import('../sections/TechSection'));
 const ContactSection        = lazy(() => import('../sections/ContactSection'));
+const ProjectEstimator      = lazy(() => import('../components/ProjectEstimator'));
 
 const Home = () => {
   const { t }               = useTranslation();
@@ -134,13 +135,18 @@ const Home = () => {
       {/* 03 — What that work did for the business. */}
       <MetricsSection isRTL={isRTL} onStartProject={open} />
 
+      {/* 03.5 — Interactive Project Scope & Cost Estimator */}
+      <Suspense fallback={null}>
+        <ProjectEstimator />
+      </Suspense>
+
       {/* 04 — The clients saying it in their own words. */}
       <Testimonials isRTL={isRTL} />
 
       {/* 04.5 — The unscripted version of the above: real WhatsApp screenshots
               and voice notes, sent unprompted after delivery. */}
       <Suspense fallback={null}>
-        <ClientVoices isRTL={isRTL} />
+        <ClientVoices isRTL={isRTL} onStartProject={open} />
       </Suspense>
 
       {/* 05 — Brand film. A breather after three dense proof sections, and

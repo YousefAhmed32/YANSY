@@ -5,8 +5,13 @@ import { ArrowUpRight } from 'lucide-react';
 import api from '../utils/api';
 import PortfolioCard from './PortfolioCard';
 import SectionHeader from './SectionHeader';
-import ImagePlaceholder from './ImagePlaceholder';
 import { categoryLabel } from '../utils/portfolioTaxonomy';
+
+// mediaSrc() resolves bare `coverImage.url` paths against the backend's media origin
+// (correct for real uploaded assets) — these fallback cards use static files shipped
+// in client/public instead, so they need an absolute, already-qualified URL to pass
+// through resolveUrl() unchanged rather than being misresolved to the API host.
+const frontendAsset = (path) => ({ url: `${window.location.origin}${path}` });
 
 /**
  * Skeleton mirroring one real card, including the featured variant's
@@ -32,6 +37,48 @@ const SkeletonCard = ({ featured = false }) => (
   </div>
 );
 
+const FALLBACK_PROJECTS = [
+  {
+    _id: 'fallback-1',
+    slug: 'nexusrealty',
+    title: 'NexusRealty Platform',
+    titleAr: 'منصة نكسس ريالتي العقارية',
+    category: 'Real Estate',
+    industry: 'Real Estate',
+    year: '2024',
+    tagline: 'Full digital real estate platform generating 3x leads',
+    taglineAr: 'منصة رقمية عقارية متكاملة تُضاعف المبيعات 3 مرات',
+    coverImage: frontendAsset('/placeholders/case-studies/nexusrealty.jpg'),
+    metrics: [{ value: '3x', label: 'Lead Growth', labelAr: 'نمو المبيعات' }],
+  },
+  {
+    _id: 'fallback-2',
+    slug: 'lumina-store',
+    title: 'Lumina E-Commerce Store',
+    titleAr: 'متجر لومينا الإلكتروني الفاخر',
+    category: 'E-commerce',
+    industry: 'E-commerce',
+    year: '2024',
+    tagline: 'High-converting luxury online storefront with custom checkout',
+    taglineAr: 'متجر إلكتروني فاخر وسريع يدعم بوابات الدفع المتعددة',
+    coverImage: frontendAsset('/placeholders/case-studies/ecommerce.jpg'),
+    metrics: [{ value: '2.1s', label: 'Load Speed', labelAr: 'سرعة التحميل' }],
+  },
+  {
+    _id: 'fallback-3',
+    slug: 'apex-saas',
+    title: 'Apex AI Operations Platform',
+    titleAr: 'منصة أبكس لإدارة العمليات بالذكاء الاصطناعي',
+    category: 'SaaS',
+    industry: 'SaaS / AI',
+    year: '2024',
+    tagline: 'Enterprise operations dashboard with real-time AI insights',
+    taglineAr: 'لوحة تحكم مؤسسية لإدارة البيانات والتحليلات الفورية',
+    coverImage: frontendAsset('/placeholders/case-studies/saas.jpg'),
+    metrics: [{ value: '99.9%', label: 'Uptime', labelAr: 'استقرار النظام' }],
+  },
+];
+
 const PortfolioSection = () => {
   const { isRTL, dir } = useLanguage();
   const [projects, setProjects] = useState([]);
@@ -42,17 +89,29 @@ const PortfolioSection = () => {
   useEffect(() => {
     let alive = true;
     api.get('/portfolio?featured=true&limit=6')
-      .then(({ data }) => { if (alive) setProjects(data.projects || []); })
-      .catch(() => { if (alive) setFailed(true); })
+      .then(({ data }) => { 
+        if (alive) {
+          const list = data.projects || [];
+          setProjects(list.length > 0 ? list : FALLBACK_PROJECTS);
+        }
+      })
+      .catch(() => { 
+        if (alive) {
+          setFailed(true);
+          setProjects(FALLBACK_PROJECTS);
+        }
+      })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
 
+  const activeProjects = projects.length > 0 ? projects : FALLBACK_PROJECTS;
+
   const categories = useMemo(
-    () => ['All', ...new Set(projects.map(p => p.category).filter(Boolean))],
-    [projects]
+    () => ['All', ...new Set(activeProjects.map(p => p.category).filter(Boolean))],
+    [activeProjects]
   );
-  const displayed = filter === 'All' ? projects : projects.filter(p => p.category === filter);
+  const displayed = filter === 'All' ? activeProjects : activeProjects.filter(p => p.category === filter);
 
   return (
     <section id="portfolio" dir={dir} className="section-shell section-shell--plain">
@@ -121,22 +180,6 @@ const PortfolioSection = () => {
           }
         />
 
-        {/* Real product screenshots live in the cards below — this banner is
-            the one "future artwork" placeholder for the section, not a stand-in
-            for the cards themselves. */}
-        {/* <ImagePlaceholder
-          minHeight={220}
-          style={{ marginBottom: 'clamp(1.5rem, 3vw, 2.5rem)' }}
-          prompt={isRTL
-            ? 'موكب آيزومتري لجهاز MacBook وتابلت وهاتف جنبًا إلى جنب، كل منها يعرض شاشة مختلفة من منتجات يانسي (لوحة تحكم، متجر إلكتروني، تطبيق موبايل). ألوان زرقاء وبيضاء، ظلال ناعمة، تصميم بسيط، خلفية شفافة PNG، دقة فائقة.'
-            : 'Isometric mockup of a MacBook, tablet, and phone side by side, each displaying a different YANSY product screen — dashboard, e-commerce storefront, mobile app. Blue and white palette, soft shadows, minimal, transparent PNG, ultra HD.'}
-        /> */}
- {/* <img
-  src="/custom-software-5.png"
-  alt={isRTL ? "برمجيات مخصصة" : "Custom Software"}
-  className="w-full max-w-[380px] h-auto object-contain"
-  loading="lazy"
-/> */}
         {/* Filters. Rendered as inert placeholders while loading so the real
             pills don't shove the grid down when the request resolves. */}
         {loading ? (

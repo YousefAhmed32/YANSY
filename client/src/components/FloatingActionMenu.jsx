@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Sparkles, ArrowUp } from 'lucide-react';
+import { Plus, Sparkles, ArrowUp, MoreHorizontal } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { trackWhatsAppClick, trackCTAClick } from '../utils/ga4';
 import { trackContact } from '../utils/metaPixel';
@@ -52,7 +52,17 @@ const CSS = `
   .fab-item-label { font-size: 13px; font-weight: 600; color: rgb(var(--text-primary)); letter-spacing: -.005em; font-family: 'Inter', system-ui, sans-serif; }
   .fab-item[dir="rtl"] .fab-item-label { font-family: 'IBM Plex Sans Arabic', 'Alexandria', system-ui, sans-serif; letter-spacing: 0 !important; }
 
-  .fab-main:focus-visible, .fab-item:focus-visible {
+  .fab-more {
+    width: 26px; height: 26px; border-radius: 50%; align-self: center;
+    background: rgb(var(--bg-elevated)); border: 1px solid rgb(var(--border));
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; color: rgb(var(--text-secondary));
+    box-shadow: 0 4px 14px rgba(13,17,23,0.10);
+    transition: transform .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .fab-more:hover { transform: translateY(-1px); color: rgb(var(--accent)); border-color: rgba(37,99,235,.35); }
+
+  .fab-main:focus-visible, .fab-item:focus-visible, .fab-more:focus-visible {
     outline: 2px solid rgb(var(--accent)); outline-offset: 2px;
   }
 
@@ -67,10 +77,11 @@ const CSS = `
 `;
 
 /**
- * Premium floating speed-dial replacing the old "instantly opens AI chat +
- * greeting bubble" behavior. Closed state is a single neutral button; opening
- * it reveals WhatsApp / YANSY AI / Back-to-top as three calm, equal-weight
- * options — the visitor decides, nothing is pushed on them.
+ * Floating action button: the main circle is a one-click WhatsApp shortcut
+ * (the highest-intent conversion path), with a small secondary "more" toggle
+ * that reveals YANSY AI / Back-to-top / WhatsApp as a speed-dial menu. Both
+ * controls are plain, always-visible buttons — no gesture (right-click,
+ * long-press) gates a feature behind something a visitor can't discover.
  */
 const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
   const [open, setOpen] = useState(false);
@@ -219,22 +230,69 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
           ))}
         </div>
 
+        {!open && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="fab-more"
+            aria-haspopup="true"
+            aria-expanded={open}
+            aria-controls="fab-menu-panel"
+            aria-label={isRTL ? 'المزيد من الإجراءات' : 'More actions'}
+            title={isRTL ? 'المزيد من الإجراءات' : 'More actions'}
+          >
+            <MoreHorizontal size={15} strokeWidth={2.25} aria-hidden="true" />
+          </button>
+        )}
+
         <button
           ref={mainBtnRef}
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            if (!open) {
+              trackWhatsAppClick('floating_main_wa');
+              trackContact({ content_name: 'floating_main_wa' });
+              window.open(WA_URL, '_blank', 'noopener,noreferrer');
+            } else {
+              setOpen(false);
+            }
+          }}
           className="fab-main"
+          style={{
+            background: open ? 'rgb(var(--bg-elevated))' : '#25D366',
+            color: open ? 'rgb(var(--text-primary))' : '#FFFFFF',
+            borderColor: open ? 'rgb(var(--border))' : '#25D366',
+            boxShadow: open ? '0 8px 28px rgba(13,17,23,0.14)' : '0 8px 28px rgba(37,211,102,0.4)',
+            position: 'relative',
+          }}
           aria-expanded={open}
           aria-controls="fab-menu-panel"
-          aria-label={open ? (isRTL ? 'إغلاق القائمة' : 'Close quick actions') : (isRTL ? 'فتح الإجراءات السريعة' : 'Open quick actions')}
+          aria-label={isRTL ? 'تواصل معنا على الواتساب' : 'Chat on WhatsApp'}
         >
-          <Plus
-            className="fab-main-icon"
-            size={24}
-            strokeWidth={2.25}
-            style={{ transform: `rotate(${open ? 45 : 0}deg)` }}
-            aria-hidden="true"
-          />
+          {!open && (
+            <span style={{
+              position: 'absolute',
+              top: 2,
+              right: 2,
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              background: '#10B981',
+              border: '2px solid #FFFFFF',
+              boxShadow: '0 0 0 2px rgba(16,185,129,0.4)',
+            }} />
+          )}
+          {open ? (
+            <Plus
+              className="fab-main-icon"
+              size={24}
+              strokeWidth={2.25}
+              style={{ transform: 'rotate(45deg)' }}
+              aria-hidden="true"
+            />
+          ) : (
+            <WhatsAppGlyph />
+          )}
         </button>
       </div>
     </>
