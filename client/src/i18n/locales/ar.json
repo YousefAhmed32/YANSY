@@ -794,7 +794,7 @@
       "terms": "شروط الاستخدام",
       "support": "الدعم",
       "whatsapp": "واتساب",
-      "copyright": "© 2025 YANSY. جميع الحقوق محفوظة.",
+      "copyright": "© {{year}} YANSY. جميع الحقوق محفوظة.",
       "secure": "آمن ومشفّر"
     },
     "videoShowcase": {

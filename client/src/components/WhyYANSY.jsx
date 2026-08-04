@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useReveal, revealStyle } from '../hooks/useReveal';
-import PremiumSectionHeader from './PremiumSectionHeader';
+import SectionHeader from './SectionHeader';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -257,16 +257,15 @@ const WhyYANSY = ({ onStartProject }) => {
       <div className="section-inner why-inner">
 
         {/* Headline carries the narrative; the table below proves it. */}
-        <PremiumSectionHeader
+        <SectionHeader
           id={`why-title-${uid}`}
-          badge={isRTL ? 'المقارنة' : 'The Comparison'}
+          align="center"
+          eyebrow={isRTL ? 'المقارنة' : 'The Comparison'}
           title={isRTL ? 'ليس كل خيار\nمتساوٍ.' : 'Not every option is\nequal.'}
           accent={isRTL ? 'متساوٍ' : 'equal'}
           lead={isRTL
             ? 'الفريلانسر قد يختفي. الوكالة العادية قد تبالغ في التكاليف وتأخذ الوقت. YANSY توفر هيكل الوكالة مع سرعة الشركة الناشئة — وملكية كاملة للكود دائماً.'
             : 'Freelancers disappear. Generic agencies overcharge and underdeliver. YANSY gives you agency structure with startup speed — and the code is always yours.'}
-          font={font}
-          isRTL={isRTL}
           revealed={revealed}
           style={revealStyle(revealed, 0)}
         />

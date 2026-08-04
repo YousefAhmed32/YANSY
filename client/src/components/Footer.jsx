@@ -288,7 +288,7 @@ const Footer = () => {
             flexDirection: isRTL ? 'row-reverse' : 'row',
           }}>
             <p style={{ fontSize: 12, color: 'rgb(var(--text-secondary))', margin: 0 }}>
-              {t('landing.footer.copyright', '© 2025 YANSY Tech. All rights reserved.')}
+              {t('landing.footer.copyright', { year: new Date().getFullYear() })}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               {[1, 0.5, 0.25].map((o, i) => (

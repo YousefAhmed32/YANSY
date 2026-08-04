@@ -385,7 +385,7 @@ const Header = ({ onStartProject }) => {
               marginTop: '36px', paddingTop: '20px', borderTop: '1px solid rgb(var(--border-light))',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <p style={{ fontSize: '11.5px', color: 'rgb(var(--text-secondary))', margin: 0 }}>© 2025 YANSY Tech</p>
+              <p style={{ fontSize: '11.5px', color: 'rgb(var(--text-secondary))', margin: 0 }}>© {new Date().getFullYear()} YANSY Tech</p>
               <div style={{ display: 'flex', gap: '4px' }} aria-hidden>
                 {[1, 0.5, 0.25].map((o, i) => (
                   <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgb(var(--accent))', opacity: o }} />

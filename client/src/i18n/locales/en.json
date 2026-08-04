@@ -794,7 +794,7 @@
       "terms": "Terms of Service",
       "support": "Support",
       "whatsapp": "WhatsApp Support",
-      "copyright": "© 2025 YANSY. All rights reserved.",
+      "copyright": "© {{year}} YANSY. All rights reserved.",
       "secure": "Secure & Encrypted"
     },
     "videoShowcase": {

@@ -8,6 +8,7 @@ import {
   Users, CreditCard, Workflow, Plug, Gauge, Search, Smartphone, Zap, Lock,
 } from 'lucide-react';
 import { trackWhatsAppClick, trackCTAClick } from '../utils/ga4';
+import SectionHeader from './SectionHeader';
 import { RevealItems } from './Reveal';
 
 const WA_NUMBER = '201090385390';
@@ -145,40 +146,242 @@ const ProjectEstimator = () => {
   };
 
   return (
-    <section id="estimator" className="section-shell bg-gradient-to-b from-surface-white via-[rgb(var(--bg-elevated))] to-surface-white border-y border-[rgb(var(--border))] py-16 md:py-24">
-      <div className="section-inner max-w-5xl mx-auto px-4">
+    <section id="estimator" dir={isRTL ? 'rtl' : 'ltr'} className="section-shell section-shell--plain">
+      <style>{`
+        .est-inner { max-width: 1080px; margin: 0 auto; }
 
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgb(var(--accent-light))] border border-[rgba(37,99,235,0.2)] text-[rgb(var(--accent))] text-xs font-semibold mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{isRTL ? 'أداة اكتشاف المشروع' : 'Project Scope Estimator'}</span>
-          </div>
-          <h2 className="text-2xl md:text-4xl font-extrabold text-[rgb(var(--text-primary))] tracking-tight mb-4">
-            {isRTL ? 'افهم نطاق مشروعك قبل أن نبدأ' : "Understand Your Project's Scope Before We Start"}
-          </h2>
-          <p className="text-sm md:text-base text-[rgb(var(--text-secondary))] leading-relaxed">
-            {isRTL
-              ? 'حدد ملامح مشروعك لتحصل على صورة واضحة عن التعقيد والإمكانيات ومسار التسليم الموصى به — ثم شاركها مباشرة مع فريقنا.'
-              : 'Shape your project to get a clear picture of its complexity, capabilities, and recommended delivery path — then share it directly with our team.'}
-          </p>
-        </div>
+        .est-grid { display: grid; grid-template-columns: 7fr 5fr; gap: clamp(20px, 3vw, 32px); align-items: start; }
+        @media (max-width: 1024px) { .est-grid { grid-template-columns: 1fr; } }
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        /* ── Form card ── */
+        .est-form-card {
+          background: rgb(var(--bg-elevated));
+          border: 1px solid rgb(var(--border));
+          border-radius: var(--radius-2xl);
+          box-shadow: var(--shadow-sm);
+          padding: clamp(22px, 3vw, 32px);
+          display: flex; flex-direction: column; gap: clamp(24px, 3vw, 32px);
+        }
+        .est-step-label {
+          display: block; font-size: 11px; font-weight: 800; text-transform: uppercase;
+          letter-spacing: 0.08em; color: rgb(var(--text-tertiary)); margin-bottom: 12px;
+        }
+        [dir="rtl"] .est-step-label { letter-spacing: 0; }
 
-          {/* Form Options */}
-          <div className="lg:col-span-7 space-y-8 bg-surface-white p-6 md:p-8 rounded-3xl border border-[rgb(var(--border))] shadow-sm">
+        /* Project type */
+        .est-type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        @media (max-width: 640px) { .est-type-grid { grid-template-columns: repeat(2, 1fr); } }
+        .est-type-btn {
+          position: relative; display: flex; flex-direction: column; gap: 10px;
+          text-align: ${isRTL ? 'right' : 'left'};
+          border-radius: var(--radius-lg); border: 1px solid rgb(var(--border));
+          background: rgb(var(--bg-elevated)); padding: 14px;
+          cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .est-type-btn:hover { border-color: rgb(var(--border-strong)); transform: translateY(-2px); }
+        .est-type-btn:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
+        .est-type-btn.is-active {
+          border-color: rgb(var(--accent)); background: rgb(var(--accent-light));
+          box-shadow: 0 0 0 1px rgb(var(--accent)); transform: none;
+        }
+        .est-type-check { position: absolute; top: 10px; ${isRTL ? 'left' : 'right'}: 10px; width: 16px; height: 16px; color: rgb(var(--accent)); }
+        .est-type-icon {
+          width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: rgb(var(--bg-secondary)); color: rgb(var(--text-tertiary));
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+        .est-type-btn.is-active .est-type-icon { background: rgb(var(--accent)); color: #fff; }
+        .est-type-icon svg { width: 18px; height: 18px; }
+        .est-type-title { font-size: 13px; font-weight: 700; line-height: 1.3; color: rgb(var(--text-primary)); }
+        .est-type-btn.is-active .est-type-title { color: rgb(var(--accent)); }
+
+        /* Capabilities */
+        .est-cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (max-width: 560px) { .est-cap-grid { grid-template-columns: 1fr; } }
+        .est-cap-btn {
+          display: flex; align-items: center; gap: 12px;
+          border-radius: var(--radius-md); border: 1px solid rgb(var(--border));
+          background: rgb(var(--bg-elevated)); padding: 12px 14px;
+          font-size: 12.5px; font-weight: 500; color: rgb(var(--text-secondary));
+          cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .est-cap-btn:hover { border-color: rgb(var(--border-strong)); }
+        .est-cap-btn:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
+        .est-cap-btn.is-active { border-color: rgb(var(--accent)); background: rgb(var(--accent-light)); color: rgb(var(--text-primary)); font-weight: 600; }
+        .est-cap-icon {
+          width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          border: 1px solid rgb(var(--border-strong)); background: rgb(var(--bg-elevated)); color: rgb(var(--text-tertiary));
+        }
+        .est-cap-btn.is-active .est-cap-icon { background: rgb(var(--accent)); border-color: rgb(var(--accent)); color: #fff; }
+        .est-cap-icon svg { width: 15px; height: 15px; }
+        .est-cap-text { flex: 1; text-align: ${isRTL ? 'right' : 'left'}; line-height: 1.4; }
+        .est-cap-checkbox {
+          width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          border: 1px solid rgb(var(--border-strong));
+        }
+        .est-cap-btn.is-active .est-cap-checkbox { background: rgb(var(--accent)); border-color: rgb(var(--accent)); }
+
+        /* Delivery track */
+        .est-track-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        @media (max-width: 640px) { .est-track-grid { grid-template-columns: 1fr; } }
+        .est-track-btn {
+          display: flex; flex-direction: column; gap: 8px;
+          text-align: ${isRTL ? 'right' : 'left'};
+          border-radius: var(--radius-lg); border: 1px solid rgb(var(--border));
+          background: rgb(var(--bg-elevated)); padding: 14px;
+          cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+        }
+        .est-track-btn:hover { border-color: rgb(var(--border-strong)); }
+        .est-track-btn:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
+        .est-track-btn.is-active { border-color: rgb(var(--surface-strong)); background: rgb(var(--surface-strong)); box-shadow: var(--shadow-md); }
+        .est-track-head { display: flex; align-items: center; gap: 8px; flex-direction: ${isRTL ? 'row-reverse' : 'row'}; }
+        .est-track-head svg { width: 16px; height: 16px; color: rgb(var(--text-tertiary)); }
+        .est-track-btn.is-active .est-track-head svg { color: #fff; }
+        .est-track-label { font-size: 13.5px; font-weight: 700; color: rgb(var(--text-primary)); }
+        .est-track-btn.is-active .est-track-label { color: #fff; }
+        .est-track-desc { font-size: 11px; line-height: 1.5; color: rgb(var(--text-tertiary)); }
+        .est-track-btn.is-active .est-track-desc { color: rgb(255 255 255 / 0.7); }
+
+        /* ── Summary card — the one deliberately dark surface on this page,
+           same near-black used by .btn-primary/--surface-strong and
+           ContactSection's contrast band, not a separate ad-hoc palette. ── */
+        .est-summary {
+          position: sticky; top: 96px;
+          background: rgb(var(--bg-contrast));
+          color: rgb(var(--on-contrast));
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: var(--radius-2xl);
+          padding: clamp(22px, 3vw, 32px);
+          box-shadow: var(--shadow-lg);
+          overflow: hidden;
+        }
+        @media (max-width: 1024px) { .est-summary { position: static; } }
+        .est-summary-glow {
+          position: absolute; top: -60px; ${isRTL ? 'left' : 'right'}: -60px; width: 220px; height: 220px;
+          border-radius: 50%; background: rgb(var(--accent) / 0.16); filter: blur(70px);
+          pointer-events: none;
+        }
+        .est-summary-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 22px; }
+
+        .est-summary-head {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+          flex-direction: ${isRTL ? 'row-reverse' : 'row'};
+        }
+        .est-summary-eyebrow { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); }
+        [dir="rtl"] .est-summary-eyebrow { letter-spacing: 0; }
+        .est-summary-badge {
+          font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 999px;
+          background: rgba(34,197,94,0.14); color: #4ADE80; border: 1px solid rgba(34,197,94,0.25);
+        }
+
+        .est-summary-type-label { font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; }
+        .est-summary-type-name { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 6px; }
+        .est-summary-type-desc { font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.55); margin: 0; }
+
+        .est-summary-panel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: var(--radius-lg); padding: 16px; }
+        .est-meter-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .est-meter-head span:first-child { font-size: 11.5px; color: rgba(255,255,255,0.5); }
+        .est-meter-head span:last-child { font-size: 12px; font-weight: 700; }
+        .est-meter-bar { display: flex; gap: 6px; }
+        .est-meter-seg { height: 6px; flex: 1; border-radius: 999px; background: rgba(255,255,255,0.12); transition: background 0.3s ease; }
+        .est-meter-seg.is-filled { background: #93C5FD; }
+
+        .est-track-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-direction: ${isRTL ? 'row-reverse' : 'row'}; }
+        .est-track-card-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex-direction: ${isRTL ? 'row-reverse' : 'row'}; }
+        .est-track-card-icon {
+          width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(37,99,235,0.16); border: 1px solid rgba(96,165,250,0.3); color: #93C5FD;
+        }
+        .est-track-card-icon svg { width: 18px; height: 18px; }
+        .est-track-card-label { font-size: 11px; color: rgba(255,255,255,0.5); display: block; }
+        .est-track-card-value { font-size: 14.5px; font-weight: 800; }
+        .est-track-estimate {
+          font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8);
+          background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 8px; flex-shrink: 0;
+          text-align: center;
+        }
+
+        .est-included-label { font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 10px; }
+        .est-included-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .est-included-chip {
+          display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.75);
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+          padding: 6px 10px; border-radius: 999px;
+        }
+        .est-included-chip svg { width: 12px; height: 12px; color: #4ADE80; flex-shrink: 0; }
+
+        .est-summary-ctas { display: flex; flex-direction: column; gap: 10px; padding-top: 2px; }
+        .est-wa-btn {
+          width: 100%; padding: 15px 22px; border-radius: var(--radius-lg); border: none; cursor: pointer;
+          background: #25D366; color: #fff; font-weight: 800; font-size: 14px;
+          display: flex; align-items: center; justify-content: center; gap: 10px;
+          box-shadow: 0 8px 24px rgba(37,211,102,0.25);
+          transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .est-wa-btn:hover { background: #1fbf5c; transform: translateY(-2px); }
+        .est-wa-btn:active { transform: translateY(0) scale(0.98); }
+        .est-consult-link {
+          width: 100%; padding: 12px 22px; border-radius: var(--radius-lg);
+          border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.75);
+          font-weight: 600; font-size: 12.5px; text-decoration: none;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          transition: border-color 0.2s ease, color 0.2s ease;
+        }
+        .est-consult-link:hover { border-color: rgba(255,255,255,0.32); color: #fff; }
+        .est-summary-note { font-size: 11px; text-align: center; color: rgba(255,255,255,0.45); margin: 0; }
+
+        /* ── Phases strip ── */
+        .est-phases { margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-top: clamp(2rem, 4vw, 2.75rem); border-top: 1px solid rgb(var(--border)); }
+        .est-phases-head { text-align: center; max-width: 460px; margin: 0 auto clamp(1.75rem, 3vw, 2.25rem); }
+        .est-phases-title { font-size: clamp(1.0625rem, 1.6vw, 1.25rem); font-weight: 800; color: rgb(var(--text-primary)); margin: 0 0 6px; }
+        .est-phases-lead { font-size: 13px; color: rgb(var(--text-secondary)); margin: 0; }
+        .est-phases-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+        @media (max-width: 640px) { .est-phases-row { grid-template-columns: repeat(3, 1fr); row-gap: 24px; } }
+        .est-phase { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; min-width: 0; }
+        .est-phase-track { display: flex; align-items: center; width: 100%; }
+        @media (max-width: 640px) { .est-phase-line { display: none; } }
+        .est-phase-line { height: 1px; flex: 1; background: rgb(var(--border)); transition: background 0.3s ease; }
+        .est-phase-line.is-transparent { background: transparent; }
+        .est-phase:hover .est-phase-line:not(.is-transparent) { background: rgb(var(--accent) / 0.4); }
+        .est-phase-icon {
+          width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: rgb(var(--bg-elevated)); border: 2px solid rgb(var(--border-strong));
+          color: rgb(var(--text-secondary));
+          transition: border-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .est-phase:hover .est-phase-icon { border-color: rgb(var(--accent)); color: rgb(var(--accent)); transform: scale(1.1); box-shadow: 0 0 0 4px rgb(var(--accent) / 0.08); }
+        .est-phase-icon svg { width: 18px; height: 18px; }
+        .est-phase-label { font-size: 11px; font-weight: 600; color: rgb(var(--text-primary)); line-height: 1.3; transition: color 0.3s ease; }
+        .est-phase:hover .est-phase-label { color: rgb(var(--accent)); }
+      `}</style>
+
+      <div className="section-inner est-inner">
+        <SectionHeader
+          align="center"
+          icon={Sparkles}
+          eyebrow={isRTL ? 'أداة اكتشاف المشروع' : 'Project Scope Estimator'}
+          title={isRTL ? 'افهم نطاق مشروعك قبل أن نبدأ' : "Understand Your Project's Scope Before We Start"}
+          lead={isRTL
+            ? 'حدد ملامح مشروعك لتحصل على صورة واضحة عن التعقيد والإمكانيات ومسار التسليم الموصى به — ثم شاركها مباشرة مع فريقنا.'
+            : 'Shape your project to get a clear picture of its complexity, capabilities, and recommended delivery path — then share it directly with our team.'}
+          maxWidth={620}
+        />
+
+        <div className="est-grid">
+
+          {/* Form */}
+          <div className="est-form-card">
 
             {/* Step 1: Project Type */}
             <div>
-              <label className="block text-xs font-bold text-[rgb(var(--text-tertiary))] uppercase tracking-wider mb-3">
-                {isRTL ? '1. ماذا تريد أن تبني؟' : '1. What Are You Building?'}
-              </label>
-              <div
-                className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-                role="radiogroup"
-                aria-label={isRTL ? 'نوع المشروع' : 'Project type'}
-              >
+              <label className="est-step-label">{isRTL ? '1. ماذا تريد أن تبني؟' : '1. What Are You Building?'}</label>
+              <div className="est-type-grid" role="radiogroup" aria-label={isRTL ? 'نوع المشروع' : 'Project type'}>
                 {PROJECT_TYPES.map((type) => {
                   const Icon = type.icon;
                   const active = selectedType.id === type.id;
@@ -189,23 +392,11 @@ const ProjectEstimator = () => {
                       role="radio"
                       aria-checked={active}
                       onClick={() => setSelectedType(type)}
-                      className={`group relative flex flex-col ${isRTL ? 'items-end text-right' : 'items-start text-left'} gap-2.5 rounded-2xl border p-4 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))] focus-visible:ring-offset-2 ${
-                        active
-                          ? 'border-[rgb(var(--accent))] bg-[rgb(var(--accent-light))] shadow-sm ring-1 ring-[rgb(var(--accent))]'
-                          : 'border-[rgb(var(--border))] bg-surface-white hover:border-[rgb(var(--border-strong))] hover:-translate-y-0.5'
-                      }`}
+                      className={`est-type-btn${active ? ' is-active' : ''}`}
                     >
-                      {active && (
-                        <CheckCircle2 className={`w-4 h-4 text-[rgb(var(--accent))] absolute top-3 ${isRTL ? 'left-3' : 'right-3'}`} />
-                      )}
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-                        active ? 'bg-[rgb(var(--accent))] text-white' : 'bg-[rgb(var(--bg-elevated))] text-[rgb(var(--text-tertiary))] group-hover:text-[rgb(var(--accent))]'
-                      }`}>
-                        <Icon className="w-[18px] h-[18px]" />
-                      </div>
-                      <span className={`text-sm font-bold leading-tight ${active ? 'text-[rgb(var(--accent))]' : 'text-[rgb(var(--text-primary))]'}`}>
-                        {isRTL ? type.titleAr : type.titleEn}
-                      </span>
+                      {active && <CheckCircle2 className="est-type-check" />}
+                      <div className="est-type-icon"><Icon /></div>
+                      <span className="est-type-title">{isRTL ? type.titleAr : type.titleEn}</span>
                     </button>
                   );
                 })}
@@ -214,10 +405,8 @@ const ProjectEstimator = () => {
 
             {/* Step 2: Capabilities */}
             <div>
-              <label className="block text-xs font-bold text-[rgb(var(--text-tertiary))] uppercase tracking-wider mb-3">
-                {isRTL ? '2. ما الإمكانيات التي تحتاجها؟' : '2. Which Capabilities Do You Need?'}
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="group" aria-label={isRTL ? 'الإمكانيات' : 'Capabilities'}>
+              <label className="est-step-label">{isRTL ? '2. ما الإمكانيات التي تحتاجها؟' : '2. Which Capabilities Do You Need?'}</label>
+              <div className="est-cap-grid" role="group" aria-label={isRTL ? 'الإمكانيات' : 'Capabilities'}>
                 {CAPABILITIES.map((cap) => {
                   const Icon = cap.icon;
                   const checked = selectedCapabilities.includes(cap.id);
@@ -228,24 +417,12 @@ const ProjectEstimator = () => {
                       role="checkbox"
                       aria-checked={checked}
                       onClick={() => toggleCapability(cap.id)}
-                      className={`flex items-center gap-3 rounded-xl border p-3.5 text-xs font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))] focus-visible:ring-offset-2 ${
-                        checked
-                          ? 'border-[rgb(var(--accent))] bg-[rgb(var(--accent-light))] text-[rgb(var(--text-primary))] font-semibold shadow-xs'
-                          : 'border-[rgb(var(--border))] text-[rgb(var(--text-secondary))] hover:border-[rgb(var(--border-strong))]'
-                      }`}
+                      className={`est-cap-btn${checked ? ' is-active' : ''}`}
                     >
-                      <div className={`w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center border transition-colors ${
-                        checked ? 'bg-[rgb(var(--accent))] border-[rgb(var(--accent))] text-white' : 'border-[rgb(var(--border-strong))] bg-surface-white text-[rgb(var(--text-tertiary))]'
-                      }`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className={`flex-1 leading-snug ${isRTL ? 'text-right' : 'text-left'}`}>
-                        {isRTL ? cap.labelAr : cap.labelEn}
-                      </span>
-                      <div className={`w-4 h-4 flex-shrink-0 rounded flex items-center justify-center border transition-colors ${
-                        checked ? 'bg-[rgb(var(--accent))] border-[rgb(var(--accent))]' : 'border-[rgb(var(--border-strong))] bg-surface-white'
-                      }`}>
-                        {checked && <CheckCircle2 className="w-3 h-3 text-white stroke-[3]" />}
+                      <div className="est-cap-icon"><Icon /></div>
+                      <span className="est-cap-text">{isRTL ? cap.labelAr : cap.labelEn}</span>
+                      <div className="est-cap-checkbox">
+                        {checked && <CheckCircle2 style={{ width: 11, height: 11, color: '#fff' }} strokeWidth={3} />}
                       </div>
                     </button>
                   );
@@ -255,10 +432,8 @@ const ProjectEstimator = () => {
 
             {/* Step 3: Delivery Track */}
             <div>
-              <label className="block text-xs font-bold text-[rgb(var(--text-tertiary))] uppercase tracking-wider mb-3">
-                {isRTL ? '3. المسار المفضل للتسليم' : '3. Preferred Delivery Track'}
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label={isRTL ? 'مسار التسليم' : 'Delivery track'}>
+              <label className="est-step-label">{isRTL ? '3. المسار المفضل للتسليم' : '3. Preferred Delivery Track'}</label>
+              <div className="est-track-grid" role="radiogroup" aria-label={isRTL ? 'مسار التسليم' : 'Delivery track'}>
                 {DELIVERY_TRACKS.map((track) => {
                   const Icon = track.icon;
                   const active = selectedTrack.id === track.id;
@@ -269,21 +444,13 @@ const ProjectEstimator = () => {
                       role="radio"
                       aria-checked={active}
                       onClick={() => setSelectedTrack(track)}
-                      className={`flex flex-col ${isRTL ? 'items-end text-right' : 'items-start text-left'} gap-2 rounded-xl border p-3.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))] focus-visible:ring-offset-2 ${
-                        active
-                          ? 'border-[rgb(var(--text-primary))] bg-[rgb(var(--text-primary))] shadow-md'
-                          : 'border-[rgb(var(--border))] bg-surface-white hover:border-[rgb(var(--border-strong))]'
-                      }`}
+                      className={`est-track-btn${active ? ' is-active' : ''}`}
                     >
-                      <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-[rgb(var(--text-tertiary))]'}`} />
-                        <span className={`text-sm font-bold ${active ? 'text-white' : 'text-[rgb(var(--text-primary))]'}`}>
-                          {isRTL ? track.labelAr : track.labelEn}
-                        </span>
+                      <div className="est-track-head">
+                        <Icon />
+                        <span className="est-track-label">{isRTL ? track.labelAr : track.labelEn}</span>
                       </div>
-                      <p className={`text-[11px] leading-relaxed ${active ? 'text-white/70' : 'text-[rgb(var(--text-tertiary))]'}`}>
-                        {isRTL ? track.descAr : track.descEn}
-                      </p>
+                      <p className="est-track-desc">{isRTL ? track.descAr : track.descEn}</p>
                     </button>
                   );
                 })}
@@ -292,84 +459,53 @@ const ProjectEstimator = () => {
 
           </div>
 
-          {/* Summary Box */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden border border-slate-700/50">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+          {/* Summary */}
+          <div className="est-summary">
+            <div className="est-summary-glow" aria-hidden />
+            <div className="est-summary-inner">
 
-            <div className="relative z-10 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700/60">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {isRTL ? 'ملخص نطاق المشروع' : 'Project Scope Summary'}
-                </span>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold">
-                  {isRTL ? '🟢 جاهز للمناقشة' : '🟢 Ready to Discuss'}
-                </span>
+              <div className="est-summary-head">
+                <span className="est-summary-eyebrow">{isRTL ? 'ملخص نطاق المشروع' : 'Project Scope Summary'}</span>
+                <span className="est-summary-badge">{isRTL ? 'جاهز للمناقشة' : 'Ready to Discuss'}</span>
               </div>
 
               <div>
-                <span className="text-xs text-slate-400 block mb-1">
-                  {isRTL ? 'نوع المشروع:' : 'Project Type:'}
-                </span>
-                <h3 className="text-xl font-bold text-white mb-1.5 transition-all duration-300">
-                  {isRTL ? selectedType.titleAr : selectedType.titleEn}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {isRTL ? selectedType.descAr : selectedType.descEn}
-                </p>
+                <span className="est-summary-type-label">{isRTL ? 'نوع المشروع:' : 'Project Type:'}</span>
+                <h3 className="est-summary-type-name">{isRTL ? selectedType.titleAr : selectedType.titleEn}</h3>
+                <p className="est-summary-type-desc">{isRTL ? selectedType.descAr : selectedType.descEn}</p>
               </div>
 
-              {/* Complexity Meter */}
-              <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-400">
-                    {isRTL ? 'مستوى التعقيد المتوقع' : 'Expected Complexity'}
-                  </span>
-                  <span className="text-xs font-bold text-white">
-                    {isRTL ? complexity.labelAr : complexity.labelEn}
-                  </span>
+              <div className="est-summary-panel">
+                <div className="est-meter-head">
+                  <span>{isRTL ? 'مستوى التعقيد المتوقع' : 'Expected Complexity'}</span>
+                  <span>{isRTL ? complexity.labelAr : complexity.labelEn}</span>
                 </div>
-                <div className="flex items-center gap-1.5" role="img" aria-label={isRTL ? complexity.labelAr : complexity.labelEn}>
+                <div className="est-meter-bar" role="img" aria-label={isRTL ? complexity.labelAr : complexity.labelEn}>
                   {COMPLEXITY_LEVELS.map((_, i) => (
-                    <span
-                      key={i}
-                      className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= complexityIndex ? 'bg-[rgb(var(--accent))]' : 'bg-slate-700'}`}
-                    />
+                    <span key={i} className={`est-meter-seg${i <= complexityIndex ? ' is-filled' : ''}`} />
                   ))}
                 </div>
               </div>
 
-              {/* Delivery Track Card */}
-              <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center border border-blue-500/30 flex-shrink-0">
-                    <TrackIcon className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-xs text-slate-400 block">{isRTL ? 'مسار التسليم' : 'Delivery Track'}</span>
-                    <span className="text-base font-extrabold text-white">
-                      {isRTL ? selectedTrack.labelAr : selectedTrack.labelEn}
-                    </span>
+              <div className="est-summary-panel est-track-card">
+                <div className="est-track-card-left">
+                  <div className="est-track-card-icon"><TrackIcon /></div>
+                  <div style={{ minWidth: 0 }}>
+                    <span className="est-track-card-label">{isRTL ? 'مسار التسليم' : 'Delivery Track'}</span>
+                    <span className="est-track-card-value">{isRTL ? selectedTrack.labelAr : selectedTrack.labelEn}</span>
                   </div>
                 </div>
-                <span className={`text-[11px] font-semibold text-slate-300 bg-slate-900/60 px-2.5 py-1.5 rounded-lg flex-shrink-0 ${isRTL ? 'text-right' : 'text-left'}`}>
-                  {deliveryEstimate}
-                </span>
+                <span className="est-track-estimate">{deliveryEstimate}</span>
               </div>
 
-              {/* Included Services */}
               <div>
-                <span className="text-xs text-slate-400 block mb-2.5">
-                  {isRTL ? 'يشمل كل مشروع:' : 'Included With Every Engagement:'}
-                </span>
-                <div className="flex flex-wrap gap-1.5">
+                <span className="est-included-label">{isRTL ? 'يشمل كل مشروع:' : 'Included With Every Engagement:'}</span>
+                <div className="est-included-list">
                   {INCLUDED_SERVICES.map((service, i) => {
                     const Icon = service.icon;
                     return (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-slate-800/80 border border-slate-700 px-2.5 py-1.5 text-[11px] font-medium text-slate-300"
-                      >
-                        <Icon className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                      <span key={i} className="est-included-chip">
+                        <Icon />
                         {isRTL ? service.labelAr : service.labelEn}
                       </span>
                     );
@@ -377,27 +513,20 @@ const ProjectEstimator = () => {
                 </div>
               </div>
 
-              {/* CTAs */}
-              <div className="pt-2 space-y-3">
-                <button
-                  type="button"
-                  onClick={handleWhatsAppSend}
-                  className="w-full py-4 px-6 rounded-2xl bg-[#25D366] hover:bg-emerald-600 text-white font-extrabold text-sm md:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-                >
-                  <MessageCircle className="w-5 h-5 fill-current" />
+              <div className="est-summary-ctas">
+                <button type="button" onClick={handleWhatsAppSend} className="est-wa-btn">
+                  <MessageCircle style={{ width: 19, height: 19 }} fill="currentColor" />
                   <span>{isRTL ? 'احصل على خطة مشروعك المخصصة' : 'Get My Custom Project Plan'}</span>
-                  <ArrowUpRight className="w-4 h-4" />
+                  <ArrowUpRight style={{ width: 16, height: 16 }} />
                 </button>
-
                 <Link
                   to="/contact"
                   onClick={() => trackCTAClick('estimator_consultation', 'project_estimator')}
-                  className="w-full py-3 px-6 rounded-2xl border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  className="est-consult-link"
                 >
                   {isRTL ? 'أو اطلب استشارة مجانية مع فريقنا' : 'Or Request a Free Consultation'}
                 </Link>
-
-                <p className="text-[11px] text-center text-slate-500">
+                <p className="est-summary-note">
                   {isRTL ? '⚡ سيتم فتح واتساب فوراً مع تفاصيل نطاق مشروعك' : '⚡ Opens WhatsApp instantly with your project scope'}
                 </p>
               </div>
@@ -408,61 +537,28 @@ const ProjectEstimator = () => {
         </div>
 
         {/* Development Phases Timeline */}
-        <div className="mt-12 pt-10 border-t border-[rgb(var(--border))]">
-          <div className="text-center max-w-xl mx-auto mb-9">
-            <h3 className="text-lg md:text-xl font-bold text-[rgb(var(--text-primary))] mb-1.5">
-              {isRTL ? 'رحلة واحدة، ست مراحل، منتج جاهز للإطلاق' : 'One Path, Six Phases, One Launch-Ready Product'}
-            </h3>
-            <p className="text-sm text-[rgb(var(--text-secondary))]">
+        <div className="est-phases">
+          <div className="est-phases-head">
+            <h3 className="est-phases-title">{isRTL ? 'رحلة واحدة، ست مراحل، منتج جاهز للإطلاق' : 'One Path, Six Phases, One Launch-Ready Product'}</h3>
+            <p className="est-phases-lead">
               {isRTL
                 ? 'كل مشروع يمر بنفس المنهجية المُثبتة، بغض النظر عن حجمه أو تعقيده'
                 : 'Every engagement follows the same proven methodology, regardless of size or complexity'}
             </p>
           </div>
-          {/*
-            Each step is an equal-width flex cell containing its own two
-            "half connectors" flanking the icon: [line][icon][line]. The
-            line between any two icons is therefore always exactly two
-            adjoining flex-1 segments — no absolute positioning, no
-            percentage guesses, no dependency on step count or gap size.
-            The first step's leading segment and the last step's trailing
-            segment are just rendered transparent (still present, so the
-            icon stays centered in its cell either way) rather than
-            omitted, which is what makes the whole row equal-width and
-            keeps every icon perfectly centered regardless of its label's
-            length below it. `dir` on the row is enough for RTL — the
-            browser reverses flex child order on its own, and each cell is
-            symmetric so nothing inside it needs mirroring logic.
-          */}
-          <RevealItems
-            className="grid grid-cols-3 sm:grid-cols-6 gap-y-8 gap-x-2"
-            step={0.06}
-          >
+          <RevealItems className="est-phases-row" step={0.06}>
             {PHASES.map((phase, i) => {
               const Icon = phase.icon;
               const isFirst = i === 0;
               const isLast = i === PHASES.length - 1;
               return (
-                <div key={i} className="group flex flex-col items-center text-center gap-3 min-w-0">
-                  <div className="hidden sm:flex items-center w-full">
-                    <div
-                      className={`h-px flex-1 transition-colors duration-300 ${isFirst ? 'bg-transparent' : 'bg-[rgb(var(--border))] group-hover:bg-[rgb(var(--accent))]/40'}`}
-                      aria-hidden="true"
-                    />
-                    <div className="w-10 h-10 md:w-11 md:h-11 shrink-0 rounded-full bg-surface-white border-2 border-[rgb(var(--border-strong))] flex items-center justify-center text-[rgb(var(--text-secondary))] transition-all duration-300 ease-out group-hover:border-[rgb(var(--accent))] group-hover:text-[rgb(var(--accent))] group-hover:scale-110 group-hover:shadow-[0_0_0_4px_rgba(37,99,235,0.08)]">
-                      <Icon className="w-4 h-4 md:w-[18px] md:h-[18px]" />
-                    </div>
-                    <div
-                      className={`h-px flex-1 transition-colors duration-300 ${isLast ? 'bg-transparent' : 'bg-[rgb(var(--border))] group-hover:bg-[rgb(var(--accent))]/40'}`}
-                      aria-hidden="true"
-                    />
+                <div key={i} className="est-phase">
+                  <div className="est-phase-track" aria-hidden="true">
+                    <span className={`est-phase-line${isFirst ? ' is-transparent' : ''}`} />
+                    <span className="est-phase-icon"><Icon /></span>
+                    <span className={`est-phase-line${isLast ? ' is-transparent' : ''}`} />
                   </div>
-                  <div className="sm:hidden w-10 h-10 shrink-0 rounded-full bg-surface-white border-2 border-[rgb(var(--border-strong))] flex items-center justify-center text-[rgb(var(--text-secondary))] transition-colors duration-300 group-hover:border-[rgb(var(--accent))] group-hover:text-[rgb(var(--accent))]">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-[11px] font-semibold text-[rgb(var(--text-primary))] leading-tight px-1 transition-colors duration-300 group-hover:text-[rgb(var(--accent))]">
-                    {isRTL ? phase.labelAr : phase.labelEn}
-                  </span>
+                  <span className="est-phase-label">{isRTL ? phase.labelAr : phase.labelEn}</span>
                 </div>
               );
             })}

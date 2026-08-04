@@ -441,7 +441,12 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
       <div className="section-inner" style={{ position: 'relative', zIndex: 1 }}>
         <div className="contact-grid">
 
-          {/* Left: Pitch */}
+          {/* Left: Pitch. Deliberately not <SectionHeader> — this is the one
+              section on the page meant to read as a distinct closing moment
+              (dark contrast band, per-line staggered headline with a
+              highlighted final line), not another instance of the shared
+              narrative-header pattern. Homogenizing it into SectionHeader
+              would flatten the one place the page is supposed to change key. */}
           <div style={{ textAlign: rtl ? 'right' : 'left' }}>
             <span className="contact-badge" style={{ marginBottom: 32, ...revealStyle(revealed, 0, { distance: 10 }) }}>
               <span className="contact-badge-dot" aria-hidden />

@@ -8,8 +8,8 @@ import {
   siStripe, siFirebase,
 } from 'simple-icons';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useReveal } from '../hooks/useReveal';
-import PremiumSectionHeader from '../components/PremiumSectionHeader';
+import { useReveal, revealStyle } from '../hooks/useReveal';
+import SectionHeader from '../components/SectionHeader';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -324,17 +324,17 @@ const TechSection = ({ isRTL: isRTLProp, onStartProject }) => {
 
       <div className="section-inner tech-inner">
 
-        <PremiumSectionHeader
+        <SectionHeader
           id={`tech-title-${uid}`}
-          badge={isRTL ? 'التقنيات' : 'Technology'}
+          align="center"
+          eyebrow={isRTL ? 'التقنيات' : 'Technology'}
           title={isRTL ? 'مبنيّ مثل نظام،\nلا مجرد موقع.' : 'Built like a system,\nnot a website.'}
           accent={isRTL ? 'نظام' : 'system'}
           lead={isRTL
             ? 'نختار التقنية المناسبة لمشروعك — لا التقنية الرائجة. كل طبقة في هذه البنية موجودة لسبب تجاري واضح، لا لأنها عصرية.'
             : 'We choose the right technology for your project — not the trending one. Every layer of this architecture earns its place for a clear business reason, not because it\'s fashionable.'}
-          font={font}
-          isRTL={isRTL}
           revealed={revealed}
+          style={revealStyle(revealed, 0)}
         />
 
         <div className="tech-blueprint-wrap">

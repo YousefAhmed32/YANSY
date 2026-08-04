@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ZoomIn, MessageCircle } from 'lucide-react';
-import s from './ClientVoices.module.css';
+import s from './ClientProof.module.css';
 
 /**
  * WhatsApp screenshot thumbnail — masonry-ready with varying aspect ratios.

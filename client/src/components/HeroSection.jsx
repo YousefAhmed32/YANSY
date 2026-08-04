@@ -14,13 +14,13 @@ const SERVICES_AR = ['مواقع ويب', 'متاجر إلكترونية', 'SaaS
 const STATS_EN = [
   { num: '50+',      label: 'Projects delivered',   sub: 'Across 6+ industries' },
   { num: '⭐ 4.9/5',  label: 'Average client rating', sub: 'Based on client reviews' },
-  { num: 'Fast',     label: 'Launch, scoped to you', sub: 'No fixed-day promises' },
+  { num: '48h',      label: 'First proposal',        sub: 'Scope & price, in writing' },
   { num: '5+',       label: 'Years building',        sub: 'Since 2020' },
 ];
 const STATS_AR = [
   { num: '50+',       label: 'مشروع مُسلَّم',       sub: 'في أكثر من 6 قطاعات' },
   { num: '⭐ 4.9/5',   label: 'تقييم العملاء',       sub: 'بناءً على آراء العملاء' },
-  { num: 'سريع',      label: 'حسب نطاق مشروعك',     sub: 'بدون وعود بمدة ثابتة' },
+  { num: '48h',       label: 'أول عرض سعر',         sub: 'نطاق وسعر مكتوبان' },
   { num: '5+',        label: 'سنوات خبرة',           sub: 'منذ 2020' },
 ];
 
@@ -266,35 +266,29 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
               </div>
 
               {/* H1 */}
-            <h1
-  className="hero-h1 line-through-1"
-  style={{
-    ...fly(0.07),
-    lineHeight: 1.4, // جرّب 1.1 أو 1.15 أو 1.2
-  }}
->
-  {isRTL ? (
-    <>
-      نبني المواقع والتطبيقات{' '}
-      {stackHeadline && <br />}
-      والأنظمة الرقمية{' '}
-      {stackHeadline && <br />}
-      <span style={{ color: 'rgb(var(--accent))', lineHeight: 'inherit' }}>
-        لتنمية عملك.
-      </span>
-    </>
-  ) : (
-    <>
-      We build websites,{' '}
-      {stackHeadline && <br />}
-      apps & digital systems{' '}
-      {stackHeadline && <br />}
-      <span style={{ color: 'rgb(var(--accent))', lineHeight: 'inherit' }}>
-        for growing businesses.
-      </span>
-    </>
-  )}
-</h1>
+              <h1 className="hero-h1" style={fly(0.07)}>
+                {isRTL ? (
+                  <>
+                    نبني المواقع والتطبيقات{' '}
+                    {stackHeadline && <br />}
+                    والأنظمة الرقمية{' '}
+                    {stackHeadline && <br />}
+                    <span style={{ color: 'rgb(var(--accent))', lineHeight: 'inherit' }}>
+                      لتنمية عملك.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    We build websites,{' '}
+                    {stackHeadline && <br />}
+                    apps & digital systems{' '}
+                    {stackHeadline && <br />}
+                    <span style={{ color: 'rgb(var(--accent))', lineHeight: 'inherit' }}>
+                      for growing businesses.
+                    </span>
+                  </>
+                )}
+              </h1>
 
               {/* Subtitle */}
               <p style={{
@@ -322,7 +316,11 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
               {/* CTAs */}
               <div className="hero-cta-group" style={{ ...fly(0.26), justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
                 <a
-                  href="https://wa.me/201090385390?text=%D8%A3%D9%87%D9%84%D8%A3%20YANSY%D9%80%20%D8%AD%D8%A7%D8%A8%D8%A8%20%D8%A3%D8%B3%D8%AA%D9%81%D8%B3%D8%B1%20%D8%B9%D9%86%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D9%85%D8%B4%D8%B1%D9%88%D8%B9%20%D8%AC%D8%AF%D9%8A%D8%AF"
+                  href={`https://wa.me/201090385390?text=${encodeURIComponent(
+                    isRTL
+                      ? 'أهلاً YANSY 👋 حابب أستفسر عن تطوير مشروع جديد'
+                      : "Hi YANSY 👋 I'd like to ask about starting a new project."
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackCTAClick('hero-whatsapp-direct')}
@@ -357,7 +355,7 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
               </div>
 
               {/* Direct Trust Micro-copy */}
-              <div style={{ ...fly(0.3), marginTop: 14, display: 'flex', itemsCenter: 'center', gap: 12, fontSize: 12, color: 'rgb(var(--text-tertiary))', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+              <div style={{ ...fly(0.3), marginTop: 14, display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: 'rgb(var(--text-tertiary))', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
                 <span>⚡ {isRTL ? 'رد خلال 15 دقيقة على الواتساب' : '15-min instant WhatsApp reply'}</span>
                 <span>•</span>
                 <span>🔒 {isRTL ? 'استشارة مجانية 100% بدون التزام' : '100% Free Consultation'}</span>
@@ -365,36 +363,9 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
 
             </div>
 
-            {/* Right track: Interactive Product Preview for Desktop */}
-            {/* <div className="hidden lg:block relative" style={fly(0.28)}>
-              <div className="relative rounded-2xl overflow-hidden border border-[rgb(var(--border))] shadow-2xl bg-slate-900 group">
-                <div className="p-3 bg-slate-800/90 border-b border-slate-700/80 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  </div>
-                  <span className="text-[11px] font-mono text-slate-400">yansytech.com/showcase</span>
-                  <div className="w-12" />
-                </div>
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <img
-                    src="/placeholders/case-studies/nexusrealty.jpg"
-                    alt="YANSY Tech Shipped Product Showcase"
-                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">
-                    <div className="text-white">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-600 text-white mb-2 inline-block">
-                        {isRTL ? 'منتج حي مُسلَّم' : 'Live Product'}
-                      </span>
-                      <h4 className="text-sm font-bold">{isRTL ? 'منصة NexusRealty العقارية المتكاملة' : 'NexusRealty Platform'}</h4>
-                      <p className="text-[11px] text-slate-300">{isRTL ? 'زيادة 300% في العملاء المحتملين + لوحة تحكم فورية' : '3x Lead Generation & Real-time Analytics'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> */}
+            {/* Right track (≥1024px) is deliberately empty — see .hero-grid
+                above: it's the window onto the hero artwork's isometric
+                city, which carries its own industry labels. */}
 
           </div>
         </div>

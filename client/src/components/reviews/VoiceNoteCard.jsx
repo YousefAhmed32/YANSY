@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Play, Pause, Mic } from 'lucide-react';
-import s from './ClientVoices.module.css';
+import s from './ClientProof.module.css';
 
 const BAR_COUNT = 34;
 

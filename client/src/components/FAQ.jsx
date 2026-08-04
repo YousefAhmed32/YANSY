@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, ArrowUpRight } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
 const FAQS = [
   {
@@ -200,53 +201,50 @@ const FAQ = ({ onStartProject }) => {
         <div className="faq-layout">
 
           {/* Left: header — sticky on desktop only (see .faq-header-col) */}
-          <div className="faq-header-col" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
-              {isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
-            </span>
-            <h2 className="display-title" style={{ marginBottom: 'clamp(1rem, 2vw, 1.5rem)' }}>
-              {isRTL ? 'كل ما تريد\nمعرفته.' : 'Everything\nyou need\nto know.'}
-            </h2>
-            <p style={{
-              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-              color: 'rgb(var(--text-secondary))',
-              lineHeight: 1.75,
-              margin: '0 0 clamp(1.75rem, 3.5vw, 2.5rem)',
-              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
-              {isRTL
+          <div className="faq-header-col">
+            <SectionHeader
+              align="stack"
+              eyebrow={isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
+              title={isRTL ? 'كل ما تريد\nمعرفته.' : 'Everything\nyou need\nto know.'}
+              lead={isRTL
                 ? 'إذا لم تجد إجابتك هنا، استشارتنا المجانية متاحة دائماً.'
                 : "Can't find your answer here? Our free consultation is always available."}
-            </p>
-            <button
-              onClick={onStartProject}
-              className="btn-primary"
-              style={{ fontSize: '13.5px', padding: '13px 26px' }}
-            >
-              {isRTL ? 'احجز استشارة مجانية' : 'Book Free Consultation'}
-              <ArrowUpRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
-            </button>
+              maxLeadWidth={480}
+              action={
+                <>
+                  <button
+                    onClick={onStartProject}
+                    className="btn-primary"
+                    style={{ fontSize: '13.5px', padding: '13px 26px' }}
+                  >
+                    {isRTL ? 'احجز استشارة مجانية' : 'Book Free Consultation'}
+                    <ArrowUpRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+                  </button>
 
-            {/* Trust note */}
-            <div style={{
-              marginTop: 'clamp(2rem, 4vw, 3rem)',
-              padding: 'clamp(16px, 2vw, 22px)',
-              background: 'rgb(var(--bg-secondary))',
-              border: '1px solid rgb(var(--border))',
-              borderRadius: 14,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgb(var(--success))', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgb(var(--success))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {isRTL ? 'نقبل مشاريع جديدة' : 'Accepting new projects'}
-                </span>
-              </div>
-              <p style={{ fontSize: 12.5, color: 'rgb(var(--text-secondary))', margin: 0, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
-                {isRTL
-                  ? 'استشارة مجانية · رد خلال ساعتين · لا التزام'
-                  : 'Free consultation · Reply within 2h · No commitment'}
-              </p>
-            </div>
+                  {/* Trust note */}
+                  <div style={{
+                    marginTop: 'clamp(2rem, 4vw, 3rem)',
+                    padding: 'clamp(16px, 2vw, 22px)',
+                    background: 'rgb(var(--bg-secondary))',
+                    border: '1px solid rgb(var(--border))',
+                    borderRadius: 14,
+                    width: '100%',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgb(var(--success))', animation: 'pulse-dot 2s ease-in-out infinite' }} aria-hidden />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgb(var(--success))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {isRTL ? 'نقبل مشاريع جديدة' : 'Accepting new projects'}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 12.5, color: 'rgb(var(--text-secondary))', margin: 0, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
+                      {isRTL
+                        ? 'استشارة مجانية · رد خلال ساعتين · لا التزام'
+                        : 'Free consultation · Reply within 2h · No commitment'}
+                    </p>
+                  </div>
+                </>
+              }
+            />
           </div>
 
           {/* Right: FAQ items */}

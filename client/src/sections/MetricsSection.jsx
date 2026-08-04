@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader';
+import MetricsGraphic from '../components/MetricsGraphic';
 import { useCountUp } from '../hooks/useCountUp';
+
+const GRAPHIC_COLORS = ['rgb(37 99 235)', '#059669', '#7C3AED', '#D97706'];
 
 const METRICS = [
   {
@@ -86,6 +89,12 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
   const [animate, setAnimate] = useState(false);
   const [visible, setVisible] = useState(false);
   const sectionRef = useRef(null);
+
+  const graphicPoints = METRICS.map((m, i) => ({
+    value: `${m.prefix}${m.rawNum}${m.suffix}`,
+    label: (rtl ? m.labelAR : m.labelEN).replace('\n', ' '),
+    color: GRAPHIC_COLORS[i % GRAPHIC_COLORS.length],
+  }));
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -193,30 +202,11 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
             ? 'كل رقم مبني على نتائج حقيقية من مشاريع حقيقية — لا تقديرات، لا مبالغة.'
             : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
           maxLeadWidth={400}
-action={
-  <div
-    style={{
-      maxWidth: 420,
-      width: "100%",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <img
-       src="/Arabic Analytics Dashboard Scene.png"
-      alt={rtl ? "لوحة تحليلات" : "Analytics Illustration"}
-      loading="lazy"
-      style={{
-        width: "100%",
-        height: "auto",
-        objectFit: "contain",
-        userSelect: "none",
-        pointerEvents: "none",
-      }}
-    />
-  </div>
-}
+          action={
+            <div style={{ maxWidth: 340, width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <MetricsGraphic points={graphicPoints} />
+            </div>
+          }
         />
 
         {/* Metrics grid */}

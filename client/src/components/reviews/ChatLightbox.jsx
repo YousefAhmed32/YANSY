@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import s from './ClientVoices.module.css';
+import s from './ClientProof.module.css';
 
 /**
  * Full-screen viewer for WhatsApp screenshots.

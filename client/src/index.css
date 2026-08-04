@@ -594,6 +594,14 @@ button, [role="button"], [aria-label] {
   align-items: flex-start;
 }
 [dir="rtl"] .section-header--stack { align-items: flex-end; }
+.section-header--center {
+  flex-direction: column;
+  align-items: center;
+  margin-inline: auto;
+}
+.section-header--center .section-header__main { max-width: none; }
+.section-header--center .section-header__aside { align-items: center; }
+[dir="rtl"] .section-header--center .section-header__aside { align-items: center; }
 .section-header__main { min-width: 0; max-width: 640px; }
 .section-header__aside {
   min-width: 0;
@@ -631,6 +639,28 @@ button, [role="button"], [aria-label] {
   line-height: 1.75;
   margin: 0;
 }
+
+/* Accent-underline sweep — align="center" only. The sweep timing is driven
+   by `.section-header__title.is-in`, set when the `revealed` prop is true. */
+.section-header__accent {
+  color: rgb(var(--accent));
+  position: relative;
+  display: inline-block;
+}
+.section-header__accent::after {
+  content: '';
+  position: absolute;
+  inset-inline: 2px;
+  bottom: 0.02em;
+  height: 0.1em;
+  background: linear-gradient(90deg, rgb(var(--accent) / 0.18), rgb(var(--accent) / 0.6));
+  border-radius: 4px;
+  transform-origin: 0% 50%;
+  transform: scaleX(0);
+  transition: transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.5s;
+}
+[dir="rtl"] .section-header__accent::after { transform-origin: 100% 50%; }
+.section-header__title.is-in .section-header__accent::after { transform: scaleX(1); }
 .section-header__main .section-header__lead { margin-top: 16px; }
 [dir="rtl"] .section-header__lead {
   font-family: var(--font-arabic);

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useReveal, revealStyle } from '../hooks/useReveal';
-import PremiumSectionHeader from '../components/PremiumSectionHeader';
+import SectionHeader from '../components/SectionHeader';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -398,16 +398,15 @@ const ProcessSection = ({ isRTL, onStartProject }) => {
       `}</style>
 
       <div className="section-inner process-inner">
-        <PremiumSectionHeader
+        <SectionHeader
           id={`process-title-${uid}`}
-          badge={rtl ? 'كيف نعمل' : 'Our Process'}
+          align="center"
+          eyebrow={rtl ? 'كيف نعمل' : 'Our Process'}
           title={rtl ? 'من اليوم الأول\nتعرف ما يحدث.' : "From day one,\nyou know exactly\nwhat's happening."}
           accent={rtl ? 'يحدث' : "happening"}
           lead={rtl
             ? 'لا أسابيع صامتة، لا مفاجآت في التسليم. ست مراحل، كل واحدة منها تزيل خطراً محدداً عن مشروعك.'
             : 'No silent weeks, no delivery surprises. Six milestones, each one removing a specific risk from your project.'}
-          font={font}
-          isRTL={rtl}
           revealed={revealed}
           style={revealStyle(revealed, 0)}
         />

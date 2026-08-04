@@ -12,7 +12,6 @@ import ProjectRequestForm from '../components/ProjectRequestForm';
 // Sections
 import HeroSection      from '../components/HeroSection';
 import PortfolioSection from '../components/PortfolioSection';
-import Testimonials     from '../components/Testimonials';
 import FloatingActionMenu from '../components/FloatingActionMenu';
 
 import MetricsSection  from '../sections/MetricsSection';
@@ -24,7 +23,11 @@ import CustomSoftwareSection from '../sections/CustomSoftwareSection';
 // AIChatWidget) the single largest chunk in the whole app, unconditionally
 // preloaded on every page load regardless of route.
 const TrustedByLogos         = lazy(() => import('../components/TrustedByLogos'));
-const ClientVoices           = lazy(() => import('../components/reviews/ClientVoices'));
+// Written testimonials + raw WhatsApp/voice evidence, merged into one proof
+// section — they used to be two separate homepage sections back to back
+// ("Real clients. Proven results." then "Real clients. Raw reactions."),
+// which read as the same claim twice rather than reinforcement.
+const ClientProof            = lazy(() => import('../components/reviews/ClientProof'));
 const HomepageVideoShowcase = lazy(() => import('../components/HomepageVideoShowcase'));
 const WhyYANSY              = lazy(() => import('../components/WhyYANSY'));
 const IndustriesPreview     = lazy(() => import('../components/IndustriesPreview'));
@@ -107,9 +110,11 @@ const Home = () => {
         industries → work, which spent its first three screens before showing a
         single thing YANSY had built, and put an 8-tile grid of links *out* to
         /industries at position 4 — an exit ramp before the visitor had any
-        reason to stay. Proof was also split across four sections spanning
-        ~5,000px. The order below states the promise, then proves it without
-        interruption, then explains, then handles objections, then asks.
+        reason to stay. The order below states the promise, then proves it
+        without interruption, then explains — with the interactive scope
+        estimator inside the explanation block, not the proof block, since it's
+        a lead-gen tool the visitor uses, not evidence of past work — then
+        handles objections, then asks.
       */}
 
       {/* 01 — Promise. Hero carries the proof-stat rail (was a standalone strip). */}
@@ -135,22 +140,15 @@ const Home = () => {
       {/* 03 — What that work did for the business. */}
       <MetricsSection isRTL={isRTL} onStartProject={open} />
 
-      {/* 03.5 — Interactive Project Scope & Cost Estimator */}
+      {/* 04 — Written reviews, then the unscripted version of the same claim:
+              real WhatsApp screenshots and voice notes, sent unprompted after
+              delivery. One section, not two competing "real clients" pitches. */}
       <Suspense fallback={null}>
-        <ProjectEstimator />
+        <ClientProof isRTL={isRTL} onStartProject={open} />
       </Suspense>
 
-      {/* 04 — The clients saying it in their own words. */}
-      <Testimonials isRTL={isRTL} />
-
-      {/* 04.5 — The unscripted version of the above: real WhatsApp screenshots
-              and voice notes, sent unprompted after delivery. */}
-      <Suspense fallback={null}>
-        <ClientVoices isRTL={isRTL} onStartProject={open} />
-      </Suspense>
-
-      {/* 05 — Brand film. A breather after three dense proof sections, and
-              deferred far enough down that it no longer competes with LCP. */}
+      {/* 05 — Brand film. A breather after the proof block, and deferred far
+              enough down that it no longer competes with LCP. */}
       <Suspense fallback={null}>
         <HomepageVideoShowcase />
       </Suspense>
@@ -163,9 +161,14 @@ const Home = () => {
         {/* 07 — Process: how we work */}
         <ProcessSection isRTL={isRTL} onStartProject={open} />
 
+        {/* 07.5 — Now that the visitor knows how an engagement runs, let them
+                shape their own scope — a natural "try it yourself" moment,
+                not proof, so it sits here rather than mid-proof-block. */}
+        <ProjectEstimator />
+
         {/* 08 — Technology: what we build with. Sits with Process — both answer
                 "how", and splitting them put a cold spec list between the
-                testimonials and the FAQ. */}
+                proof block and the FAQ. */}
         <TechSection isRTL={isRTL} onStartProject={open} />
 
         {/* 09 — Industries: who we build for. The gateway into /industries earns
