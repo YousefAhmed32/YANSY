@@ -8,6 +8,7 @@ import {
   Users, CreditCard, Workflow, Plug, Gauge, Search, Smartphone, Zap, Lock,
 } from 'lucide-react';
 import { trackWhatsAppClick, trackCTAClick } from '../utils/ga4';
+import { RevealItems } from './Reveal';
 
 const WA_NUMBER = '201090385390';
 
@@ -418,22 +419,54 @@ const ProjectEstimator = () => {
                 : 'Every engagement follows the same proven methodology, regardless of size or complexity'}
             </p>
           </div>
-          <div className="relative grid grid-cols-3 sm:grid-cols-6 gap-y-7 gap-x-2">
-            <div className="absolute top-5 left-[10%] right-[10%] h-px bg-[rgb(var(--border))] hidden sm:block" aria-hidden="true" />
+          {/*
+            Each step is an equal-width flex cell containing its own two
+            "half connectors" flanking the icon: [line][icon][line]. The
+            line between any two icons is therefore always exactly two
+            adjoining flex-1 segments — no absolute positioning, no
+            percentage guesses, no dependency on step count or gap size.
+            The first step's leading segment and the last step's trailing
+            segment are just rendered transparent (still present, so the
+            icon stays centered in its cell either way) rather than
+            omitted, which is what makes the whole row equal-width and
+            keeps every icon perfectly centered regardless of its label's
+            length below it. `dir` on the row is enough for RTL — the
+            browser reverses flex child order on its own, and each cell is
+            symmetric so nothing inside it needs mirroring logic.
+          */}
+          <RevealItems
+            className="grid grid-cols-3 sm:grid-cols-6 gap-y-8 gap-x-2"
+            step={0.06}
+          >
             {PHASES.map((phase, i) => {
               const Icon = phase.icon;
+              const isFirst = i === 0;
+              const isLast = i === PHASES.length - 1;
               return (
-                <div key={i} className="relative z-10 flex flex-col items-center text-center gap-2.5">
-                  <div className="w-10 h-10 rounded-full bg-surface-white border-2 border-[rgb(var(--border-strong))] flex items-center justify-center text-[rgb(var(--text-secondary))] transition-colors duration-200 hover:border-[rgb(var(--accent))] hover:text-[rgb(var(--accent))]">
+                <div key={i} className="group flex flex-col items-center text-center gap-3 min-w-0">
+                  <div className="hidden sm:flex items-center w-full">
+                    <div
+                      className={`h-px flex-1 transition-colors duration-300 ${isFirst ? 'bg-transparent' : 'bg-[rgb(var(--border))] group-hover:bg-[rgb(var(--accent))]/40'}`}
+                      aria-hidden="true"
+                    />
+                    <div className="w-10 h-10 md:w-11 md:h-11 shrink-0 rounded-full bg-surface-white border-2 border-[rgb(var(--border-strong))] flex items-center justify-center text-[rgb(var(--text-secondary))] transition-all duration-300 ease-out group-hover:border-[rgb(var(--accent))] group-hover:text-[rgb(var(--accent))] group-hover:scale-110 group-hover:shadow-[0_0_0_4px_rgba(37,99,235,0.08)]">
+                      <Icon className="w-4 h-4 md:w-[18px] md:h-[18px]" />
+                    </div>
+                    <div
+                      className={`h-px flex-1 transition-colors duration-300 ${isLast ? 'bg-transparent' : 'bg-[rgb(var(--border))] group-hover:bg-[rgb(var(--accent))]/40'}`}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="sm:hidden w-10 h-10 shrink-0 rounded-full bg-surface-white border-2 border-[rgb(var(--border-strong))] flex items-center justify-center text-[rgb(var(--text-secondary))] transition-colors duration-300 group-hover:border-[rgb(var(--accent))] group-hover:text-[rgb(var(--accent))]">
                     <Icon className="w-4 h-4" />
                   </div>
-                  <span className="text-[11px] font-semibold text-[rgb(var(--text-primary))] leading-tight">
+                  <span className="text-[11px] font-semibold text-[rgb(var(--text-primary))] leading-tight px-1 transition-colors duration-300 group-hover:text-[rgb(var(--accent))]">
                     {isRTL ? phase.labelAr : phase.labelEn}
                   </span>
                 </div>
               );
             })}
-          </div>
+          </RevealItems>
         </div>
 
       </div>

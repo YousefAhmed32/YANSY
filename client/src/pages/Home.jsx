@@ -166,7 +166,7 @@ const Home = () => {
         {/* 08 — Technology: what we build with. Sits with Process — both answer
                 "how", and splitting them put a cold spec list between the
                 testimonials and the FAQ. */}
-        <TechSection isRTL={isRTL} />
+        <TechSection isRTL={isRTL} onStartProject={open} />
 
         {/* 09 — Industries: who we build for. The gateway into /industries earns
                 its place here, once the visitor is convinced, rather than at #4. */}

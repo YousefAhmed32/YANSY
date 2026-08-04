@@ -308,7 +308,7 @@ const PortfolioWizard = () => {
 
         <div style={{ minWidth: 0, maxWidth: 760 }}>
           {activeSection === 'overview' && <OverviewSection form={form} set={set} language={language} {...sharedUploadProps} />}
-          {activeSection === 'story' && <StorySection form={form} set={set} isRTL={isRTL} />}
+          {activeSection === 'story' && <StorySection form={form} set={set} isRTL={isRTL} projectId={projectId} />}
           {activeSection === 'team' && <TeamSection form={form} set={set} {...sharedUploadProps} />}
           {activeSection === 'media' && (
             <div className="space-y-10">

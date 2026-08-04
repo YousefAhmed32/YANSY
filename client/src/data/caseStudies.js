@@ -65,6 +65,16 @@ export const CASE_STUDIES = [
         ar: 'أجرينا مقابلات مع 6 وكلاء و10 مشترين حديثين لفهم آلية عملهم الفعلية ونقاط إحباطهم. احتاج الوكلاء نظامًا يمكن استخدامه بيد واحدة أثناء عرض عقار. احتاج المشترون فلترة أفضل وخيارات تواصل فورية. أصبحت احتياجات المجموعتين المحرك الأساسي للتصميم.',
       },
     },
+    discoveryStats: [
+      { value: '6', label: { en: 'Agent Interviews', ar: 'مقابلات مع وكلاء' } },
+      { value: '10', label: { en: 'Buyer Interviews', ar: 'مقابلات مع مشترين' } },
+      { value: '2', label: { en: 'Prototypes Tested', ar: 'نماذج أولية مُختبرة' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'One-Handed Field Use', ar: 'استخدام بيد واحدة ميدانيًا' }, desc: { en: 'Every agent screen designed for quick, one-thumb operation while showing a property in person.', ar: 'كل شاشة وكيل مصمَّمة للتشغيل السريع بإبهام واحد أثناء عرض عقار شخصيًا.' } },
+      { title: { en: 'Instant Contact Over Forms', ar: 'تواصل فوري لا نماذج' }, desc: { en: 'Buyers reach an agent in one tap instead of filling a contact form and waiting.', ar: 'يصل المشترون لوكيل بنقرة واحدة بدلاً من تعبئة نموذج تواصل والانتظار.' } },
+      { title: { en: 'Search That Narrows Fast', ar: 'بحث يُضيّق النطاق بسرعة' }, desc: { en: 'Advanced filters for price, neighborhood, and type surface the right listings in seconds, not scrolls.', ar: 'فلاتر متقدمة للسعر والحي والنوع تُظهر القوائم المناسبة خلال ثوانٍ لا بالتمرير الطويل.' } },
+    ],
     stack: ['Next.js', 'Node.js', 'PostgreSQL', 'Google Maps API', 'Cloudinary', 'Stripe', 'SendGrid'],
     keyDecisions: [
       { title: { en: 'Server-Side Rendering for SEO', ar: 'العرض من جهة الخادم لتحسين محركات البحث' }, desc: { en: 'Property listings are rendered server-side for maximum Google indexing. Each property has its own SEO-optimized URL, structured data, and OpenGraph image.', ar: 'تُعرض قوائم العقارات من جهة الخادم لأقصى فهرسة على جوجل. لكل عقار رابط مُحسَّن لمحركات البحث وبيانات منظَّمة وصورة OpenGraph خاصة به.' } },
@@ -85,6 +95,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['web-development', 'enterprise-software'],
     relatedStudies: ['opsflow', 'sprintstore'],
+    afterPoints: [
+      { en: 'One unified platform replacing spreadsheets, WhatsApp, and the old site', ar: 'منصة موحّدة واحدة بدل الجداول وواتساب والموقع القديم' },
+      { en: 'Every lead automatically routed and tracked in real time', ar: 'كل عميل محتمل يُوجَّه ويُتابع تلقائيًا وفوريًا' },
+      { en: 'Agents run their whole day from a phone in the field', ar: 'الوكلاء يُديرون يومهم بالكامل من الجوال ميدانيًا' },
+      { en: 'Listing and pricing performance visible on one dashboard', ar: 'أداء القوائم والتسعير مرئي على لوحة واحدة' },
+    ],
+    roadmap: {
+      title: { en: 'Toward a Multi-Agency Marketplace', ar: 'نحو سوق متعدد الوكالات' },
+      body: { en: 'The next phase extends NexusRealty into a multi-agency marketplace, letting partner agencies list on the same platform while keeping their own branded storefront.', ar: 'تمتد المرحلة القادمة بنكسس ريالتي إلى سوق متعدد الوكالات، يتيح لوكالات شريكة الإدراج على المنصة نفسها مع الاحتفاظ بواجهة متجر بهويتها الخاصة.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -139,6 +159,16 @@ export const CASE_STUDIES = [
         ar: 'حدّدنا فئتين رئيسيتين من المستخدمين: المستثمر العادي الذي يتابع بضعة أسهم، والمتداول النشط الذي يراقب مراكز فورية. صمّمنا لوحات تحكم منفصلة محسّنة لكل حالة استخدام، مع إعداد افتراضي ذكي يتكيّف حسب تعقيد المحفظة.',
       },
     },
+    discoveryStats: [
+      { value: '500', label: { en: 'Beta Users Studied', ar: 'مستخدم تجريبي جرى تحليل سلوكه' } },
+      { value: '2', label: { en: 'Core User Segments', ar: 'فئتا مستخدمين أساسيتان' } },
+      { value: '3', label: { en: 'Pricing Tiers Modeled', ar: 'مستويات تسعير مُصمَّمة' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'Progressive Disclosure', ar: 'كشف تدريجي' }, desc: { en: "Beginners see a simple portfolio view; deeper analytics reveal themselves as the user's confidence grows.", ar: 'يرى المبتدئون نظرة محفظة بسيطة؛ تظهر التحليلات الأعمق تدريجيًا مع نمو ثقة المستخدم.' } },
+      { title: { en: 'One Product, Two Dashboards', ar: 'منتج واحد، لوحتا تحكم' }, desc: { en: 'Casual investors and active traders get separately optimized views instead of one interface serving neither well.', ar: 'يحصل المستثمر العادي والمتداول النشط على لوحتَي تحكم محسّنتَين منفصلتَين بدلاً من واجهة واحدة لا تخدم أيًا منهما جيدًا.' } },
+      { title: { en: 'Compliance-Aware by Default', ar: 'متوافق تنظيميًا افتراضيًا' }, desc: { en: 'Financial data display respects MENA regulatory constraints from the first screen, not retrofitted later.', ar: 'يراعي عرض البيانات المالية القيود التنظيمية بمنطقة الشرق الأوسط منذ الشاشة الأولى، لا كإضافة لاحقة.' } },
+    ],
     stack: ['React', 'D3.js', 'Node.js', 'PostgreSQL', 'Redis', 'WebSockets', 'Stripe', 'Alpha Vantage API'],
     keyDecisions: [
       { title: { en: 'WebSocket for Real-Time Data', ar: 'WebSocket للبيانات الفورية' }, desc: { en: 'Market data pushed via WebSocket connection — users see live price changes without polling. Redis pub/sub handles data distribution to all active sessions.', ar: 'تُدفع بيانات السوق عبر اتصال WebSocket — يرى المستخدمون تغيّرات الأسعار مباشرة بدون استعلام متكرر. يتولى نظام Redis pub/sub توزيع البيانات على كل الجلسات النشطة.' } },
@@ -159,6 +189,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['saas-development', 'ui-ux-design'],
     relatedStudies: ['opsflow', 'bookease'],
+    afterPoints: [
+      { en: 'A production SaaS replacing the spreadsheet prototype entirely', ar: 'منتج SaaS إنتاجي حلّ محل النموذج الأولي بجداول البيانات بالكامل' },
+      { en: 'Live market data streams to every session in real time', ar: 'بيانات السوق تصل فوريًا لكل جلسة' },
+      { en: 'Subscription billing runs itself — trials, upgrades, annual plans', ar: 'فوترة الاشتراك تعمل تلقائيًا — تجارب وترقيات وخطط سنوية' },
+      { en: 'One user ID, one row-level-secured data boundary', ar: 'معرّف مستخدم واحد وحدود بيانات مؤمَّنة على مستوى الصف' },
+    ],
+    roadmap: {
+      title: { en: 'Expanding Into Institutional Tools', ar: 'التوسع نحو أدوات مؤسسية' },
+      body: { en: 'With the enterprise tier already live, the roadmap adds team seats, API access for institutional clients, and deeper portfolio-risk analytics for professional traders.', ar: 'مع تفعيل الباقة المؤسسية بالفعل، تضيف خارطة الطريق مقاعد فرق ووصولًا لواجهة برمجية للعملاء المؤسسيين وتحليلات أعمق لمخاطر المحافظ للمتداولين المحترفين.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -213,6 +253,16 @@ export const CASE_STUDIES = [
         ar: 'دقّقنا تسجيلات الجلسات من متجر Shopify لتحديد كل نقطة تسرّب. استند إعادة تصميم الدفع إلى 8 نقاط احتكاك محددة اكتُشفت في البيانات. يمر التدفّق الجديد من السلة إلى تأكيد الطلب في 4 خطوات بدون الحاجة لحساب.',
       },
     },
+    discoveryStats: [
+      { value: '8', label: { en: 'Friction Points Identified', ar: 'نقاط احتكاك مكتشفة' } },
+      { value: '800+', label: { en: 'SKUs Audited', ar: 'صنف تمت مراجعته' } },
+      { value: '5.2s', label: { en: 'Baseline Load Time', ar: 'زمن التحميل الأساسي' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'Guest-First Checkout', ar: 'دفع كضيف أولاً' }, desc: { en: 'Account creation is offered after purchase, never required before it.', ar: 'يُعرض إنشاء الحساب بعد الشراء، ولا يُفرض أبدًا قبله.' } },
+      { title: { en: 'Speed as a Feature', ar: 'السرعة كميزة' }, desc: { en: "Every product page is static-generated so speed isn't a tradeoff against catalog size.", ar: 'كل صفحة منتج مولَّدة بشكل ثابت بحيث لا تكون السرعة مقايضة مقابل حجم الكتالوج.' } },
+      { title: { en: 'Search That Sells', ar: 'بحث يبيع' }, desc: { en: 'Typo-tolerant, instant search treated as a primary conversion path, not an afterthought.', ar: 'بحث فوري متسامح مع الأخطاء الإملائية يُعامَل كمسار تحويل أساسي لا كفكرة لاحقة.' } },
+    ],
     stack: ['Next.js', 'React', 'Node.js', 'PostgreSQL', 'Stripe', 'Cloudflare', 'Algolia', 'Redis'],
     keyDecisions: [
       { title: { en: 'Static Generation for Product Pages', ar: 'توليد ثابت لصفحات المنتجات' }, desc: { en: 'Every product page is statically generated at build time — loads instantly from Cloudflare\'s edge network. No server render time for the critical product experience.', ar: 'تُولَّد كل صفحة منتج بشكل ثابت وقت البناء — تُحمَّل فوريًا من شبكة Cloudflare الطرفية. بلا وقت عرض من الخادم لتجربة المنتج الحرجة.' } },
@@ -233,6 +283,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['ecommerce-development', 'web-development'],
     relatedStudies: ['nexusrealty', 'bookease'],
+    afterPoints: [
+      { en: 'Guest checkout in 4 steps, no account required', ar: 'دفع كضيف بـ4 خطوات بلا حساب مطلوب' },
+      { en: 'Every product page loads instantly from the edge', ar: 'كل صفحة منتج تُحمَّل فوريًا من الحافة' },
+      { en: 'Full control over checkout design, no locked platform layout', ar: 'سيطرة كاملة على تصميم الدفع بلا تخطيط منصة مُقفل' },
+      { en: '$2,400/month in platform and app fees eliminated', ar: 'إلغاء 2,400 دولار شهريًا من رسوم المنصة والتطبيقات' },
+    ],
+    roadmap: {
+      title: { en: 'Personalized Merchandising', ar: 'عرض منتجات مُخصَّص' },
+      body: { en: 'Next up is on-site personalization — surfacing different homepage merchandising per visitor based on browsing history, building on the Algolia search layer already in place.', ar: 'الخطوة القادمة هي التخصيص داخل الموقع — عرض واجهة رئيسية مختلفة لكل زائر حسب سجل تصفّحه، اعتمادًا على طبقة بحث Algolia الموجودة فعلاً.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -287,6 +347,16 @@ export const CASE_STUDIES = [
         ar: 'استقطبنا 8 مرضى من العيادة لاختبار النموذج الأولي لتدفّق الحجز. مالت الفئة المستهدفة نحو سن 45+، ما أثّر على اختيارات الخطوط (نص أكبر وتباين أعلى)، وتدفّق الحجز البسيط بـ3 خطوات، وقرار دعم تذكيرات واتساب كقناة أساسية بدلاً من البريد الإلكتروني.',
       },
     },
+    discoveryStats: [
+      { value: '8', label: { en: 'Patients User-Tested', ar: 'مريض شارك في اختبار الاستخدام' } },
+      { value: '45+', label: { en: 'Median Patient Age', ar: 'متوسط عمر المريض' } },
+      { value: '3', label: { en: 'Steps to Book', ar: 'خطوات للحجز' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'Large Text, High Contrast', ar: 'نص كبير وتباين عالٍ' }, desc: { en: 'Typography sized for a 45+ patient base, not a design-portfolio aesthetic.', ar: 'نص مصمَّم لفئة مرضى فوق 45 عامًا، لا لجمالية معرض تصميم.' } },
+      { title: { en: 'WhatsApp Over Email', ar: 'واتساب بدل البريد' }, desc: { en: "Reminders go where patients actually read them — near-100% open rates beat email's ~20%.", ar: 'تصل التذكيرات حيث يقرأها المرضى فعليًا — معدل فتح يقترب من 100٪ يتفوق على نحو 20٪ للبريد.' } },
+      { title: { en: 'Three Taps to Booked', ar: 'ثلاث نقرات للحجز' }, desc: { en: 'Complex scheduling logic hidden behind the simplest possible patient-facing flow.', ar: 'منطق جدولة معقّد مُخفى خلف أبسط تدفّق ممكن يواجه المريض.' } },
+    ],
     stack: ['React', 'Node.js', 'PostgreSQL', 'Twilio (SMS)', 'WhatsApp Business API', 'Google Calendar API'],
     keyDecisions: [
       { title: { en: 'WhatsApp as Primary Reminder Channel', ar: 'واتساب كقناة تذكير أساسية' }, desc: { en: 'WhatsApp has near-100% open rates in MENA vs. ~20% for email. We integrated WhatsApp Business API for appointment confirmations, 24h reminders, and 2h reminders.', ar: 'معدل فتح واتساب يقترب من 100٪ في منطقة الشرق الأوسط وشمال أفريقيا مقابل نحو 20٪ للبريد الإلكتروني. دمجنا واجهة WhatsApp Business API لتأكيد المواعيد وتذكيرات قبل 24 ساعة وقبل ساعتين.' } },
@@ -307,6 +377,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['enterprise-software', 'web-development'],
     relatedStudies: ['nexusrealty', 'opsflow'],
+    afterPoints: [
+      { en: 'Online self-booking now handles 70% of all appointments', ar: 'الحجز الذاتي الإلكتروني يُغطي الآن 70٪ من كل المواعيد' },
+      { en: 'Two-way WhatsApp confirmations replace manual phone calls', ar: 'تأكيدات ثنائية الاتجاه عبر واتساب تحل محل المكالمات اليدوية' },
+      { en: 'At-risk appointments auto-flagged 4 hours out', ar: 'المواعيد المعرّضة للخطر تُرصد تلقائيًا قبل 4 ساعات' },
+      { en: "Reception team's 3 daily calling hours freed for patient care", ar: 'تحرير 3 ساعات يومية من الاتصال لصالح رعاية المرضى' },
+    ],
+    roadmap: {
+      title: { en: 'Multi-Clinic Rollout', ar: 'التوسع لعيادات متعددة' },
+      body: { en: 'BookEase is being extended into a multi-location product so the same clinic group can manage several branches, shared patient records, and cross-branch scheduling from one account.', ar: 'يجري توسيع بوك إيز ليصبح منتجًا متعدد الفروع، بحيث تُدير مجموعة العيادات نفسها عدة فروع وسجلات مرضى مشتركة وجدولة عبر الفروع من حساب واحد.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -361,6 +441,16 @@ export const CASE_STUDIES = [
         ar: 'حدّدنا 7 أدوار للمستخدمين — مدير المستودع، مخطط الإنتاج، مندوب المبيعات، منسّق اللوجستيات، فريق المالية، الإدارة، والمشرف. حصل كل دور على لوحة تحكم مصمَّمة خصيصًا تعرض فقط ما يحتاجه لتنفيذ مهامه اليومية. كان فرط المعلومات هو العدو الذي حاربناه بأشد قوة.',
       },
     },
+    discoveryStats: [
+      { value: '7', label: { en: 'User Roles Mapped', ar: 'دور مستخدم مُحدَّد' } },
+      { value: '5', label: { en: 'Legacy Systems Audited', ar: 'نظام قديم تمت مراجعته' } },
+      { value: '5 mo', label: { en: 'Phased Migration Window', ar: 'نافذة ترحيل على مراحل' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'One Dashboard Per Role', ar: 'لوحة واحدة لكل دور' }, desc: { en: 'Warehouse, production, sales, and finance each see only what drives their day, nothing else.', ar: 'يرى المستودع والإنتاج والمبيعات والمالية فقط ما يُحرّك يومهم، لا شيء آخر.' } },
+      { title: { en: 'Single Source of Truth Per Domain', ar: 'مصدر حقيقة واحد لكل مجال' }, desc: { en: 'Every data domain has exactly one system of record; everything else syncs from it automatically.', ar: 'لكل مجال بيانات نظام مرجعي واحد فقط؛ كل شيء آخر يُزامَن منه تلقائيًا.' } },
+      { title: { en: 'Zero-Disruption Migration', ar: 'ترحيل بلا تعطّل' }, desc: { en: 'Old and new systems run in parallel per function until the switch is proven safe.', ar: 'يعمل النظامان القديم والجديد بالتوازي لكل وظيفة حتى يثبت أن التبديل آمن.' } },
+    ],
     stack: ['React', 'Node.js', 'PostgreSQL', 'Redis', 'WebSockets', 'Docker', 'QuickBooks API', 'TypeScript'],
     keyDecisions: [
       { title: { en: 'Real-Time Inventory Engine', ar: 'محرك مخزون فوري' }, desc: { en: 'Inventory levels update in real-time via WebSocket events triggered by production completions, shipment receipts, and sales orders. Stock-outs now predicted 6 weeks in advance via demand forecasting.', ar: 'تتحدّث مستويات المخزون فوريًا عبر أحداث WebSocket تُطلقها اكتمالات الإنتاج واستلام الشحنات وأوامر البيع. يُتنبأ الآن بنفاد المخزون قبل 6 أسابيع عبر توقّع الطلب.' } },
@@ -381,6 +471,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['enterprise-software', 'saas-development'],
     relatedStudies: ['vaultanalytics', 'nexusrealty'],
+    afterPoints: [
+      { en: 'Inventory, production, and orders sync automatically', ar: 'تزامن تلقائي للمخزون والإنتاج والطلبات' },
+      { en: 'Demand forecasting flags stock-outs 6 weeks ahead', ar: 'توقّع الطلب يرصد نفاد المخزون قبل 6 أسابيع' },
+      { en: 'QuickBooks reconciliation runs with zero manual entry', ar: 'تسوية QuickBooks تعمل بلا أي إدخال يدوي' },
+      { en: 'Every role works from one purpose-built dashboard', ar: 'كل دور يعمل من لوحة تحكم مصمَّمة له خصيصًا' },
+    ],
+    roadmap: {
+      title: { en: 'Predictive Maintenance Layer', ar: 'طبقة صيانة تنبؤية' },
+      body: { en: 'With production and inventory data now centralized, the next phase adds predictive maintenance scheduling driven by equipment usage patterns already captured in the system.', ar: 'مع مركزية بيانات الإنتاج والمخزون الآن، تضيف المرحلة القادمة جدولة صيانة تنبؤية مبنية على أنماط استخدام المعدات المُسجَّلة بالفعل في النظام.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -435,6 +535,16 @@ export const CASE_STUDIES = [
         ar: 'يستخدم السائقون التطبيق أثناء القيادة أو التعامل مع الطرود — بيد واحدة، تحت ضوء الشمس، وتحت ضغط الوقت. اختُبرت كل شاشة سائق لوضوحها تحت ضوء الشمس المباشر وتشغيلها بإبهام واحد. ركّزت تجربة المُرسل على وضوح تأكيد التوصيل والتتبّع بدلاً من كثافة الميزات.',
       },
     },
+    discoveryStats: [
+      { value: '2', label: { en: 'Distinct App Experiences', ar: 'تجربتا تطبيق منفصلتان' } },
+      { value: '3 mo', label: { en: 'Runway to Prove the Model', ar: 'مهلة لإثبات النموذج' } },
+      { value: '8 wk', label: { en: 'Time to Working Beta', ar: 'الوقت حتى النسخة التجريبية' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'Legible in Direct Sunlight', ar: 'وضوح تحت ضوء الشمس المباشر' }, desc: { en: 'Every driver screen tested outdoors, not just on an office monitor.', ar: 'كل شاشة سائق اختُبرت في الخارج، لا على شاشة مكتب فقط.' } },
+      { title: { en: 'One-Thumb Operation', ar: 'تشغيل بإبهام واحد' }, desc: { en: "Drivers are handling packages, not sitting at a desk — every action reachable one-handed.", ar: 'السائقون يتعاملون مع طرود، لا يجلسون على مكتب — كل إجراء يمكن الوصول إليه بيد واحدة.' } },
+      { title: { en: 'Confirmation Over Feature Density', ar: 'التأكيد أولى من كثافة الميزات' }, desc: { en: "Senders get one clear thing: where's my package, not a feature-packed dashboard.", ar: 'يحصل المُرسل على شيء واحد واضح: أين طردي، لا لوحة تحكم مزدحمة بالميزات.' } },
+    ],
     stack: ['React Native', 'TypeScript', 'Node.js', 'PostgreSQL', 'Redis', 'Google Maps API', 'Stripe Connect', 'Firebase'],
     keyDecisions: [
       { title: { en: 'Shared Codebase, Separate Experiences', ar: 'قاعدة كود مشتركة، تجارب منفصلة' }, desc: { en: 'One React Native codebase powers both apps with role-based routing. Business logic, API clients, and state management are shared. UI components are role-specific. Maintenance cost halved.', ar: 'قاعدة كود واحدة بـReact Native تُشغّل التطبيقين بتوجيه حسب الدور. منطق العمل وعملاء الواجهة البرمجية وإدارة الحالة مشتركة. مكوّنات الواجهة خاصة بكل دور. انخفضت تكلفة الصيانة إلى النصف.' } },
@@ -455,6 +565,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['mobile-app-development', 'saas-development'],
     relatedStudies: ['bookease', 'vaultanalytics'],
+    afterPoints: [
+      { en: 'Two role-based apps sharing one React Native codebase', ar: 'تطبيقان حسب الدور يتشاركان قاعدة كود واحدة' },
+      { en: 'Driver location updates every 3 seconds via WebSocket', ar: 'تحديث موقع السائق كل 3 ثوانٍ عبر WebSocket' },
+      { en: 'Stripe Connect handles escrow and payout automatically', ar: 'Stripe Connect يتولى الضمان والدفع تلقائيًا' },
+      { en: 'Maintenance cost halved by sharing business logic across apps', ar: 'تكلفة الصيانة انخفضت للنصف بمشاركة منطق العمل بين التطبيقين' },
+    ],
+    roadmap: {
+      title: { en: 'Scheduled & Bulk Deliveries', ar: 'توصيلات مجدولة وبالجملة' },
+      body: { en: 'The core on-demand loop is proven — next is scheduled recurring pickups and bulk business accounts for merchants who need daily delivery windows, not one-off requests.', ar: 'الحلقة الأساسية الفورية أثبتت نفسها — التالي هو استلامات مجدولة متكررة وحسابات أعمال بالجملة للتجار الذين يحتاجون نوافذ توصيل يومية لا طلبات لمرة واحدة.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -509,6 +629,16 @@ export const CASE_STUDIES = [
         ar: 'قضينا خدمتَي عشاء كاملتين داخل الفرع الأكثر ازدحامًا، نرصد كيف يتحرك الموظفون فعليًا بين الكاشير والتسليم. جاء تخطيط شاشة KDS، وترميز التذاكر بالألوان للأصناف المتأخرة، وتدفّق "نفدت الكمية" بنقرة واحدة، كلها مباشرة مما لاحظناه في ظروف الذروة الحقيقية، لا من جلسة سبورة بيضاء.',
       },
     },
+    discoveryStats: [
+      { value: '2', label: { en: 'Full Dinner Services Observed', ar: 'خدمتا عشاء كاملتان تمت ملاحظتهما' } },
+      { value: '5', label: { en: 'Branches Audited', ar: 'فروع تمت مراجعتها' } },
+      { value: '3', label: { en: 'Delivery Tablets Replaced', ar: 'أجهزة توصيل لوحية استُبدلت' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'Built on the Kitchen Floor', ar: 'مصمَّم من أرضية المطبخ' }, desc: { en: 'Screen layouts and flows came from real rush-hour observation, not a whiteboard.', ar: 'جاءت تخطيطات الشاشات والتدفقات من ملاحظة حقيقية لساعة الذروة، لا من سبورة بيضاء.' } },
+      { title: { en: 'One Tap to "86"', ar: 'نقرة واحدة لإنهاء الصنف' }, desc: { en: 'Marking an item sold out is the fastest action in the entire system.', ar: 'تمييز صنف كنافد هو أسرع إجراء في النظام بأكمله.' } },
+      { title: { en: 'One Menu, Every Surface', ar: 'قائمة واحدة، كل الواجهات' }, desc: { en: 'A single menu data model drives the POS, kitchen display, and ordering page at once.', ar: 'نموذج بيانات قائمة واحد يُشغّل الكاشير وشاشة المطبخ وصفحة الطلب في آن واحد.' } },
+    ],
     stack: ['React', 'Node.js', 'PostgreSQL', 'WebSockets', 'Stripe', 'Twilio (SMS)', 'Cloudflare'],
     keyDecisions: [
       { title: { en: 'Shared Menu Engine Across Branches', ar: 'محرك قائمة طعام مشترك بين الفروع' }, desc: { en: 'One menu data model drives the POS, the KDS, and the public ordering page — a price or item change syncs everywhere in seconds instead of five manual updates.', ar: 'نموذج بيانات قائمة واحد يُشغّل الكاشير وشاشة المطبخ وصفحة الطلب العامة — أي تغيير في السعر أو الصنف يُزامَن في كل مكان خلال ثوانٍ بدلاً من خمس تحديثات يدوية.' } },
@@ -529,6 +659,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['enterprise-software', 'web-development'],
     relatedStudies: ['bookease', 'opsflow'],
+    afterPoints: [
+      { en: 'Kitchen display replaces paper tickets across all 5 branches', ar: 'شاشة مطبخ تحل محل التذاكر الورقية في الفروع الخمسة' },
+      { en: 'Menu and price changes sync everywhere in seconds', ar: 'تغييرات القائمة والأسعار تُزامَن في كل مكان خلال ثوانٍ' },
+      { en: 'Commission-free direct ordering runs alongside delivery apps', ar: 'طلب مباشر بلا عمولة يعمل جنبًا إلى جنب مع تطبيقات التوصيل' },
+      { en: 'Owners see live sales across every branch from one screen', ar: 'يرى الملّاك المبيعات الحية عبر كل فرع من شاشة واحدة' },
+    ],
+    roadmap: {
+      title: { en: 'Loyalty & Repeat-Order Data', ar: 'الولاء وبيانات الطلبات المتكررة' },
+      body: { en: 'With direct ordering now capturing real customer data for the first time, the next step is a loyalty layer and repeat-order nudges that delivery-app orders could never provide.', ar: 'مع التقاط الطلب المباشر لبيانات عملاء حقيقية لأول مرة، الخطوة التالية طبقة ولاء وتحفيز طلبات متكررة لم تكن تطبيقات التوصيل لتوفّرها أبدًا.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -583,6 +723,16 @@ export const CASE_STUDIES = [
         ar: 'اختبرنا مشغّل الدورات مع 12 طالبًا حاليًا عبر فئات عمرية من 19 إلى 45. كانت أكبر نقطة احتكاك هي "من أين أكمل ما توقفت عنده" — صمّمنا شريط تقدّم دائمًا واستئنافًا تلقائيًا حلّ ذلك مباشرة، بالإضافة إلى تشغيل فيديو بأولوية الجوال لأن 70٪ من مستخدمي الاختبار شاهدوا الدروس على هواتفهم.',
       },
     },
+    discoveryStats: [
+      { value: '12', label: { en: 'Students User-Tested', ar: 'طالبًا شاركوا في اختبار الاستخدام' } },
+      { value: '70%', label: { en: 'Watched Lessons on Mobile', ar: 'شاهدوا الدروس عبر الجوال' } },
+      { value: '40', label: { en: 'Courses Audited', ar: 'دورة تمت مراجعتها' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'Resume Exactly Where You Left Off', ar: 'استئناف من حيث توقفت تمامًا' }, desc: { en: 'The single biggest friction point tested became a persistent, auto-resuming progress rail.', ar: 'أكبر نقطة احتكاك جرى اختبارها تحوّلت إلى شريط تقدّم دائم يستأنف تلقائيًا.' } },
+      { title: { en: 'Mobile-First Video', ar: 'فيديو بأولوية الجوال' }, desc: { en: 'Built for the phone-in-hand reality of how students actually watch, not a desktop assumption.', ar: 'مبني على واقع الهاتف بيد الطالب أثناء المشاهدة الفعلية، لا افتراض سطح المكتب.' } },
+      { title: { en: 'Certificates That Mean Something', ar: 'شهادات ذات قيمة حقيقية' }, desc: { en: 'Every completion issues a verifiable, brand-matched credential automatically.', ar: 'كل إتمام يُصدر شهادة قابلة للتحقق ومطابقة للهوية البصرية تلقائيًا.' } },
+    ],
     stack: ['Next.js', 'Node.js', 'PostgreSQL', 'AWS S3 & CloudFront', 'Stripe', 'SendGrid'],
     keyDecisions: [
       { title: { en: 'Video Delivery via CDN', ar: 'توصيل الفيديو عبر CDN' }, desc: { en: 'Lesson videos are transcoded and served through CloudFront with adaptive bitrate streaming — smooth playback even on slower mobile connections, the majority use case observed in testing.', ar: 'تُعاد ترميز فيديوهات الدروس وتُقدَّم عبر CloudFront ببث معدل بت تكيّفي — تشغيل سلس حتى على اتصالات جوال أبطأ، وهو حالة الاستخدام الأغلب التي لوحظت أثناء الاختبار.' } },
@@ -603,6 +753,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['saas-development', 'ui-ux-design'],
     relatedStudies: ['vaultanalytics', 'bookease'],
+    afterPoints: [
+      { en: 'All 40 courses live on one branded platform', ar: 'كل الدورات الأربعين مباشرة على منصة واحدة بالهوية الخاصة' },
+      { en: 'Certificates auto-issue on completion with a verifiable ID', ar: 'شهادات تُصدر تلقائيًا عند الإتمام بمعرّف يمكن التحقق منه' },
+      { en: 'Instructors see per-lesson drop-off and watch time', ar: 'يرى المدرّسون الانقطاع ومدة المشاهدة لكل درس' },
+      { en: 'Enrollment and reminders no longer run through WhatsApp broadcasts', ar: 'التسجيل والتذكيرات لم تعد تمر عبر بث واتساب' },
+    ],
+    roadmap: {
+      title: { en: 'Cohort-Based Live Sessions', ar: 'جلسات مباشرة بنظام الدفعات' },
+      body: { en: 'The platform now handles self-paced learning well; the next phase layers in scheduled cohort sessions and live Q&A so instructors can run hybrid courses from the same dashboard.', ar: 'تُدير المنصة الآن التعلّم الذاتي بكفاءة؛ تضيف المرحلة القادمة جلسات دفعات مجدولة وأسئلة وأجوبة مباشرة ليدير المدرّسون دورات هجينة من اللوحة نفسها.' },
+    },
   },
 
   /* ──────────────────────────────────────────────────────────────
@@ -657,6 +817,16 @@ export const CASE_STUDIES = [
         ar: 'رسمنا رحلة الضيف من الاكتشاف عبر منصة وسيطة وصولاً إلى حجز مباشر متكرر، ووجدنا أن معظم الضيوف لم يكونوا يدركون أن للفندق موقعه الخاص. اختُبر بريد ما بعد الإقامة المُعاد تصميمه ولافتات داخل الغرف تُوجّه نحو الحجز المباشر للإقامة القادمة عبر عقارَين قبل الطرح الكامل.',
       },
     },
+    discoveryStats: [
+      { value: '3', label: { en: 'Properties Mapped', ar: 'عقارات تم رسم رحلاتها' } },
+      { value: '2', label: { en: 'Properties Piloted First', ar: 'عقاران جرى التجريب فيهما أولاً' } },
+      { value: '18%', label: { en: 'Peak OTA Commission Seen', ar: 'أعلى عمولة منصة وسيطة مرصودة' } },
+    ],
+    designPrinciples: [
+      { title: { en: 'One Screen for Front Desk', ar: 'شاشة واحدة للاستقبال' }, desc: { en: 'Check-in, room status, and guest history in one place instead of a spreadsheet plus three extranets.', ar: 'تسجيل الوصول وحالة الغرف وسجل الضيوف في مكان واحد بدلاً من جدول بيانات مع ثلاث بوابات خارجية.' } },
+      { title: { en: "Nudge, Don't Force", ar: 'تحفيز لا إجبار' }, desc: { en: 'Direct booking is promoted post-stay with a real incentive, not by hiding the OTA option.', ar: 'يُروَّج للحجز المباشر بعد الإقامة بحافز حقيقي، لا بإخفاء خيار المنصة الوسيطة.' } },
+      { title: { en: 'Inventory Has One Source of Truth', ar: 'مصدر حقيقة واحد للمخزون' }, desc: { en: 'Every channel reads from the same live availability, eliminating double-bookings by design.', ar: 'تقرأ كل قناة من نفس التوافر الحي، ما يُلغي الحجز المزدوج بالتصميم.' } },
+    ],
     stack: ['React', 'Node.js', 'PostgreSQL', 'Stripe', 'Channel Manager API integrations', 'Redis'],
     keyDecisions: [
       { title: { en: 'Real-Time Channel Sync', ar: 'مزامنة قنوات فورية' }, desc: { en: 'A single inventory source of truth pushes availability updates to all connected OTAs within seconds of a direct or OTA booking — eliminating the double-booking risk entirely.', ar: 'مصدر مخزون واحد موثوق يدفع تحديثات التوافر لكل منصات الحجز المتصلة خلال ثوانٍ من أي حجز مباشر أو عبر وسيط — ما يُلغي خطر الحجز المزدوج تمامًا.' } },
@@ -677,6 +847,16 @@ export const CASE_STUDIES = [
     },
     relatedServices: ['enterprise-software', 'web-development'],
     relatedStudies: ['nexusrealty', 'platterly'],
+    afterPoints: [
+      { en: 'Direct booking website live alongside every OTA listing', ar: 'موقع حجز مباشر يعمل جنبًا إلى جنب مع كل قوائم المنصات الوسيطة' },
+      { en: 'Inventory syncs across all channels within seconds', ar: 'يُزامن المخزون عبر كل القنوات خلال ثوانٍ' },
+      { en: 'Front desk works from one PMS screen, not three extranets', ar: 'يعمل الاستقبال من شاشة PMS واحدة لا ثلاث بوابات' },
+      { en: 'Post-stay email nudges guests back to book direct next time', ar: 'بريد بعد الإقامة يُحفّز الضيوف على الحجز المباشر بالمرة القادمة' },
+    ],
+    roadmap: {
+      title: { en: 'Dynamic Rate Intelligence', ar: 'تسعير ديناميكي ذكي' },
+      body: { en: 'With live occupancy data now centralized across all 3 properties, the next phase adds demand-based dynamic pricing so rates adjust automatically instead of relying on manual, end-of-month decisions.', ar: 'مع مركزية بيانات الإشغال الحية عبر العقارات الثلاثة الآن، تضيف المرحلة القادمة تسعيرًا ديناميكيًا مبنيًا على الطلب بحيث تتكيّف الأسعار تلقائيًا بدلاً من الاعتماد على قرارات يدوية في نهاية الشهر.' },
+    },
   },
 ];
 

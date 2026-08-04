@@ -2,6 +2,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Search, Palette, Workflow, TrendingUp, Users, Layers } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader';
 import { RevealItems } from '../components/Reveal';
+import EcosystemHubGraphic from '../components/EcosystemHubGraphic';
 
 const CARDS = [
   {
@@ -61,8 +62,9 @@ const CARDS = [
  * software is the right call, so that case has to land first, not after.
  *
  * Composition deliberately differs from ProcessSection's centered-header +
- * 3-up grid: the header here splits text-left / placeholder-right, so
- * consecutive sections don't read as the same template repeated.
+ * interactive step explorer: the header here splits text-left /
+ * placeholder-right, so consecutive sections don't read as the same
+ * template repeated.
  */
 const CustomSoftwareSection = ({ isRTL }) => {
   const { isRTL: ctxRTL } = useLanguage();
@@ -188,14 +190,7 @@ const CustomSoftwareSection = ({ isRTL }) => {
           lead={rtl
             ? 'القوالب الجاهزة تجبر عملك على التكيّف مع طريقة عمل عامة. نحن نفعل العكس — ندرس عملياتك، نراجع تحدياتك، ونصمم حول هويتك، لنبني برمجيات قابلة للتوسع. بدون قوالب جاهزة.'
             : 'Templates force your business to adapt to a generic workflow. We do the opposite — we study your operations, examine your challenges, and design around your brand to build software that scales with you. Never off-the-shelf.'}
-          // action={
-          //   <img
-          //     src="/custom-software-5-2.png"
-          //     alt={rtl ? "برمجيات مخصصة" : "Custom Software"}
-          //     className="w-full max-w-[380px] h-auto object-contain"
-          //     loading="lazy"
-          //   />
-          // }
+          action={<EcosystemHubGraphic isRTL={rtl} />}
         />
 
         <RevealItems className="custom-grid" step={0.05}>

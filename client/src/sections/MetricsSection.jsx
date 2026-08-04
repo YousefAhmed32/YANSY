@@ -3,26 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader';
-import ImagePlaceholder from '../components/ImagePlaceholder';
-
-const useCountUp = (end, duration = 1800, start = false) => {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!start) return;
-    const raw = parseFloat(String(end).replace(/[^0-9.]/g, ''));
-    if (isNaN(raw)) { setValue(end); return; }
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setValue(raw); return; }
-    let t0 = null;
-    const frame = ts => {
-      if (!t0) t0 = ts;
-      const p = Math.min((ts - t0) / duration, 1);
-      setValue(Math.round((1 - Math.pow(1 - p, 3)) * raw));
-      if (p < 1) requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
-  }, [start, end, duration]);
-  return value;
-};
+import { useCountUp } from '../hooks/useCountUp';
 
 const METRICS = [
   {

@@ -1,29 +1,24 @@
+import { useId, useState } from 'react';
+import {
+  ArrowUpRight, Check, X, Minus, Sparkles,
+  Target, RefreshCw, Milestone, KeyRound, LifeBuoy, Rocket,
+  Zap, Building2,
+} from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowUpRight } from 'lucide-react';
-import { useReveal } from '../hooks/useReveal';
-import ImagePlaceholder from './ImagePlaceholder';
+import { useReveal, revealStyle } from '../hooks/useReveal';
+import PremiumSectionHeader from './PremiumSectionHeader';
 
-const CheckIcon = ({ color = '#22c55e' }) => (
-  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden>
-    <circle cx="8" cy="8" r="7" fill={color} fillOpacity="0.12" />
-    <path d="M5 8l2 2 4-4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+const FONT_EN = "'Inter',system-ui,sans-serif";
+const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
 
-const XIcon = () => (
-  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden>
-    <circle cx="8" cy="8" r="7" fill="#EF4444" fillOpacity="0.1" />
-    <path d="M10 6L6 10M6 6l4 4" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const NeutralIcon = () => (
-  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden>
-    <circle cx="8" cy="8" r="7" fill="#F59E0B" fillOpacity="0.12" />
-    <path d="M5.5 8h5" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
+/* The comparison mechanic: one shared criterion per row, one mark per
+   column. This is deliberately the same mechanic pricing tables and
+   decision matrices use — it's the only layout that lets a reader compare
+   without reading, by pattern-matching a column of solid green against two
+   columns of scattered red/amber. The YANSY column is highlighted in place,
+   not pulled out into its own separate panel — pulling it out was tried and
+   broke the actual comparison. */
+const CRITERIA_ICONS = [Target, RefreshCw, Milestone, KeyRound, LifeBuoy, Rocket];
 const CRITERIA_EN = [
   'Clear scope & timeline',
   'Weekly progress updates',
@@ -32,7 +27,6 @@ const CRITERIA_EN = [
   'Post-delivery support',
   'Fast, scope-based launch',
 ];
-
 const CRITERIA_AR = [
   'نطاق وجدول زمني واضحان',
   'تحديثات أسبوعية',
@@ -44,330 +38,334 @@ const CRITERIA_AR = [
 
 const COLUMNS_EN = [
   {
-    label: 'Freelancer',
-    sub: 'Unpredictable',
-    highlight: false,
+    key: 'freelancer', label: 'Freelancer', sub: 'Unpredictable',
     values: ['x', 'x', 'neutral', 'check', 'x', 'x'],
-    note: 'Good for small tasks. Risky for complex projects.',
+    footer: 'Good for small tasks. Risky for real projects.',
   },
   {
-    label: 'YANSY',
-    sub: 'The structured studio',
-    highlight: true,
+    key: 'yansy', label: 'YANSY', sub: 'Recommended', hero: true,
     values: ['check', 'check', 'check', 'check', 'check', 'check'],
-    note: 'Agency structure. Startup speed. Full code ownership.',
+    footer: 'The complete package — every time.',
   },
   {
-    label: 'Generic Agency',
-    sub: 'Slow & expensive',
-    highlight: false,
+    key: 'agency', label: 'Generic Agency', sub: 'Slow & expensive',
     values: ['neutral', 'neutral', 'x', 'x', 'neutral', 'x'],
-    note: 'Process-heavy. Slow. Often locks you into their systems.',
+    footer: 'Reliable process. Slow and expensive.',
   },
 ];
-
 const COLUMNS_AR = [
   {
-    label: 'فريلانسر',
-    sub: 'غير متوقع',
-    highlight: false,
+    key: 'freelancer', label: 'فريلانسر', sub: 'غير متوقع',
     values: ['x', 'x', 'neutral', 'check', 'x', 'x'],
-    note: 'جيد للمهام الصغيرة. خطر للمشاريع المعقدة.',
+    footer: 'جيد للمهام الصغيرة. خطر للمشاريع الحقيقية.',
   },
   {
-    label: 'YANSY',
-    sub: 'الاستوديو المنظَّم',
-    highlight: true,
+    key: 'yansy', label: 'YANSY', sub: 'موصى به', hero: true,
     values: ['check', 'check', 'check', 'check', 'check', 'check'],
-    note: 'هيكل وكالة. سرعة شركة ناشئة. ملكية كاملة للكود.',
+    footer: 'الحزمة الكاملة — في كل مرة.',
   },
   {
-    label: 'وكالة عادية',
-    sub: 'بطيئة ومكلفة',
-    highlight: false,
+    key: 'agency', label: 'وكالة عادية', sub: 'بطيئة ومكلفة',
     values: ['neutral', 'neutral', 'x', 'x', 'neutral', 'x'],
-    note: 'ثقيلة الإجراءات. بطيئة. غالباً تقيدك في أنظمتها.',
+    footer: 'عملية موثوقة. بطيئة ومكلفة.',
   },
 ];
 
-const valueIcon = (v) => {
-  if (v === 'check') return <CheckIcon />;
-  if (v === 'x') return <XIcon />;
-  return <NeutralIcon />;
+const FEATURES_EN = [
+  { icon: Zap, title: 'Startup speed', body: 'As fast as your project scope allows — never at the expense of quality.' },
+  { icon: Building2, title: 'Agency structure', body: 'Dedicated team, clear process, organized delivery milestones.' },
+  { icon: KeyRound, title: 'Full ownership', body: 'The code is yours after delivery — no lock-in, no recurring fees.' },
+];
+const FEATURES_AR = [
+  { icon: Zap, title: 'سرعة الشركة الناشئة', body: 'بأسرع وقت يسمح به نطاق مشروعك — دون التضحية بالجودة أبداً.' },
+  { icon: Building2, title: 'هيكل الوكالة', body: 'فريق متخصص، عملية واضحة، مراحل تسليم منظمة.' },
+  { icon: KeyRound, title: 'ملكية كاملة', body: 'الكود ملكك بعد التسليم — لا قفل، لا رسوم مستمرة.' },
+];
+
+const VALUE_LABELS = {
+  check: { en: 'Yes', ar: 'نعم' },
+  x: { en: 'No', ar: 'لا' },
+  neutral: { en: 'Sometimes', ar: 'أحياناً' },
+};
+
+const ValueIcon = ({ v, hero }) => {
+  const Icon = v === 'check' ? Check : v === 'x' ? X : Minus;
+  const cls = v === 'check' ? (hero ? 'is-hero-check' : 'is-check') : v === 'x' ? 'is-x' : 'is-neutral';
+  return (
+    <span className={`why-value-icon ${cls}`} aria-hidden>
+      <Icon size={13} strokeWidth={3} />
+    </span>
+  );
+};
+
+const FeatureCard = ({ feature, font, style }) => {
+  const Icon = feature.icon;
+  return (
+    <div className="why-feature-card" style={style}>
+      <div className="why-feature-icon"><Icon size={20} strokeWidth={1.75} aria-hidden /></div>
+      <h3 className="why-feature-title" style={{ fontFamily: font }}>{feature.title}</h3>
+      <p className="why-feature-body" style={{ fontFamily: font }}>{feature.body}</p>
+    </div>
+  );
 };
 
 const WhyYANSY = ({ onStartProject }) => {
   const { isRTL } = useLanguage();
-  const { ref: sectionRef, revealed: visible } = useReveal({ threshold: 0.1 });
+  const font = isRTL ? FONT_AR : FONT_EN;
+  const uid = useId();
+  const { ref: sectionRef, revealed } = useReveal({ threshold: 0.08 });
+  const [hoverRow, setHoverRow] = useState(null);
 
   const criteria = isRTL ? CRITERIA_AR : CRITERIA_EN;
-  const columns  = isRTL ? COLUMNS_AR : COLUMNS_EN;
+  const columns = isRTL ? COLUMNS_AR : COLUMNS_EN;
+  const features = isRTL ? FEATURES_AR : FEATURES_EN;
 
   return (
     <section
       ref={sectionRef}
       id="why-yansy"
       dir={isRTL ? 'rtl' : 'ltr'}
-      className="section-shell section-shell--plain"
+      className="section-shell section-shell--plain why-section"
+      aria-labelledby={`why-title-${uid}`}
     >
       <style>{`
-        .why-grid {
+        .why-section { position: relative; overflow: hidden; }
+
+        /* One quiet, static wash behind the table — depth without motion. */
+        .why-bg-glow {
+          position: absolute; z-index: 0; pointer-events: none; top: 4%; left: 50%;
+          width: min(760px, 82vw); height: 460px; transform: translateX(-50%);
+          background: radial-gradient(ellipse at center, rgb(var(--accent) / 0.07), transparent 72%);
+        }
+        .why-inner { position: relative; z-index: 1; }
+
+        /* ── The comparison table itself ──────────────────────────────
+           4 logical columns: row-label, Freelancer, YANSY, Generic Agency.
+           Built with CSS grid (not a real <table>) so RTL mirrors for
+           free, but exposed to assistive tech with real table roles.
+           The YANSY column is tinted in place — same rows, same marks,
+           just visually heavier — which is what actually lets a reader
+           compare in one glance instead of reading three separate blocks. */
+        .why-table-wrap { max-width: 900px; margin: 0 auto clamp(3rem, 5vw, 4.5rem); }
+        .why-table {
           display: grid;
-          grid-template-columns: 5fr 7fr;
-          gap: clamp(3rem, 7vw, 7rem);
-          align-items: start;
-        }
-        @media (max-width: 860px) {
-          .why-grid { grid-template-columns: 1fr; }
-        }
-        .comparison-table-scroll {
-          width: 100%;
-        }
-        @media (max-width: 560px) {
-          .comparison-table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 16px;
-          }
-        }
-        .comparison-table {
-          width: 100%;
-          border-collapse: collapse;
+          grid-template-columns: minmax(108px, 1.35fr) repeat(3, minmax(62px, 1fr));
           border: 1px solid rgb(var(--border));
-          border-radius: 16px;
+          border-radius: var(--radius-xl);
+          background: rgb(var(--bg-elevated));
           overflow: hidden;
         }
-        @media (max-width: 560px) {
-          /* Below 560px, 4 columns can't compress to legible widths — scroll
-             the table within its own container instead of squishing text or
-             forcing the whole page to scroll horizontally. */
-          .comparison-table { min-width: 480px; }
+        @media (max-width: 640px) {
+          .why-table { grid-template-columns: minmax(88px, 1.25fr) repeat(3, minmax(50px, 1fr)); }
         }
-        .comparison-table th {
-          padding: clamp(14px, 2vw, 20px) clamp(12px, 1.5vw, 18px);
-          border-bottom: 1px solid rgb(var(--border));
-          border-inline-end: 1px solid rgb(var(--border));
-          font-size: 12px;
-          font-weight: 700;
-          color: rgb(var(--text-secondary));
-          text-align: center;
-          background: rgb(var(--bg-secondary));
-        }
-        .comparison-table th:last-child { border-inline-end: none; }
-        .comparison-table th.yansy-col {
-          background: rgb(var(--accent-light));
-          color: rgb(var(--accent));
-          border-color: rgb(var(--accent-muted));
-        }
-        .comparison-table td {
-          padding: clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px);
-          border-bottom: 1px solid rgb(var(--border-light));
-          border-inline-end: 1px solid rgb(var(--border-light));
-          text-align: center;
-          font-size: 12.5px;
-          color: rgb(var(--text-secondary));
-          font-weight: 500;
-        }
-        .comparison-table td:last-child { border-inline-end: none; }
-        .comparison-table td.criteria-col {
-          text-align: ${isRTL ? 'right' : 'left'};
-          color: rgb(var(--text-secondary));
-          background: rgb(var(--bg-secondary));
-          font-weight: 600;
-          font-size: 12px;
-        }
-        .comparison-table td.yansy-cell {
-          background: rgb(var(--accent-light));
-          border-inline-end: 1px solid rgb(var(--accent-muted));
-        }
-        .comparison-table tr:last-child td { border-bottom: none; }
-        .why-statement {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: clamp(12px, 2vw, 20px);
-          margin-top: clamp(2rem, 4vw, 3rem);
-        }
-        @media (max-width: 560px) {
-          .why-statement { grid-template-columns: 1fr; }
-        }
-        .why-statement-card {
-          background: rgb(var(--bg-secondary));
-          border: 1px solid rgb(var(--border));
-          border-radius: 12px;
-          padding: clamp(14px, 2vw, 20px);
-          text-align: ${isRTL ? 'right' : 'left'};
-          opacity: 0;
-          transform: translateY(16px);
-          transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1), border-color 0.2s, background 0.2s;
-        }
-        .why-statement-card.visible { opacity: 1; transform: translateY(0); }
-        .why-statement-card:hover { background: rgb(var(--bg-elevated)); border-color: rgb(var(--border-strong)); }
-        .why-note-row {
-          display: flex;
-          gap: 0;
-          border-top: 1px solid rgb(var(--border));
-        }
-        @media (max-width: 560px) {
-          .why-note-row { min-width: 480px; }
-        }
-        .why-note-cell {
-          flex: 1;
-          padding: clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px);
-          border-inline-end: 1px solid rgb(var(--border-light));
-          font-size: 11px;
+
+        .why-cell { padding: 12px 10px; display: flex; align-items: center; }
+        .why-cell--label { align-items: flex-start; gap: 8px; padding-inline: clamp(12px, 1.6vw, 18px) 8px; }
+        .why-cell--head, .why-cell--value, .why-cell--foot { justify-content: center; text-align: center; flex-direction: column; }
+        .why-cell--value { padding-block: 14px; }
+
+        /* Column separators + row separators — real structure, drawn
+           quietly (hairlines, not borders that shout "spreadsheet"). */
+        .why-cell:not(.why-cell--label):not(.why-cell--corner) { border-inline-start: 1px solid rgb(var(--border-light)); }
+        .why-cell:not(.why-cell--head) { border-top: 1px solid rgb(var(--border-light)); }
+        .why-cell--corner { border-top: none; }
+
+        /* Row-label column */
+        .why-row-icon {
+          width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
+          display: inline-flex; align-items: center; justify-content: center;
+          background: rgb(var(--bg-secondary)); border: 1px solid rgb(var(--border));
           color: rgb(var(--text-tertiary));
-          line-height: 1.4;
-          text-align: center;
         }
-        .why-note-cell:last-child { border-inline-end: none; }
-        .why-note-cell.yansy-note {
-          color: rgb(var(--accent));
-          background: rgb(var(--accent-light));
-          font-weight: 600;
+        .why-cell--label { flex-direction: row; }
+        .why-cell--label span:last-child { font-size: 12px; font-weight: 600; color: rgb(var(--text-secondary)); line-height: 1.35; }
+        @media (max-width: 420px) { .why-row-icon { display: none; } }
+
+        /* Header row */
+        .why-cell--head { gap: 3px; padding-block: 16px 12px; }
+        .why-col-name { font-size: 13px; font-weight: 700; color: rgb(var(--text-primary)); letter-spacing: -0.01em; }
+        .why-col-sub { font-size: 10.5px; font-weight: 600; color: rgb(var(--text-tertiary)); }
+
+        /* Value cells */
+        .why-value-icon {
+          width: 25px; height: 25px; border-radius: 50%; flex-shrink: 0;
+          display: inline-flex; align-items: center; justify-content: center;
+          transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
         }
+        .why-value-icon.is-check      { background: rgb(var(--success-light)); color: rgb(var(--success)); }
+        .why-value-icon.is-x          { background: rgb(var(--danger-light));  color: rgb(var(--danger)); }
+        .why-value-icon.is-neutral    { background: rgb(var(--warning-light)); color: rgb(var(--warning)); }
+        .why-value-icon.is-hero-check { background: rgb(var(--accent)); color: #fff; }
+
+        /* Footer row — one line of synthesis per column, not a paragraph */
+        .why-cell--foot { font-size: 11px; line-height: 1.5; color: rgb(var(--text-tertiary)); padding-block: 14px; }
+
+        /* The YANSY column — tinted straight through header/rows/footer,
+           bolder marks, a small badge. Still the same grid, same rows. */
+        .why-col-badge {
+          display: inline-flex; align-items: center; gap: 4px; margin-bottom: 2px;
+          background: rgb(var(--gold-light)); color: rgb(var(--gold));
+          font-size: 9.5px; font-weight: 700; letter-spacing: 0.02em;
+          padding: 3px 9px; border-radius: 999px;
+        }
+        .is-yansy { background: rgb(var(--accent-light)); }
+        .is-yansy.why-cell--head .why-col-name { color: rgb(var(--accent)); font-size: 14px; }
+        .is-yansy:not(.why-cell--head) { border-inline-start-color: rgb(var(--accent) / 0.18); }
+        .is-yansy.why-cell--foot { color: rgb(var(--accent)); font-weight: 600; }
+
+        /* Row hover — highlights the same row across all 4 cells, which is
+           the actual "read across and compare" behavior this table exists
+           to support. */
+        .why-cell.is-active-row:not(.is-yansy) { background: rgb(var(--bg-surface)); }
+        .why-cell.is-active-row.is-yansy { background: rgb(var(--accent) / 0.14); }
+        .why-cell.is-active-row .why-value-icon { transform: scale(1.14); }
+        .why-cell--label.is-active-row span:last-child { color: rgb(var(--text-primary)); font-weight: 700; }
+
+        /* ── Key benefits — reinforcement after the comparison, not a
+           repeat of it. ── */
+        .why-features {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 2vw, 20px);
+          max-width: 900px; margin: 0 auto clamp(3.5rem, 6vw, 5rem);
+        }
+        @media (max-width: 760px) { .why-features { grid-template-columns: 1fr; } }
+        .why-feature-card {
+          padding: clamp(20px, 2.4vw, 26px);
+          background: rgb(var(--bg-elevated)); border: 1px solid rgb(var(--border)); border-radius: var(--radius-lg);
+          text-align: ${isRTL ? 'right' : 'left'};
+          transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .why-feature-card:hover { border-color: rgb(var(--accent) / 0.35); box-shadow: var(--shadow-sm); }
+        .why-feature-icon {
+          width: 40px; height: 40px; border-radius: 11px; margin-bottom: 14px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgb(var(--accent-light)); color: rgb(var(--accent));
+        }
+        .why-feature-title { font-size: 14.5px; font-weight: 700; color: rgb(var(--text-primary)); margin: 0 0 6px; }
+        .why-feature-body { font-size: 12.5px; color: rgb(var(--text-secondary)); line-height: 1.65; margin: 0; }
+
+        /* ── CTA ── */
+        .why-cta { text-align: center; }
+        .why-cta-btn { font-size: 14px; padding: 16px 34px; transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease; }
+        .why-cta-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+        .why-cta-btn svg { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
+        .why-cta-btn:hover svg { transform: ${isRTL ? 'translate(-4px,-4px) scaleX(-1)' : 'translate(4px,-4px)'}; }
+        .why-cta-trust { margin: 14px 0 0; font-size: 12.5px; color: rgb(var(--text-tertiary)); }
       `}</style>
 
-      <div className="section-inner">
-        <div className="why-grid">
+      <div className="why-bg-glow" aria-hidden />
 
-          {/* Left: Header */}
-          <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
-            <span className="section-label" style={{ marginBottom: 20, display: 'inline-block' }}>
-              {isRTL ? 'لماذا YANSY' : 'Why YANSY'}
-            </span>
-            <h2 className="display-title" style={{ marginBottom: 'clamp(1.25rem, 2.5vw, 2rem)' }}>
-              {isRTL ? 'ليس كل\nخيار متساوٍ.' : 'Not every\noption is\nequal.'}
-            </h2>
-            <p style={{
-              fontSize: 'clamp(0.9375rem, 1.1vw, 1.0625rem)',
-              color: 'rgb(var(--text-secondary))',
-              lineHeight: 1.75,
-              margin: '0 0 clamp(1.5rem, 3vw, 2.5rem)',
-              fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            }}>
-              {isRTL
-                ? 'الفريلانسر قد يختفي. الوكالة العادية قد تبالغ في التكاليف وتأخذ الوقت. YANSY توفر هيكل الوكالة مع سرعة الشركة الناشئة — وملكية كاملة للكود دائماً.'
-                : 'Freelancers disappear. Generic agencies overcharge and underdeliver. YANSY gives you agency structure with startup speed — and the code is always yours.'}
-            </p>
+      <div className="section-inner why-inner">
 
-            {/* 3 statement cards */}
-            <div className="why-statement">
-              {(isRTL ? [
-                { icon: '⚡', title: 'سرعة الشركة الناشئة', body: 'بأسرع وقت يسمح به نطاق مشروعك — دون التضحية بالجودة أبداً' },
-                { icon: '🏗', title: 'هيكل الوكالة', body: 'فريق متخصص، عملية واضحة، مراحل تسليم منظمة' },
-                { icon: '🔑', title: 'ملكية كاملة', body: 'الكود ملكك بعد التسليم — لا قفل، لا رسوم مستمرة' },
-              ] : [
-                { icon: '⚡', title: 'Startup speed', body: 'As fast as your project scope allows — never at the expense of quality' },
-                { icon: '🏗', title: 'Agency structure', body: 'Dedicated team, clear process, organized delivery milestones' },
-                { icon: '🔑', title: 'Full ownership', body: 'The code is yours after delivery — no lock-in, no recurring fees' },
-              ]).map((card, i) => (
+        {/* Headline carries the narrative; the table below proves it. */}
+        <PremiumSectionHeader
+          id={`why-title-${uid}`}
+          badge={isRTL ? 'المقارنة' : 'The Comparison'}
+          title={isRTL ? 'ليس كل خيار\nمتساوٍ.' : 'Not every option is\nequal.'}
+          accent={isRTL ? 'متساوٍ' : 'equal'}
+          lead={isRTL
+            ? 'الفريلانسر قد يختفي. الوكالة العادية قد تبالغ في التكاليف وتأخذ الوقت. YANSY توفر هيكل الوكالة مع سرعة الشركة الناشئة — وملكية كاملة للكود دائماً.'
+            : 'Freelancers disappear. Generic agencies overcharge and underdeliver. YANSY gives you agency structure with startup speed — and the code is always yours.'}
+          font={font}
+          isRTL={isRTL}
+          revealed={revealed}
+          style={revealStyle(revealed, 0)}
+        />
+
+        {/* The comparison — one shared table, YANSY highlighted in place */}
+        <div className="why-table-wrap" style={revealStyle(revealed, 1)}>
+          <div
+            className="why-table"
+            role="table"
+            aria-label={isRTL ? 'مقارنة بين فريلانسر وYANSY ووكالة عادية' : 'Comparison of Freelancer, YANSY, and Generic Agency'}
+          >
+            {/* Header row */}
+            <div role="row" style={{ display: 'contents' }}>
+              <div role="columnheader" className="why-cell why-cell--head why-cell--corner">
+                <span className="sr-only">{isRTL ? 'المعيار' : 'Criterion'}</span>
+              </div>
+              {columns.map((col) => (
                 <div
-                  key={i}
-                  className={`why-statement-card${visible ? ' visible' : ''}`}
-                  style={{ transitionDelay: `${0.1 + i * 0.1}s` }}
+                  key={col.key}
+                  role="columnheader"
+                  className={`why-cell why-cell--head${col.hero ? ' is-yansy' : ''}`}
                 >
-                  <div style={{ fontSize: 20, marginBottom: 10 }} aria-hidden>{card.icon}</div>
-                  <div style={{
-                    fontSize: 12.5, fontWeight: 700, color: 'rgb(var(--text-primary))',
-                    marginBottom: 5,
-                    fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-                  }}>
-                    {card.title}
-                  </div>
-                  <div style={{
-                    fontSize: 12, color: 'rgb(var(--text-secondary))', lineHeight: 1.6,
-                    fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-                  }}>
-                    {card.body}
-                  </div>
+                  {col.hero && (
+                    <span className="why-col-badge">
+                      <Sparkles size={9} aria-hidden />
+                      {isRTL ? 'الأكثر اختياراً' : 'Most chosen'}
+                    </span>
+                  )}
+                  <span className="why-col-name" style={{ fontFamily: font }}>{col.label}</span>
+                  <span className="why-col-sub" style={{ fontFamily: font }}>{col.sub}</span>
                 </div>
               ))}
             </div>
 
-            <button
-              onClick={onStartProject}
-              className="btn-primary"
-              style={{ marginTop: 'clamp(1.5rem, 3vw, 2rem)', fontSize: '13.5px', padding: '13px 26px' }}
-            >
-              {isRTL ? 'احجز استشارة مجانية' : 'Start With YANSY'}
-              <ArrowUpRight style={{ width: 15, height: 15, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
-            </button>
-          </div>
-
-          {/* Right: Comparison table */}
-          {/* minWidth: 0 overrides the grid item's default min-width:auto — without
-              it, the table's min-width (needed for the mobile scroll wrapper below)
-              blows out the whole grid track and forces page-level horizontal scroll
-              instead of scrolling within .comparison-table-scroll. */}
-          <div style={{
-            minWidth: 0,
-            opacity: visible ? 1 : 0,
-            transform: visible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.7s 0.15s cubic-bezier(0.16,1,0.3,1), transform 0.7s 0.15s cubic-bezier(0.16,1,0.3,1)',
-          }}>
-            <div className="comparison-table-scroll">
-              <table className="comparison-table" role="table">
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: isRTL ? 'right' : 'left', width: '36%' }}>
-                      {isRTL ? 'المعيار' : 'Criteria'}
-                    </th>
-                    {columns.map((col, ci) => (
-                      <th key={ci} className={col.highlight ? 'yansy-col' : ''}>
-                        <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 2 }}>{col.label}</div>
-                        <div style={{ fontSize: 10, fontWeight: 500, opacity: 0.7 }}>{col.sub}</div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {criteria.map((crit, ri) => (
-                    <tr key={ri}>
-                      <td className="criteria-col"
-                        style={{
-                          fontFamily: isRTL ? "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-                        }}
-                      >
-                        {crit}
-                      </td>
-                      {columns.map((col, ci) => (
-                        <td key={ci} className={col.highlight ? 'yansy-cell' : ''}>
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            {valueIcon(col.values[ri])}
-                          </div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Notes row — scrolls in sync with the table above (same wrapper) */}
-              <div className="why-note-row">
-                <div style={{ width: '36%', padding: 'clamp(10px, 1.5vw, 14px) clamp(12px, 1.5vw, 18px)' }} />
-                {columns.map((col, ci) => (
-                  <div key={ci} className={`why-note-cell${col.highlight ? ' yansy-note' : ''}`}>
-                    {col.note}
+            {/* Criteria rows */}
+            {criteria.map((crit, ri) => {
+              const CritIcon = CRITERIA_ICONS[ri];
+              const active = hoverRow === ri;
+              return (
+                <div
+                  key={ri}
+                  role="row"
+                  style={{ display: 'contents' }}
+                  onMouseEnter={() => setHoverRow(ri)}
+                  onMouseLeave={() => setHoverRow(null)}
+                >
+                  <div role="rowheader" className={`why-cell why-cell--label${active ? ' is-active-row' : ''}`}>
+                    <span className="why-row-icon"><CritIcon size={12} strokeWidth={2} aria-hidden /></span>
+                    <span style={{ fontFamily: font }}>{crit}</span>
                   </div>
-                ))}
-              </div>
+                  {columns.map((col) => (
+                    <div
+                      key={col.key}
+                      role="cell"
+                      className={`why-cell why-cell--value${col.hero ? ' is-yansy' : ''}${active ? ' is-active-row' : ''}`}
+                    >
+                      <ValueIcon v={col.values[ri]} hero={col.hero} />
+                      <span className="sr-only">{isRTL ? VALUE_LABELS[col.values[ri]].ar : VALUE_LABELS[col.values[ri]].en}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+
+            {/* Footer row — the one-line payoff per column */}
+            <div role="row" style={{ display: 'contents' }}>
+              <div role="cell" className="why-cell why-cell--foot why-cell--corner" aria-hidden />
+              {columns.map((col) => (
+                <div
+                  key={col.key}
+                  role="cell"
+                  className={`why-cell why-cell--foot${col.hero ? ' is-yansy' : ''}`}
+                  style={{ fontFamily: font }}
+                >
+                  {col.footer}
+                </div>
+              ))}
             </div>
-
-<img
-  src="/Champagne Ribbon with Blue Light Trails.png"
-  alt={isRTL ? "مقارنة بين الخيارات" : "Comparison Illustration"}
-  loading="lazy"
-  style={{
-    width: "100%",
-    marginTop: "clamp(1.25rem, 2.5vw, 1.75rem)",
-    height: "auto",
-    objectFit: "contain",
-    display: "block",
-  }}
-/>
           </div>
-
         </div>
+
+        {/* Key benefits — reinforcement, after the proof */}
+        <div className="why-features">
+          {features.map((f, i) => (
+            <FeatureCard key={i} feature={f} font={font} style={revealStyle(revealed, 2 + i)} />
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="why-cta" style={revealStyle(revealed, 5)}>
+          <button onClick={onStartProject} className="btn-primary why-cta-btn">
+            {isRTL ? 'احجز استشارة مجانية' : 'Start With YANSY'}
+            <ArrowUpRight style={{ width: 16, height: 16, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+          </button>
+          <p className="why-cta-trust" style={{ fontFamily: font }}>
+            {isRTL ? 'استشارة مجانية — بدون التزام.' : 'Free consultation — no obligation.'}
+          </p>
+        </div>
+
       </div>
     </section>
   );

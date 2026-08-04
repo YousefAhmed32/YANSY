@@ -162,15 +162,14 @@ const CaseStudies = () => {
         {/* ── GRID ──────────────────────────────────────────────── */}
         <section ref={gridRef} style={{ paddingBottom: 'clamp(5rem,10vw,8rem)' }}>
           <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-px" style={{ background: 'rgb(var(--hover-overlay) / 0.03)' }}>
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filtered.map((cs) => (
                 <Link
                   key={cs.slug}
                   to={`/case-studies/${cs.slug}`}
                   data-card
-                  style={{ background: 'rgb(var(--bg-surface))', textDecoration: 'none', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgb(var(--border-light))'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgb(var(--bg-surface))'; }}
+                  className="card"
+                  style={{ overflow: 'hidden', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}
                 >
                   {/* Image */}
                   <div className="au-card-hover-zoom" style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: 'rgb(var(--bg-contrast))' }}>
@@ -217,7 +216,7 @@ const CaseStudies = () => {
                     {/* Result pills */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {cs.results.slice(0, 2).map((r, i) => (
-                        <div key={i} style={{ padding: '5px 12px', border: '1px solid rgb(var(--hover-overlay) / 0.06)', background: 'rgb(var(--hover-overlay) / 0.02)' }}>
+                        <div key={i} style={{ padding: '5px 12px', borderRadius: 100, border: '1px solid rgb(var(--border))', background: 'rgb(var(--bg-surface))' }}>
                           <span style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: '1rem', fontWeight: 700, color: 'rgb(var(--accent))', fontVariantNumeric: 'tabular-nums' }}>{r.metric}</span>
                           <span style={{ fontFamily: font, fontSize: 10, color: 'rgb(var(--hover-overlay) / 0.35)', marginInlineStart: 6, letterSpacing: isRTL ? 0 : '0.05em' }}>{isRTL ? r.label.ar : r.label.en}</span>
                         </div>
