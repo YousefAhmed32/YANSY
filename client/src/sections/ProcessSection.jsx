@@ -146,6 +146,7 @@ const ProcessSection = ({ isRTL, onStartProject }) => {
   const userInteractedRef = useRef(false);
   const pausedRef = useRef(false);
   const mountedRef = useRef(false);
+  const railMountedRef = useRef(false);
 
   const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -184,7 +185,16 @@ const ProcessSection = ({ isRTL, onStartProject }) => {
     return () => ctx.revert();
   }, [activeIndex]);
 
+  // Keeps the active tab visible inside the (mobile) horizontally-scrolling
+  // rail as activeIndex advances. Skipped on first mount: `block: 'nearest'`
+  // walks up to the nearest scrollable ancestor for the vertical axis too,
+  // and on desktop that ancestor is the *window* (the rail itself only
+  // scrolls horizontally) — since this section sits well below the fold,
+  // firing on mount silently scrolled the whole page down to Process on
+  // every load. Real user/autoplay-driven changes still scroll the rail
+  // normally; only the initial synthetic "activeIndex became 0" run is gated.
   useEffect(() => {
+    if (!railMountedRef.current) { railMountedRef.current = true; return; }
     const el = tabRefs.current[activeIndex];
     if (!el) return;
     el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
