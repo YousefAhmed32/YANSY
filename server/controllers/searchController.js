@@ -30,10 +30,12 @@ exports.globalSearch = async (req, res, next) => {
         .lean(),
 
       PortfolioProject.find({
-        isPublished: true,
-        $or: [{ title: searchRegex }, { description: searchRegex }, { tags: searchRegex }],
+        status: 'published',
+        private: { $ne: true },
+        $or: [{ title: searchRegex }, { description: searchRegex }],
       })
         .select('title category coverImage')
+        .populate('category', 'name nameAr')
         .limit(lim)
         .lean(),
 
@@ -79,7 +81,7 @@ exports.globalSearch = async (req, res, next) => {
         _id:   p._id,
         type:  'portfolio',
         title: p.title,
-        subtitle: p.category,
+        subtitle: p.category?.name,
         image: p.coverImage,
         link:  `/portfolio/${p._id}`,
       })),

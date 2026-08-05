@@ -72,7 +72,7 @@ const PortfolioDetail = () => {
         const { data } = await api.get(`/portfolio/${id}`);
         if (cancelled) return;
         setProject(data.project);
-        trackViewContent({ content_name: data.project?.title, content_type: 'portfolio_project', content_category: data.project?.industry });
+        trackViewContent({ content_name: data.project?.title, content_type: 'portfolio_project', content_category: data.project?.industry?.name });
         api.get(`/portfolio/${data.project._id}/related`)
           .then(({ data: rd }) => { if (!cancelled) setRelated(rd.projects || []); })
           .catch(() => {});

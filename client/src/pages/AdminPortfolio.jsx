@@ -7,7 +7,6 @@
   import toast from 'react-hot-toast';
   import api from '../utils/api';
   import { mediaSrc } from '../utils/media';
-  import { CATEGORIES, categoryLabel } from '../utils/portfolioTaxonomy';
   import { useLanguage } from '../contexts/LanguageContext';
   import {
     TK, RADIUS, PageHeader, Card, Badge, Button, IconButton,
@@ -72,6 +71,7 @@
     const [statusCounts, setStatusCounts] = useState({ draft: 0, published: 0, archived: 0 });
     const [status, setStatus]           = useState('all');
     const [category, setCategory]       = useState('All');
+    const [categories, setCategories]   = useState([]);
     const [searchInput, setSearchInput] = useState('');
     const [search, setSearch]           = useState('');
     const [page, setPage]               = useState(1);
@@ -104,6 +104,10 @@
     }, [status, category, search, page, language]);
 
     useEffect(() => { fetchProjects(); }, [fetchProjects]);
+
+    useEffect(() => {
+      api.get('/categories', { params: { limit: 100 } }).then(({ data }) => setCategories(data.items || [])).catch(() => {});
+    }, []);
 
     useEffect(() => {
       const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(1); }, 350);
@@ -235,7 +239,7 @@
           <Select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            options={[{ value: 'All', label: language === 'ar' ? 'كل الفئات' : 'All categories' }, ...CATEGORIES.map(c => ({ value: c, label: categoryLabel(c, language) }))]}
+            options={[{ value: 'All', label: language === 'ar' ? 'كل الفئات' : 'All categories' }, ...categories.map(c => ({ value: c._id, label: language === 'ar' ? (c.nameAr || c.name) : c.name }))]}
           />
           {canReorder && <span style={{ fontSize: '10px', color: TK.textLight, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{language === 'ar' ? 'اسحب الصفوف لإعادة الترتيب' : 'Drag rows to reorder'}</span>}
         </div>
@@ -308,7 +312,7 @@
                     <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: TK.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: '0 1 auto' }}>{p.title}</h3>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '5px' }}>
-                    <Badge tone="info">{categoryLabel(p.category, language)}</Badge>
+                    {p.category && <Badge tone="info">{language === 'ar' ? (p.category.nameAr || p.category.name) : p.category.name}</Badge>}
                     <Badge tone={STATUS_TONE[p.status] || 'neutral'} dot>{statusDisplayLabel(p.status, language)}</Badge>
                     {p.featured && <Badge tone="purple">{language === 'ar' ? 'مميز' : 'Featured'}</Badge>}
                     {p.private && <Badge tone="danger">{language === 'ar' ? 'خاص' : 'Private'}</Badge>}

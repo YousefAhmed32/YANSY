@@ -16,18 +16,6 @@ import { useSEO } from '../hooks/useSEO';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const CATEGORIES = [
-  { en: 'All',                 ar: 'الكل' },
-  { en: 'E-commerce',          ar: 'تجارة إلكترونية' },
-  { en: 'Medical',             ar: 'طبي' },
-  { en: 'Real Estate',         ar: 'عقارات' },
-  { en: 'Restaurants & Food',  ar: 'مطاعم وطعام' },
-  { en: 'SaaS / Platforms',    ar: 'منصات SaaS' },
-  { en: 'Educational',         ar: 'تعليمي' },
-  { en: 'Hotels & Hospitality', ar: 'فنادق وضيافة' },
-  { en: 'Other',               ar: 'أخرى' },
-];
-
 const SORTS = [
   { value: 'latest',  en: 'Latest',      ar: 'الأحدث' },
   { value: 'oldest',  en: 'Oldest',      ar: 'الأقدم' },
@@ -51,11 +39,12 @@ const Portfolio = () => {
   const [projects, setProjects] = useState([]);
   const [cursor, setCursor]     = useState(null);
   const [hasMore, setHasMore]   = useState(true);
-  const [category, setCategory] = useState('All');
-  const [industry, setIndustry] = useState('');
+  const [category, setCategory]     = useState(''); // holds a Category slug, '' = All
+  const [categories, setCategories] = useState([]);
+  const [industry, setIndustry] = useState(''); // holds an Industry slug
   const [industries, setIndustries] = useState([]);
-  const [tag, setTag]           = useState('');
-  const [tags, setTags]         = useState([]);
+  const [tag, setTag]           = useState(''); // holds a Technology slug
+  const [technologies, setTechnologies] = useState([]);
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [sort, setSort]         = useState('latest');
   const [searchInput, setSearchInput] = useState('');
@@ -96,11 +85,12 @@ const Portfolio = () => {
     },
   });
 
-  // ── Fetch filter meta (categories/industries/tags with real projects) ───────
+  // ── Fetch filter meta (categories/industries/technologies with real projects) ─
   useEffect(() => {
     api.get('/portfolio/meta').then(({ data }) => {
+      setCategories(data.categories || []);
       setIndustries(data.industries || []);
-      setTags(data.tags || []);
+      setTechnologies(data.technologies || []);
     }).catch(() => {});
   }, []);
 
@@ -119,7 +109,7 @@ const Portfolio = () => {
       const { data } = await api.get('/portfolio', {
         params: {
           limit: 12,
-          ...(category !== 'All' && { category }),
+          ...(category && { category }),
           ...(industry && { industry }),
           ...(tag && { tag }),
           ...(featuredOnly && { featured: 'true' }),
@@ -148,7 +138,7 @@ const Portfolio = () => {
     setLoadingMore(true);
     try {
       const { data } = await api.get('/portfolio', {
-        params: { limit: 12, cursor, ...(category !== 'All' && { category }), ...(industry && { industry }), ...(tag && { tag }), ...(featuredOnly && { featured: 'true' }), sort },
+        params: { limit: 12, cursor, ...(category && { category }), ...(industry && { industry }), ...(tag && { tag }), ...(featuredOnly && { featured: 'true' }), sort },
       });
       setProjects((prev) => [...prev, ...(data.projects || [])]);
       setCursor(data.nextCursor || null);
@@ -195,8 +185,7 @@ const Portfolio = () => {
     return () => ctx.revert();
   }, []);
 
-  const activeLabel = (cat) => isRTL ? cat.ar : cat.en;
-  const showFeaturedSpotlight = category === 'All' && !industry && !tag && !featuredOnly && !search;
+  const showFeaturedSpotlight = !category && !industry && !tag && !featuredOnly && !search;
 
   return (
     <div className="bg-surface-white text-[rgb(var(--text-primary))] min-h-screen overflow-x-hidden" dir={dir}>
@@ -245,18 +234,29 @@ const Portfolio = () => {
             {/* Category chips */}
             <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
               <div className={`flex gap-2 min-w-max ${isRTL ? 'flex-row-reverse' : ''}`}>
-                {CATEGORIES.map((cat) => (
+                <button
+                  onClick={() => setCategory('')}
+                  className="px-4 py-1.5 text-[11px] font-medium tracking-widest uppercase border rounded-full transition-all duration-300 whitespace-nowrap"
+                  style={{
+                    borderColor: !category ? 'rgb(var(--accent))' : 'rgb(var(--border))',
+                    color: !category ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
+                    background: !category ? 'rgba(37,99,235,0.08)' : 'transparent',
+                  }}
+                >
+                  {isRTL ? 'الكل' : 'All'}
+                </button>
+                {categories.map((cat) => (
                   <button
-                    key={cat.en}
-                    onClick={() => setCategory(cat.en)}
+                    key={cat._id}
+                    onClick={() => setCategory(cat.slug)}
                     className="px-4 py-1.5 text-[11px] font-medium tracking-widest uppercase border rounded-full transition-all duration-300 whitespace-nowrap"
                     style={{
-                      borderColor: category === cat.en ? 'rgb(var(--accent))' : 'rgb(var(--border))',
-                      color: category === cat.en ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
-                      background: category === cat.en ? 'rgba(37,99,235,0.08)' : 'transparent',
+                      borderColor: category === cat.slug ? 'rgb(var(--accent))' : 'rgb(var(--border))',
+                      color: category === cat.slug ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))',
+                      background: category === cat.slug ? 'rgba(37,99,235,0.08)' : 'transparent',
                     }}
                   >
-                    {activeLabel(cat)}
+                    {isRTL ? (cat.nameAr || cat.name) : cat.name}
                   </button>
                 ))}
               </div>
@@ -319,12 +319,12 @@ const Portfolio = () => {
                 </button>
                 {industries.map((ind) => (
                   <button
-                    key={ind}
-                    onClick={() => setIndustry(ind)}
+                    key={ind._id}
+                    onClick={() => setIndustry(ind.slug)}
                     className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
-                    style={{ borderColor: industry === ind ? 'rgb(var(--text-primary))' : 'rgb(var(--border))', color: industry === ind ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', background: industry === ind ? 'rgb(var(--bg-surface))' : 'transparent' }}
+                    style={{ borderColor: industry === ind.slug ? 'rgb(var(--text-primary))' : 'rgb(var(--border))', color: industry === ind.slug ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', background: industry === ind.slug ? 'rgb(var(--bg-surface))' : 'transparent' }}
                   >
-                    {ind}
+                    {isRTL ? (ind.nameAr || ind.name) : ind.name}
                   </button>
                 ))}
               </div>
@@ -333,7 +333,7 @@ const Portfolio = () => {
 
           {/* Tech/tag chips — capped to keep the row from exploding on a
               growing tag vocabulary; already alphabetical from the API. */}
-          {tags.length > 0 && (
+          {technologies.length > 0 && (
             <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
               <div className={`flex items-center gap-1.5 min-w-max ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <span className="text-[9.5px] font-semibold tracking-widest uppercase text-[rgb(var(--text-tertiary))] flex-shrink-0">
@@ -345,16 +345,16 @@ const Portfolio = () => {
                     className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap"
                     style={{ background: 'rgb(var(--accent-light))', color: 'rgb(var(--accent))', border: '1px solid rgb(var(--accent-muted))' }}
                   >
-                    {tag} <X className="w-2.5 h-2.5" />
+                    {technologies.find((t) => t.slug === tag)?.name || tag} <X className="w-2.5 h-2.5" />
                   </button>
                 )}
-                {tags.filter((t) => t !== tag).slice(0, 16).map((t) => (
+                {technologies.filter((t) => t.slug !== tag).slice(0, 16).map((t) => (
                   <button
-                    key={t}
-                    onClick={() => setTag(t)}
+                    key={t._id}
+                    onClick={() => setTag(t.slug)}
                     className="px-2.5 py-0.5 text-[10px] font-medium rounded-full whitespace-nowrap border border-transparent text-[rgb(var(--text-tertiary))] hover:text-[rgb(var(--text-secondary))] hover:border-[rgb(var(--border))] transition-colors"
                   >
-                    {t}
+                    {t.name}
                   </button>
                 ))}
               </div>
@@ -386,7 +386,7 @@ const Portfolio = () => {
                 {isRTL ? 'لا توجد مشاريع مطابقة.' : 'No matching projects yet.'}
               </p>
               <button
-                onClick={() => { setCategory('All'); setIndustry(''); setTag(''); setFeaturedOnly(false); setSearchInput(''); }}
+                onClick={() => { setCategory(''); setIndustry(''); setTag(''); setFeaturedOnly(false); setSearchInput(''); }}
                 className="text-[rgb(var(--accent))] text-xs tracking-widest uppercase border border-[rgb(var(--accent))]/30 rounded-full px-6 py-3 hover:bg-[rgb(var(--accent))]/08 transition-all"
               >
                 {isRTL ? 'مسح كل الفلاتر' : 'Clear all filters'}

@@ -17,13 +17,13 @@ import GenerateDemoModal from '../components/portfolio-wizard/GenerateDemoModal'
 import { generateDemoProject } from '../utils/demoGenerators';
 
 const EMPTY_FORM = {
-  title: '', titleAr: '', tagline: '', taglineAr: '', category: 'Other', industry: '',
-  clientName: '', clientNameAr: '', clientLogo: null, location: '', locationAr: '', confidential: false, private: false,
+  title: '', titleAr: '', tagline: '', taglineAr: '', category: null, industry: null,
+  client: null, location: '', locationAr: '', confidential: false, private: false,
   description: '', descriptionAr: '',
   myRole: '', myRoleAr: '', goals: '', goalsAr: '', painPoints: '', painPointsAr: '',
   challenge: '', challengeAr: '', solution: '', solutionAr: '', process: '', processAr: '', results: '', resultsAr: '',
-  metrics: [], performanceMetrics: [], testimonial: {}, proofScreenshots: [], faqs: [], awards: [], team: [], blocks: [],
-  liveUrl: '', figmaUrl: '', githubUrl: '', tags: [], duration: '', teamSize: '', startDate: '', launchDate: '', year: new Date().getFullYear(),
+  metrics: [], performanceMetrics: [], testimonials: [], proofScreenshots: [], faqs: [], awards: [], team: [], services: [], blocks: [],
+  liveUrl: '', figmaUrl: '', githubUrl: '', technologies: [], projectTags: [], duration: '', teamSize: '', startDate: '', launchDate: '', year: new Date().getFullYear(),
   relatedProjectsOverride: [],
   coverImage: null, coverVideo: null, gallery: [],
   status: 'draft', featured: false,
@@ -46,7 +46,7 @@ const SCORE_FIELDS = [
   (f) => Boolean(f.title), (f) => Boolean(f.tagline), (f) => Boolean(f.coverImage?.url),
   (f) => Boolean(f.description), (f) => Boolean(f.challenge), (f) => Boolean(f.solution),
   (f) => Boolean(f.process), (f) => Boolean(f.results), (f) => (f.metrics || []).length > 0,
-  (f) => Boolean(f.testimonial?.quote), (f) => (f.gallery || []).length > 0, (f) => (f.tags || []).length > 0,
+  (f) => (f.testimonials || []).length > 0, (f) => (f.gallery || []).length > 0, (f) => (f.technologies || []).length > 0,
   (f) => Boolean(f.metaTitle || f.metaDescription), (f) => Boolean(f.liveUrl), (f) => (f.team || []).length > 0,
 ];
 const calcCompletion = (f) => Math.round((100 * SCORE_FIELDS.filter((fn) => fn(f)).length) / SCORE_FIELDS.length);
@@ -58,6 +58,12 @@ const STATUS_LABEL = {
   archived:  { en: 'archived',  ar: 'مؤرشف' },
 };
 const AUTOSAVE_DELAY = 1500;
+
+// Library-reference fields hold full populated objects in `form` so the UI
+// can render names/avatars without a second fetch — reduce back to bare
+// ObjectIds for the API, which is all pickWritable/Mongoose casting expects.
+const toId = (v) => v?._id || (typeof v === 'string' ? v : undefined);
+const toIds = (arr) => (arr || []).map(toId).filter(Boolean);
 
 const PortfolioWizard = () => {
   const { id: routeId } = useParams();
@@ -91,6 +97,7 @@ const PortfolioWizard = () => {
     duplicate: isRTL ? 'نسخ' : 'Duplicate',
     generateDemo: isRTL ? 'بيانات تجريبية' : 'Demo Data',
     demoGenerated: isRTL ? 'تم إنشاء بيانات المشروع التجريبي' : 'Demo project data generated',
+    demoGenerateFailed: isRTL ? 'فشل إنشاء البيانات التجريبية' : 'Failed to generate demo data',
     demoOverwriteTitle: isRTL ? 'استبدال محتوى المسودة الحالية؟' : 'Overwrite the current draft?',
     demoOverwriteDesc: isRTL ? 'يحتوي هذا المشروع بالفعل على محتوى. سيؤدي إنشاء بيانات تجريبية إلى استبدال كل الحقول بمحتوى تجريبي جديد.' : 'This project already has content. Generating demo data will overwrite every field with new sample content.',
     demoOverwriteConfirm: isRTL ? 'استبدال' : 'Overwrite',
@@ -111,7 +118,7 @@ const PortfolioWizard = () => {
   useEffect(() => {
     if (!routeId) return;
     api.get(`/portfolio/admin/${routeId}`)
-      .then(({ data }) => setForm({ ...EMPTY_FORM, ...data.project, tags: data.project.tags || [] }))
+      .then(({ data }) => setForm({ ...EMPTY_FORM, ...data.project }))
       .catch(() => toast.error(L.loadFailed))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,7 +159,19 @@ const PortfolioWizard = () => {
   }, []);
 
   // ── Payload — strip client-only bookkeeping before it hits the API ───────
-  const buildPayload = useCallback((f) => ({ ...f, year: f.year ? Number(f.year) : undefined }), []);
+  const buildPayload = useCallback((f) => ({
+    ...f,
+    year: f.year ? Number(f.year) : undefined,
+    category: toId(f.category),
+    industry: toId(f.industry),
+    client: toId(f.client),
+    technologies: toIds(f.technologies),
+    projectTags: toIds(f.projectTags),
+    testimonials: toIds(f.testimonials),
+    awards: toIds(f.awards),
+    services: toIds(f.services),
+    team: (f.team || []).map((t) => ({ member: toId(t.member), roleOverride: t.roleOverride, roleArOverride: t.roleArOverride })).filter((t) => t.member),
+  }), []);
 
   // ── Save (create-on-first-viable-edit, then PUT thereafter) ──────────────
   const save = useCallback(async (currentForm) => {
@@ -225,12 +244,23 @@ const PortfolioWizard = () => {
   };
 
   // ── Generate Demo Data ────────────────────────────────────────────────────
-  const applyDemoData = (categoryKey) => {
-    const generated = generateDemoProject(categoryKey);
-    setForm((f) => ({ ...EMPTY_FORM, ...generated, status: f.status === 'published' ? f.status : 'draft' }));
-    setActiveSection('overview');
-    setConfirmDemoKey(null);
-    toast.success(L.demoGenerated);
+  // generateDemoProject is async — it find-or-creates the demo's
+  // category/industry/client/technologies/team/testimonial against the real
+  // content libraries (see demoGenerators/shared.js), not just local strings.
+  const [generatingDemo, setGeneratingDemo] = useState(false);
+  const applyDemoData = async (categoryKey) => {
+    setGeneratingDemo(true);
+    try {
+      const generated = await generateDemoProject(categoryKey);
+      setForm((f) => ({ ...EMPTY_FORM, ...generated, status: f.status === 'published' ? f.status : 'draft' }));
+      setActiveSection('overview');
+      toast.success(L.demoGenerated);
+    } catch {
+      toast.error(L.demoGenerateFailed);
+    } finally {
+      setGeneratingDemo(false);
+      setConfirmDemoKey(null);
+    }
   };
 
   const handleSelectDemoCategory = (categoryKey) => {
@@ -248,7 +278,7 @@ const PortfolioWizard = () => {
       story: Boolean(form.description),
       team: (form.team || []).length > 0,
       media: (form.gallery || []).length > 0 || (form.blocks || []).length > 0,
-      proof: Boolean(form.results || (form.metrics || []).length || form.testimonial?.quote),
+      proof: Boolean(form.results || (form.metrics || []).length || (form.testimonials || []).length),
       seo: Boolean(form.metaTitle || form.metaDescription),
     }[s.key],
   })), [form, isRTL]);
@@ -276,7 +306,7 @@ const PortfolioWizard = () => {
 
           <Badge tone={STATUS_TONE[form.status] || 'neutral'} dot>{isRTL ? STATUS_LABEL[form.status]?.ar : STATUS_LABEL[form.status]?.en}</Badge>
 
-          <Button variant="secondary" size="sm" icon={Sparkles} onClick={() => setDemoModalOpen(true)}>{L.generateDemo}</Button>
+          <Button variant="secondary" size="sm" icon={Sparkles} onClick={() => setDemoModalOpen(true)} loading={generatingDemo}>{L.generateDemo}</Button>
 
           {projectId && (
             <>
@@ -332,6 +362,7 @@ const PortfolioWizard = () => {
         open={Boolean(confirmDemoKey)}
         onClose={() => setConfirmDemoKey(null)}
         onConfirm={() => applyDemoData(confirmDemoKey)}
+        loading={generatingDemo}
         danger={false}
         title={L.demoOverwriteTitle}
         description={L.demoOverwriteDesc}

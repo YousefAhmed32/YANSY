@@ -11,10 +11,15 @@
 // deep writing stays singular per category while the surface identity still
 // varies between generations.
 //
-// `tags` intentionally carries both the tech stack AND category/SEO keywords
-// — the schema has one string[] field that doubles as both (see
-// PortfolioProject.js: "tags: doubles as tech-stack display"), so packs
-// combine them into one curated list rather than inventing a second field.
+// Category/Industry/Client/Technologies/Team/Testimonial are now references
+// into the reusable content libraries (see the CMS normalization plan), not
+// embedded strings — `buildDemoProject` is async and find-or-creates each one
+// against the real API, exactly like a human filling in the wizard would (and
+// like scripts/migrate-portfolio-libraries.js does server-side). This means
+// generating demo data also seeds/reuses the libraries, rather than
+// bypassing them.
+
+import api from '../api';
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -32,7 +37,25 @@ const tplDeep = (value, vars) => {
   return value;
 };
 
-export const buildDemoProject = (pack) => {
+// Find-by-exact-name (case-insensitive) then create — mirrors the pattern
+// used throughout the wizard's RelationPicker quick-create.
+const findOrCreate = async (apiBase, name, extra = {}) => {
+  const trimmed = name?.trim();
+  if (!trimmed) return null;
+  try {
+    const { data } = await api.get(apiBase, { params: { q: trimmed, limit: 5 } });
+    const existing = (data.items || []).find((i) => i.name?.toLowerCase() === trimmed.toLowerCase());
+    if (existing) return existing;
+  } catch { /* fall through to create */ }
+  try {
+    const { data } = await api.post(apiBase, { name: trimmed, ...extra });
+    return data.item;
+  } catch {
+    return null;
+  }
+};
+
+export const buildDemoProject = async (pack) => {
   const client = pick(pack.clients);
   const year = new Date().getFullYear() - pick([0, 0, 1]);
 
@@ -58,11 +81,29 @@ export const buildDemoProject = (pack) => {
     },
   ].filter(Boolean);
 
+  const [category, industry, resolvedClient, technologies, team, testimonialDoc] = await Promise.all([
+    findOrCreate('/categories', pack.category),
+    pack.industry ? findOrCreate('/industries', pack.industry) : Promise.resolve(null),
+    findOrCreate('/clients', client.name, { nameAr: client.nameAr }),
+    Promise.all((pack.tags || []).map((name) => findOrCreate('/technologies', name))).then((r) => r.filter(Boolean)),
+    Promise.all((pack.team || []).map(async (m) => {
+      const member = await findOrCreate('/team', m.name, { position: m.role, positionAr: m.roleAr });
+      return member ? { member, roleOverride: m.role, roleArOverride: m.roleAr } : null;
+    })).then((r) => r.filter(Boolean)),
+    pack.testimonial?.quote
+      ? api.post('/testimonials', {
+        quote: t(pack.testimonial.quote), quoteAr: t(pack.testimonial.quoteAr),
+        author: pack.testimonial.author, role: pack.testimonial.role, roleAr: pack.testimonial.roleAr,
+        client: undefined,
+      }).then((r) => r.data.item).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
   return {
     title: t(pack.titleTemplate), titleAr: t(pack.titleTemplateAr),
     tagline: t(pack.tagline), taglineAr: t(pack.taglineAr),
-    category: pack.category, industry: pack.industry,
-    clientName: client.name, clientNameAr: client.nameAr,
+    category, industry,
+    client: resolvedClient,
     location: client.location, locationAr: client.locationAr,
     confidential: false, private: false,
 
@@ -78,16 +119,15 @@ export const buildDemoProject = (pack) => {
 
     metrics: pack.metrics,
     performanceMetrics: pack.performanceMetrics,
-    testimonial: {
-      quote: t(pack.testimonial.quote), quoteAr: t(pack.testimonial.quoteAr),
-      author: pack.testimonial.author, role: pack.testimonial.role, roleAr: pack.testimonial.roleAr,
-    },
+    testimonials: testimonialDoc ? [testimonialDoc] : [],
     faqs: pack.faqs,
     awards: [],
-    team: pack.team,
+    services: [],
+    team,
     blocks,
 
-    tags: pack.tags,
+    technologies,
+    projectTags: [],
     duration: pack.duration,
     teamSize: pack.teamSize,
     year,

@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import { Upload, X, ImageIcon, VideoIcon } from 'lucide-react';
-import { TK, RADIUS, TextInput, Select, Switch, Spinner } from '../../admin-ui';
+import { TK, RADIUS, TextInput, Switch, Spinner } from '../../admin-ui';
 import { mediaSrc } from '../../utils/media';
-import { CATEGORIES, categoryLabel } from '../../utils/portfolioTaxonomy';
 import { Field, BilingualPair } from './shared';
+import RelationPicker from './RelationPicker';
 
 const MediaSlot = ({ label, asset, kind = 'image', pending, onUpload, onRemove, accept, aspect = '16/9', isRTL }) => {
   const inputRef = useRef(null);
@@ -48,7 +48,7 @@ const SectionLabel = ({ children, isRTL }) => (
   </p>
 );
 
-const OverviewSection = ({ form, set, language, isRTL, uploadMedia, deleteMedia, pendingUploads }) => {
+const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUploads }) => {
   const isPending = (key) => pendingUploads.some((u) => u.key === key);
 
   const L = {
@@ -62,13 +62,13 @@ const OverviewSection = ({ form, set, language, isRTL, uploadMedia, deleteMedia,
     industry: isRTL ? 'المجال' : 'Industry',
     industryPh: isRTL ? 'مثال: تقنية مالية، لوجستيات' : 'e.g. Fintech, Logistics',
     client: isRTL ? 'العميل' : 'CLIENT',
-    logo: isRTL ? 'الشعار' : 'Logo',
-    clientName: isRTL ? 'اسم العميل' : 'Client name',
+    clientHint: isRTL ? 'شعار العميل واسمه يُداران مركزيًا من مكتبة العملاء' : 'Client logo and name are managed centrally in the Clients library',
     location: isRTL ? 'الموقع' : 'Location',
     locationPh: isRTL ? 'المدينة، الدولة' : 'City, Country',
     confidential: isRTL ? 'سري (إخفاء اسم/شعار العميل علنًا)' : 'Confidential (hide client name/logo publicly)',
     private: isRTL ? 'خاص (إخفاء المشروع بالكامل علنًا)' : 'Private (hide the whole project publicly)',
     timelineRole: isRTL ? 'الجدول الزمني والدور' : 'TIMELINE & ROLE',
+    services: isRTL ? 'الخدمات المقدَّمة' : 'SERVICES DELIVERED',
     year: isRTL ? 'السنة' : 'Year',
     duration: isRTL ? 'المدة' : 'Duration',
     durationPh: isRTL ? '8 أسابيع' : '8 weeks',
@@ -112,24 +112,36 @@ const OverviewSection = ({ form, set, language, isRTL, uploadMedia, deleteMedia,
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label={L.category} required isRTL={isRTL}>
-          <Select value={form.category} onChange={(e) => set('category', e.target.value)} options={CATEGORIES.map((c) => ({ value: c, label: categoryLabel(c, language) }))} />
+          <RelationPicker apiBase="/categories" value={form.category} onChange={(v) => set('category', v)} allowCreate={false} placeholder={isRTL ? 'اختيار فئة…' : 'Select category…'} />
         </Field>
         <Field label={L.industry} isRTL={isRTL}>
-          <TextInput value={form.industry} onChange={(e) => set('industry', e.target.value)} placeholder={L.industryPh} dir={isRTL ? 'rtl' : 'ltr'} style={{ textAlign: isRTL ? 'right' : 'left' }} />
+          <RelationPicker
+            apiBase="/industries"
+            value={form.industry}
+            onChange={(v) => set('industry', v)}
+            quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }, { key: 'nameAr', label: 'Name (Arabic)', labelAr: 'الاسم (عربي)' }]}
+            placeholder={L.industryPh}
+          />
         </Field>
       </div>
 
       <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
         <SectionLabel isRTL={isRTL}>{L.client}</SectionLabel>
-        <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 items-end mb-4">
-          <div style={{ width: 64 }}>
-            <MediaSlot label={L.logo} asset={form.clientLogo} pending={isPending('clientLogo')} accept="image/*" aspect="1/1" isRTL={isRTL}
-              onUpload={async (file) => { const asset = await uploadMedia(file, 'clientLogo'); set('clientLogo', asset); }}
-              onRemove={() => { deleteMedia(form.clientLogo); set('clientLogo', null); }}
-            />
+        <Field label={L.client} isRTL={isRTL}>
+          <RelationPicker
+            apiBase="/clients"
+            value={form.client}
+            onChange={(v) => set('client', v)}
+            quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }, { key: 'nameAr', label: 'Name (Arabic)', labelAr: 'الاسم (عربي)' }]}
+            placeholder={isRTL ? 'اختيار أو إنشاء عميل…' : 'Select or create a client…'}
+          />
+        </Field>
+        {form.client?.logo?.url && (
+          <div style={{ marginTop: 12, width: 56, height: 56, borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${TK.border}` }}>
+            <img src={mediaSrc(form.client.logo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-        </div>
-        <BilingualPair label={L.clientName} isRTL={isRTL} enValue={form.clientName} arValue={form.clientNameAr} onEnChange={(v) => set('clientName', v)} onArChange={(v) => set('clientNameAr', v)} />
+        )}
+        <p style={{ fontSize: 11, color: TK.textLight, margin: '8px 0 0' }}>{L.clientHint}</p>
         <div style={{ marginTop: 12 }}>
           <BilingualPair label={L.location} isRTL={isRTL} enValue={form.location} arValue={form.locationAr} onEnChange={(v) => set('location', v)} onArChange={(v) => set('locationAr', v)} placeholder={L.locationPh} />
         </div>
@@ -148,6 +160,18 @@ const OverviewSection = ({ form, set, language, isRTL, uploadMedia, deleteMedia,
           <Field label={L.launchDate} isRTL={isRTL}><TextInput type="date" value={form.launchDate ? form.launchDate.slice(0, 10) : ''} onChange={(e) => set('launchDate', e.target.value)} /></Field>
         </div>
         <BilingualPair label={L.ourRole} isRTL={isRTL} enValue={form.myRole} arValue={form.myRoleAr} onEnChange={(v) => set('myRole', v)} onArChange={(v) => set('myRoleAr', v)} multiline={false} placeholder={L.ourRolePh} />
+      </div>
+
+      <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
+        <SectionLabel isRTL={isRTL}>{L.services}</SectionLabel>
+        <RelationPicker
+          apiBase="/services"
+          value={form.services}
+          onChange={(v) => set('services', v)}
+          multiple
+          quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }, { key: 'nameAr', label: 'Name (Arabic)', labelAr: 'الاسم (عربي)' }]}
+          placeholder={isRTL ? 'اختيار أو إنشاء خدمات…' : 'Select or create services…'}
+        />
       </div>
 
       <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>

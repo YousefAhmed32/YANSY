@@ -33,6 +33,8 @@ const portfolioRoutes = require('./routes/portfolio.routes');
 const introRoutes = require('./routes/intro.routes');
 const homepageVideoRoutes = require('./routes/homepageVideo.routes');
 const clientLogosRoutes = require('./routes/clientLogos.routes');
+const mediaLibraryRoutes = require('./routes/media.library.routes');
+const { mountLibraryRoutes } = require('./routes/libraries.routes');
 const startProjectRoutes = require('./routes/startProject.routes');
 const notificationRoutes = require('./routes/notifications');
 
@@ -316,6 +318,8 @@ app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/intro', introRoutes);
 app.use('/api/homepage-video', homepageVideoRoutes);
 app.use('/api/client-logos', clientLogosRoutes);
+app.use('/api/media-library', mediaLibraryRoutes);
+mountLibraryRoutes(app); // /api/team, /api/clients, /api/technologies, /api/tags, /api/testimonials, /api/awards, /api/categories, /api/industries, /api/services
 app.use('/api/start-project', startProjectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity',      activityRoutes);

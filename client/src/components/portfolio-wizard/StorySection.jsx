@@ -243,12 +243,12 @@ const StorySection = ({ form, set, isRTL, projectId }) => {
           {L.tagsLabel}
         </p>
         <TagInput
-          value={form.tags}
-          onChange={(v) => set('tags', v)}
+          value={form.technologies}
+          onChange={(v) => set('technologies', v)}
           placeholder={L.tagsPh}
           isRTL={isRTL}
           projectId={projectId}
-          category={form.category}
+          category={form.category?.name || 'Other'}
         />
       </div>
     </div>

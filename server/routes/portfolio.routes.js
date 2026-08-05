@@ -4,10 +4,20 @@ const router           = express.Router();
 const multer           = require('multer');
 const mongoose         = require('mongoose');
 const PortfolioProject = require('../models/PortfolioProject');
+const Category    = require('../models/Category');
+const Industry    = require('../models/Industry');
+const Technology  = require('../models/Technology');
+const TeamMember  = require('../models/TeamMember');
+const Client      = require('../models/Client');
+const Tag         = require('../models/Tag');
+const Testimonial = require('../models/Testimonial');
+const Award       = require('../models/Award');
+const Service     = require('../models/Service');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { audit }         = require('../utils/auditLogger');
 const { uploadPortfolioMedia, deletePortfolioImage, buildResponsiveUrl } = require('../utils/portfolioMedia');
 const { slugify } = require('../utils/slugify');
+const { touchUsage } = require('./libraryRouter.factory');
 
 const protect   = authenticate;
 const adminOnly = requireAdmin;
@@ -37,6 +47,38 @@ const assertPublishable = (doc) => {
   return missing;
 };
 
+// Applied to every route that returns a project doc to the client, so
+// callers get usable objects (client name/logo, team member names, category
+// labels, ...) instead of bare ObjectIds — see the CMS normalization plan.
+const PROJECT_POPULATE = [
+  { path: 'client', populate: { path: 'industry', select: 'name nameAr slug' } },
+  { path: 'category' },
+  { path: 'industry' },
+  { path: 'technologies' },
+  { path: 'projectTags' },
+  { path: 'services' },
+  { path: 'testimonials', populate: { path: 'client', select: 'name nameAr' } },
+  { path: 'awards' },
+  { path: 'team.member' },
+  { path: 'relatedProjectsOverride', select: 'title titleAr slug coverImage category' },
+];
+
+// Fire-and-forget: bumps usageCount/lastUsedAt on every library entry this
+// project references, so each library's Recent/Most-Used picker sections
+// stay accurate. Never awaited from the request path — a slow/failed usage
+// bump must not delay or fail the actual save.
+const bumpLibraryUsage = (project) => {
+  touchUsage(TeamMember, (project.team || []).map((t) => t.member)).catch(() => {});
+  touchUsage(Client, project.client).catch(() => {});
+  touchUsage(Technology, project.technologies).catch(() => {});
+  touchUsage(Tag, project.projectTags).catch(() => {});
+  touchUsage(Testimonial, project.testimonials).catch(() => {});
+  touchUsage(Award, project.awards).catch(() => {});
+  touchUsage(Category, project.category).catch(() => {});
+  touchUsage(Industry, project.industry).catch(() => {});
+  touchUsage(Service, project.services).catch(() => {});
+};
+
 const ensureUniqueSlug = async (title, excludeId) => {
   const base = slugify(title) || `project-${Date.now()}`;
   let slug = base;
@@ -58,12 +100,12 @@ const ensureUniqueSlug = async (title, excludeId) => {
 // onto the document wholesale.
 const WRITABLE_FIELDS = [
   'title', 'titleAr', 'tagline', 'taglineAr', 'category', 'industry',
-  'clientName', 'clientNameAr', 'clientLogo', 'location', 'locationAr', 'confidential', 'private',
+  'client', 'location', 'locationAr', 'confidential', 'private',
   'description', 'descriptionAr',
   'myRole', 'myRoleAr', 'goals', 'goalsAr', 'painPoints', 'painPointsAr',
   'challenge', 'challengeAr', 'solution', 'solutionAr', 'process', 'processAr', 'results', 'resultsAr',
-  'metrics', 'performanceMetrics', 'testimonial', 'proofScreenshots', 'faqs', 'awards', 'team', 'blocks',
-  'liveUrl', 'figmaUrl', 'githubUrl', 'tags', 'duration', 'teamSize', 'startDate', 'launchDate', 'year',
+  'metrics', 'performanceMetrics', 'testimonials', 'proofScreenshots', 'faqs', 'awards', 'team', 'services', 'blocks',
+  'liveUrl', 'figmaUrl', 'githubUrl', 'technologies', 'projectTags', 'duration', 'teamSize', 'startDate', 'launchDate', 'year',
   'relatedProjectsOverride',
   'coverImage', 'coverVideo', 'gallery',
   'status', 'featured', 'order',
@@ -72,16 +114,17 @@ const WRITABLE_FIELDS = [
 const pickWritable = (body) => Object.fromEntries(WRITABLE_FIELDS.filter((k) => k in body).map((k) => [k, body[k]]));
 
 // Every media-asset-bearing spot in the schema, flattened into one array —
-// used so delete/duplicate never orphans a file in Cloudinary/local storage
-// just because it lives inside `team[]` or a content block rather than the
-// top-level cover/gallery fields.
+// used so delete/duplicate never orphans a file in GridFS just because it
+// lives inside a content block rather than the top-level cover/gallery
+// fields. Deliberately does NOT include client logo / team avatars /
+// testimonial avatar+audio — those now live on shared library documents
+// (Client/TeamMember/Testimonial) that other projects may still reference,
+// so deleting THIS project must never delete THEIR media.
 const collectMediaAssets = (project) => {
   const assets = [
-    project.coverImage, project.coverVideo, project.clientLogo,
-    project.testimonial?.avatar, project.testimonial?.audio,
+    project.coverImage, project.coverVideo,
     ...(project.gallery || []),
     ...(project.proofScreenshots || []),
-    ...(project.team || []).map((m) => m.avatar),
   ];
   (project.blocks || []).forEach((b) => {
     assets.push(b.asset, b.before, b.after, b.poster);
@@ -101,12 +144,19 @@ const withResponsiveMedia = (projectDoc) => {
   };
   if (project.coverImage) project.coverImage = decorate(project.coverImage);
   if (project.coverVideo) project.coverVideo = decorate(project.coverVideo);
-  if (project.clientLogo) project.clientLogo = decorate(project.clientLogo);
   if (project.gallery)    project.gallery    = project.gallery.map(decorate);
   if (project.proofScreenshots) project.proofScreenshots = project.proofScreenshots.map(decorate);
-  if (project.testimonial?.avatar) project.testimonial.avatar = decorate(project.testimonial.avatar);
-  if (project.testimonial?.audio)  project.testimonial.audio  = decorate(project.testimonial.audio);
-  if (project.team) project.team = project.team.map((m) => (m.avatar ? { ...m, avatar: decorate(m.avatar) } : m));
+  if (project.client?.logo) project.client = { ...project.client, logo: decorate(project.client.logo) };
+  if (project.testimonials) {
+    project.testimonials = project.testimonials.map((t) => (t && (t.avatar || t.audio)
+      ? { ...t, avatar: decorate(t.avatar), audio: decorate(t.audio) }
+      : t));
+  }
+  if (project.team) {
+    project.team = project.team.map((credit) => (credit?.member?.avatar
+      ? { ...credit, member: { ...credit.member, avatar: decorate(credit.member.avatar) } }
+      : credit));
+  }
   if (project.blocks) {
     project.blocks = project.blocks.map((b) => ({
       ...b,
@@ -121,12 +171,12 @@ const withResponsiveMedia = (projectDoc) => {
 };
 
 // A confidential (but public) project keeps its case study visible but hides
-// who the client is — swap the identifying fields for a neutral stand-in
-// rather than exposing clientName/clientNameAr/clientLogo. Admin routes never
-// call this, so editors always see the real client name.
+// who the client is — drop the populated `client` object entirely rather
+// than exposing its name/logo. Admin routes never call this, so editors
+// always see the real client.
 const redactConfidential = (project) => {
   if (!project.confidential) return project;
-  return { ...project, clientName: undefined, clientNameAr: undefined, clientLogo: undefined };
+  return { ...project, client: undefined };
 };
 
 const CURSOR_SORT = { createdAt: -1, _id: -1 };
@@ -159,15 +209,30 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(parseInt(req.query.limit, 10) || 12, 60);
     const filter = { status: 'published', private: { $ne: true } };
 
-    if (category && category !== 'All') filter.category = category;
-    if (industry) filter.industry = industry;
-    if (tag)      filter.tags = tag;
+    // category/industry/tag arrive as library slugs (readable URLs) — resolve
+    // to the referenced ObjectId. An unknown slug filters to zero results
+    // (Category.findOne returns null -> filter.category = a value nothing
+    // can match) rather than silently ignoring the filter.
+    const NO_MATCH = new mongoose.Types.ObjectId();
+    if (category && category !== 'All') {
+      const cat = await Category.findOne({ slug: category }).select('_id');
+      filter.category = cat?._id || NO_MATCH;
+    }
+    if (industry) {
+      const ind = await Industry.findOne({ slug: industry }).select('_id');
+      filter.industry = ind?._id || NO_MATCH;
+    }
+    if (tag) {
+      const tech = await Technology.findOne({ slug: tag }).select('_id');
+      filter.technologies = tech?._id || NO_MATCH;
+    }
     if (featured === 'true') filter.featured = true;
 
     // Search — small result sets expected, so plain text-score ranking without cursoring
     if (search?.trim()) {
       filter.$text = { $search: search.trim() };
       const projects = await PortfolioProject.find(filter, { score: { $meta: 'textScore' } })
+        .populate(PROJECT_POPULATE)
         .sort(sort === 'popular' ? { viewCount: -1 } : { score: { $meta: 'textScore' } })
         .limit(limit)
         .select(LIST_EXCLUDE)
@@ -183,7 +248,7 @@ router.get('/', async (req, res, next) => {
     // uncursored branch — consistent with the search branch above rather
     // than trying to force viewCount into the createdAt/_id cursor shape.
     if (sort === 'popular') {
-      const projects = await PortfolioProject.find(filter).sort({ viewCount: -1, _id: -1 }).limit(limit).select(LIST_EXCLUDE).lean();
+      const projects = await PortfolioProject.find(filter).populate(PROJECT_POPULATE).sort({ viewCount: -1, _id: -1 }).limit(limit).select(LIST_EXCLUDE).lean();
       return res.json({ projects: projects.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor: null });
     }
 
@@ -198,6 +263,7 @@ router.get('/', async (req, res, next) => {
     const sortSpec = sort === 'oldest' ? { createdAt: 1, _id: 1 } : CURSOR_SORT;
 
     const projects = await PortfolioProject.find(filter)
+      .populate(PROJECT_POPULATE)
       .sort(sortSpec)
       .limit(limit + 1)
       .select(LIST_EXCLUDE)
@@ -213,16 +279,21 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// GET /api/portfolio/meta — distinct categories/industries/tags for filter chips
+// GET /api/portfolio/meta — categories/industries/technologies actually in use, for filter chips
 router.get('/meta', async (req, res, next) => {
   try {
     const baseFilter = { status: 'published', private: { $ne: true } };
-    const [categories, industries, tags] = await Promise.all([
+    const [categoryIds, industryIds, technologyIds] = await Promise.all([
       PortfolioProject.distinct('category', baseFilter),
-      PortfolioProject.distinct('industry', { ...baseFilter, industry: { $nin: [null, ''] } }),
-      PortfolioProject.distinct('tags', baseFilter),
+      PortfolioProject.distinct('industry', { ...baseFilter, industry: { $ne: null } }),
+      PortfolioProject.distinct('technologies', baseFilter),
     ]);
-    res.json({ categories, industries, tags: tags.filter(Boolean).sort() });
+    const [categories, industries, technologies] = await Promise.all([
+      Category.find({ _id: { $in: categoryIds } }).select('name nameAr slug icon').sort({ order: 1, name: 1 }),
+      Industry.find({ _id: { $in: industryIds } }).select('name nameAr slug icon').sort({ order: 1, name: 1 }),
+      Technology.find({ _id: { $in: technologyIds } }).select('name slug icon color').sort({ name: 1 }),
+    ]);
+    res.json({ categories, industries, technologies });
   } catch (err) {
     next(err);
   }
@@ -241,11 +312,14 @@ router.get('/admin', protect, adminOnly, async (req, res, next) => {
     const filter = {};
 
     if (status && status !== 'all') filter.status = status;
+    // Admin filter sends the Category _id directly (picked from the library
+    // dropdown), unlike the public route's slug-based filter.
     if (category && category !== 'All') filter.category = category;
     if (search?.trim()) filter.$text = { $search: search.trim() };
 
     const [projects, total, counts] = await Promise.all([
       PortfolioProject.find(filter)
+        .populate(PROJECT_POPULATE)
         .sort(search?.trim() ? { score: { $meta: 'textScore' } } : { order: 1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -273,7 +347,7 @@ router.get('/admin', protect, adminOnly, async (req, res, next) => {
 // GET /api/portfolio/admin/:id — single project, any status (for the edit wizard)
 router.get('/admin/:id', protect, adminOnly, async (req, res, next) => {
   try {
-    const project = await PortfolioProject.findById(req.params.id);
+    const project = await PortfolioProject.findById(req.params.id).populate(PROJECT_POPULATE);
     if (!project) return res.status(404).json({ error: 'Project not found' });
     res.json({ project: withResponsiveMedia(project) });
   } catch (err) {
@@ -330,6 +404,8 @@ router.post('/admin', protect, adminOnly, async (req, res, next) => {
       status,
       publishedAt: status === 'published' ? new Date() : undefined,
     });
+    await project.populate(PROJECT_POPULATE);
+    bumpLibraryUsage(project);
 
     audit({ req, action: 'portfolio.create', entityType: 'PortfolioProject', entityId: project._id, after: { title: project.title, status: project.status } });
     res.status(201).json({ project: withResponsiveMedia(project) });
@@ -361,6 +437,9 @@ router.put('/admin/:id', protect, adminOnly, async (req, res, next) => {
     }
 
     await project.save();
+    await project.populate(PROJECT_POPULATE);
+    bumpLibraryUsage(project);
+
     audit({ req, action: 'portfolio.update', entityType: 'PortfolioProject', entityId: project._id, before, after: { title: project.title, status: project.status, featured: project.featured } });
     res.json({ project: withResponsiveMedia(project) });
   } catch (err) {
@@ -396,6 +475,11 @@ router.post('/admin/:id/duplicate', protect, adminOnly, async (req, res, next) =
       viewCount: 0,
       publishedAt: undefined,
     });
+    await clone.populate(PROJECT_POPULATE);
+    // The clone re-references the same library entries (client, team,
+    // technologies, ...) as the source, not copies — so it's a genuine new
+    // usage of each, same as any other save.
+    bumpLibraryUsage(clone);
 
     audit({ req, action: 'portfolio.duplicate', entityType: 'PortfolioProject', entityId: clone._id, metadata: { sourceId: source._id } });
     res.status(201).json({ project: withResponsiveMedia(clone) });
@@ -422,6 +506,7 @@ router.patch('/admin/:id/status', protect, adminOnly, async (req, res, next) => 
     project.status = status;
     if (status === 'published' && !project.publishedAt) project.publishedAt = new Date();
     await project.save();
+    await project.populate(PROJECT_POPULATE);
 
     audit({ req, action: 'portfolio.status_change', entityType: 'PortfolioProject', entityId: project._id, before: { status: before }, after: { status } });
     res.json({ project: withResponsiveMedia(project) });
@@ -509,7 +594,7 @@ router.get('/:idOrSlug', async (req, res, next) => {
   try {
     const { idOrSlug } = req.params;
     const query = mongoose.isValidObjectId(idOrSlug) ? { _id: idOrSlug } : { slug: idOrSlug };
-    const project = await PortfolioProject.findOne({ ...query, status: 'published', private: { $ne: true } });
+    const project = await PortfolioProject.findOne({ ...query, status: 'published', private: { $ne: true } }).populate(PROJECT_POPULATE);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     PortfolioProject.updateOne({ _id: project._id }, { $inc: { viewCount: 1 } }).catch(() => {});
@@ -534,7 +619,7 @@ router.get('/:id/related', async (req, res, next) => {
         _id: { $in: project.relatedProjectsOverride },
         status: 'published',
         private: { $ne: true },
-      }).select(LIST_EXCLUDE).limit(limit);
+      }).populate(PROJECT_POPULATE).select(LIST_EXCLUDE).limit(limit);
     } else {
       related = await PortfolioProject.find({
         _id: { $ne: project._id },
@@ -542,6 +627,7 @@ router.get('/:id/related', async (req, res, next) => {
         private: { $ne: true },
         $or: [{ category: project.category }, { industry: project.industry }],
       })
+        .populate(PROJECT_POPULATE)
         .sort({ order: 1, createdAt: -1 })
         .limit(limit)
         .select(LIST_EXCLUDE);

@@ -47,6 +47,8 @@ const PortfolioPreview = lazy(() => import('./pages/PortfolioPreview'));
 const AdminIntro      = lazy(() => import('./pages/AdminIntro'));
 const AdminHomepageVideo = lazy(() => import('./pages/AdminHomepageVideo'));
 const AdminClientLogos = lazy(() => import('./pages/AdminClientLogos'));
+const AdminLibrary       = lazy(() => import('./pages/AdminLibrary'));
+const AdminMediaLibrary  = lazy(() => import('./pages/AdminMediaLibrary'));
 const AdminStartProject  = lazy(() => import('./pages/AdminStartProject'));
 const ForgotPassword  = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword   = lazy(() => import('./pages/ResetPassword'));
@@ -230,6 +232,14 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/start-project"
               element={<ProtectedRoute requireAdmin><AdminStartProject /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/media-library"
+              element={<ProtectedRoute requireAdmin><AdminMediaLibrary /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/libraries/:libraryKey"
+              element={<ProtectedRoute requireAdmin><AdminLibrary /></ProtectedRoute>}
             />
             <Route
               path="admin/audit"

@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import Reveal from '../Reveal';
 import ProgressiveImage from '../ProgressiveImage';
 import PortfolioCard from '../PortfolioCard';
-import { categoryLabel, categoryIcon } from '../../utils/portfolioTaxonomy';
+import { categoryIcon } from '../../utils/portfolioTaxonomy';
 
 /**
  * A single large cinematic "next case study" panel rather than the flat
@@ -17,6 +17,8 @@ const NextProject = ({ nextProject, moreProjects, isRTL }) => {
 
   const title = isRTL ? (nextProject.titleAr || nextProject.title) : (nextProject.title || nextProject.titleAr);
   const asset = nextProject.coverImage?.url ? nextProject.coverImage : (nextProject.gallery || []).find((g) => g?.url) || null;
+  const categoryName = nextProject.category?.name || '';
+  const categoryDisplay = isRTL ? (nextProject.category?.nameAr || categoryName) : categoryName;
 
   return (
     <section className="section-shell section-shell--plain" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -40,8 +42,8 @@ const NextProject = ({ nextProject, moreProjects, isRTL }) => {
                 asset={asset}
                 alt={title}
                 fill
-                fallbackIcon={categoryIcon(nextProject.category)}
-                fallbackLabel={categoryLabel(nextProject.category, isRTL ? 'ar' : 'en')}
+                fallbackIcon={categoryIcon(categoryName)}
+                fallbackLabel={categoryDisplay}
                 isRTL={isRTL}
                 fallbackVariant="hero"
               />
@@ -55,7 +57,7 @@ const NextProject = ({ nextProject, moreProjects, isRTL }) => {
             }}>
               <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
                 <p style={{ fontSize: 11, letterSpacing: isRTL ? 0 : '0.14em', textTransform: isRTL ? 'none' : 'uppercase', color: 'rgba(255,255,255,0.65)', marginBottom: 8, fontWeight: 500 }}>
-                  {categoryLabel(nextProject.category, isRTL ? 'ar' : 'en')}
+                  {categoryDisplay}
                 </p>
                 <h3 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.75rem)', fontWeight: 800, color: '#fff', lineHeight: 1.08, letterSpacing: isRTL ? 0 : '-0.03em', margin: 0, maxWidth: '18ch' }}>
                   {title}

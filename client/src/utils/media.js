@@ -24,3 +24,20 @@ export const mediaSrc = (asset) => resolveUrl(asset?.srcMd || asset?.url) || nul
 
 export const CARD_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
 export const HERO_SIZES = '100vw';
+
+// Converts a Media-library catalog item (server/models/Media.js, as returned
+// by POST /media-library/upload) into the embedded mediaAssetSchema shape
+// every avatar/logo/cover/gallery field on the library models and
+// PortfolioProject expects — keeping the `asset` back-reference so the item
+// stays linked to the catalog (searchable/reusable/"replace everywhere").
+export const assetFromMediaLibraryItem = (item) => (item && {
+  url: item.url,
+  publicId: item.publicId,
+  provider: 'gridfs',
+  kind: item.type === 'video' ? 'video' : item.type === 'audio' ? 'audio' : 'image',
+  alt: item.alt || '',
+  altAr: item.altAr || '',
+  caption: item.caption || '',
+  captionAr: item.captionAr || '',
+  asset: item._id,
+});

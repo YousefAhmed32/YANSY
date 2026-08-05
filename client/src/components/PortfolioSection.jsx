@@ -43,8 +43,8 @@ const FALLBACK_PROJECTS = [
     slug: 'nexusrealty',
     title: 'NexusRealty Platform',
     titleAr: 'منصة نكسس ريالتي العقارية',
-    category: 'Real Estate',
-    industry: 'Real Estate',
+    category: { name: 'Real Estate', nameAr: 'العقارات' },
+    industry: { name: 'Real Estate', nameAr: 'العقارات' },
     year: '2024',
     tagline: 'Full digital real estate platform generating 3x leads',
     taglineAr: 'منصة رقمية عقارية متكاملة تُضاعف المبيعات 3 مرات',
@@ -56,8 +56,8 @@ const FALLBACK_PROJECTS = [
     slug: 'lumina-store',
     title: 'Lumina E-Commerce Store',
     titleAr: 'متجر لومينا الإلكتروني الفاخر',
-    category: 'E-commerce',
-    industry: 'E-commerce',
+    category: { name: 'E-commerce', nameAr: 'التجارة الإلكترونية' },
+    industry: { name: 'E-commerce', nameAr: 'التجارة الإلكترونية' },
     year: '2024',
     tagline: 'High-converting luxury online storefront with custom checkout',
     taglineAr: 'متجر إلكتروني فاخر وسريع يدعم بوابات الدفع المتعددة',
@@ -69,8 +69,8 @@ const FALLBACK_PROJECTS = [
     slug: 'apex-saas',
     title: 'Apex AI Operations Platform',
     titleAr: 'منصة أبكس لإدارة العمليات بالذكاء الاصطناعي',
-    category: 'SaaS',
-    industry: 'SaaS / AI',
+    category: { name: 'SaaS / Platforms', nameAr: 'برمجيات / منصات' },
+    industry: { name: 'SaaS / AI', nameAr: 'برمجيات / ذكاء اصطناعي' },
     year: '2024',
     tagline: 'Enterprise operations dashboard with real-time AI insights',
     taglineAr: 'لوحة تحكم مؤسسية لإدارة البيانات والتحليلات الفورية',
@@ -108,10 +108,10 @@ const PortfolioSection = () => {
   const activeProjects = projects.length > 0 ? projects : FALLBACK_PROJECTS;
 
   const categories = useMemo(
-    () => ['All', ...new Set(activeProjects.map(p => p.category).filter(Boolean))],
+    () => ['All', ...new Set(activeProjects.map(p => p.category?.name).filter(Boolean))],
     [activeProjects]
   );
-  const displayed = filter === 'All' ? activeProjects : activeProjects.filter(p => p.category === filter);
+  const displayed = filter === 'All' ? activeProjects : activeProjects.filter(p => p.category?.name === filter);
 
   return (
     <section id="portfolio" dir={dir} className="section-shell section-shell--plain">

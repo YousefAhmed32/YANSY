@@ -33,7 +33,7 @@ const ImpactSection = ({ project, isRTL }) => {
   const results = isRTL ? (project.resultsAr || project.results) : (project.results || project.resultsAr);
   const metrics = project.metrics || [];
   const perf = project.performanceMetrics?.filter((m) => m.before && m.after) || [];
-  const t = project.testimonial;
+  const t = project.testimonials?.[0];
   const quote = t && (isRTL ? (t.quoteAr || t.quote) : (t.quote || t.quoteAr));
   const role  = t && (isRTL ? (t.roleAr || t.role) : t.role);
 

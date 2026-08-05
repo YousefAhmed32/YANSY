@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { mediaAssetSchema } = require('./shared/mediaAssetSchema');
 
 /**
  * Schema v2 — curated core fields + a flexible content-block system.
@@ -15,37 +16,24 @@ const mongoose = require('mongoose');
  * genuinely has (client, team, timeline, links, metrics, testimonial), plus
  * `blocks[]` — an ordered, mixed-type content stream — for everything else.
  * See `blockSchema` below for the block vocabulary.
+ *
+ * Schema v3 (CMS normalization) — client, team, technologies, testimonials,
+ * awards, category, industry, and services are now references into the
+ * reusable content libraries under server/models/ (TeamMember, Client,
+ * Technology, Testimonial, Award, Category, Industry, Service) instead of
+ * embedded/duplicated data — see plan doc for the full rationale. `team`
+ * keeps a small join-object shape (`{ member, roleOverride, roleArOverride }`)
+ * rather than a bare ObjectId array because how someone is credited on THIS
+ * project can differ from their canonical library position.
  */
 
 // ── Reusable sub-schemas ──────────────────────────────────────────────────────
 
-const mediaAssetSchema = new mongoose.Schema(
+const teamCreditSchema = new mongoose.Schema(
   {
-    url: {
-      type: String,
-      required: true,
-      validate: {
-        validator: (v) => !v || !v.startsWith('data:'),
-        message: 'Media assets must be uploaded via the media upload endpoint — inline data URIs are not allowed.',
-      },
-    },
-    publicId:    { type: String },
-    // 'cloudinary'/'local' kept only so pre-GridFS documents still deserialize —
-    // every new upload writes 'gridfs' (see server/media/media.service.js).
-    provider:    { type: String, enum: ['cloudinary', 'local', 'gridfs'], default: 'gridfs' },
-    // 'image' (default) | 'video' | 'audio' — lets the client pick a renderer
-    // without sniffing file extensions. Cloudinary's resource_type already
-    // distinguishes these at upload time (see uploadPortfolioMedia).
-    kind:        { type: String, enum: ['image', 'video', 'audio'], default: 'image' },
-    width:       { type: Number },
-    height:      { type: Number },
-    duration:    { type: Number },                                            // seconds, video/audio only
-    blurDataURL: { type: String },
-    dominantColor: { type: String },
-    alt:         { type: String, default: '' },                               // accessibility text
-    altAr:       { type: String, default: '' },
-    caption:     { type: String, default: '' },                               // visible caption, distinct from alt
-    captionAr:   { type: String, default: '' },
+    member:        { type: mongoose.Schema.Types.ObjectId, ref: 'TeamMember', required: true },
+    roleOverride:   { type: String, trim: true }, // falls back to TeamMember.position when blank
+    roleArOverride: { type: String, trim: true },
   },
   { _id: false }
 );
@@ -69,31 +57,8 @@ const performanceMetricSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const testimonialSchema = new mongoose.Schema(
-  {
-    quote:   { type: String },
-    quoteAr: { type: String },
-    author:  { type: String },
-    role:    { type: String },
-    roleAr:  { type: String },
-    avatar:  { type: mediaAssetSchema },
-    audio:   { type: mediaAssetSchema },                                       // optional voice-note testimonial (kind: 'audio')
-  },
-  { _id: false }
-);
-
-const teamMemberSchema = new mongoose.Schema(
-  { name: { type: String, required: true }, role: { type: String }, roleAr: { type: String }, avatar: { type: mediaAssetSchema } },
-  { _id: false }
-);
-
 const faqSchema = new mongoose.Schema(
   { question: { type: String, required: true }, questionAr: { type: String }, answer: { type: String, required: true }, answerAr: { type: String } },
-  { _id: false }
-);
-
-const awardSchema = new mongoose.Schema(
-  { title: { type: String, required: true }, titleAr: { type: String }, org: { type: String }, year: { type: Number }, url: { type: String } },
   { _id: false }
 );
 
@@ -155,20 +120,17 @@ const portfolioProjectSchema = new mongoose.Schema(
     taglineAr: { type: String, trim: true, maxlength: 160 },
     slug:     { type: String, required: true, unique: true, lowercase: true, trim: true },
 
-    category: {
-      type: String,
-      required: true,
-      // 'Hotels & Hospitality' was already a selectable option in the public
-      // taxonomy (client/src/utils/portfolioTaxonomy.js) but missing here —
-      // choosing it in the admin has always failed Mongoose validation.
-      enum: ['E-commerce', 'Medical', 'Real Estate', 'Restaurants & Food', 'SaaS / Platforms', 'Educational', 'Hotels & Hospitality', 'Other'],
-    },
-    industry: { type: String, trim: true },
+    // Reference into the Category library (server/models/Category.js) —
+    // replaces the hardcoded string enum this field used to be. Migrated
+    // 1:1 from that enum by scripts/migrate-portfolio-libraries.js.
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    // Reference into the Industry library — replaces the free-text string.
+    industry: { type: mongoose.Schema.Types.ObjectId, ref: 'Industry' },
 
     // ── Client ────────────────────────────────────────────────────────────
-    clientName:   { type: String, trim: true },
-    clientNameAr: { type: String, trim: true },
-    clientLogo:   { type: mediaAssetSchema },
+    // Reference into the Client library (server/models/Client.js) — replaces
+    // the embedded clientName/clientNameAr/clientLogo fields.
+    client:       { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     location:     { type: String, trim: true },
     locationAr:   { type: String, trim: true },
     // Publicly listed and viewable, but the client's identity is redacted in
@@ -199,12 +161,18 @@ const portfolioProjectSchema = new mongoose.Schema(
 
     metrics:            [metricSchema],
     performanceMetrics: [performanceMetricSchema],
-    testimonial:        testimonialSchema,
+    // References into the Testimonial/Award libraries — a project usually
+    // has one testimonial and a handful of awards, but both are now
+    // reusable library entries rather than embedded, one-off data.
+    testimonials:       [{ type: mongoose.Schema.Types.ObjectId, ref: 'Testimonial' }],
     proofScreenshots:   [mediaAssetSchema],                                    // e.g. WhatsApp/chat proof of client satisfaction
     faqs:               [faqSchema],
-    awards:              [awardSchema],
+    awards:             [{ type: mongoose.Schema.Types.ObjectId, ref: 'Award' }],
 
-    team: [teamMemberSchema],
+    team: [teamCreditSchema],
+
+    // Reference into the Service library — new field, no legacy data.
+    services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
 
     // Flexible mid-page content — see blockSchema doc comment above.
     blocks: [blockSchema],
@@ -213,7 +181,11 @@ const portfolioProjectSchema = new mongoose.Schema(
     liveUrl:   { type: String, trim: true },
     figmaUrl:  { type: String, trim: true },
     githubUrl: { type: String, trim: true },
-    tags:      [{ type: String }],           // doubles as tech-stack display
+    // Reference into the Technology library — replaces the free-text `tags`
+    // array that used to double as the tech-stack display (see TechTagInput.jsx).
+    technologies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Technology' }],
+    // Generic project labels, distinct from the tech-stack — new, optional.
+    projectTags:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
     duration:  { type: String },             // e.g. "8 weeks" — human-friendly, not derived from dates
     teamSize:  { type: String },             // simple fallback display ("5 people") when the full `team[]` roster isn't filled in
     startDate:  { type: Date },
@@ -245,7 +217,13 @@ const portfolioProjectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-portfolioProjectSchema.index({ title: 'text', description: 'text', tags: 'text', industry: 'text', clientName: 'text' });
+// `tags`/`industry`/`clientName` used to be plain strings and were part of
+// this index; all three are now ObjectId refs into libraries (technologies/
+// industry/client) and can't be text-indexed directly — search now covers
+// the project's own bilingual title/description only. Library-side search
+// (e.g. "find projects using this client") goes through Client/Technology
+// usage tracking instead, not full-text search.
+portfolioProjectSchema.index({ title: 'text', titleAr: 'text', description: 'text', descriptionAr: 'text' });
 portfolioProjectSchema.index({ status: 1, order: 1, createdAt: -1 });
 portfolioProjectSchema.index({ status: 1, featured: 1 });
 portfolioProjectSchema.index({ createdAt: -1, _id: -1 }); // cursor pagination

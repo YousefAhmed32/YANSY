@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ShieldCheck } from 'lucide-react';
 import ProgressiveImage from './ProgressiveImage';
-import { categoryLabel, categoryIcon } from '../utils/portfolioTaxonomy';
+import { categoryIcon } from '../utils/portfolioTaxonomy';
 
 /**
  * Premium portfolio card — cinematic hover, progressive blur-up image reveal,
@@ -17,10 +17,13 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
   const title       = isRTL ? (project.titleAr || project.title) : (project.title || project.titleAr);
   const tagline     = isRTL ? (project.taglineAr || project.tagline) : (project.tagline || project.taglineAr);
   const description = isRTL ? (project.descriptionAr || project.description) : (project.description || project.descriptionAr);
-  const clientName  = isRTL ? (project.clientNameAr || project.clientName) : (project.clientName || project.clientNameAr);
+  const clientName  = isRTL ? (project.client?.nameAr || project.client?.name) : (project.client?.name || project.client?.nameAr);
   const dek = tagline || description;
   const featured    = size === 'featured';
   const topMetric   = project.metrics?.[0];
+  const categoryName = project.category?.name || '';
+  const categoryDisplay = isRTL ? (project.category?.nameAr || categoryName) : categoryName;
+  const industryDisplay = isRTL ? (project.industry?.nameAr || project.industry?.name) : project.industry?.name;
 
   const displayAsset = project.coverImage?.url
     ? project.coverImage
@@ -46,8 +49,8 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
           priority={priority}
           fill
           imgClassName="transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-          fallbackIcon={categoryIcon(project.category)}
-          fallbackLabel={categoryLabel(project.category, isRTL ? 'ar' : 'en')}
+          fallbackIcon={categoryIcon(categoryName)}
+          fallbackLabel={categoryDisplay}
           isRTL={isRTL}
           fallbackVariant={featured ? 'hero' : 'card'}
         />
@@ -60,11 +63,11 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
         {/* Badges */}
         <div className={`absolute top-3 flex flex-wrap gap-1.5 ${isRTL ? 'right-3' : 'left-3'}`}>
           <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-surface-white/95 backdrop-blur-sm border border-[rgb(var(--border))] text-[rgb(var(--text-primary))] tracking-wide">
-            {categoryLabel(project.category, isRTL ? 'ar' : 'en')}
+            {categoryDisplay}
           </span>
-          {project.industry && (
+          {industryDisplay && (
             <span className="hidden sm:inline text-[10px] font-semibold px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white tracking-wide">
-              {project.industry}
+              {industryDisplay}
             </span>
           )}
         </div>
@@ -126,19 +129,19 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
           </p>
         )}
 
-        {project.tags?.length > 0 && (
+        {project.technologies?.length > 0 && (
           <div className={`flex flex-wrap gap-1.5 mt-auto pt-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {project.tags.slice(0, featured ? 5 : 3).map((tag, i) => (
+            {project.technologies.slice(0, featured ? 5 : 3).map((tech) => (
               <span
-                key={`${tag}-${i}`}
+                key={tech._id}
                 className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border))] text-[rgb(var(--text-secondary))]"
               >
-                {tag}
+                {tech.name}
               </span>
             ))}
-            {project.tags.length > (featured ? 5 : 3) && (
+            {project.technologies.length > (featured ? 5 : 3) && (
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border))] text-[rgb(var(--text-tertiary))]">
-                +{project.tags.length - (featured ? 5 : 3)}
+                +{project.technologies.length - (featured ? 5 : 3)}
               </span>
             )}
           </div>

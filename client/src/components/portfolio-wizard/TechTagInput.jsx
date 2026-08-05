@@ -7,13 +7,20 @@ import {
 import { TK, RADIUS, SHADOW, Modal, Button } from '../../admin-ui';
 import api from '../../utils/api';
 import {
-  PRESET_TECHS, ALL_KNOWN_TECHS, STACK_TEMPLATES,
-  CATEGORY_SUGGESTIONS, DETECTED_PROJECT_TECHS
+  STACK_TEMPLATES, CATEGORY_SUGGESTIONS, DETECTED_PROJECT_TECHS
 } from '../../data/techCatalog';
 
-const LOCAL_FAVS_KEY = 'yansy_fav_techs';
-const LOCAL_RECENTS_KEY = 'yansy_recent_techs';
-
+/**
+ * `value`/`onChange` deal in Technology library objects ({_id, name, ...} —
+ * see server/models/Technology.js), not free-text strings — the tech stack
+ * is now a reusable library like Team/Client/etc, not per-project duplicated
+ * data. Typing a name that doesn't exist yet in the library still works
+ * (`addTags` find-or-creates it via POST /technologies), so the UX of
+ * "just type or paste" is unchanged; what's new is that the SAME technology
+ * typed on a later project reuses the same library entry instead of being a
+ * fresh disconnected string, and usageCount/isPinned/lastUsedAt are tracked
+ * server-side instead of per-browser localStorage.
+ */
 export const TechTagInput = ({
   value = [],
   onChange,
@@ -23,23 +30,13 @@ export const TechTagInput = ({
   category = 'Other',
 }) => {
   const [draft, setDraft] = useState('');
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_FAVS_KEY);
-      return saved ? JSON.parse(saved) : ['React', 'Node.js', 'MongoDB', 'Tailwind CSS', 'TypeScript'];
-    } catch {
-      return ['React', 'Node.js', 'MongoDB', 'Tailwind CSS', 'TypeScript'];
-    }
-  });
+  const [catalog, setCatalog] = useState([]);
 
-  const [recents, setRecents] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_RECENTS_KEY);
-      return saved ? JSON.parse(saved) : ['React', 'Vite', 'Node.js', 'Express.js'];
-    } catch {
-      return ['React', 'Vite', 'Node.js', 'Express.js'];
-    }
-  });
+  useEffect(() => {
+    api.get('/technologies', { params: { limit: 300 } })
+      .then(({ data }) => setCatalog(data.items || []))
+      .catch(() => {});
+  }, []);
 
   // Autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -57,92 +54,71 @@ export const TechTagInput = ({
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
-  // Persist favorites
-  const toggleFavorite = (tech, e) => {
+  const toggleFavorite = async (tech, e) => {
     e?.stopPropagation();
-    setFavorites((prev) => {
-      const exists = prev.some((t) => t.toLowerCase() === tech.toLowerCase());
-      const updated = exists
-        ? prev.filter((t) => t.toLowerCase() !== tech.toLowerCase())
-        : [...prev, tech];
-      try {
-        localStorage.setItem(LOCAL_FAVS_KEY, JSON.stringify(updated));
-      } catch { /* private mode / quota */ }
-      return updated;
-    });
+    try {
+      const { data } = await api.patch(`/technologies/${tech._id}/pin`);
+      setCatalog((prev) => prev.map((c) => (c._id === tech._id ? data.item : c)));
+    } catch { /* non-critical UI affordance */ }
   };
 
-  // Helper: check if tech is in current values (case-insensitive)
+  // Accepts either a Technology object (from a catalog chip) or a plain
+  // name string (typed/pasted/template/recommendation) for the `isSelected`
+  // check that drives every suggestion list's "already added" filter.
   const isSelected = useCallback(
-    (tech) => value.some((v) => v.toLowerCase() === tech.toLowerCase()),
+    (techOrName) => {
+      if (techOrName && typeof techOrName === 'object') return value.some((v) => v._id === techOrName._id);
+      const name = String(techOrName).toLowerCase();
+      return value.some((v) => v.name?.toLowerCase() === name);
+    },
     [value]
   );
 
-  // Add tags safely without duplicates (case-insensitive check, maintains nice casing)
+  // Adds Technology objects and/or raw name strings — raw strings that don't
+  // match an existing library entry are find-or-created via POST
+  // /technologies, so a first-time name becomes the canonical library entry
+  // future projects reuse instead of a disconnected duplicate.
   const addTags = useCallback(
-    (newTags) => {
-      const toAdd = (Array.isArray(newTags) ? newTags : [newTags])
-        .map((t) => t.trim())
-        .filter(Boolean);
+    async (newItems) => {
+      const items = (Array.isArray(newItems) ? newItems : [newItems]).filter(Boolean);
+      if (!items.length) return;
 
-      if (!toAdd.length) return;
-
-      const existingLower = new Set(value.map((v) => v.toLowerCase()));
-      const addedClean = [];
-
-      for (const rawTag of toAdd) {
-        // Match against known techs for consistent casing if user typed lowercase
-        const matchedKnown = ALL_KNOWN_TECHS.find(
-          (k) => k.toLowerCase() === rawTag.toLowerCase()
-        );
-        const tagToUse = matchedKnown || rawTag;
-
-        if (!existingLower.has(tagToUse.toLowerCase())) {
-          existingLower.add(tagToUse.toLowerCase());
-          addedClean.push(tagToUse);
-        }
+      const resolved = [];
+      for (const item of items) {
+        if (typeof item === 'object' && item._id) { resolved.push(item); continue; }
+        const raw = String(item).trim();
+        if (!raw) continue;
+        const existing = catalog.find((c) => c.name.toLowerCase() === raw.toLowerCase());
+        if (existing) { resolved.push(existing); continue; }
+        try {
+          const { data } = await api.post('/technologies', { name: raw });
+          setCatalog((prev) => [...prev, data.item]);
+          resolved.push(data.item);
+        } catch { /* validation error or dedupe race — skip this one */ }
       }
 
-      if (addedClean.length > 0) {
-        const nextValue = [...value, ...addedClean];
-        onChange(nextValue);
+      const existingIds = new Set(value.map((v) => v._id));
+      const addedClean = resolved.filter((t) => t && !existingIds.has(t._id));
+      if (addedClean.length > 0) onChange([...value, ...addedClean]);
 
-        // Update recently used
-        setRecents((prev) => {
-          const updated = Array.from(
-            new Set([...addedClean, ...prev].map((t) => t.trim()))
-          ).slice(0, 15);
-          try {
-            localStorage.setItem(LOCAL_RECENTS_KEY, JSON.stringify(updated));
-          } catch { /* private mode / quota */ }
-          return updated;
-        });
-      }
       setDraft('');
       setShowSuggestions(false);
     },
-    [value, onChange]
+    [value, onChange, catalog]
   );
 
-  // Remove tag
   const removeTag = useCallback(
-    (tagToRemove) => {
-      onChange(value.filter((t) => t !== tagToRemove));
-    },
+    (tech) => onChange(value.filter((t) => t._id !== tech._id)),
     [value, onChange]
   );
 
-  // Clear all tags
-  const clearAllTags = useCallback(() => {
-    onChange([]);
-  }, [onChange]);
+  const clearAllTags = useCallback(() => onChange([]), [onChange]);
 
   // Smart paste handler
   const handlePaste = (e) => {
     const pastedText = e.clipboardData.getData('text');
     if (!pastedText) return;
 
-    // Split by common delimiters: comma, newline, pipe, semicolon, tab
     const splitTags = pastedText
       .split(/[,|\n;\t]+/)
       .map((item) => item.trim())
@@ -154,29 +130,19 @@ export const TechTagInput = ({
     }
   };
 
-  // Autocomplete filtering
+  // Autocomplete filtering — matches against the real Technology library
   const suggestions = useMemo(() => {
     const query = draft.trim().toLowerCase();
     if (!query) return [];
-
-    const candidates = Array.from(
-      new Set([...favorites, ...recents, ...ALL_KNOWN_TECHS])
-    );
-
-    return candidates
-      .filter((tech) => {
-        const lower = tech.toLowerCase();
-        return lower.includes(query) && !isSelected(tech);
-      })
+    return catalog
+      .filter((tech) => tech.name.toLowerCase().includes(query) && !isSelected(tech))
       .slice(0, 8);
-  }, [draft, favorites, recents, isSelected]);
+  }, [draft, catalog, isSelected]);
 
-  // Keep selectedIndex in bounds
   useEffect(() => {
     setSelectedIndex(0);
   }, [suggestions]);
 
-  // Keyboard navigation inside draft input
   const handleKeyDown = (e) => {
     if (showSuggestions && suggestions.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -202,15 +168,12 @@ export const TechTagInput = ({
 
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
-      if (draft.trim()) {
-        addTags(draft);
-      }
+      if (draft.trim()) addTags(draft);
     } else if (e.key === 'Backspace' && !draft && value.length > 0) {
       onChange(value.slice(0, -1));
     }
   };
 
-  // Click outside listener for suggestions popover
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -228,7 +191,7 @@ export const TechTagInput = ({
     setLoadingProjects(true);
     try {
       const { data } = await api.get('/portfolio/admin', { params: { limit: 100 } });
-      setProjects((data.projects || []).filter((p) => p.tags && p.tags.length > 0 && p._id !== projectId));
+      setProjects((data.projects || []).filter((p) => p.technologies?.length > 0 && p._id !== projectId));
     } catch {
       // ignore
     } finally {
@@ -236,8 +199,8 @@ export const TechTagInput = ({
     }
   };
 
-  const importProjectTags = (projTags) => {
-    addTags(projTags);
+  const importProjectTags = (projTechs) => {
+    addTags(projTechs);
     setCopyModalOpen(false);
   };
 
@@ -265,26 +228,28 @@ export const TechTagInput = ({
     setDragOverIndex(null);
   };
 
-  // Sort quick add chips: Favorites first, then preset list
-  const quickAddChips = useMemo(() => {
-    const favSet = new Set(favorites.map((f) => f.toLowerCase()));
-    const allPresets = Array.from(new Set([...favorites, ...PRESET_TECHS]));
-    return allPresets.sort((a, b) => {
-      const aIsFav = favSet.has(a.toLowerCase());
-      const bIsFav = favSet.has(b.toLowerCase());
-      if (aIsFav && !bIsFav) return -1;
-      if (!aIsFav && bIsFav) return 1;
-      return a.localeCompare(b);
-    });
-  }, [favorites]);
+  const favorites = useMemo(() => catalog.filter((c) => c.isPinned), [catalog]);
+  const recents = useMemo(
+    () => [...catalog].filter((c) => c.lastUsedAt).sort((a, b) => new Date(b.lastUsedAt) - new Date(a.lastUsedAt)),
+    [catalog]
+  );
 
-  // Category smart recommendations
+  // Quick add chips: pinned first, then the rest of the library alphabetically
+  const quickAddChips = useMemo(() => {
+    const pinnedIds = new Set(favorites.map((f) => f._id));
+    return [...catalog].sort((a, b) => {
+      const aP = pinnedIds.has(a._id), bP = pinnedIds.has(b._id);
+      if (aP && !bP) return -1;
+      if (!aP && bP) return 1;
+      return a.name.localeCompare(b.name);
+    }).slice(0, 24);
+  }, [catalog, favorites]);
+
   const categoryRecommendations = useMemo(() => {
     const recs = CATEGORY_SUGGESTIONS[category] || CATEGORY_SUGGESTIONS['Other'];
     return recs.filter((r) => !isSelected(r));
   }, [category, isSelected]);
 
-  // Codebase detected technologies not yet selected
   const detectedTechsNotSelected = useMemo(() => {
     return DETECTED_PROJECT_TECHS.filter((t) => !isSelected(t));
   }, [isSelected]);
@@ -298,9 +263,7 @@ export const TechTagInput = ({
     if (!projectSearch.trim()) return projects;
     const q = projectSearch.toLowerCase();
     return projects.filter(
-      (p) =>
-        p.title?.toLowerCase().includes(q) ||
-        p.tags?.some((t) => t.toLowerCase().includes(q))
+      (p) => p.title?.toLowerCase().includes(q) || p.technologies?.some((t) => t.name.toLowerCase().includes(q))
     );
   }, [projects, projectSearch]);
 
@@ -465,7 +428,7 @@ export const TechTagInput = ({
         </div>
       </div>
 
-      {/* 4. Quick Add Chips (Favorites first, then presets with active/disabled state) */}
+      {/* 4. Quick Add Chips (Pinned first, then the rest of the library) */}
       <div>
         <span style={{ display: 'block', fontSize: 11, fontWeight: 700, color: TK.textMuted, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 8 }}>
           {L.quickAdd}
@@ -473,11 +436,10 @@ export const TechTagInput = ({
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
           {quickAddChips.map((tech) => {
             const active = isSelected(tech);
-            const isFav = favorites.some((f) => f.toLowerCase() === tech.toLowerCase());
 
             return (
               <button
-                key={tech}
+                key={tech._id}
                 type="button"
                 onClick={() => (active ? removeTag(tech) : addTags(tech))}
                 style={{
@@ -494,11 +456,11 @@ export const TechTagInput = ({
                   type="button"
                   onClick={(e) => toggleFavorite(tech, e)}
                   style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                  title={isFav ? L.unmarkFav : L.markFav}
+                  title={tech.isPinned ? L.unmarkFav : L.markFav}
                 >
-                  <Star style={{ width: 10, height: 10, color: isFav ? '#F59E0B' : active ? 'rgba(255,255,255,0.6)' : TK.textLight, fill: isFav ? '#F59E0B' : 'none' }} />
+                  <Star style={{ width: 10, height: 10, color: tech.isPinned ? '#F59E0B' : active ? 'rgba(255,255,255,0.6)' : TK.textLight, fill: tech.isPinned ? '#F59E0B' : 'none' }} />
                 </button>
-                <span>{tech}</span>
+                <span>{tech.name}</span>
                 {active ? <Check style={{ width: 11, height: 11, color: '#FFF' }} /> : <Plus style={{ width: 11, height: 11, color: TK.textLight }} />}
               </button>
             );
@@ -516,7 +478,7 @@ export const TechTagInput = ({
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
             {recentsToShow.map((tech) => (
               <button
-                key={tech}
+                key={tech._id}
                 type="button"
                 onClick={() => addTags(tech)}
                 style={{
@@ -525,7 +487,7 @@ export const TechTagInput = ({
                   border: `1px dashed ${TK.border}`, cursor: 'pointer', flexDirection: isRTL ? 'row-reverse' : 'row',
                 }}
               >
-                <span>{tech}</span>
+                <span>{tech.name}</span>
                 <Plus style={{ width: 11, height: 11, color: TK.textLight }} />
               </button>
             ))}
@@ -548,14 +510,13 @@ export const TechTagInput = ({
         >
           {/* Selected Tag Chips with Motion & Drag */}
           <AnimatePresence margin={false}>
-            {value.map((tag, idx) => {
-              const isFav = favorites.some((f) => f.toLowerCase() === tag.toLowerCase());
+            {value.map((tech, idx) => {
               const isBeingDragged = draggedIndex === idx;
               const isDragOver = dragOverIndex === idx;
 
               return (
                 <motion.span
-                  key={tag}
+                  key={tech._id}
                   layout
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -569,21 +530,21 @@ export const TechTagInput = ({
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
                     padding: '5px 10px', borderRadius: RADIUS.pill,
-                    background: isFav ? 'rgba(245, 158, 11, 0.12)' : TK.surface,
-                    color: isFav ? '#D97706' : TK.text,
-                    border: `1px solid ${isFav ? 'rgba(245, 158, 11, 0.35)' : TK.border}`,
+                    background: tech.isPinned ? 'rgba(245, 158, 11, 0.12)' : TK.surface,
+                    color: tech.isPinned ? '#D97706' : TK.text,
+                    border: `1px solid ${tech.isPinned ? 'rgba(245, 158, 11, 0.35)' : TK.border}`,
                     boxShadow: SHADOW.xs, opacity: isBeingDragged ? 0.4 : 1,
                     transform: isDragOver ? 'scale(1.05)' : 'none', cursor: 'grab', userSelect: 'none',
                     flexDirection: isRTL ? 'row-reverse' : 'row',
                   }}
                 >
                   <Move style={{ width: 10, height: 10, opacity: 0.4, cursor: 'grab' }} />
-                  {isFav && <Star style={{ width: 10, height: 10, fill: '#F59E0B', color: '#F59E0B' }} />}
-                  <span>🏷 {tag}</span>
+                  {tech.isPinned && <Star style={{ width: 10, height: 10, fill: '#F59E0B', color: '#F59E0B' }} />}
+                  <span>🏷 {tech.name}</span>
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
-                    aria-label={removeLabel(tag)}
+                    onClick={(e) => { e.stopPropagation(); removeTag(tech); }}
+                    aria-label={removeLabel(tech.name)}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'none', border: 'none', cursor: 'pointer', color: TK.textMuted,
@@ -638,12 +599,11 @@ export const TechTagInput = ({
               }}
             >
               {suggestions.map((tech, i) => {
-                const isFav = favorites.some((f) => f.toLowerCase() === tech.toLowerCase());
                 const isCurrentFocus = i === selectedIndex;
 
                 return (
                   <div
-                    key={tech}
+                    key={tech._id}
                     id={`tech-suggestion-${i}`}
                     role="option"
                     aria-selected={isCurrentFocus}
@@ -660,7 +620,7 @@ export const TechTagInput = ({
                   >
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                       <Plus style={{ width: 13, height: 13, color: isCurrentFocus ? TK.accent : TK.textLight }} />
-                      {tech}
+                      {tech.name}
                     </span>
 
                     <button
@@ -668,7 +628,7 @@ export const TechTagInput = ({
                       onClick={(e) => toggleFavorite(tech, e)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
                     >
-                      <Star style={{ width: 13, height: 13, color: isFav ? '#F59E0B' : TK.textLight, fill: isFav ? '#F59E0B' : 'none' }} />
+                      <Star style={{ width: 13, height: 13, color: tech.isPinned ? '#F59E0B' : TK.textLight, fill: tech.isPinned ? '#F59E0B' : 'none' }} />
                     </button>
                   </div>
                 );
@@ -712,7 +672,7 @@ export const TechTagInput = ({
             )}
 
             {filteredCopyProjects.map((p) => {
-              const projTags = p.tags || [];
+              const projTechs = p.technologies || [];
 
               return (
                 <div
@@ -728,28 +688,28 @@ export const TechTagInput = ({
                       {p.title}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                      {projTags.slice(0, 8).map((t) => (
+                      {projTechs.slice(0, 8).map((t) => (
                         <span
-                          key={t}
+                          key={t._id}
                           style={{
                             fontSize: 10.5, fontWeight: 500, padding: '2px 6px', borderRadius: RADIUS.sm,
                             background: isSelected(t) ? TK.accentBg : TK.bgSubtle,
                             color: isSelected(t) ? TK.accent : TK.textMuted,
                           }}
                         >
-                          {t}
+                          {t.name}
                         </span>
                       ))}
-                      {projTags.length > 8 && (
+                      {projTechs.length > 8 && (
                         <span style={{ fontSize: 10.5, color: TK.textLight }}>
-                          +{projTags.length - 8}
+                          +{projTechs.length - 8}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <Button size="sm" variant="secondary" icon={Plus} onClick={() => importProjectTags(projTags)} style={{ flexShrink: 0 }}>
-                    {L.importTags} ({projTags.length})
+                  <Button size="sm" variant="secondary" icon={Plus} onClick={() => importProjectTags(projTechs)} style={{ flexShrink: 0 }}>
+                    {L.importTags} ({projTechs.length})
                   </Button>
                 </div>
               );

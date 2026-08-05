@@ -1,85 +1,82 @@
-import { Plus, Trash2, Upload } from 'lucide-react';
-import { TK, RADIUS, TextInput, IconButton, Spinner } from '../../admin-ui';
+import { Trash2 } from 'lucide-react';
+import { TK, RADIUS, TextInput, IconButton } from '../../admin-ui';
 import { mediaSrc } from '../../utils/media';
-
-const AvatarUpload = ({ asset, pending, onUpload, onRemove }) => (
-  <label
-    className="au-upload-tile"
-    style={{
-      position: 'relative', width: 44, height: 44, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-      background: TK.bgSubtle, border: `1px solid ${TK.border}`, cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}
-  >
-    {asset?.url ? (
-      <img src={mediaSrc(asset)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onClick={(e) => { e.preventDefault(); onRemove(); }} />
-    ) : pending ? (
-      <Spinner size={16} />
-    ) : (
-      <Upload style={{ width: 14, height: 14, color: TK.textLight }} />
-    )}
-    <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; e.target.value = ''; if (f) onUpload(f); }} style={{ display: 'none' }} />
-  </label>
-);
+import RelationPicker from './RelationPicker';
 
 /**
- * The people credited on the project — name/role (+ optional photo) per
- * member. Rendered as the stacked-avatar row in the hero meta strip on the
- * public page.
+ * The people credited on the project — picked from the shared Team Members
+ * library (managed at /app/admin/libraries/team) instead of re-typed per
+ * project. `roleOverride`/`roleArOverride` let how someone is credited on
+ * THIS project differ from their canonical library position (e.g. "Lead
+ * Engineer" here vs. "Senior Developer" as their general title) — leave
+ * blank to just inherit the library position. Rendered as the stacked-avatar
+ * row in the hero meta strip on the public page.
  */
-const TeamSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUploads }) => {
+const TeamSection = ({ form, set, isRTL }) => {
   const team = form.team || [];
-  const updateMember = (i, patch) => set('team', team.map((m, idx) => (idx === i ? { ...m, ...patch } : m)));
-  const removeMember = (i) => { deleteMedia(team[i]?.avatar); set('team', team.filter((_, idx) => idx !== i)); };
-  const addMember = () => set('team', [...team, { name: '', role: '', roleAr: '' }]);
+  const members = team.map((t) => t.member).filter(Boolean);
+
+  const handlePick = (newMembers) => {
+    set('team', newMembers.map((m) => {
+      const existing = team.find((t) => t.member?._id === m._id);
+      return existing || { member: m, roleOverride: '', roleArOverride: '' };
+    }));
+  };
+  const updateCredit = (memberId, patch) => set('team', team.map((t) => (t.member?._id === memberId ? { ...t, ...patch } : t)));
+  const removeMember = (memberId) => set('team', team.filter((t) => t.member?._id !== memberId));
 
   const L = {
     intro: isRTL
-      ? 'أعضاء الفريق المعتمدون يظهرون كصف صور متراكبة في دراسة الحالة. اختياري — حقل "حجم الفريق" البسيط في تبويب النظرة العامة يكفي وحده.'
-      : 'Credited team members show as a stacked avatar row on the case study. Optional — the simple "Team size" field on the Overview tab is enough on its own.',
-    name: isRTL ? 'الاسم' : 'Name',
-    roleEn: isRTL ? 'الدور (إنجليزي)' : 'Role (EN)',
-    roleAr: isRTL ? 'الدور (عربي)' : 'الدور (AR)',
+      ? 'اختر من مكتبة أعضاء الفريق المشتركة — لن تحتاج لإعادة كتابة الاسم أو رفع الصورة في كل مشروع. القيم أدناه اختيارية وتُخصص طريقة الاعتماد في هذا المشروع فقط.'
+      : 'Pick from the shared Team Members library — no need to re-type a name or re-upload a photo per project. The fields below are optional per-project overrides.',
+    roleOverride: isRTL ? 'الدور في هذا المشروع (EN)' : 'Role on this project (EN)',
+    roleOverrideAr: isRTL ? 'الدور في هذا المشروع (AR)' : 'Role on this project (AR)',
+    roleOverridePh: isRTL ? 'اتركه فارغًا لاستخدام المنصب من المكتبة' : 'Leave blank to use the library position',
     removeMember: isRTL ? 'إزالة العضو' : 'Remove member',
-    addMember: isRTL ? 'إضافة عضو للفريق' : 'Add team member',
+    manageLibrary: isRTL ? 'إدارة مكتبة الفريق' : 'Manage team library',
   };
 
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'}>
-      <p style={{ fontSize: 13, color: TK.textMuted, marginBottom: 20, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
+      <p style={{ fontSize: 13, color: TK.textMuted, marginBottom: 16, lineHeight: 1.6, textAlign: isRTL ? 'right' : 'left' }}>
         {L.intro}
       </p>
 
-      <div className="space-y-3">
-        {team.map((m, i) => {
-          const nameField = <TextInput key="name" value={m.name} onChange={(e) => updateMember(i, { name: e.target.value })} placeholder={L.name} />;
-          const roleEnField = <TextInput key="roleEn" value={m.role} onChange={(e) => updateMember(i, { role: e.target.value })} placeholder={L.roleEn} />;
-          const roleArField = <TextInput key="roleAr" value={m.roleAr} onChange={(e) => updateMember(i, { roleAr: e.target.value })} dir="rtl" placeholder={L.roleAr} />;
+      <RelationPicker
+        apiBase="/team"
+        value={members}
+        onChange={handlePick}
+        multiple
+        displayField="name"
+        allowCreate
+        quickCreateFields={[
+          { key: 'name', label: 'Name', labelAr: 'الاسم', required: true },
+          { key: 'position', label: 'Position (EN)', labelAr: 'المنصب (إنجليزي)' },
+          { key: 'positionAr', label: 'Position (AR)', labelAr: 'المنصب (عربي)' },
+        ]}
+      />
 
-          return (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: RADIUS.lg, border: `1px solid ${TK.border}`, background: TK.surface, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-              <AvatarUpload
-                asset={m.avatar}
-                pending={pendingUploads.some((u) => u.key === `team-${i}`)}
-                onUpload={async (file) => { const asset = await uploadMedia(file, `team-${i}`); updateMember(i, { avatar: asset }); }}
-                onRemove={() => { deleteMedia(m.avatar); updateMember(i, { avatar: null }); }}
-              />
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" style={{ flex: 1 }}>
-                {isRTL ? <>{nameField}{roleArField}{roleEnField}</> : <>{nameField}{roleEnField}{roleArField}</>}
+      {team.length > 0 && (
+        <div className="space-y-3" style={{ marginTop: 16 }}>
+          {team.map((t) => t.member && (
+            <div key={t.member._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: RADIUS.lg, border: `1px solid ${TK.border}`, background: TK.surface, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+              {t.member.avatar?.url ? (
+                <img src={mediaSrc(t.member.avatar)} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, flexShrink: 0 }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: TK.text, margin: '0 0 6px' }}>{t.member.name}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <TextInput value={t.roleOverride || ''} onChange={(e) => updateCredit(t.member._id, { roleOverride: e.target.value })} placeholder={t.member.position || L.roleOverridePh} />
+                  <TextInput value={t.roleArOverride || ''} onChange={(e) => updateCredit(t.member._id, { roleArOverride: e.target.value })} dir="rtl" placeholder={t.member.positionAr || L.roleOverridePh} />
+                </div>
               </div>
-              <IconButton icon={Trash2} variant="outline" onClick={() => removeMember(i)} aria-label={L.removeMember} />
+              <IconButton icon={Trash2} variant="outline" onClick={() => removeMember(t.member._id)} aria-label={L.removeMember} />
             </div>
-          );
-        })}
-      </div>
-
-      <button
-        onClick={addMember}
-        className="au-back-link"
-        style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: TK.accent, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }}
-      >
-        <Plus style={{ width: 14, height: 14 }} /> {L.addMember}
-      </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

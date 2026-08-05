@@ -22,7 +22,7 @@ const ProofSection = ({ project, isRTL }) => {
   const [playingId, setPlayingId] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  const audioSrc = mediaSrc(project.testimonial?.audio);
+  const audioSrc = mediaSrc(project.testimonials?.[0]?.audio);
   const screenshots = (project.proofScreenshots || []).filter((a) => a?.url);
   const awards = project.awards || [];
 

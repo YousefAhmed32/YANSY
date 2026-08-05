@@ -31,7 +31,7 @@ const StoryBeats = ({ project, isRTL }) => {
       content: isRTL ? (project[arKey] || project[enKey]) : (project[enKey] || project[arKey]),
     }))
     .filter((b) => b.content);
-  const tags = project.tags?.filter(Boolean) || [];
+  const tags = project.technologies?.filter(Boolean) || [];
 
   if (!beats.length && !tags.length) return null;
 
@@ -72,13 +72,13 @@ const StoryBeats = ({ project, isRTL }) => {
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', marginInlineEnd: 4 }}>
                 {isRTL ? 'التقنيات' : 'Built With'}
               </span>
-              {tags.map((tag, i) => (
-                <span key={`${tag}-${i}`} style={{
+              {tags.map((tag) => (
+                <span key={tag._id} style={{
                   fontSize: 12, padding: '6px 14px', borderRadius: 999,
                   border: '1px solid rgb(var(--accent-muted))', background: 'rgb(var(--accent-light))',
                   color: '#1E40AF', fontWeight: 500, fontFamily: font,
                 }}>
-                  {tag}
+                  {tag.name}
                 </span>
               ))}
             </div>

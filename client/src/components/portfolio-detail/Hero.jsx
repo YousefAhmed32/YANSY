@@ -5,7 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Briefcase, Clock, ExternalLink, Figma, Github, Layers, MapPin, ShieldCheck, Users } from 'lucide-react';
 import ProgressiveImage from '../ProgressiveImage';
 import { mediaSrc } from '../../utils/media';
-import { categoryLabel, categoryIcon } from '../../utils/portfolioTaxonomy';
+import { categoryIcon } from '../../utils/portfolioTaxonomy';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -53,8 +53,11 @@ const Hero = ({ project, title, desc, isRTL }) => {
   const metrics = (project.metrics || []).slice(0, 4);
   const hasMetrics = metrics.length > 0;
   const tagline = isRTL ? (project.taglineAr || project.tagline) : (project.tagline || project.taglineAr);
-  const clientName = isRTL ? (project.clientNameAr || project.clientName) : (project.clientName || project.clientNameAr);
+  const clientName = isRTL ? (project.client?.nameAr || project.client?.name) : (project.client?.name || project.client?.nameAr);
   const location = isRTL ? (project.locationAr || project.location) : (project.location || project.locationAr);
+  const categoryName = project.category?.name || '';
+  const categoryDisplay = isRTL ? (project.category?.nameAr || categoryName) : categoryName;
+  const industryDisplay = isRTL ? (project.industry?.nameAr || project.industry?.name) : project.industry?.name;
 
   return (
     <div ref={heroRef} style={{ paddingTop: 'calc(68px + clamp(2rem, 5vw, 3.5rem))', paddingBottom: 0, position: 'relative' }}>
@@ -71,9 +74,9 @@ const Hero = ({ project, title, desc, isRTL }) => {
 
         {/* Eyebrow badges */}
         <div data-fade style={{ opacity: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
-          <span className="section-label">{categoryLabel(project.category, isRTL ? 'ar' : 'en')}</span>
-          {project.industry && (
-            <span style={{ fontSize: 11.5, color: 'rgb(var(--text-tertiary))', fontFamily: font }}>{project.industry}</span>
+          <span className="section-label">{categoryDisplay}</span>
+          {industryDisplay && (
+            <span style={{ fontSize: 11.5, color: 'rgb(var(--text-tertiary))', fontFamily: font }}>{industryDisplay}</span>
           )}
           {project.year && (
             <>
@@ -88,8 +91,8 @@ const Hero = ({ project, title, desc, isRTL }) => {
           <div data-fade style={{ opacity: 0, display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
             {clientName ? (
               <>
-                {project.clientLogo?.url && (
-                  <img src={mediaSrc(project.clientLogo)} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', border: '1px solid rgb(var(--border))', background: '#fff' }} />
+                {project.client?.logo?.url && (
+                  <img src={mediaSrc(project.client.logo)} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain', border: '1px solid rgb(var(--border))', background: '#fff' }} />
                 )}
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'rgb(var(--text-primary))', fontFamily: font }}>{clientName}</span>
               </>
@@ -163,8 +166,8 @@ const Hero = ({ project, title, desc, isRTL }) => {
                 alt={title}
                 priority
                 fill
-                fallbackIcon={categoryIcon(project.category)}
-                fallbackLabel={categoryLabel(project.category, isRTL ? 'ar' : 'en')}
+                fallbackIcon={categoryIcon(categoryName)}
+                fallbackLabel={categoryDisplay}
                 isRTL={isRTL}
                 fallbackVariant="hero"
               />
@@ -172,7 +175,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
           </div>
           <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,17,23,0.65) 0%, transparent 46%)' }} />
 
-          {project.industry && (
+          {industryDisplay && (
             <div style={{
               position: 'absolute', top: 18, [isRTL ? 'right' : 'left']: 18,
               display: 'inline-flex', alignItems: 'center', gap: 7,
@@ -182,7 +185,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
             }}>
               <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgb(var(--accent))' }} />
               <span style={{ fontFamily: font, fontSize: 11, fontWeight: 500, color: '#fff', letterSpacing: isRTL ? 0 : '0.08em', textTransform: isRTL ? 'none' : 'uppercase' }}>
-                {project.industry}
+                {industryDisplay}
               </span>
             </div>
           )}
@@ -263,7 +266,7 @@ const MetaStrip = ({ project, isRTL, font }) => {
     myRole && { Icon: Briefcase, label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
     project.duration && { Icon: Clock, label: isRTL ? 'المدة' : 'Duration', value: project.duration },
     project.teamSize && !project.team?.length && { Icon: Users, label: isRTL ? 'الفريق' : 'Team', value: project.teamSize },
-    project.tags?.length > 0 && { Icon: Layers, label: isRTL ? 'التقنيات' : 'Tech Stack', value: isRTL ? `${project.tags.length} تقنية` : `${project.tags.length} technologies` },
+    project.technologies?.length > 0 && { Icon: Layers, label: isRTL ? 'التقنيات' : 'Tech Stack', value: isRTL ? `${project.technologies.length} تقنية` : `${project.technologies.length} technologies` },
   ].filter(Boolean);
 
   const links = [
@@ -290,22 +293,28 @@ const MetaStrip = ({ project, isRTL, font }) => {
           {project.team?.length > 0 && (
             <SpecItem Icon={Users} label={isRTL ? 'فريق العمل' : 'Team'} isRTL={isRTL}>
               <div style={{ display: 'flex', alignItems: 'center', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-                {project.team.slice(0, 6).map((m, i) => (
-                  <div
-                    key={i}
-                    title={`${m.name}${m.role ? ` — ${isRTL ? (m.roleAr || m.role) : m.role}` : ''}`}
-                    style={{
-                      width: 26, height: 26, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                      border: '2px solid #fff', boxShadow: '0 0 0 1px rgb(var(--border))',
-                      marginInlineStart: i > 0 ? -8 : 0,
-                      background: 'rgb(var(--accent-light))', color: 'rgb(var(--accent))',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 700,
-                    }}
-                  >
-                    {m.avatar?.url ? <img src={mediaSrc(m.avatar)} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : m.name?.[0]?.toUpperCase()}
-                  </div>
-                ))}
+                {project.team.slice(0, 6).map((credit, i) => {
+                  const m = credit.member;
+                  if (!m) return null;
+                  const role = credit.roleOverride || m.position;
+                  const roleAr = credit.roleArOverride || m.positionAr;
+                  return (
+                    <div
+                      key={m._id || i}
+                      title={`${m.name}${role ? ` — ${isRTL ? (roleAr || role) : role}` : ''}`}
+                      style={{
+                        width: 26, height: 26, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                        border: '2px solid #fff', boxShadow: '0 0 0 1px rgb(var(--border))',
+                        marginInlineStart: i > 0 ? -8 : 0,
+                        background: 'rgb(var(--accent-light))', color: 'rgb(var(--accent))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, fontWeight: 700,
+                      }}
+                    >
+                      {m.avatar?.url ? <img src={mediaSrc(m.avatar)} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : m.name?.[0]?.toUpperCase()}
+                    </div>
+                  );
+                })}
               </div>
             </SpecItem>
           )}

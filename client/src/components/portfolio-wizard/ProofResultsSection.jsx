@@ -2,6 +2,7 @@ import { Plus, Trash2, Upload, X, Mic } from 'lucide-react';
 import { TK, RADIUS, TextInput, TextArea, IconButton, Spinner } from '../../admin-ui';
 import { mediaSrc } from '../../utils/media';
 import { BilingualPair } from './shared';
+import RelationPicker from './RelationPicker';
 
 const Repeater = ({ title, hint, items, onChange, addLabel, removeLabel, newItem, renderRow, isRTL }) => (
   <div>
@@ -21,11 +22,10 @@ const Repeater = ({ title, hint, items, onChange, addLabel, removeLabel, newItem
   </div>
 );
 
-const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUploads }) => {
-  const testimonial = form.testimonial || {};
-  const setTestimonial = (patch) => set('testimonial', { ...testimonial, ...patch });
-  const isPending = (key) => pendingUploads.some((u) => u.key === key);
+const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia }) => {
   const screenshots = form.proofScreenshots || [];
+  const testimonials = form.testimonials || [];
+  const awards = form.awards || [];
 
   const L = {
     results: isRTL ? 'النتائج' : 'Results',
@@ -44,34 +44,18 @@ const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendi
     before: isRTL ? 'قبل' : 'Before',
     after: isRTL ? 'بعد' : 'After',
     testimonialTitle: isRTL ? 'رأي العميل' : 'CLIENT TESTIMONIAL',
-    quoteEn: isRTL ? 'الاقتباس (إنجليزي)' : 'Quote (EN)',
-    quoteAr: isRTL ? 'الاقتباس (عربي)' : 'الاقتباس (AR)',
-    authorName: isRTL ? 'اسم الكاتب' : 'Author name',
-    roleEn: isRTL ? 'المنصب (إنجليزي)' : 'Role (EN)',
-    roleAr: isRTL ? 'المنصب (عربي)' : 'المنصب (AR)',
-    voiceNoteHint: isRTL ? 'تسجيل صوتي اختياري للشهادة' : 'Optional voice-note recording of the testimonial',
-    removeAudio: isRTL ? 'إزالة التسجيل' : 'Remove audio',
-    uploadVoiceNote: isRTL ? 'رفع رسالة صوتية' : 'Upload voice note',
+    testimonialHint: isRTL ? 'اختر من مكتبة الشهادات المشتركة أو أنشئ واحدة جديدة.' : 'Pick from the shared Testimonials library or create a new one.',
     chatProofTitle: isRTL ? 'دليل واتساب / المحادثات' : 'WHATSAPP / CHAT PROOF',
     chatProofHint: isRTL ? 'لقطات شاشة لرسائل حقيقية من العملاء — تظهر في شبكة بإطار هاتف.' : 'Screenshots of real client messages — shown in a phone-frame grid.',
     remove: isRTL ? 'إزالة' : 'Remove',
-    awardsTitle: isRTL ? 'الجوائز' : 'AWARDS',
-    addAward: isRTL ? 'إضافة جائزة' : 'Add award',
-    removeAward: isRTL ? 'إزالة الجائزة' : 'Remove award',
-    awardTitlePh: isRTL ? 'اسم الجائزة' : 'Award title',
-    organizationPh: isRTL ? 'الجهة المانحة' : 'Organization',
-    yearPh: isRTL ? 'السنة' : 'Year',
+    awardsTitle: isRTL ? 'الجوائز والشهادات' : 'AWARDS & CERTIFICATIONS',
+    awardsHint: isRTL ? 'اختر من مكتبة الجوائز المشتركة أو أنشئ واحدة جديدة.' : 'Pick from the shared Awards library or create a new one.',
     faqsTitle: isRTL ? 'الأسئلة الشائعة' : 'FAQS',
     addQuestion: isRTL ? 'إضافة سؤال' : 'Add question',
     removeQuestion: isRTL ? 'إزالة السؤال' : 'Remove question',
     questionPh: isRTL ? 'السؤال' : 'Question',
     answerPh: isRTL ? 'الإجابة' : 'Answer',
   };
-
-  const quoteEnField = <TextArea key="en" rows={3} value={testimonial.quote || ''} onChange={(e) => setTestimonial({ quote: e.target.value })} placeholder={L.quoteEn} />;
-  const quoteArField = <TextArea key="ar" rows={3} value={testimonial.quoteAr || ''} onChange={(e) => setTestimonial({ quoteAr: e.target.value })} dir="rtl" placeholder={L.quoteAr} />;
-  const roleEnField = <TextInput key="roleEn" value={testimonial.role || ''} onChange={(e) => setTestimonial({ role: e.target.value })} placeholder={L.roleEn} />;
-  const roleArField = <TextInput key="roleAr" value={testimonial.roleAr || ''} onChange={(e) => setTestimonial({ roleAr: e.target.value })} dir="rtl" placeholder={L.roleAr} />;
 
   return (
     <div className="space-y-8">
@@ -101,27 +85,38 @@ const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendi
       />
 
       <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 14, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialTitle}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-          {isRTL ? <>{quoteArField}{quoteEnField}</> : <>{quoteEnField}{quoteArField}</>}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <TextInput value={testimonial.author || ''} onChange={(e) => setTestimonial({ author: e.target.value })} placeholder={L.authorName} dir={isRTL ? 'rtl' : 'ltr'} />
-          {isRTL ? <>{roleArField}{roleEnField}</> : <>{roleEnField}{roleArField}</>}
-        </div>
-
-        <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>{L.voiceNoteHint}</p>
-        {testimonial.audio?.url ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: RADIUS.md, border: `1px solid ${TK.border}`, maxWidth: 320, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-            <Mic style={{ width: 14, height: 14, color: TK.accent, flexShrink: 0 }} />
-            <audio src={mediaSrc(testimonial.audio)} controls style={{ height: 32, flex: 1 }} />
-            <IconButton icon={X} variant="ghost" size={24} onClick={() => { deleteMedia(testimonial.audio); setTestimonial({ audio: null }); }} aria-label={L.removeAudio} />
+        <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialTitle}</p>
+        <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialHint}</p>
+        <RelationPicker
+          apiBase="/testimonials"
+          value={testimonials}
+          onChange={(v) => set('testimonials', v)}
+          multiple
+          displayField="author"
+          quickCreateFields={[
+            { key: 'author', label: 'Author name', labelAr: 'اسم الكاتب', required: true },
+            { key: 'authorAr', label: 'Author name (Arabic)', labelAr: 'اسم الكاتب (عربي)' },
+            { key: 'role', label: 'Role (EN)', labelAr: 'المنصب (إنجليزي)' },
+            { key: 'roleAr', label: 'Role (AR)', labelAr: 'المنصب (عربي)' },
+            { key: 'quote', label: 'Quote (EN)', labelAr: 'الاقتباس (إنجليزي)', required: true, multiline: true },
+            { key: 'quoteAr', label: 'Quote (AR)', labelAr: 'الاقتباس (عربي)', multiline: true },
+          ]}
+        />
+        {testimonials.length > 0 && (
+          <div className="space-y-2" style={{ marginTop: 12 }}>
+            {testimonials.map((t) => (
+              <div key={t._id} style={{ padding: '10px 14px', borderRadius: RADIUS.md, border: `1px solid ${TK.border}` }}>
+                <p style={{ fontSize: 12.5, color: TK.text, fontStyle: 'italic', margin: '0 0 6px' }}>"{t.quote}"</p>
+                <p style={{ fontSize: 11, color: TK.textMuted, margin: 0 }}>— {t.author}{t.role ? `, ${t.role}` : ''}</p>
+                {t.audio?.url && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                    <Mic style={{ width: 12, height: 12, color: TK.accent, flexShrink: 0 }} />
+                    <audio src={mediaSrc(t.audio)} controls style={{ height: 28, flex: 1 }} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        ) : (
-          <label className="au-upload-tile" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: RADIUS.md, border: `1.5px dashed ${TK.border}`, cursor: 'pointer', fontSize: 12, color: TK.textMuted, fontWeight: 500, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-            {isPending('testimonial-audio') ? <Spinner size={14} /> : <Upload style={{ width: 14, height: 14 }} />} {L.uploadVoiceNote}
-            <input type="file" accept="audio/*" onChange={async (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) setTestimonial({ audio: await uploadMedia(f, 'testimonial-audio') }); }} style={{ display: 'none' }} />
-          </label>
         )}
       </div>
 
@@ -150,17 +145,23 @@ const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendi
         </div>
       </div>
 
-      <Repeater
-        title={L.awardsTitle} isRTL={isRTL}
-        items={form.awards} onChange={(v) => set('awards', v)} addLabel={L.addAward} removeLabel={L.removeAward} newItem={{ title: '', org: '', year: new Date().getFullYear() }}
-        renderRow={(a, i, patch) => (
-          <div style={{ display: 'flex', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-            <TextInput value={a.title} onChange={(e) => patch({ title: e.target.value })} placeholder={L.awardTitlePh} containerStyle={{ flex: 1 }} dir={isRTL ? 'rtl' : 'ltr'} />
-            <TextInput value={a.org} onChange={(e) => patch({ org: e.target.value })} placeholder={L.organizationPh} containerStyle={{ flex: 1 }} dir={isRTL ? 'rtl' : 'ltr'} />
-            <TextInput type="number" value={a.year || ''} onChange={(e) => patch({ year: Number(e.target.value) })} placeholder={L.yearPh} containerStyle={{ width: 90, flexShrink: 0 }} />
-          </div>
-        )}
-      />
+      <div>
+        <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.awardsTitle}</p>
+        <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.awardsHint}</p>
+        <RelationPicker
+          apiBase="/awards"
+          value={awards}
+          onChange={(v) => set('awards', v)}
+          multiple
+          displayField="title"
+          quickCreateFields={[
+            { key: 'title', label: 'Award title', labelAr: 'اسم الجائزة', required: true },
+            { key: 'titleAr', label: 'Award title (Arabic)', labelAr: 'اسم الجائزة (عربي)' },
+            { key: 'org', label: 'Issuing organization', labelAr: 'الجهة المانحة' },
+            { key: 'year', label: 'Year', labelAr: 'السنة' },
+          ]}
+        />
+      </div>
 
       <Repeater
         title={L.faqsTitle} isRTL={isRTL}
