@@ -1,5 +1,5 @@
 import { Plus, Trash2, Upload, X, Mic } from 'lucide-react';
-import { TK, RADIUS, TextInput, TextArea, IconButton, Spinner } from '../../admin-ui';
+import { TK, RADIUS, TextInput, TextArea, IconButton, Spinner, Avatar } from '../../admin-ui';
 import { mediaSrc } from '../../utils/media';
 import { BilingualPair } from './shared';
 import RelationPicker from './RelationPicker';
@@ -26,6 +26,18 @@ const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia }) => 
   const screenshots = form.proofScreenshots || [];
   const testimonials = form.testimonials || [];
   const awards = form.awards || [];
+  // Corrected rule (see IMPLEMENTATION_PLAN.md Part 1): hide only what would
+  // require FABRICATING a claim, not everything that's merely optional.
+  // Results/Headline Metrics/Performance/Client Testimonials imply a real,
+  // verifiable business outcome or a real client quote — hidden for a
+  // UI/UX Concept project. WhatsApp/Chat Proof implies a real client
+  // conversation — also hidden. Awards and FAQs are NOT hidden: a concept
+  // project can legitimately win a real award (a Dribbble feature, a design
+  // competition) or answer a real FAQ, so those stay available and simply
+  // don't render on the public page when empty (already true —
+  // ProofSection.jsx returns null unless data is present). Unset/legacy
+  // `projectType` resolves to `false`, so existing projects are unaffected.
+  const isConceptType = Boolean(form.projectType?.isConceptType);
 
   const L = {
     results: isRTL ? 'النتائج' : 'Results',
@@ -59,91 +71,103 @@ const ProofResultsSection = ({ form, set, isRTL, uploadMedia, deleteMedia }) => 
 
   return (
     <div className="space-y-8">
-      <BilingualPair label={L.results} multiline rows={3} isRTL={isRTL} enValue={form.results} arValue={form.resultsAr} onEnChange={(v) => set('results', v)} onArChange={(v) => set('resultsAr', v)} placeholder={L.resultsPh} />
+      {!isConceptType && (
+        <>
+          <BilingualPair label={L.results} multiline rows={3} isRTL={isRTL} enValue={form.results} arValue={form.resultsAr} onEnChange={(v) => set('results', v)} onArChange={(v) => set('resultsAr', v)} placeholder={L.resultsPh} />
 
-      <Repeater
-        title={L.metricsTitle} hint={L.metricsHint} isRTL={isRTL}
-        items={form.metrics} onChange={(v) => set('metrics', v)} addLabel={L.addMetric} removeLabel={L.removeMetric} newItem={{ label: '', value: '' }}
-        renderRow={(m, i, patch) => (
-          <div style={{ display: 'flex', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-            <TextInput value={m.value} onChange={(e) => patch({ value: e.target.value })} placeholder={L.metricValuePh} containerStyle={{ width: 110, flexShrink: 0 }} dir="ltr" />
-            <TextInput value={m.label} onChange={(e) => patch({ label: e.target.value })} placeholder={L.metricLabelPh} containerStyle={{ flex: 1 }} dir={isRTL ? 'rtl' : 'ltr'} />
-          </div>
-        )}
-      />
+          <Repeater
+            title={L.metricsTitle} hint={L.metricsHint} isRTL={isRTL}
+            items={form.metrics} onChange={(v) => set('metrics', v)} addLabel={L.addMetric} removeLabel={L.removeMetric} newItem={{ label: '', value: '' }}
+            renderRow={(m, i, patch) => (
+              <div style={{ display: 'flex', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                <TextInput value={m.value} onChange={(e) => patch({ value: e.target.value })} placeholder={L.metricValuePh} containerStyle={{ width: 110, flexShrink: 0 }} dir="ltr" />
+                <TextInput value={m.label} onChange={(e) => patch({ label: e.target.value })} placeholder={L.metricLabelPh} containerStyle={{ flex: 1 }} dir={isRTL ? 'rtl' : 'ltr'} />
+              </div>
+            )}
+          />
 
-      <Repeater
-        title={L.perfTitle} hint={L.perfHint} isRTL={isRTL}
-        items={form.performanceMetrics} onChange={(v) => set('performanceMetrics', v)} addLabel={L.addRow} removeLabel={L.removeRow} newItem={{ label: '', before: '', after: '' }}
-        renderRow={(m, i, patch) => (
-          <div style={{ display: 'flex', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-            <TextInput value={m.label} onChange={(e) => patch({ label: e.target.value })} placeholder={L.loadTimePh} containerStyle={{ flex: 1 }} dir={isRTL ? 'rtl' : 'ltr'} />
-            <TextInput value={m.before} onChange={(e) => patch({ before: e.target.value })} placeholder={L.before} containerStyle={{ width: 90, flexShrink: 0 }} dir="ltr" />
-            <TextInput value={m.after} onChange={(e) => patch({ after: e.target.value })} placeholder={L.after} containerStyle={{ width: 90, flexShrink: 0 }} dir="ltr" />
-          </div>
-        )}
-      />
+          <Repeater
+            title={L.perfTitle} hint={L.perfHint} isRTL={isRTL}
+            items={form.performanceMetrics} onChange={(v) => set('performanceMetrics', v)} addLabel={L.addRow} removeLabel={L.removeRow} newItem={{ label: '', before: '', after: '' }}
+            renderRow={(m, i, patch) => (
+              <div style={{ display: 'flex', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                <TextInput value={m.label} onChange={(e) => patch({ label: e.target.value })} placeholder={L.loadTimePh} containerStyle={{ flex: 1 }} dir={isRTL ? 'rtl' : 'ltr'} />
+                <TextInput value={m.before} onChange={(e) => patch({ before: e.target.value })} placeholder={L.before} containerStyle={{ width: 90, flexShrink: 0 }} dir="ltr" />
+                <TextInput value={m.after} onChange={(e) => patch({ after: e.target.value })} placeholder={L.after} containerStyle={{ width: 90, flexShrink: 0 }} dir="ltr" />
+              </div>
+            )}
+          />
 
-      <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialTitle}</p>
-        <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialHint}</p>
-        <RelationPicker
-          apiBase="/testimonials"
-          value={testimonials}
-          onChange={(v) => set('testimonials', v)}
-          multiple
-          displayField="author"
-          quickCreateFields={[
-            { key: 'author', label: 'Author name', labelAr: 'اسم الكاتب', required: true },
-            { key: 'authorAr', label: 'Author name (Arabic)', labelAr: 'اسم الكاتب (عربي)' },
-            { key: 'role', label: 'Role (EN)', labelAr: 'المنصب (إنجليزي)' },
-            { key: 'roleAr', label: 'Role (AR)', labelAr: 'المنصب (عربي)' },
-            { key: 'quote', label: 'Quote (EN)', labelAr: 'الاقتباس (إنجليزي)', required: true, multiline: true },
-            { key: 'quoteAr', label: 'Quote (AR)', labelAr: 'الاقتباس (عربي)', multiline: true },
-          ]}
-        />
-        {testimonials.length > 0 && (
-          <div className="space-y-2" style={{ marginTop: 12 }}>
-            {testimonials.map((t) => (
-              <div key={t._id} style={{ padding: '10px 14px', borderRadius: RADIUS.md, border: `1px solid ${TK.border}` }}>
-                <p style={{ fontSize: 12.5, color: TK.text, fontStyle: 'italic', margin: '0 0 6px' }}>"{t.quote}"</p>
-                <p style={{ fontSize: 11, color: TK.textMuted, margin: 0 }}>— {t.author}{t.role ? `, ${t.role}` : ''}</p>
-                {t.audio?.url && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                    <Mic style={{ width: 12, height: 12, color: TK.accent, flexShrink: 0 }} />
-                    <audio src={mediaSrc(t.audio)} controls style={{ height: 28, flex: 1 }} />
+          <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialTitle}</p>
+            <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.testimonialHint}</p>
+            <RelationPicker
+              apiBase="/testimonials"
+              value={testimonials}
+              onChange={(v) => set('testimonials', v)}
+              multiple
+              displayField="author"
+              hasAvatar
+              createTitle={{ en: 'Create testimonial', ar: 'إنشاء شهادة' }}
+              quickCreateFields={[
+                { key: 'avatar', type: 'image', label: 'Photo', labelAr: 'الصورة' },
+                { key: 'author', label: 'Author name', labelAr: 'اسم الكاتب', required: true },
+                { key: 'authorAr', label: 'Author name (Arabic)', labelAr: 'اسم الكاتب (عربي)', optional: true },
+                { key: 'role', label: 'Role (EN)', labelAr: 'المنصب (إنجليزي)', optional: true },
+                { key: 'roleAr', label: 'Role (AR)', labelAr: 'المنصب (عربي)', optional: true },
+                { key: 'quote', label: 'Quote (EN)', labelAr: 'الاقتباس (إنجليزي)', required: true, multiline: true },
+                { key: 'quoteAr', label: 'Quote (AR)', labelAr: 'الاقتباس (عربي)', multiline: true, optional: true },
+              ]}
+            />
+            {testimonials.length > 0 && (
+              <div className="space-y-2" style={{ marginTop: 12 }}>
+                {testimonials.map((t) => (
+                  <div key={t._id} style={{ display: 'flex', gap: 10, padding: '10px 14px', borderRadius: RADIUS.md, border: `1px solid ${TK.border}` }}>
+                    <Avatar image={mediaSrc(t.avatar)} name={t.author} size={32} shape="circle" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 12.5, color: TK.text, fontStyle: 'italic', margin: '0 0 6px' }}>"{t.quote}"</p>
+                      <p style={{ fontSize: 11, color: TK.textMuted, margin: 0 }}>— {t.author}{t.role ? `, ${t.role}` : ''}</p>
+                      {t.audio?.url && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                          <Mic style={{ width: 12, height: 12, color: TK.accent, flexShrink: 0 }} />
+                          <audio src={mediaSrc(t.audio)} controls style={{ height: 28, flex: 1 }} />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {!isConceptType && (
+        <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.chatProofTitle}</p>
+          <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.chatProofHint}</p>
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-2">
+            {screenshots.map((shot, i) => (
+              <div key={i} style={{ position: 'relative', aspectRatio: '9/16', borderRadius: RADIUS.sm, overflow: 'hidden', border: `1px solid ${TK.border}` }}>
+                <img src={mediaSrc(shot)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button onClick={() => { deleteMedia(shot); set('proofScreenshots', screenshots.filter((_, idx) => idx !== i)); }} style={{ position: 'absolute', top: 3, insetInlineEnd: 3, width: 16, height: 16, borderRadius: '50%', background: 'rgba(13,17,23,0.6)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} aria-label={L.remove}>
+                  <X style={{ width: 9, height: 9, color: '#fff' }} />
+                </button>
               </div>
             ))}
+            <label className="au-upload-tile" style={{ aspectRatio: '9/16', borderRadius: RADIUS.sm, border: `1.5px dashed ${TK.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <Upload style={{ width: 14, height: 14, color: TK.textLight }} />
+              <input type="file" accept="image/*" multiple onChange={async (e) => {
+                const files = Array.from(e.target.files); e.target.value = '';
+                for (const file of files) {
+                  const asset = await uploadMedia(file, `proof-${Date.now()}-${Math.random().toString(36).slice(2)}`).catch(() => null);
+                  if (asset) set('proofScreenshots', [...(form.proofScreenshots || []), asset]);
+                }
+              }} style={{ display: 'none' }} />
+            </label>
           </div>
-        )}
-      </div>
-
-      <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.chatProofTitle}</p>
-        <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.chatProofHint}</p>
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-2">
-          {screenshots.map((shot, i) => (
-            <div key={i} style={{ position: 'relative', aspectRatio: '9/16', borderRadius: RADIUS.sm, overflow: 'hidden', border: `1px solid ${TK.border}` }}>
-              <img src={mediaSrc(shot)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <button onClick={() => { deleteMedia(shot); set('proofScreenshots', screenshots.filter((_, idx) => idx !== i)); }} style={{ position: 'absolute', top: 3, insetInlineEnd: 3, width: 16, height: 16, borderRadius: '50%', background: 'rgba(13,17,23,0.6)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} aria-label={L.remove}>
-                <X style={{ width: 9, height: 9, color: '#fff' }} />
-              </button>
-            </div>
-          ))}
-          <label className="au-upload-tile" style={{ aspectRatio: '9/16', borderRadius: RADIUS.sm, border: `1.5px dashed ${TK.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Upload style={{ width: 14, height: 14, color: TK.textLight }} />
-            <input type="file" accept="image/*" multiple onChange={async (e) => {
-              const files = Array.from(e.target.files); e.target.value = '';
-              for (const file of files) {
-                const asset = await uploadMedia(file, `proof-${Date.now()}-${Math.random().toString(36).slice(2)}`).catch(() => null);
-                if (asset) set('proofScreenshots', [...(form.proofScreenshots || []), asset]);
-              }
-            }} style={{ display: 'none' }} />
-          </label>
         </div>
-      </div>
+      )}
 
       <div>
         <p style={{ fontSize: 12, fontWeight: 700, color: TK.textMuted, letterSpacing: isRTL ? 0 : '0.04em', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>{L.awardsTitle}</p>

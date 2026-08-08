@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { Search, X, ChevronDown, ChevronLeft, ChevronRight, Loader2, Check } from 'lucide-react';
-import { TK, RADIUS, STATUS_TONE, MOTION } from './tokens';
+import { TK, RADIUS, STATUS_TONE, MOTION, colorFromName } from './tokens';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // ── Button ──────────────────────────────────────────────────────────────────
@@ -382,12 +382,32 @@ export const Stepper = ({ steps, current, onStepChange }) => {
 };
 
 // ── Avatar ──────────────────────────────────────────────────────────────────
-export const Avatar = ({ name, email, size = 32, tone = 'neutral' }) => {
-  const c = STATUS_TONE[tone] || STATUS_TONE.info;
+// Renders `image` if present (a resolved src string — pass through mediaSrc()
+// first for library media assets); otherwise falls back to initials on a
+// deterministic color. Pass `tone` for semantic coloring (status, role, ...);
+// omit it to auto-color from `name` instead (identity avatars — Client/Team/
+// Testimonial pickers) so the same entity always renders the same color.
+export const Avatar = ({ name, email, image, size = 32, tone, shape = 'rounded' }) => {
+  const c = tone ? (STATUS_TONE[tone] || STATUS_TONE.info) : colorFromName(name || email || '?');
   const initials = name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : (email ? email.slice(0, 2).toUpperCase() : '?');
+  const radius = shape === 'circle' ? '50%' : RADIUS.md;
+
+  if (image) {
+    return (
+      <img
+        src={image}
+        alt=""
+        style={{
+          width: `${size}px`, height: `${size}px`, borderRadius: radius, flexShrink: 0,
+          objectFit: 'cover', border: `1px solid ${TK.border}`, background: TK.bgSubtle,
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{
-      width: `${size}px`, height: `${size}px`, borderRadius: RADIUS.md, flexShrink: 0,
+      width: `${size}px`, height: `${size}px`, borderRadius: radius, flexShrink: 0,
       background: c.bg, border: `1px solid ${c.bd}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: `${Math.round(size * 0.34)}px`, fontWeight: 600, color: c.fg,

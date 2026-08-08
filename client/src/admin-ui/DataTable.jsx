@@ -20,6 +20,7 @@ export const DataTable = ({
   emptyIcon = Inbox,
   emptyTitle,
   emptySubtitle,
+  emptyAction,
   sortKey,
   sortDir = 'asc',
   onSort,
@@ -87,7 +88,7 @@ export const DataTable = ({
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + (selectable ? 1 : 0)}>
-                  <EmptyState icon={emptyIcon} title={resolvedEmptyTitle} subtitle={emptySubtitle} />
+                  <EmptyState icon={emptyIcon} title={resolvedEmptyTitle} subtitle={emptySubtitle} action={emptyAction} />
                 </td>
               </tr>
             ) : rows.map(row => {

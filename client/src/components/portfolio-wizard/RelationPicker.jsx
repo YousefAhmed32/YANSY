@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, X, Plus, Pin, Clock, TrendingUp, ChevronDown, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
-import { TK, RADIUS, SHADOW, Modal, Button, Spinner } from '../../admin-ui';
+import { TK, RADIUS, SHADOW, Modal, Button, Spinner, Avatar, MediaUploadField } from '../../admin-ui';
+import { mediaSrc } from '../../utils/media';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 /**
@@ -31,6 +32,8 @@ const RelationPicker = ({
   quickCreateFields = null,   // [{ key, label, labelAr, required, multiline }] — defaults to [displayField]
   copyFromField,              // PortfolioProject field name to offer "Copy from another project" for, e.g. 'team'
   disabled = false,
+  hasAvatar = false,          // show an [image-or-initials] avatar per item (Client/Team/Testimonial pickers)
+  createTitle,                // quick-create modal title override, e.g. { en: 'Create client', ar: 'إنشاء عميل' }
 }) => {
   const { isRTL } = useLanguage();
   const [items, setItems] = useState([]);
@@ -46,6 +49,19 @@ const RelationPicker = ({
 
   const label = (item) => (typeof displayField === 'function' ? displayField(item) : item?.[displayField]) || '';
   const fields = quickCreateFields || [{ key: typeof displayField === 'string' ? displayField : 'name', label: 'Name', labelAr: 'الاسم', required: true }];
+  const avatarSrc = (item) => mediaSrc(item?.avatar || item?.logo);
+
+  // Quick-create modal groups fields into: image upload (full-width, first —
+  // the visual identity of what you're creating) → primary fields (grid) →
+  // fields explicitly flagged `optional: true` (grid, under a divider) —
+  // instead of one flat stack of inputs, so the modal reads as a proper form
+  // instead of a minimal popup. Deliberately keyed off an explicit `optional`
+  // flag rather than `!f.required` — e.g. a bilingual Arabic-name field isn't
+  // schema-required but still belongs visually next to its English pair, not
+  // demoted under an "Optional" divider alongside Website/Description.
+  const imageFields = fields.filter((f) => f.type === 'image');
+  const primaryFields = fields.filter((f) => f.type !== 'image' && !f.optional);
+  const optionalFields = fields.filter((f) => f.type !== 'image' && f.optional);
 
   const selectedList = multiple ? (value || []) : (value ? [value] : []);
   const selectedIds = new Set(selectedList.map((i) => i._id));
@@ -95,17 +111,25 @@ const RelationPicker = ({
 
   const openCreate = () => {
     const seed = {};
-    fields.forEach((f) => { seed[f.key] = f.key === (typeof displayField === 'string' ? displayField : 'name') ? query : ''; });
+    fields.forEach((f) => {
+      seed[f.key] = f.type === 'image' ? null : (f.key === (typeof displayField === 'string' ? displayField : 'name') ? query : '');
+    });
     setCreateForm(seed);
     setCreateOpen(true);
   };
 
   const submitCreate = async () => {
-    const missing = fields.find((f) => f.required && !createForm[f.key]?.trim());
+    const missing = fields.find((f) => f.required && f.type !== 'image' && !createForm[f.key]?.trim());
     if (missing) return toast.error(isRTL ? 'يرجى تعبئة الحقول المطلوبة' : 'Please fill in the required fields');
     setCreating(true);
     try {
-      const { data } = await api.post(apiBase, createForm);
+      // Falsy image-field values go out as `undefined` (dropped by
+      // JSON.stringify) rather than `null` — an explicit null would ask the
+      // API to set the subdocument path to null instead of just omitting it.
+      const body = { ...createForm };
+      imageFields.forEach((f) => { body[f.key] = createForm[f.key] || undefined; });
+
+      const { data } = await api.post(apiBase, body);
       setItems((prev) => [data.item, ...prev]);
       select(data.item);
       setCreateOpen(false);
@@ -141,6 +165,41 @@ const RelationPicker = ({
     toast.success(isRTL ? 'تم النسخ ✓' : 'Copied ✓');
   };
 
+  const quickCreateLabelStyle = { fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', display: 'block', marginBottom: '6px' };
+  const quickCreateGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '14px' };
+  const quickCreateInputStyle = { width: '100%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, color: TK.text, fontSize: '13px', padding: '10px 13px', borderRadius: RADIUS.md, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
+
+  // A plain function returning JSX (not a component defined inline) —
+  // defining this as `const QuickCreateField = (props) => <div>...</div>`
+  // instead would give it a fresh function identity on every keystroke
+  // (createForm changes -> re-render -> new component type), which makes
+  // React unmount/remount the <input> and drop focus after every character.
+  // Calling a function directly to produce JSX has no such identity, so the
+  // same DOM node survives across renders.
+  const renderQuickCreateField = (f) => (
+    <div key={f.key} style={f.multiline ? { gridColumn: '1 / -1' } : undefined}>
+      <label style={quickCreateLabelStyle}>
+        {(isRTL ? f.labelAr : f.label) || f.key}{f.required && ' *'}
+      </label>
+      {f.multiline ? (
+        <textarea
+          rows={3}
+          dir={f.dir}
+          value={createForm[f.key] || ''}
+          onChange={(e) => setCreateForm((c) => ({ ...c, [f.key]: e.target.value }))}
+          style={{ ...quickCreateInputStyle, lineHeight: 1.55, resize: 'vertical' }}
+        />
+      ) : (
+        <input
+          dir={f.dir}
+          value={createForm[f.key] || ''}
+          onChange={(e) => setCreateForm((c) => ({ ...c, [f.key]: e.target.value }))}
+          style={quickCreateInputStyle}
+        />
+      )}
+    </div>
+  );
+
   const Row = ({ item, icon: Icon }) => (
     <button
       type="button"
@@ -152,8 +211,8 @@ const RelationPicker = ({
         borderRadius: RADIUS.sm, fontSize: '12.5px', color: TK.text,
       }}
     >
-      {item.avatar?.url || item.logo?.url ? (
-        <img src={(item.avatar || item.logo).url} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+      {hasAvatar ? (
+        <Avatar image={avatarSrc(item)} name={label(item)} size={20} shape="circle" />
       ) : Icon ? (
         <Icon style={{ width: 12, height: 12, color: TK.textLight, flexShrink: 0 }} />
       ) : null}
@@ -175,9 +234,7 @@ const RelationPicker = ({
               background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: RADIUS.pill,
               fontSize: '12px', fontWeight: 500, color: TK.accent,
             }}>
-              {(item.avatar?.url || item.logo?.url) && (
-                <img src={(item.avatar || item.logo).url} alt="" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover' }} />
-              )}
+              {hasAvatar && <Avatar image={avatarSrc(item)} name={label(item)} size={16} shape="circle" />}
               {label(item)}
               {!disabled && (
                 <button type="button" onClick={() => remove(item)} aria-label={isRTL ? 'إزالة' : 'Remove'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.accent, display: 'flex', padding: 0 }}>
@@ -282,7 +339,8 @@ const RelationPicker = ({
       <Modal
         open={createOpen}
         onClose={() => !creating && setCreateOpen(false)}
-        title={isRTL ? 'إنشاء جديد' : 'Create new'}
+        title={createTitle ? (isRTL ? createTitle.ar : createTitle.en) : (isRTL ? 'إنشاء جديد' : 'Create new')}
+        width={imageFields.length ? '480px' : '440px'}
         footer={(
           <>
             <Button variant="secondary" onClick={() => setCreateOpen(false)} disabled={creating}>{isRTL ? 'إلغاء' : 'Cancel'}</Button>
@@ -290,28 +348,40 @@ const RelationPicker = ({
           </>
         )}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {fields.map((f) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {imageFields.map((f) => (
             <div key={f.key}>
-              <label style={{ fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                {(isRTL ? f.labelAr : f.label) || f.key}{f.required && ' *'}
-              </label>
-              {f.multiline ? (
-                <textarea
-                  rows={3}
-                  value={createForm[f.key] || ''}
-                  onChange={(e) => setCreateForm((c) => ({ ...c, [f.key]: e.target.value }))}
-                  style={{ width: '100%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, color: TK.text, fontSize: '13px', padding: '10px 13px', borderRadius: RADIUS.md, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
-                />
-              ) : (
-                <input
-                  value={createForm[f.key] || ''}
-                  onChange={(e) => setCreateForm((c) => ({ ...c, [f.key]: e.target.value }))}
-                  style={{ width: '100%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, color: TK.text, fontSize: '13px', padding: '10px 13px', borderRadius: RADIUS.md, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
-                />
-              )}
+              <label style={quickCreateLabelStyle}>{(isRTL ? f.labelAr : f.label) || f.key}</label>
+              <MediaUploadField
+                value={createForm[f.key]}
+                onChange={(v) => setCreateForm((c) => ({ ...c, [f.key]: v }))}
+                isRTL={isRTL}
+                shape="square"
+                fit="contain"
+                size={76}
+              />
             </div>
           ))}
+
+          {primaryFields.length > 0 && (
+            <div style={quickCreateGridStyle}>
+              {primaryFields.map(renderQuickCreateField)}
+            </div>
+          )}
+
+          {optionalFields.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 14px' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', color: TK.textLight, flexShrink: 0 }}>
+                  {isRTL ? 'اختياري' : 'Optional'}
+                </span>
+                <span style={{ flex: 1, borderTop: `1px solid ${TK.borderSoft}` }} />
+              </div>
+              <div style={quickCreateGridStyle}>
+                {optionalFields.map(renderQuickCreateField)}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 

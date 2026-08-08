@@ -1,4 +1,4 @@
-import { Users, Building2, Cpu, Tag as TagIcon, Quote, Award as AwardIcon, LayoutGrid, Globe2, Wrench } from 'lucide-react';
+import { Users, Building2, Cpu, Tag as TagIcon, Quote, Award as AwardIcon, LayoutGrid, Globe2, Wrench, Layers } from 'lucide-react';
 
 /**
  * Declarative config per reusable content library — drives AdminLibrary.jsx
@@ -39,7 +39,10 @@ export const LIBRARY_CONFIGS = {
     labelEn: 'Clients', labelAr: 'العملاء',
     itemLabelEn: 'client', itemLabelAr: 'عميل',
     displayField: 'name',
-    hasAvatar: true, avatarField: 'logo',
+    // square + contain (not the circle + cover used for people photos below) —
+    // brand logos are usually wordmarks or non-square marks that a circular
+    // crop / cover-fit would mangle.
+    hasAvatar: true, avatarField: 'logo', avatarShape: 'square', avatarFit: 'contain',
     fields: [
       { key: 'name', labelEn: 'Name', labelAr: 'الاسم', required: true },
       { key: 'nameAr', labelEn: 'Name (Arabic)', labelAr: 'الاسم (عربي)', dir: 'rtl' },
@@ -169,6 +172,27 @@ export const LIBRARY_CONFIGS = {
     ],
     columns: ['name', 'order', 'isActive'],
   },
+  projectTypes: {
+    apiBase: '/project-types',
+    icon: Layers,
+    labelEn: 'Project Types', labelAr: 'أنواع المشاريع',
+    itemLabelEn: 'project type', itemLabelAr: 'نوع مشروع',
+    displayField: 'name',
+    fields: [
+      { key: 'name', labelEn: 'Name', labelAr: 'الاسم', required: true },
+      { key: 'nameAr', labelEn: 'Name (Arabic)', labelAr: 'الاسم (عربي)', dir: 'rtl' },
+      { key: 'icon', labelEn: 'Icon', labelAr: 'الأيقونة' },
+      { key: 'order', labelEn: 'Order', labelAr: 'الترتيب', type: 'number' },
+      // Drives the wizard/public-page hiding of Client, Live URL, KPIs,
+      // Testimonials, Awards, and Business Results for any project of this
+      // type (see server/models/ProjectType.js) — an admin-editable switch
+      // rather than a hardcoded slug, so a future type gets the same
+      // behavior just by ticking it on.
+      { key: 'isConceptType', labelEn: 'Concept type (no client/live product)', labelAr: 'نوع تصميم مفاهيمي (بدون عميل/منتج مباشر)', type: 'switch' },
+      { key: 'isActive', labelEn: 'Active', labelAr: 'مفعّل', type: 'switch' },
+    ],
+    columns: ['name', 'order', 'isActive'],
+  },
 };
 
-export const LIBRARY_ORDER = ['team', 'clients', 'technologies', 'tags', 'testimonials', 'awards', 'categories', 'industries', 'services'];
+export const LIBRARY_ORDER = ['team', 'clients', 'technologies', 'tags', 'testimonials', 'awards', 'categories', 'industries', 'services', 'projectTypes'];

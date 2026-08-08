@@ -24,6 +24,19 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
   const categoryName = project.category?.name || '';
   const categoryDisplay = isRTL ? (project.category?.nameAr || categoryName) : categoryName;
   const industryDisplay = isRTL ? (project.industry?.nameAr || project.industry?.name) : project.industry?.name;
+  // Phase 1 — see PROJECT_REVIEW.md §4/§11. Missing on any project that
+  // existed before this field shipped is impossible (schema default +
+  // migration backfill both set it to 'live'), but falls back to 'live'
+  // defensively either way. Only shown for the non-default states — every
+  // pre-existing card already reads as "this is real, live work" without a
+  // badge, so only surfacing CONCEPT/ARCHIVED (not LIVE on every card) keeps
+  // that unchanged instead of adding a label to every single existing card.
+  const deliveryStatus = project.deliveryStatus || 'live';
+  const deliveryBadge = deliveryStatus === 'concept'
+    ? { en: 'Concept', ar: 'مفهوم تصميم' }
+    : deliveryStatus === 'archived'
+      ? { en: 'Archived', ar: 'مؤرشف' }
+      : null;
 
   const displayAsset = project.coverImage?.url
     ? project.coverImage
@@ -68,6 +81,11 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
           {industryDisplay && (
             <span className="hidden sm:inline text-[10px] font-semibold px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white tracking-wide">
               {industryDisplay}
+            </span>
+          )}
+          {deliveryBadge && (
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[rgb(var(--accent))]/90 backdrop-blur-sm text-white tracking-wide">
+              {isRTL ? deliveryBadge.ar : deliveryBadge.en}
             </span>
           )}
         </div>

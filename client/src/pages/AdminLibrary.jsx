@@ -1,16 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, Upload, ImageIcon, Loader } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
-import { assetFromMediaLibraryItem } from '../utils/media';
+import { mediaSrc } from '../utils/media';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   TK, RADIUS, FONT, PageHeader, Card, Button, IconButton, Badge, SearchInput,
-  ConfirmDialog, Modal, Switch, TextArea, Select, DataTable, useTableState,
+  ConfirmDialog, Modal, Switch, TextArea, Select, DataTable, useTableState, Avatar, MediaUploadField,
 } from '../admin-ui';
 import { LIBRARY_CONFIGS } from '../admin-ui/libraryConfigs';
 import RelationPicker from '../components/portfolio-wizard/RelationPicker';
+
+// Does the library at `apiBase` show avatars in its own picker? (e.g. Client's
+// `industry` relation field doesn't have logos, but Testimonial's `client`
+// relation field should show the same client logos the Clients page does —
+// derived from the target library's own config instead of re-flagging every
+// relation field by hand, so it can never drift out of sync.
+const relationHasAvatar = (apiBase) => Object.values(LIBRARY_CONFIGS).some((c) => c.apiBase === apiBase && c.hasAvatar);
 
 const labelCls = { fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' };
 const inputStyle = { width: '100%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, color: TK.text, fontSize: '13px', padding: '10px 13px', borderRadius: RADIUS.md, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
@@ -65,8 +72,6 @@ const AdminLibrary = () => {
     deleteFailed: isRTL ? 'فشل الحذف' : 'Delete failed',
     deleteTitle: isRTL ? 'حذف هذا العنصر؟' : 'Delete this item?',
     deleteDesc: isRTL ? 'قد يظل مستخدَمًا في مشاريع أخرى — احذف بحذر.' : 'It may still be referenced by other projects — delete with care.',
-    uploadImage: isRTL ? 'رفع صورة' : 'Upload image',
-    replaceImage: isRTL ? 'استبدال الصورة' : 'Replace image',
     requiredField: isRTL ? 'يرجى تعبئة الحقول المطلوبة' : 'Please fill in the required fields',
   };
 
@@ -101,30 +106,19 @@ const AdminLibrary = () => {
   };
   const closeModal = () => { if (!submitting && !uploading) setModalOpen(false); };
 
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0];
-    e.target.value = '';
-    if (!file) return;
-    const fd = new FormData();
-    fd.append('file', file);
-    setUploading(true);
-    try {
-      const { data } = await api.post('/media-library/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setForm((f) => ({ ...f, [config.avatarField]: assetFromMediaLibraryItem(data.item) }));
-    } catch (err) {
-      toast.error(err?.response?.data?.error || T.saveFailed);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleSubmit = async () => {
     const missing = config.fields.find((f) => f.required && !form[f.key]?.toString().trim());
     if (missing) return toast.error(T.requiredField);
 
     const body = { ...form };
     config.fields.forEach((f) => { if (f.type === 'relation') body[f.key] = form[f.key]?._id || null; });
-    if (config.hasAvatar) body[config.avatarField] = form[config.avatarField] || undefined;
+    // Explicit `null` (not `undefined`) here — MediaUploadField's Remove button
+    // sets form[avatarField] to null and that has to reach the server as a
+    // real "clear this field" value. `undefined` gets dropped by
+    // JSON.stringify, which would silently omit the key and leave the old
+    // logo in place — the exact bug that made Remove a no-op before this
+    // page had a Remove action to test it with.
+    if (config.hasAvatar) body[config.avatarField] = form[config.avatarField] || null;
 
     setSubmitting(true);
     try {
@@ -169,16 +163,18 @@ const AdminLibrary = () => {
   const renderCell = (item, key) => {
     if (key === 'name') {
       const avatar = config.hasAvatar ? item[config.avatarField] : null;
+      const displayName = item[config.displayField] || item.name;
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {config.hasAvatar && (
-            avatar?.url ? (
-              <img src={avatar.url} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-            ) : (
-              <div style={{ width: 26, height: 26, borderRadius: '50%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, flexShrink: 0 }} />
-            )
+            <Avatar
+              image={mediaSrc(avatar)}
+              name={displayName}
+              size={26}
+              shape={config.avatarShape === 'square' ? 'rounded' : 'circle'}
+            />
           )}
-          <span style={{ fontWeight: 500 }}>{item[config.displayField] || item.name}</span>
+          <span style={{ fontWeight: 500 }}>{displayName}</span>
         </div>
       );
     }
@@ -228,7 +224,12 @@ const AdminLibrary = () => {
         onSort={onSort}
         onRowClick={openEdit}
         isRTL={isRTL}
-        emptyTitle={T.emptyTitle}
+        emptyIcon={Icon}
+        emptyTitle={search.trim() ? (isRTL ? 'لا توجد نتائج مطابقة' : 'No matches for your search') : T.emptyTitle}
+        emptySubtitle={search.trim()
+          ? (isRTL ? 'جرّب كلمة بحث مختلفة' : 'Try a different search term')
+          : (isRTL ? `أنشئ أول ${itemLabel} للبدء` : `Create your first ${itemLabel} to get started`)}
+        emptyAction={!search.trim() && <Button variant="primary" size="sm" icon={Plus} onClick={openAdd}>{T.add} {itemLabel}</Button>}
         footer={`${items.length} ${libraryLabel}`}
       />
 
@@ -247,27 +248,15 @@ const AdminLibrary = () => {
           {config.hasAvatar && (
             <div>
               <label style={labelCls}>{isRTL ? 'الصورة' : 'Image'}</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden',
-                  background: TK.bgSubtle, border: `1px solid ${TK.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {form[config.avatarField]?.url ? (
-                    <img src={form[config.avatarField].url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <ImageIcon style={{ width: 18, height: 18, color: TK.textLight }} />
-                  )}
-                  {uploading && (
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Loader style={{ width: 16, height: 16, color: TK.accent, animation: 'au-spin 0.8s linear infinite' }} />
-                    </div>
-                  )}
-                </div>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px', border: `1px dashed ${TK.border}`, borderRadius: RADIUS.md, cursor: 'pointer', fontSize: '12px', fontWeight: 500, color: TK.textMuted }}>
-                  <Upload style={{ width: 13, height: 13 }} /> {form[config.avatarField]?.url ? T.replaceImage : T.uploadImage}
-                  <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
-                </label>
-              </div>
+              <MediaUploadField
+                value={form[config.avatarField]}
+                onChange={(v) => setForm((f) => ({ ...f, [config.avatarField]: v }))}
+                onUploadingChange={setUploading}
+                isRTL={isRTL}
+                size={72}
+                shape={config.avatarShape === 'square' ? 'square' : 'circle'}
+                fit={config.avatarFit === 'contain' ? 'contain' : 'cover'}
+              />
             </div>
           )}
 
@@ -291,6 +280,7 @@ const AdminLibrary = () => {
                   onChange={(v) => setForm((c) => ({ ...c, [f.key]: v }))}
                   multiple={false}
                   allowCreate={false}
+                  hasAvatar={relationHasAvatar(f.apiBase)}
                   placeholder={isRTL ? 'اختيار…' : 'Select…'}
                 />
               ) : f.type === 'number' ? (

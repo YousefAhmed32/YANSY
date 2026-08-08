@@ -7,7 +7,7 @@ import {
   BarChart3, Users, ClipboardList, Lightbulb, Image, Search, FileText, Shield,
   DollarSign, UserCheck, Bell, Target, LineChart, Bot, Brain, Layers, Video,
   Clapperboard, Star, Clock, PanelLeft, PanelLeftClose, GripVertical, Sparkles, Award,
-  Library, UserSquare2, Building2, Cpu, Tag as TagIcon, Quote, LayoutGrid, Globe2, Wrench,
+  Library, UserSquare2, Building2, Cpu, Tag as TagIcon, Quote, LayoutGrid, Globe2, Wrench, Shapes,
 } from 'lucide-react';
 import { TK, RADIUS, SHADOW, MOTION } from './tokens';
 
@@ -54,6 +54,7 @@ const buildAdminNav = (t, language) => {
     { to: '/app/admin/libraries/categories', label: ar ? 'الفئات'            : 'Categories',          icon: LayoutGrid,  group: g.libraries },
     { to: '/app/admin/libraries/industries', label: ar ? 'الصناعات'          : 'Industries',          icon: Globe2,      group: g.libraries },
     { to: '/app/admin/libraries/services',   label: ar ? 'الخدمات'           : 'Services',            icon: Wrench,      group: g.libraries },
+    { to: '/app/admin/libraries/projectTypes', label: ar ? 'أنواع المشاريع'  : 'Project Types',       icon: Shapes,      group: g.libraries },
 
     { to: '/app/admin/users',            label: t('users.title'),                                  icon: Users,           group: g.people },
     { to: '/app/admin/crm',              label: 'CRM',                                             icon: Target,          group: g.people },

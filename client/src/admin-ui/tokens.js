@@ -46,6 +46,29 @@ export const STATUS_TONE = {
 
 export const RADIUS = { sm: '6px', md: '8px', lg: '10px', xl: '12px', pill: '999px' };
 
+// Deterministic per-name color set for identity avatars (Client/Team/Testimonial
+// initials fallback) — distinct from STATUS_TONE, which is semantic (success/
+// danger/...) and shouldn't be repurposed to mean "this is the 3rd client
+// alphabetically". Picked for AA contrast on their own bg at 13px+ bold text.
+export const AVATAR_PALETTE = [
+  { fg: '#2563EB', bg: 'rgba(37,99,235,0.10)',  bd: 'rgba(37,99,235,0.22)'  }, // blue
+  { fg: '#7C3AED', bg: 'rgba(124,58,237,0.10)', bd: 'rgba(124,58,237,0.22)' }, // violet
+  { fg: '#0D9488', bg: 'rgba(13,148,136,0.10)', bd: 'rgba(13,148,136,0.22)' }, // teal
+  { fg: '#D97706', bg: 'rgba(217,119,6,0.10)',  bd: 'rgba(217,119,6,0.22)'  }, // amber
+  { fg: '#DB2777', bg: 'rgba(219,39,119,0.10)', bd: 'rgba(219,39,119,0.22)' }, // pink
+  { fg: '#16A34A', bg: 'rgba(22,163,74,0.10)',  bd: 'rgba(22,163,74,0.22)'  }, // green
+  { fg: '#4F46E5', bg: 'rgba(79,70,229,0.10)',  bd: 'rgba(79,70,229,0.22)'  }, // indigo
+  { fg: '#E11D48', bg: 'rgba(225,29,72,0.10)',  bd: 'rgba(225,29,72,0.22)'  }, // rose
+];
+
+// Stable hash so the same name always lands on the same palette color across
+// renders/sessions (no Math.random — this is identity, not decoration).
+export const colorFromName = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i += 1) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
+};
+
 export const SPACE = { xs: '4px', sm: '8px', md: '12px', lg: '16px', xl: '20px', xxl: '28px' };
 
 export const SHADOW = {

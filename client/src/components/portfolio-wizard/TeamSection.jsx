@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import { TK, RADIUS, TextInput, IconButton } from '../../admin-ui';
+import { TK, RADIUS, TextInput, IconButton, Avatar } from '../../admin-ui';
 import { mediaSrc } from '../../utils/media';
 import RelationPicker from './RelationPicker';
 
@@ -49,10 +49,13 @@ const TeamSection = ({ form, set, isRTL }) => {
         multiple
         displayField="name"
         allowCreate
+        hasAvatar
+        createTitle={{ en: 'Create team member', ar: 'إنشاء عضو فريق' }}
         quickCreateFields={[
+          { key: 'avatar', type: 'image', label: 'Photo', labelAr: 'الصورة' },
           { key: 'name', label: 'Name', labelAr: 'الاسم', required: true },
-          { key: 'position', label: 'Position (EN)', labelAr: 'المنصب (إنجليزي)' },
-          { key: 'positionAr', label: 'Position (AR)', labelAr: 'المنصب (عربي)' },
+          { key: 'position', label: 'Position (EN)', labelAr: 'المنصب (إنجليزي)', optional: true },
+          { key: 'positionAr', label: 'Position (AR)', labelAr: 'المنصب (عربي)', optional: true },
         ]}
       />
 
@@ -60,11 +63,7 @@ const TeamSection = ({ form, set, isRTL }) => {
         <div className="space-y-3" style={{ marginTop: 16 }}>
           {team.map((t) => t.member && (
             <div key={t.member._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: RADIUS.lg, border: `1px solid ${TK.border}`, background: TK.surface, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-              {t.member.avatar?.url ? (
-                <img src={mediaSrc(t.member.avatar)} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-              ) : (
-                <div style={{ width: 44, height: 44, borderRadius: '50%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, flexShrink: 0 }} />
-              )}
+              <Avatar image={mediaSrc(t.member.avatar)} name={t.member.name} size={44} shape="circle" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 13, fontWeight: 600, color: TK.text, margin: '0 0 6px' }}>{t.member.name}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

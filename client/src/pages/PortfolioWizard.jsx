@@ -18,6 +18,7 @@ import { generateDemoProject } from '../utils/demoGenerators';
 
 const EMPTY_FORM = {
   title: '', titleAr: '', tagline: '', taglineAr: '', category: null, industry: null,
+  projectType: null, deliveryStatus: 'live',
   client: null, location: '', locationAr: '', confidential: false, private: false,
   description: '', descriptionAr: '',
   myRole: '', myRoleAr: '', goals: '', goalsAr: '', painPoints: '', painPointsAr: '',
@@ -26,7 +27,7 @@ const EMPTY_FORM = {
   liveUrl: '', figmaUrl: '', githubUrl: '', technologies: [], projectTags: [], duration: '', teamSize: '', startDate: '', launchDate: '', year: new Date().getFullYear(),
   relatedProjectsOverride: [],
   coverImage: null, coverVideo: null, gallery: [],
-  status: 'draft', featured: false,
+  status: 'draft', featured: false, displayOrder: null,
   metaTitle: '', metaDescription: '',
 };
 
@@ -42,14 +43,30 @@ const SECTION_DEFS = [
 // Smooth 0–100 completion score across the fields that matter for a good
 // case study, rather than a per-section boolean — gives the admin real
 // signal on how "finished" a draft is instead of a jumpy 1-of-6 counter.
-const SCORE_FIELDS = [
+//
+// Split into two groups (Phase 1 — see PROJECT_REVIEW.md §9): CORE applies
+// to every project; LIVE_ONLY covers fields that only make sense for a
+// project with a real client engagement or a live, visitable product
+// (results, headline metrics, testimonials, a live URL). A UI/UX Concept
+// project isn't "less finished" for not having those — it never asks the
+// admin to fill them in (see OverviewSection/ProofResultsSection) — so
+// scoring it against them would cap every concept project below 100% for
+// fields it's not even allowed to fill in. For every other project type
+// this produces the exact same 15-field score as before, in the same order.
+const CORE_SCORE_FIELDS = [
   (f) => Boolean(f.title), (f) => Boolean(f.tagline), (f) => Boolean(f.coverImage?.url),
   (f) => Boolean(f.description), (f) => Boolean(f.challenge), (f) => Boolean(f.solution),
-  (f) => Boolean(f.process), (f) => Boolean(f.results), (f) => (f.metrics || []).length > 0,
-  (f) => (f.testimonials || []).length > 0, (f) => (f.gallery || []).length > 0, (f) => (f.technologies || []).length > 0,
-  (f) => Boolean(f.metaTitle || f.metaDescription), (f) => Boolean(f.liveUrl), (f) => (f.team || []).length > 0,
+  (f) => Boolean(f.process), (f) => (f.gallery || []).length > 0, (f) => (f.technologies || []).length > 0,
+  (f) => Boolean(f.metaTitle || f.metaDescription), (f) => (f.team || []).length > 0,
 ];
-const calcCompletion = (f) => Math.round((100 * SCORE_FIELDS.filter((fn) => fn(f)).length) / SCORE_FIELDS.length);
+const LIVE_ONLY_SCORE_FIELDS = [
+  (f) => Boolean(f.results), (f) => (f.metrics || []).length > 0,
+  (f) => (f.testimonials || []).length > 0, (f) => Boolean(f.liveUrl),
+];
+const calcCompletion = (f) => {
+  const fields = f.projectType?.isConceptType ? CORE_SCORE_FIELDS : [...CORE_SCORE_FIELDS, ...LIVE_ONLY_SCORE_FIELDS];
+  return Math.round((100 * fields.filter((fn) => fn(f)).length) / fields.length);
+};
 
 const STATUS_TONE = { draft: 'neutral', published: 'success', archived: 'warning' };
 const STATUS_LABEL = {
@@ -164,6 +181,7 @@ const PortfolioWizard = () => {
     year: f.year ? Number(f.year) : undefined,
     category: toId(f.category),
     industry: toId(f.industry),
+    projectType: toId(f.projectType),
     client: toId(f.client),
     technologies: toIds(f.technologies),
     projectTags: toIds(f.projectTags),
@@ -278,7 +296,13 @@ const PortfolioWizard = () => {
       story: Boolean(form.description),
       team: (form.team || []).length > 0,
       media: (form.gallery || []).length > 0 || (form.blocks || []).length > 0,
-      proof: Boolean(form.results || (form.metrics || []).length || (form.testimonials || []).length),
+      // Chat Proof (proofScreenshots) is hidden in the wizard for concept
+      // types (see ProofResultsSection.jsx) — scoring against it here would
+      // check for data the admin was never shown a way to enter. FAQs stay
+      // available for every type, so that's the only concept-type signal.
+      proof: form.projectType?.isConceptType
+        ? Boolean((form.faqs || []).length)
+        : Boolean(form.results || (form.metrics || []).length || (form.testimonials || []).length),
       seo: Boolean(form.metaTitle || form.metaDescription),
     }[s.key],
   })), [form, isRTL]);

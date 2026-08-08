@@ -117,7 +117,13 @@
     useEffect(() => { setPage(1); }, [status, category]);
     useEffect(() => { setSelected(new Set()); }, [status, category, search, page]);
 
-    const canReorder = status === 'all' && category === 'All' && !search;
+    // `pages <= 1` matters: without it, dragging a row on page 2+ writes
+    // dense 0-based ranks (order: i) scoped to THAT page's 20 items, which
+    // collide with page 1's own 0..19 — silent cross-page corruption. Large
+    // catalogs should use the wizard's Display Order field (any integer,
+    // any catalog size) instead; drag-and-drop stays a small-catalog
+    // convenience.
+    const canReorder = status === 'all' && category === 'All' && !search && pages <= 1;
 
     // ── Selection ────────────────────────────────────────────────────────────
     const toggleSelect = (id) => {
@@ -312,6 +318,15 @@
                     <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: TK.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: '0 1 auto' }}>{p.title}</h3>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '5px' }}>
+                    {p.displayOrder !== null && p.displayOrder !== undefined && (
+                      <span
+                        title={language === 'ar' ? 'ترتيب العرض اليدوي' : 'Manual display order'}
+                        dir="ltr"
+                        style={{ fontSize: '10px', fontWeight: 700, color: TK.accent, background: TK.accentBg, border: `1px solid ${TK.accentBd}`, borderRadius: RADIUS.pill, padding: '1px 7px' }}
+                      >
+                        #{p.displayOrder}
+                      </span>
+                    )}
                     {p.category && <Badge tone="info">{language === 'ar' ? (p.category.nameAr || p.category.name) : p.category.name}</Badge>}
                     <Badge tone={STATUS_TONE[p.status] || 'neutral'} dot>{statusDisplayLabel(p.status, language)}</Badge>
                     {p.featured && <Badge tone="purple">{language === 'ar' ? 'مميز' : 'Featured'}</Badge>}
