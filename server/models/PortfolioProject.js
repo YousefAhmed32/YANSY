@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { mediaAssetSchema } = require('./shared/mediaAssetSchema');
+const { UNRANKED_DISPLAY_ORDER } = require('../utils/displayOrder');
 
 /**
  * Schema v2 — curated core fields + a flexible content-block system.
@@ -25,6 +26,41 @@ const { mediaAssetSchema } = require('./shared/mediaAssetSchema');
  * keeps a small join-object shape (`{ member, roleOverride, roleArOverride }`)
  * rather than a bare ObjectId array because how someone is credited on THIS
  * project can differ from their canonical library position.
+ *
+ * Schema v3.1 (Design Showcase, Phase 1 — see PROJECT_REVIEW.md) adds two
+ * classification fields so UI-only work (mobile app designs, dashboards,
+ * concepts with no live URL or client) can live in the same collection
+ * without looking unfinished or fake:
+ *
+ *   projectType    — ref into the new ProjectType library (Web Project,
+ *                     Mobile App, Dashboard, Landing Page, Branding,
+ *                     UI/UX Concept, ...). Optional — every project that
+ *                     existed before this field shipped simply has it unset,
+ *                     which the wizard/public page treat identically to
+ *                     "no restrictions apply" (every field shows, exactly
+ *                     as it did before this change).
+ *   deliveryStatus — 'live' | 'concept' | 'archived'. Defaults to 'live' so
+ *                     every pre-existing project is correct with zero writes
+ *                     required (see the migration script for why existing
+ *                     documents are also backfilled explicitly, not left to
+ *                     rely on this default alone).
+ *
+ * Neither field removes or repurposes anything — every field that existed
+ * before v3.1 keeps its exact same meaning and behavior.
+ *
+ * Schema v3.2 (Phase 2 correction + manual ordering — see IMPLEMENTATION_PLAN.md)
+ * narrows Phase 1's concept-type field-hiding (Client/Live URL/Awards are no
+ * longer force-hidden — see the wizard) and renames/fixes the pre-existing,
+ * never-fully-wired `order` field into `displayOrder`:
+ *
+ *   displayOrder — integer. Lower sorts first on the public portfolio.
+ *                  Defaults to UNRANKED_DISPLAY_ORDER (server/utils/
+ *                  displayOrder.js), a sentinel that sorts after every real
+ *                  manual rank — NOT `null`/0, because Mongo's native
+ *                  ascending sort puts null/missing fields FIRST, the
+ *                  opposite of "empty sorts last." Every read/write path
+ *                  that shows this field to an admin converts the sentinel
+ *                  to/from a blank input — see server/utils/displayOrder.js.
  */
 
 // ── Reusable sub-schemas ──────────────────────────────────────────────────────
@@ -126,6 +162,15 @@ const portfolioProjectSchema = new mongoose.Schema(
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     // Reference into the Industry library — replaces the free-text string.
     industry: { type: mongoose.Schema.Types.ObjectId, ref: 'Industry' },
+    // Reference into the ProjectType library (Web Project, Mobile App,
+    // Dashboard, UI/UX Concept, ...) — see the v3.1 doc comment above.
+    // Deliberately optional and un-migrated: every project created before
+    // this field existed keeps working with it unset.
+    projectType: { type: mongoose.Schema.Types.ObjectId, ref: 'ProjectType' },
+    // Did this project actually ship as a real, visitable product? Defaults
+    // to 'live' — the correct value for every project that existed before
+    // this field was introduced.
+    deliveryStatus: { type: String, enum: ['live', 'concept', 'archived'], default: 'live' },
 
     // ── Client ────────────────────────────────────────────────────────────
     // Reference into the Client library (server/models/Client.js) — replaces
@@ -204,7 +249,14 @@ const portfolioProjectSchema = new mongoose.Schema(
     // ── Publishing ────────────────────────────────────────────────────────
     status:      { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     featured:    { type: Boolean, default: false },
-    order:       { type: Number, default: 0 },
+    // Manual portfolio rank — see the v3.2 doc comment above and
+    // server/utils/displayOrder.js. Always a real integer, never null; the
+    // sentinel default means "no manual rank," not "rank zero."
+    displayOrder: {
+      type: Number,
+      default: UNRANKED_DISPLAY_ORDER,
+      validate: { validator: Number.isInteger, message: 'displayOrder must be an integer' },
+    },
     publishedAt: { type: Date },
 
     // ── SEO ───────────────────────────────────────────────────────────────
@@ -224,8 +276,10 @@ const portfolioProjectSchema = new mongoose.Schema(
 // (e.g. "find projects using this client") goes through Client/Technology
 // usage tracking instead, not full-text search.
 portfolioProjectSchema.index({ title: 'text', titleAr: 'text', description: 'text', descriptionAr: 'text' });
-portfolioProjectSchema.index({ status: 1, order: 1, createdAt: -1 });
+// Matches the public listing's default sort exactly (see portfolio.routes.js
+// CURSOR_SORT) — displayOrder ASC, featured DESC, publishedAt DESC.
+portfolioProjectSchema.index({ status: 1, private: 1, displayOrder: 1, featured: -1, publishedAt: -1 });
 portfolioProjectSchema.index({ status: 1, featured: 1 });
-portfolioProjectSchema.index({ createdAt: -1, _id: -1 }); // cursor pagination
+portfolioProjectSchema.index({ createdAt: -1, _id: -1 }); // sort=oldest cursor pagination
 
 module.exports = mongoose.model('PortfolioProject', portfolioProjectSchema);

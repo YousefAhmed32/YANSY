@@ -3,6 +3,7 @@ const express = require('express');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../utils/auditLogger');
 const { slugify } = require('../utils/slugify');
+const { attachUsage, detachUsage } = require('../media/mediaCatalog.service');
 
 /**
  * Generic CRUD router for a reusable content-library collection (Team,
@@ -18,13 +19,21 @@ const { slugify } = require('../utils/slugify');
  *                  omit for slug-less models (Testimonial/Award)
  *   populate     - optional populate spec applied to list/get/recent/most-used responses
  *   defaultSort  - default Mongoose sort object
+ *   assetFields  - field keys holding a mediaAssetSchema value (e.g. ['logo'] for
+ *                  Client, ['avatar'] for TeamMember, ['avatar','audio'] for
+ *                  Testimonial) — kept in sync with the Media catalog's
+ *                  usedIn/usageCount via server/media/mediaCatalog.service.js so
+ *                  replacing or removing one never leaves an orphaned upload.
  */
 const createLibraryRouter = (
   Model,
-  { entityName = 'item', searchFields = ['name', 'nameAr'], slugSource, populate, defaultSort = { name: 1 } } = {}
+  { entityName = 'item', searchFields = ['name', 'nameAr'], slugSource, populate, defaultSort = { name: 1 }, assetFields = [] } = {}
 ) => {
   const router = express.Router();
   router.use(authenticate, requireAdmin);
+
+  // Media-catalog asset id currently sitting on `doc[field].asset`, if any.
+  const assetIdOf = (doc, field) => doc?.[field]?.asset ? String(doc[field].asset) : null;
 
   const buildSearchFilter = (q) => {
     if (!q?.trim()) return {};
@@ -113,6 +122,10 @@ const createLibraryRouter = (
       if (slugSource) data.slug = await ensureUniqueSlug(data[slugSource] || data.name);
 
       const item = await Model.create(data);
+      await Promise.all(assetFields.map((field) => {
+        const assetId = assetIdOf(item, field);
+        return assetId ? attachUsage(assetId, { model: Model.modelName, id: item._id, field }) : null;
+      }));
       audit({ req, action: `${entityName}.create`, entityType: Model.modelName, entityId: item._id, after: item.toObject() });
       res.status(201).json({ item });
     } catch (err) {
@@ -126,6 +139,7 @@ const createLibraryRouter = (
       const item = await Model.findById(req.params.id);
       if (!item) return res.status(404).json({ error: 'Not found' });
       const before = item.toObject();
+      const beforeAssetIds = Object.fromEntries(assetFields.map((f) => [f, assetIdOf(before, f)]));
 
       const data = { ...req.body };
       const renamed = slugSource && data[slugSource] !== undefined && data[slugSource] !== before[slugSource];
@@ -134,6 +148,20 @@ const createLibraryRouter = (
 
       Object.assign(item, data);
       await item.save();
+
+      // Attach/detach only the asset fields that actually changed — replacing
+      // a logo detaches the old catalog entry (auto-deleting it if nothing
+      // else references it) and attaches the new one; leaving a field
+      // untouched on this save is a no-op.
+      await Promise.all(assetFields.map((field) => {
+        const afterId = assetIdOf(item, field);
+        const beforeId = beforeAssetIds[field];
+        if (afterId === beforeId) return null;
+        return Promise.all([
+          beforeId ? detachUsage(beforeId, { model: Model.modelName, id: item._id, field }) : null,
+          afterId ? attachUsage(afterId, { model: Model.modelName, id: item._id, field }) : null,
+        ]);
+      }));
 
       audit({ req, action: `${entityName}.update`, entityType: Model.modelName, entityId: item._id, before, after: item.toObject() });
       res.json({ item });
@@ -162,6 +190,10 @@ const createLibraryRouter = (
       if (!item) return res.status(404).json({ error: 'Not found' });
       const before = item.toObject();
       await item.deleteOne();
+      await Promise.all(assetFields.map((field) => {
+        const assetId = assetIdOf(before, field);
+        return assetId ? detachUsage(assetId, { model: Model.modelName, id: item._id, field }) : null;
+      }));
       audit({ req, action: `${entityName}.delete`, entityType: Model.modelName, entityId: item._id, before });
       res.json({ message: 'Deleted successfully' });
     } catch (err) {

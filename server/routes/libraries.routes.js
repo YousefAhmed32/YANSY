@@ -9,6 +9,7 @@ const Award       = require('../models/Award');
 const Category    = require('../models/Category');
 const Industry    = require('../models/Industry');
 const Service     = require('../models/Service');
+const ProjectType = require('../models/ProjectType');
 
 /**
  * Mounts one CRUD router per reusable content library (see the CMS
@@ -22,6 +23,7 @@ const mountLibraryRoutes = (app) => {
     entityName: 'team_member',
     searchFields: ['name', 'nameAr', 'position', 'positionAr'],
     slugSource: 'name',
+    assetFields: ['avatar'],
   }));
 
   app.use('/api/clients', createLibraryRouter(Client, {
@@ -29,6 +31,7 @@ const mountLibraryRoutes = (app) => {
     searchFields: ['name', 'nameAr', 'country'],
     slugSource: 'name',
     populate: 'industry',
+    assetFields: ['logo'],
   }));
 
   app.use('/api/technologies', createLibraryRouter(Technology, {
@@ -49,6 +52,7 @@ const mountLibraryRoutes = (app) => {
     searchFields: ['author', 'authorAr', 'quote'],
     populate: 'client',
     defaultSort: { createdAt: -1 },
+    assetFields: ['avatar', 'audio'],
   }));
 
   app.use('/api/awards', createLibraryRouter(Award, {
@@ -73,6 +77,14 @@ const mountLibraryRoutes = (app) => {
 
   app.use('/api/services', createLibraryRouter(Service, {
     entityName: 'service',
+    searchFields: ['name', 'nameAr'],
+    slugSource: 'name',
+    defaultSort: { order: 1, name: 1 },
+  }));
+
+  // Phase 1 of the Design Showcase work — see PROJECT_REVIEW.md §2/§3.
+  app.use('/api/project-types', createLibraryRouter(ProjectType, {
+    entityName: 'project_type',
     searchFields: ['name', 'nameAr'],
     slugSource: 'name',
     defaultSort: { order: 1, name: 1 },

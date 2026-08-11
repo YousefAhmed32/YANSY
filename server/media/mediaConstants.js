@@ -8,6 +8,7 @@ const MIME_TO_EXT = {
   'image/png':  '.png',
   'image/webp': '.webp',
   'image/gif':  '.gif',
+  'image/svg+xml': '.svg',
   'video/mp4':       '.mp4',
   'video/webm':      '.webm',
   'video/quicktime': '.mov',
@@ -25,7 +26,12 @@ const MIME_TO_EXT = {
   'text/plain': '.txt',
 };
 
-const IMAGE_MIMES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+// SVG is deliberately included here (not a separate set) so every existing
+// consumer of IMAGE_MIMES — logo/avatar uploads, the generic file uploader —
+// gains SVG support in one place. Raw SVG can carry <script>/on* handlers, so
+// uploads are sanitized in media.service.js before they're hashed/stored;
+// never trust an SVG buffer that skipped that step.
+const IMAGE_MIMES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 const VIDEO_MIMES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const AUDIO_MIMES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/ogg'];
 const DOCUMENT_MIMES = [

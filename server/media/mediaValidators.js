@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const { MIME_TO_EXT } = require('./mediaConstants');
+const { looksLikeSvg } = require('./svgSanitizer');
 
 const isAllowedMime = (mime, allowSet) => allowSet.has(mime);
 
@@ -41,10 +42,12 @@ const assertMagicBytes = async (buffer, claimedMime, allowSet) => {
     const { fileTypeFromBuffer } = await import('file-type');
     const detected = await fileTypeFromBuffer(buffer);
     if (!detected) {
-      // Some allowed types have no reliable magic-byte signature (plain text, and
-      // some PDFs saved without the exact leading bytes file-type expects).
+      // Some allowed types have no reliable magic-byte signature (plain text,
+      // XML-based SVG, and some PDFs saved without the exact leading bytes
+      // file-type expects).
       if (claimedMime === 'text/plain') return;
       if (claimedMime === 'application/pdf' && buffer.slice(0, 4).toString() === '%PDF') return;
+      if (claimedMime === 'image/svg+xml' && looksLikeSvg(buffer)) return;
       const err = new Error('File content could not be verified.');
       err.status = 400;
       throw err;

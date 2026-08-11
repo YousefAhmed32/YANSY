@@ -21,7 +21,7 @@ const adminOnly = requireAdmin;
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 60 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => cb(null, /^(image\/(jpeg|jpg|png|webp|gif)|video\/(mp4|webm|quicktime)|audio\/(mpeg|mp3|wav|x-wav|ogg))$/.test(file.mimetype)),
+  fileFilter: (req, file, cb) => cb(null, /^(image\/(jpeg|jpg|png|webp|gif|svg\+xml)|video\/(mp4|webm|quicktime)|audio\/(mpeg|mp3|wav|x-wav|ogg))$/.test(file.mimetype)),
 });
 
 router.use(protect, adminOnly);

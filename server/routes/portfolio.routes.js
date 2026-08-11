@@ -13,11 +13,13 @@ const Tag         = require('../models/Tag');
 const Testimonial = require('../models/Testimonial');
 const Award       = require('../models/Award');
 const Service     = require('../models/Service');
+const ProjectType = require('../models/ProjectType');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { audit }         = require('../utils/auditLogger');
 const { uploadPortfolioMedia, deletePortfolioImage, buildResponsiveUrl } = require('../utils/portfolioMedia');
 const { slugify } = require('../utils/slugify');
 const { touchUsage } = require('./libraryRouter.factory');
+const { UNRANKED_DISPLAY_ORDER, normalizeDisplayOrderInput, serializeDisplayOrder } = require('../utils/displayOrder');
 
 const protect   = authenticate;
 const adminOnly = requireAdmin;
@@ -54,6 +56,7 @@ const PROJECT_POPULATE = [
   { path: 'client', populate: { path: 'industry', select: 'name nameAr slug' } },
   { path: 'category' },
   { path: 'industry' },
+  { path: 'projectType' },
   { path: 'technologies' },
   { path: 'projectTags' },
   { path: 'services' },
@@ -77,6 +80,7 @@ const bumpLibraryUsage = (project) => {
   touchUsage(Category, project.category).catch(() => {});
   touchUsage(Industry, project.industry).catch(() => {});
   touchUsage(Service, project.services).catch(() => {});
+  touchUsage(ProjectType, project.projectType).catch(() => {});
 };
 
 const ensureUniqueSlug = async (title, excludeId) => {
@@ -100,6 +104,7 @@ const ensureUniqueSlug = async (title, excludeId) => {
 // onto the document wholesale.
 const WRITABLE_FIELDS = [
   'title', 'titleAr', 'tagline', 'taglineAr', 'category', 'industry',
+  'projectType', 'deliveryStatus',
   'client', 'location', 'locationAr', 'confidential', 'private',
   'description', 'descriptionAr',
   'myRole', 'myRoleAr', 'goals', 'goalsAr', 'painPoints', 'painPointsAr',
@@ -108,10 +113,18 @@ const WRITABLE_FIELDS = [
   'liveUrl', 'figmaUrl', 'githubUrl', 'technologies', 'projectTags', 'duration', 'teamSize', 'startDate', 'launchDate', 'year',
   'relatedProjectsOverride',
   'coverImage', 'coverVideo', 'gallery',
-  'status', 'featured', 'order',
+  'status', 'featured', 'displayOrder',
   'metaTitle', 'metaDescription',
 ];
 const pickWritable = (body) => Object.fromEntries(WRITABLE_FIELDS.filter((k) => k in body).map((k) => [k, body[k]]));
+
+// `displayOrder` needs its blank/null/omitted -> sentinel coercion applied
+// on every write path that goes through `pickWritable` (create + update).
+// Throws (caller catches -> 400) on a non-integer, non-blank value.
+const applyDisplayOrderCoercion = (body) => {
+  if ('displayOrder' in body) body.displayOrder = normalizeDisplayOrderInput(body.displayOrder);
+  return body;
+};
 
 // Every media-asset-bearing spot in the schema, flattened into one array —
 // used so delete/duplicate never orphans a file in GridFS just because it
@@ -136,6 +149,10 @@ const collectMediaAssets = (project) => {
 // Decorate a project doc's media assets with ready-to-use responsive URLs (doesn't mutate DB)
 const withResponsiveMedia = (projectDoc) => {
   const project = projectDoc.toObject ? projectDoc.toObject() : projectDoc;
+  // The sentinel is a storage-layer detail (see server/utils/displayOrder.js)
+  // — every response, admin or public, shows `null` for "unranked" instead
+  // of the raw large number.
+  project.displayOrder = serializeDisplayOrder(project.displayOrder);
   const decorate = (asset) => asset && {
     ...asset,
     srcSm: buildResponsiveUrl(asset, { width: 480 }),
@@ -179,9 +196,42 @@ const redactConfidential = (project) => {
   return { ...project, client: undefined };
 };
 
-const CURSOR_SORT = { createdAt: -1, _id: -1 };
+// Default public sort — see IMPLEMENTATION_PLAN.md Part 2 and
+// server/utils/displayOrder.js: displayOrder ASC (empty sorts last via the
+// sentinel), featured DESC as a tiebreaker, publishedAt DESC after that.
+// This is a plain compound sort (no aggregation) so it stays fully
+// index-friendly and cursor-paginable — see the matching index on the model.
+const CURSOR_SORT = { displayOrder: 1, featured: -1, publishedAt: -1, _id: -1 };
+// sort=oldest is a visitor-chosen alternate view, deliberately unrelated to
+// manual display order — plain date-ascending, same as before this change.
+const OLDEST_SORT = { createdAt: 1, _id: 1 };
+
+// Cursor carries all four CURSOR_SORT keys so seek-pagination can resume
+// correctly past a tie at any level (near-certain at the displayOrder level,
+// since most projects share the "unranked" sentinel until manually ranked).
+const encodeCursor = (doc) => Buffer.from(JSON.stringify({
+  o: doc.displayOrder,
+  f: doc.featured ? 1 : 0,
+  p: (doc.publishedAt || doc.createdAt).toISOString(),
+  id: String(doc._id),
+})).toString('base64url');
 
 const decodeCursor = (cursor) => {
+  if (!cursor) return null;
+  try {
+    const c = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
+    return { displayOrder: c.o, featured: Boolean(c.f), publishedAt: new Date(c.p), _id: new mongoose.Types.ObjectId(c.id) };
+  } catch {
+    return null;
+  }
+};
+
+// sort=oldest keeps its own simple 2-key cursor — a separate shape from the
+// default's 4-key one, not a subset of it.
+const encodeOldestCursor = (doc) =>
+  Buffer.from(`${doc.createdAt.toISOString()}|${doc._id}`).toString('base64url');
+
+const decodeOldestCursor = (cursor) => {
   if (!cursor) return null;
   try {
     const [iso, id] = Buffer.from(cursor, 'base64url').toString('utf8').split('|');
@@ -190,9 +240,6 @@ const decodeCursor = (cursor) => {
     return null;
   }
 };
-
-const encodeCursor = (doc) =>
-  Buffer.from(`${doc.createdAt.toISOString()}|${doc._id}`).toString('base64url');
 
 // List/related payloads never need the long-form narrative or the full block
 // stream — only the single-project detail route and admin routes do.
@@ -240,31 +287,53 @@ router.get('/', async (req, res, next) => {
       return res.json({ projects: projects.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor: null });
     }
 
-    if (sort === 'featured') {
-      filter.featured = true;
-    }
-
     // "Most viewed" doesn't cursor on createdAt, so it gets its own simple,
     // uncursored branch — consistent with the search branch above rather
-    // than trying to force viewCount into the createdAt/_id cursor shape.
+    // than trying to force viewCount into the default cursor shape.
     if (sort === 'popular') {
       const projects = await PortfolioProject.find(filter).populate(PROJECT_POPULATE).sort({ viewCount: -1, _id: -1 }).limit(limit).select(LIST_EXCLUDE).lean();
       return res.json({ projects: projects.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor: null });
     }
 
+    // sort=oldest is a visitor-chosen alternate view — pure date order,
+    // deliberately bypassing manual Display Order (same as sort=featured/
+    // popular already bypass the default ordering entirely).
+    if (sort === 'oldest') {
+      const cursor = decodeOldestCursor(req.query.cursor);
+      if (cursor) {
+        filter.$or = [
+          { createdAt: { $gt: cursor.createdAt } },
+          { createdAt: cursor.createdAt, _id: { $gt: cursor._id } },
+        ];
+      }
+      const projects = await PortfolioProject.find(filter).populate(PROJECT_POPULATE).sort(OLDEST_SORT).limit(limit + 1).select(LIST_EXCLUDE).lean();
+      const hasMore = projects.length > limit;
+      const page = hasMore ? projects.slice(0, limit) : projects;
+      const nextCursor = hasMore ? encodeOldestCursor(page[page.length - 1]) : null;
+      return res.json({ projects: page.map((p) => redactConfidential(withResponsiveMedia(p))), nextCursor });
+    }
+
+    if (sort === 'featured') {
+      filter.featured = true;
+    }
+
+    // Default listing — Display Order ASC, Featured DESC tiebreak, Publish
+    // Date DESC (see IMPLEMENTATION_PLAN.md Part 2). sort=featured shares
+    // this branch (just with `filter.featured = true` added above), so a
+    // featured-only view still respects manual ranking within itself.
     const cursor = decodeCursor(req.query.cursor);
     if (cursor) {
       filter.$or = [
-        { createdAt: { $lt: cursor.createdAt } },
-        { createdAt: cursor.createdAt, _id: { $lt: cursor._id } },
+        { displayOrder: { $gt: cursor.displayOrder } },
+        { displayOrder: cursor.displayOrder, featured: { $lt: cursor.featured } },
+        { displayOrder: cursor.displayOrder, featured: cursor.featured, publishedAt: { $lt: cursor.publishedAt } },
+        { displayOrder: cursor.displayOrder, featured: cursor.featured, publishedAt: cursor.publishedAt, _id: { $lt: cursor._id } },
       ];
     }
 
-    const sortSpec = sort === 'oldest' ? { createdAt: 1, _id: 1 } : CURSOR_SORT;
-
     const projects = await PortfolioProject.find(filter)
       .populate(PROJECT_POPULATE)
-      .sort(sortSpec)
+      .sort(CURSOR_SORT)
       .limit(limit + 1)
       .select(LIST_EXCLUDE)
       .lean();
@@ -320,7 +389,7 @@ router.get('/admin', protect, adminOnly, async (req, res, next) => {
     const [projects, total, counts] = await Promise.all([
       PortfolioProject.find(filter)
         .populate(PROJECT_POPULATE)
-        .sort(search?.trim() ? { score: { $meta: 'textScore' } } : { order: 1, createdAt: -1 })
+        .sort(search?.trim() ? { score: { $meta: 'textScore' } } : { displayOrder: 1, featured: -1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .select(LIST_EXCLUDE)
@@ -389,6 +458,7 @@ router.post('/admin', protect, adminOnly, async (req, res, next) => {
   try {
     const body = pickWritable(req.body);
     if (!body.title?.trim()) return res.status(400).json({ error: 'Title is required' });
+    try { applyDisplayOrderCoercion(body); } catch (e) { return res.status(400).json({ error: e.message }); }
 
     const slug = await ensureUniqueSlug(body.title);
     const status = ['draft', 'published', 'archived'].includes(body.status) ? body.status : 'draft';
@@ -422,6 +492,7 @@ router.put('/admin/:id', protect, adminOnly, async (req, res, next) => {
 
     const before = { title: project.title, status: project.status, featured: project.featured };
     const body = pickWritable(req.body);
+    try { applyDisplayOrderCoercion(body); } catch (e) { return res.status(400).json({ error: e.message }); }
 
     if (body.title && body.title !== project.title) {
       body.slug = await ensureUniqueSlug(body.title, project._id);
@@ -472,6 +543,10 @@ router.post('/admin/:id/duplicate', protect, adminOnly, async (req, res, next) =
       slug: newSlug,
       status: 'draft',
       featured: false,
+      // A duplicate is a new, undecided draft — it shouldn't silently
+      // inherit the source's manual rank (imagine duplicating the project
+      // ranked #1 and ending up with two #1s with no indication why).
+      displayOrder: UNRANKED_DISPLAY_ORDER,
       viewCount: 0,
       publishedAt: undefined,
     });
@@ -515,15 +590,18 @@ router.patch('/admin/:id/status', protect, adminOnly, async (req, res, next) => 
   }
 });
 
-// PATCH /api/portfolio/admin/reorder — persist new drag order
+// PATCH /api/portfolio/admin/reorder — persist new drag order (small,
+// single-page, unfiltered catalogs only — see AdminPortfolio.jsx's
+// `canReorder`; the Display Order field in the wizard is the reliable
+// mechanism at any catalog size).
 router.patch('/admin/reorder', protect, adminOnly, async (req, res, next) => {
   try {
-    const { items } = req.body; // [{ id, order }]
+    const { items } = req.body; // [{ id, order }] — dense 0-based ranks for every visible row
     if (!Array.isArray(items)) return res.status(400).json({ error: 'items array required' });
 
     await PortfolioProject.bulkWrite(
       items.map(({ id, order }) => ({
-        updateOne: { filter: { _id: id }, update: { $set: { order } } },
+        updateOne: { filter: { _id: id }, update: { $set: { displayOrder: order } } },
       }))
     );
 
@@ -628,7 +706,7 @@ router.get('/:id/related', async (req, res, next) => {
         $or: [{ category: project.category }, { industry: project.industry }],
       })
         .populate(PROJECT_POPULATE)
-        .sort({ order: 1, createdAt: -1 })
+        .sort({ displayOrder: 1, featured: -1, createdAt: -1 })
         .limit(limit)
         .select(LIST_EXCLUDE);
     }

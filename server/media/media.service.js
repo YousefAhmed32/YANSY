@@ -3,6 +3,7 @@ const repo = require('./gridfsRepository');
 const { sanitizeFilename, sha256Hex, assertSize, assertMagicBytes } = require('./mediaValidators');
 const { KIND_FOR_MIME, getImageDimensions } = require('./mediaUtils');
 const { GENERIC_FILE_MIMES, GENERIC_FILE_MAX_BYTES } = require('./mediaConstants');
+const { sanitizeSvg } = require('./svgSanitizer');
 
 const urlFor = (fileId) => `/api/media/${fileId}`;
 
@@ -28,19 +29,26 @@ const uploadMedia = async (
   assertSize(buffer, maxSizeBytes);
   await assertMagicBytes(buffer, mimeType, allowedMimes);
 
-  const hash = sha256Hex(buffer);
+  // SVG is XML, not a fixed binary format — strip <script>/on*/javascript:
+  // constructs before this buffer is hashed or stored, since it's later
+  // served back from a public, unauthenticated route as image/svg+xml (see
+  // svgSanitizer.js for why that matters). Everything downstream (hash,
+  // dedupe, storage, dimensions) operates on the sanitized bytes.
+  const safeBuffer = mimeType === 'image/svg+xml' ? sanitizeSvg(buffer) : buffer;
+
+  const hash = sha256Hex(safeBuffer);
   const existing = await repo.findFileBySha256(hash);
   if (existing) {
-    return toAsset(existing._id, mimeType, buffer);
+    return toAsset(existing._id, mimeType, safeBuffer);
   }
 
   const safeFilename = sanitizeFilename(filename);
-  const fileId = await repo.uploadBuffer(buffer, safeFilename, {
+  const fileId = await repo.uploadBuffer(safeBuffer, safeFilename, {
     contentType: mimeType,
     metadata: { sha256: hash, originalName: filename },
   });
 
-  return toAsset(fileId, mimeType, buffer);
+  return toAsset(fileId, mimeType, safeBuffer);
 };
 
 /**
