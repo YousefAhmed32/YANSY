@@ -239,7 +239,57 @@ const ClientProof = ({ isRTL: isRTLProp, onStartProject }) => {
         </div>
 
         {/* ── Act 2: Unscripted evidence — voice notes + WhatsApp screenshots ── */}
-    */}
+        {/* <Reveal stagger className={s.showcaseGrid} step={0.14}>
+
+          <div className={s.panel}>
+            <div className={s.panelKicker}>
+              <span className={s.kickerIconBlue}>
+                <Mic style={{ width: 12, height: 12 }} aria-hidden />
+              </span>
+              {isRTL ? 'رسائل صوتية من عملائنا' : 'Voice Notes From Clients'}
+            </div>
+            <div className={s.voiceList}>
+              {VOICE_NOTES.map((src, i) => (
+                <VoiceNoteCard
+                  key={src}
+                  id={src}
+                  src={src}
+                  index={i}
+                  label={clientLabel}
+                  tag={voiceTag}
+                  isRTL={isRTL}
+                  playingId={playingId}
+                  onPlayRequest={setPlayingId}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className={s.panel}>
+            <div className={s.panelKicker}>
+              <span className={s.kickerIconGreen}>
+                <MessageCircle style={{ width: 12, height: 12 }} aria-hidden />
+              </span>
+              {isRTL ? 'محادثات واتساب حقيقية' : 'Real WhatsApp Conversations'}
+            </div>
+            <div className={s.chatMasonry}>
+              {CHAT_SCREENSHOTS.map((src, i) => (
+                <div key={src} className={s.chatMasonryItem}>
+                  <ChatProofCard
+                    src={src}
+                    index={i}
+                    label={clientLabel}
+                    tag={chatTag}
+                    isRTL={isRTL}
+                    onOpen={() => setLightboxIndex(i)}
+                    variant={CARD_HEIGHTS[i]}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </Reveal> */}
 
         {/* ── CTA ── */}
         <Reveal distance={14} className={s.ctaArea}>
