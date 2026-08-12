@@ -37,6 +37,9 @@ const mediaLibraryRoutes = require('./routes/media.library.routes');
 const { mountLibraryRoutes } = require('./routes/libraries.routes');
 const startProjectRoutes = require('./routes/startProject.routes');
 const notificationRoutes = require('./routes/notifications');
+const proposalsRoutes = require('./routes/proposals.routes');
+const publicProposalsRoutes = require('./routes/publicProposals.routes');
+const { mountProposalLibraryRoutes } = require('./routes/proposalLibraries.routes');
 
 // Activity log route
 const activityRoutes = require('./routes/activity');
@@ -324,6 +327,11 @@ app.use('/api/start-project', startProjectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity',      activityRoutes);
 
+// ── Proposal Management System ────────────────────────────────────────
+app.use('/api/proposals', proposalsRoutes);               // admin CRUD + publish/duplicate/archive/versions
+app.use('/api/public/proposals', publicProposalsRoutes);  // public /p/:slug data + view/accept/request-changes
+mountProposalLibraryRoutes(app); // /api/proposal-clients, /api/proposal-services, /api/proposal-templates
+
 if (auditRoutes)    app.use('/api/audit',          auditRoutes);
 if (invoiceRoutes)  app.use('/api/invoices',       invoiceRoutes);
 if (searchRoutes)   app.use('/api/search',         searchRoutes);
@@ -437,6 +445,9 @@ const gracefulShutdown = (signal) => {
 
   httpServer.close(async () => {
     try {
+      // Best-effort — the proposal PDF service only ever launches Chromium
+      // lazily on first use, so this is a no-op on instances that never hit it.
+      try { await require('./services/proposals/pdfService').closeBrowser(); } catch (_) {}
       await mongoose.connection.close(false);
       console.log('✅ HTTP server and MongoDB connection closed.');
       clearTimeout(forceExitTimer);

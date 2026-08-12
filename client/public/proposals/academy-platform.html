@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<meta name="color-scheme" content="light" />
+<meta name="robots" content="noindex, nofollow" />
+<title>عرض تنفيذ منصة تعليمية متكاملة — YANSY Tech</title>
+<meta name="description" content="عرض تنفيذ منصة تعليمية متكاملة لإدارة الأكاديمية — إعداد YANSY Tech" />
+
+<!-- Google Fonts — same family choices already established as YANSY Tech's
+     brand typefaces (see client/src/index.css): IBM Plex Sans Arabic for
+     Arabic UI/body text, Alexandria promoted to a dedicated Arabic *display*
+     role for this document's oversized headings/numerals, Inter for Latin
+     technical labels and tabular figures. Loaded via the same preload+swap
+     pattern client/index.html uses, so a slow font fetch never blocks first
+     paint; the local() @font-face below is the offline fallback layer. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload" as="style"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap"
+  onload="this.onload=null;this.rel='stylesheet'"
+/>
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap" />
+</noscript>
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   YANSY TECH — Client Proposal · Design System (rebuilt)
+   Editorial / Trust-&-Authority / Bento hybrid on the brand's neutral +
+   single-accent + one premium secondary-accent palette.
+   ═══════════════════════════════════════════════════════════════════════
+   Architecture:
+     1. Font fallback      5. Layout primitives
+     2. Design tokens       6. Components
+     3. Reset / base        7. Sections
+     4. Typography system   8. Motion + responsive + print
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1 ── FONT FALLBACK (offline / no-network safety net) ─────────────────── */
+@font-face {
+  font-family: 'Arabic Fallback';
+  src: local('Geeza Pro'), local('Noto Sans Arabic'), local('Arabic Typesetting'), local('Arial');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 28%;
+  line-gap-override: 0%;
+}
+
+/* 2 ── DESIGN TOKENS ─────────────────────────────────────────────────── */
+:root {
+  /* Typefaces */
+  --font-arabic:    'IBM Plex Sans Arabic', 'Arabic Fallback', system-ui, sans-serif;
+  --font-display-ar:'Alexandria', 'IBM Plex Sans Arabic', 'Arabic Fallback', system-ui, sans-serif;
+  --font-latin:     'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Neutral base — near-black on near-white, one working gray ramp */
+  --ink-900: 10 12 16;
+  --ink-700: 39 44 54;
+  --ink-500: 92 99 112;
+  --ink-400: 124 131 143;
+  --ink-300: 179 185 196;
+  --ink-200: 223 226 232;
+  --ink-100: 238 240 244;
+  --paper:   255 255 255;
+  --paper-2: 249 250 252;
+  --paper-3: 244 245 249;
+
+  /* Single primary accent (brand blue) + one premium secondary (brand gold) */
+  --accent:        37 99 235;
+  --accent-ink:    29 78 216;
+  --accent-tint:   234 241 255;
+  --accent-tint-2: 219 234 254;
+  --gold:          169 138 82;
+  --gold-tint:     250 246 237;
+
+  --success:      22 130 90;
+  --success-tint: 233 247 240;
+  --whatsapp:     37 175 90;
+  --whatsapp-tint:236 249 240;
+
+  --ink:      var(--ink-900);
+  --contrast: 8 10 14;
+
+  /* Spacing — 4px base rhythm, exposed as tokens (not ad-hoc numbers) */
+  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem;
+  --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-8: 2rem; --sp-10: 2.5rem;
+  --sp-12: 3rem; --sp-16: 4rem; --sp-20: 5rem; --sp-24: 6rem; --sp-32: 8rem;
+
+  /* Fluid section rhythm — scales smoothly 360px → 1440px+ instead of
+     jumping at breakpoints */
+  --section-y: clamp(3.25rem, 4vw + 2rem, 7rem);
+  --section-y-lg: clamp(4rem, 6vw + 2rem, 9rem);
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --container: 1240px;
+
+  /* Radius — restrained, two sizes cover everything */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 26px;
+
+  /* Elevation — one soft ambient shadow, one for hover lift. No heavy stacks. */
+  --shadow-1: 0 1px 2px rgba(10,12,16,.04), 0 1px 1px rgba(10,12,16,.03);
+  --shadow-2: 0 20px 48px -20px rgba(10,12,16,.16);
+
+  --ease: cubic-bezier(.16,1,.3,1);
+  --dur-1: .5s;
+  --dur-2: .7s;
+}
+
+/* 3 ── RESET / BASE ──────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font-family: var(--font-arabic);
+  font-size: 16px;
+  line-height: 1.9;
+  font-feature-settings: "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+ul { margin: 0; padding: 0; list-style: none; }
+h1, h2, h3, h4 { margin: 0; font-weight: 700; color: rgb(var(--ink)); }
+p { margin: 0; }
+hr { border: none; }
+::selection { background: rgb(var(--accent) / .16); }
+
+:focus-visible {
+  outline: 2.5px solid rgb(var(--accent));
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Latin/number runs inside Arabic flow: isolated LTR + tabular figures so
+   phone numbers, prices, week-ranges and URLs never reverse or wobble
+   against neighbouring Arabic glyphs. */
+.en, .num {
+  font-family: var(--font-latin);
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 4 ── TYPOGRAPHY SYSTEM ─────────────────────────────────────────────── */
+/* Arabic display: distinct heavy face reserved for hero + section titles +
+   large numerals — gives the document a "masthead" moment instead of every
+   heading using the same body weight at a bigger size. */
+.t-display {
+  font-family: var(--font-display-ar);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 2.6vw + 1.7rem, 4.75rem);
+  line-height: 1.28;
+  letter-spacing: 0;
+}
+.t-h1 {
+  font-family: var(--font-display-ar);
+  font-weight: 800;
+  font-size: clamp(2.1rem, 1.6vw + 1.5rem, 3.1rem);
+  line-height: 1.3;
+}
+.t-h2 {
+  font-family: var(--font-display-ar);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 1vw + 1.25rem, 2.2rem);
+  line-height: 1.35;
+}
+.t-h3 {
+  font-family: var(--font-arabic);
+  font-weight: 700;
+  font-size: clamp(1.125rem, .3vw + 1.02rem, 1.3rem);
+  line-height: 1.5;
+}
+.t-body-lg { font-size: clamp(1.05rem, .3vw + .95rem, 1.2rem); line-height: 1.95; color: rgb(var(--ink-700)); }
+.t-body    { font-size: .975rem; line-height: 1.9; color: rgb(var(--ink-700)); }
+.t-body-sm { font-size: .875rem; line-height: 1.8; color: rgb(var(--ink-500)); }
+.t-caption { font-size: .8125rem; line-height: 1.7; color: rgb(var(--ink-400)); }
+.t-label {
+  font-family: var(--font-latin);
+  font-size: .6875rem; font-weight: 700; letter-spacing: .09em;
+  text-transform: uppercase; color: rgb(var(--ink-500));
+  direction: ltr; unicode-bidi: isolate; display: inline-block;
+}
+.t-num-lg {
+  font-family: var(--font-latin); font-weight: 800; font-variant-numeric: tabular-nums;
+  font-size: clamp(2.75rem, 3.6vw + 1.2rem, 4.75rem); line-height: 1; letter-spacing: -.01em;
+}
+.t-num-md {
+  font-family: var(--font-latin); font-weight: 700; font-variant-numeric: tabular-nums;
+  font-size: clamp(1.5rem, 1vw + 1.1rem, 2rem); line-height: 1;
+}
+
+/* 5 ── LAYOUT PRIMITIVES ─────────────────────────────────────────────── */
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+.container--narrow { max-width: 760px; }
+.section { position: relative; padding-block: var(--section-y); }
+.section--lg { padding-block: var(--section-y-lg); }
+.hairline { border-top: 1px solid rgb(var(--ink-200)); }
+.tint { background: rgb(var(--paper-2)); }
+
+.stack-xs > * + * { margin-top: var(--sp-2); }
+.stack-sm > * + * { margin-top: var(--sp-4); }
+.stack-md > * + * { margin-top: var(--sp-6); }
+.stack-lg > * + * { margin-top: var(--sp-10); }
+
+.bgrid { display: grid; gap: clamp(1rem, 1.4vw, 1.75rem); }
+.bgrid--2 { grid-template-columns: repeat(2, 1fr); }
+.bgrid--3 { grid-template-columns: repeat(3, 1fr); }
+.bgrid--4 { grid-template-columns: repeat(4, 1fr); }
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+.span-4 { grid-column: span 4; }
+.span-full { grid-column: 1 / -1; }
+
+/* 6 ── COMPONENTS ────────────────────────────────────────────────────── */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-latin); font-size: .6875rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: rgb(var(--accent-ink));
+  direction: ltr; unicode-bidi: isolate;
+}
+.eyebrow::before { content: ''; width: 16px; height: 1.5px; background: rgb(var(--accent)); flex-shrink: 0; }
+.eyebrow--on-dark { color: #8FB4FF; }
+.eyebrow--on-dark::before { background: #5B8DEF; }
+.eyebrow--gold { color: rgb(var(--gold)); }
+.eyebrow--gold::before { background: rgb(var(--gold)); }
+
+.kicker { display: flex; align-items: baseline; gap: 10px; margin-bottom: var(--sp-4); }
+.kicker-index {
+  font-family: var(--font-latin); font-weight: 800; font-size: .8rem;
+  color: rgb(var(--ink-300)); direction: ltr; unicode-bidi: isolate;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 1rem 2rem; font-family: var(--font-arabic); font-size: .95rem; font-weight: 600;
+  border-radius: 100px; text-decoration: none; border: 1.5px solid transparent;
+  min-height: 52px; cursor: pointer; transition: transform .25s var(--ease), box-shadow .25s var(--ease), background-color .25s var(--ease), border-color .25s var(--ease);
+  touch-action: manipulation;
+}
+.btn-dark { background: rgb(var(--contrast)); color: #fff; border-color: rgb(var(--contrast)); }
+.btn-dark:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px rgba(0,0,0,.4); }
+.btn-on-dark { background: #fff; color: rgb(var(--contrast)); border-color: #fff; }
+.btn-on-dark:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px rgba(0,0,0,.5); }
+.btn svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
+[dir="rtl"] .btn svg { transform: scaleX(-1); }
+.btn:hover svg { transform: translateX(-3px); }
+[dir="rtl"] .btn:hover svg { transform: scaleX(-1) translateX(-3px); }
+
+.icon-mark {
+  width: 44px; height: 44px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgb(var(--accent-tint)); color: rgb(var(--accent-ink));
+}
+.icon-mark svg { width: 21px; height: 21px; stroke-width: 1.6; }
+.icon-mark--dark { background: rgba(255,255,255,.08); color: #8FB4FF; }
+.icon-mark--gold { background: rgb(var(--gold-tint)); color: rgb(var(--gold)); }
+
+.feat {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .875rem; line-height: 1.75; color: rgb(var(--ink-700));
+}
+.feat-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: rgb(var(--accent));
+  flex-shrink: 0; margin-top: .7em;
+}
+.feat-cols { columns: 1; }
+@media (min-width: 640px) { .feat-cols--2 { columns: 2; column-gap: 1.75rem; } }
+.feat-cols--2 .feat { break-inside: avoid; margin-bottom: 9px; }
+
+.tile {
+  background: rgb(var(--paper));
+  border: 1px solid rgb(var(--ink-200));
+  border-radius: var(--r-md);
+  padding: clamp(1.5rem, 2vw, 2.1rem);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease), transform .3s var(--ease);
+}
+.tile:hover { border-color: rgb(var(--ink-300)); box-shadow: var(--shadow-2); transform: translateY(-3px); }
+.tile--flat { background: rgb(var(--paper-2)); border-color: rgb(var(--paper-2)); }
+.tile--flat:hover { background: rgb(var(--paper)); border-color: rgb(var(--ink-200)); }
+.tile--quiet { padding: clamp(1.25rem, 1.6vw, 1.6rem); }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .8125rem; font-weight: 600; color: rgb(var(--ink-700));
+  background: rgb(var(--paper)); border: 1px solid rgb(var(--ink-200));
+  padding: 7px 15px; border-radius: 100px;
+}
+
+/* 7 ── MOTION ────────────────────────────────────────────────────────── */
+[data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity var(--dur-1) var(--ease), transform var(--dur-1) var(--ease); }
+[data-reveal].is-in { opacity: 1; transform: translateY(0); }
+[data-reveal-stagger] > * { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-1) var(--ease), transform var(--dur-1) var(--ease); }
+[data-reveal-stagger].is-in > *:nth-child(1) { transition-delay: .02s; }
+[data-reveal-stagger].is-in > *:nth-child(2) { transition-delay: .08s; }
+[data-reveal-stagger].is-in > *:nth-child(3) { transition-delay: .14s; }
+[data-reveal-stagger].is-in > *:nth-child(4) { transition-delay: .2s; }
+[data-reveal-stagger].is-in > *:nth-child(5) { transition-delay: .26s; }
+[data-reveal-stagger].is-in > *:nth-child(n+6) { transition-delay: .3s; }
+[data-reveal-stagger].is-in > * { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal], [data-reveal-stagger] > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+  * { scroll-behavior: auto !important; }
+}
+
+/* Ambient background glow — restrained, single soft radial, never competes
+   with text contrast */
+.glow { position: absolute; z-index: 0; pointer-events: none; border-radius: 50%; filter: blur(100px); }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<header class="section section--lg" style="padding-bottom: clamp(2.5rem, 4vw, 4rem); overflow: hidden;">
+  <div class="glow" style="width: 620px; height: 620px; top: -280px; inset-inline-start: -220px; background: radial-gradient(circle, rgb(var(--accent) / .12), transparent 72%);" aria-hidden="true"></div>
+  <div class="glow" style="width: 420px; height: 420px; top: -60px; inset-inline-end: -160px; background: radial-gradient(circle, rgb(var(--gold) / .10), transparent 72%);" aria-hidden="true"></div>
+
+  <div class="container" style="position: relative; z-index: 1;">
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: clamp(2.75rem, 6vw, 4.5rem);" data-reveal>
+      <img src="data:image/png;base64,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" alt="YANSY Tech" width="128" height="85" style="height: 27px; width: auto; object-fit: contain;" />
+      <p class="t-caption" style="margin: 0;">
+        مُعدّ لـ <strong style="color: rgb(var(--ink-700)); font-weight: 700;">أستاذ شادي</strong>
+        <span style="opacity:.45; margin: 0 6px;">·</span>
+        <span class="num">12.08.2026</span>
+      </p>
+    </div>
+
+    <div style="max-width: 900px;" class="stack-md">
+      <span class="eyebrow" data-reveal>
+        <span class="en">CUSTOM-BUILT FOR YOUR ACADEMY</span>
+      </span>
+
+      <h1 class="t-display" data-reveal>عرض تنفيذ منصة تعليمية متكاملة</h1>
+
+      <p class="t-body-lg" style="max-width: 620px;" data-reveal>
+        منصة خاصة بالأكاديمية، تُصمَّم وتُطوَّر وفق احتياجاتها لإدارة الطلاب والمعلمين وأولياء الأمور والحصص والمدفوعات
+        والتواصل داخل نظام واحد متكامل — من دون الاعتماد على قالب أو منصة جاهزة.
+      </p>
+
+      <p class="t-caption" style="display: flex; align-items: center; gap: 8px;" data-reveal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="flex-shrink:0; color: rgb(var(--gold));" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>
+        تم إعداد هذا التصور بناءً على الاجتماع ومراجعة احتياجات الأكاديمية
+      </p>
+    </div>
+
+    <!-- Signal bar — the three key facts as typography, not boxed cards -->
+    <div class="hairline" style="margin-top: clamp(2.75rem, 6vw, 4.5rem); padding-top: clamp(1.75rem, 3vw, 2.5rem); display: grid; grid-template-columns: repeat(3, 1fr);" data-reveal-stagger>
+      <div style="padding-inline-end: clamp(1rem, 2vw, 2rem);">
+        <p class="t-label">EXECUTION</p>
+        <p class="t-h3" style="margin-top: 10px;">مصممة خصيصًا لكم من الصفر</p>
+      </div>
+      <div style="padding-inline: clamp(1rem, 2vw, 2rem); border-inline-start: 1px solid rgb(var(--ink-200));">
+        <p class="t-label">TIMELINE</p>
+        <p class="t-h3" style="margin-top: 10px;"><span class="num">6–8</span> أسابيع</p>
+      </div>
+      <div style="padding-inline-start: clamp(1rem, 2vw, 2rem); border-inline-start: 1px solid rgb(var(--ink-200));">
+        <p class="t-label" style="color: rgb(var(--accent-ink));">DOMAIN &amp; HOSTING</p>
+        <p class="t-h3" style="margin-top: 10px; color: rgb(var(--accent-ink));">هدية للسنة الأولى</p>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════ VISION ═══════════════════════════════ -->
+<section class="section" aria-labelledby="vision-title">
+  <div class="container">
+    <div class="vision-grid" style="display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(2.5rem, 5vw, 5rem); align-items: center;">
+
+      <div class="stack-md" data-reveal>
+        <span class="eyebrow">رؤيتنا</span>
+        <h2 id="vision-title" class="t-h1">رؤيتنا للمشروع</h2>
+        <div class="t-body-lg stack-sm">
+          <p>الهدف هو تصميم وتطوير منصة تعليمية متكاملة خاصة بالأكاديمية، تُبنى وفق آلية عملها واحتياجاتها الفعلية، لا بالاعتماد على قالب أو نظام <span class="en">LMS</span> جاهز. وتشمل إدارة الطلاب والمعلمين والجداول والحصص، وصولًا إلى المتابعة التعليمية والمدفوعات والتواصل والتقارير.</p>
+          <p>ويُبنى الحل بهندسة مرنة تخدم احتياجات الأكاديمية وتسمح بالتوسع مستقبلًا مع زيادة عدد الطلاب والمعلمين.</p>
+        </div>
+      </div>
+
+      <div style="background: rgb(var(--contrast)); border-radius: var(--r-lg); padding: clamp(2.5rem, 5vw, 4rem); position: relative; overflow: hidden; min-height: 280px; display: flex; flex-direction: column; justify-content: center;" data-reveal>
+        <div class="glow" style="width: 340px; height: 340px; top: -120px; inset-inline-end: -100px; background: radial-gradient(circle, rgb(var(--accent) / .4), transparent 70%);" aria-hidden="true"></div>
+        <p class="t-h3" style="position: relative; z-index: 1; color: rgba(255,255,255,.5); font-weight: 500;">مش مجرد موقع تعليمي...</p>
+        <p class="t-h1" style="position: relative; z-index: 1; color: #fff; margin-top: 14px;">لكن <span style="color: #78A9FF;">منظومة متكاملة</span><br/>لإدارة وتشغيل الأكاديمية.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SYSTEMS — GROUP A: PEOPLE ═══════════════════════════════ -->
+<section class="section tint" aria-labelledby="systems-title">
+  <div class="container">
+    <div class="stack-md" style="max-width: 680px; margin-bottom: clamp(2.5rem, 5vw, 3.75rem);" data-reveal>
+      <span class="eyebrow">نطاق البناء</span>
+      <h2 id="systems-title" class="t-h1">الأنظمة الأساسية</h2>
+      <p class="t-body-lg">مجموعة الأنظمة التي تُبنى داخل المنصة الواحدة، كل نظام مصمم للتكامل الكامل مع البقية.</p>
+    </div>
+
+    <p class="t-label" style="display:block; margin-bottom: 18px;" data-reveal>01 — تجربة المستخدمين</p>
+
+    <div class="bgrid bgrid--4" data-reveal-stagger>
+
+      <!-- Student — hero tile -->
+      <div class="tile span-2 stack-md">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V17c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg></div>
+          <h3 class="t-h3">نظام الطالب</h3>
+        </div>
+        <p class="t-body">تجربة متكاملة للطالب لمتابعة رحلته التعليمية بالكامل داخل المنصة.</p>
+        <ul class="feat-cols feat-cols--2">
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الجدول والحصص القادمة والسابقة</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الدخول المباشر للحصة</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الحضور والغياب والاعتذارات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الواجبات والاختبارات والنتائج</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>متابعة الحفظ والمراجعة والتجويد</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الاشتراك والحصص المتبقية</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الإشعارات والشات</li>
+        </ul>
+      </div>
+
+      <!-- Teacher — hero tile -->
+      <div class="tile span-2 stack-md">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/><path d="M17 4.5c1.2.5 2 1.7 2 3s-.8 2.5-2 3"/></svg></div>
+          <h3 class="t-h3">نظام المعلم</h3>
+        </div>
+        <p class="t-body">لوحة تحكم كاملة لإدارة الطلاب ومتابعة الأداء التعليمي.</p>
+        <ul class="feat-cols feat-cols--2">
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>إدارة الطلاب والحصص</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>تسجيل الحضور والغياب والتأخير</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>متابعة الحفظ والمراجعة والتجويد</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>التقييمات والملاحظات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>إنشاء وتصحيح الواجبات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>متابعة الأداء والجدول</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>التواصل مع الطالب والإدارة</li>
+        </ul>
+      </div>
+
+      <!-- Parent -->
+      <div class="tile span-2 stack-sm">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2.5 20c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5"/><path d="M12.5 20c.3-2.6 2.2-4.7 4.6-5.3"/></svg></div>
+          <h3 class="t-h3">نظام ولي الأمر</h3>
+        </div>
+        <p class="t-body-sm">متابعة كاملة وشفافة لمستوى الطالب: الحضور والغياب، الجدول والحصص، الواجبات والاختبارات والنتائج، الاشتراكات والمدفوعات، وتنبيهات فورية عن الطالب.</p>
+      </div>
+
+      <!-- Website -->
+      <div class="tile span-2 stack-sm">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 6 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-6-3.8-9s1.3-6.3 3.8-9z"/></svg></div>
+          <h3 class="t-h3">الموقع الخارجي</h3>
+        </div>
+        <p class="t-body-sm">موقع احترافي للأكاديمية بالعربية والإنجليزية: البرامج التعليمية، الباقات والأسعار، عرض المعلمين، المقالات والأسئلة الشائعة، التسجيل والتواصل، وإدارة المحتوى.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SYSTEMS — GROUP B: OPERATIONS ═══════════════════════════════ -->
+<section class="section" aria-labelledby="ops-title">
+  <div class="container">
+    <p id="ops-title" class="t-label" style="display:block; margin-bottom: 18px;" data-reveal>02 — التشغيل اليومي</p>
+
+    <div class="bgrid bgrid--3" data-reveal-stagger>
+
+      <!-- Schedule — wide -->
+      <div class="tile span-2 stack-md">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="2"/></svg></div>
+          <h3 class="t-h3">الحصص والجداول</h3>
+        </div>
+        <p class="t-body">إدارة ذكية للمواعيد تمنع التعارض وتضمن انتظام الحصص.</p>
+        <ul class="feat-cols feat-cols--2">
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>جداول ثابتة ومتكررة</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>إعادة الجدولة</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>التأجيل والإلغاء</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الحصص التعويضية</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>منع تعارض المواعيد</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span><span class="en">Zoom / Google Meet</span></li>
+        </ul>
+      </div>
+
+      <!-- Academic tracking -->
+      <div class="tile stack-sm">
+        <div class="icon-mark" style="margin-bottom: 6px;" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5c-.8 0-1.5-.7-1.5-1.5v-13z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5v-13z"/></svg></div>
+        <h3 class="t-h3">المتابعة التعليمية</h3>
+        <p class="t-body-sm">نظام متكامل لمتابعة الحفظ والمراجعة والتجويد وتقييم مستوى الطالب، مع الاحتفاظ بتاريخ كامل لتطوره وملاحظات المعلم.</p>
+      </div>
+
+      <!-- Tests & homework -->
+      <div class="tile span-2 stack-md">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>
+          <h3 class="t-h3">الاختبارات والواجبات</h3>
+        </div>
+        <p class="t-body">منظومة تقييم مرنة تدعم أنواعًا متعددة من الأسئلة والتصحيح.</p>
+        <ul class="feat-cols feat-cols--2">
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>اختيار من متعدد</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>صح وخطأ</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>أسئلة مقالية</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>درجات ونتائج</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>تصحيح تلقائي ويدوي</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>واجبات ورفع ملفات</li>
+        </ul>
+      </div>
+
+      <!-- Payments -->
+      <div class="tile stack-sm">
+        <div class="icon-mark" style="margin-bottom: 6px;" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><path d="M6 15h4"/></svg></div>
+        <h3 class="t-h3">الدفع والاشتراكات</h3>
+        <p class="t-body-sm">ربط بوابة دفع مناسبة للسوق السعودي، مع إدارة كاملة للباقات والاشتراكات وعدد الحصص والتجديد والتجميد والحصص التعويضية.</p>
+      </div>
+
+      <!-- Chat — connective full-width strip -->
+      <div class="span-full" style="background: rgb(var(--accent-tint)); border: 1px solid rgb(var(--accent) / .16); border-radius: var(--r-md); padding: clamp(1.5rem, 2.5vw, 2.25rem); display: flex; flex-wrap: wrap; align-items: center; gap: clamp(1.25rem, 3vw, 2.5rem);">
+        <div style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
+          <div class="icon-mark" style="background: rgb(var(--paper));" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 016.5 3h11A2.5 2.5 0 0120 5.5v8a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 014 13.5v-8z"/></svg></div>
+          <div>
+            <h3 class="t-h3" style="font-size: 1.05rem;">الشات الداخلي</h3>
+            <p class="t-caption">القناة التي تربط كل أطراف الأكاديمية</p>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+          <span class="pill">الطالب ↔ المعلم</span>
+          <span class="pill">الطالب ↔ الإدارة</span>
+          <span class="pill">المعلم ↔ الإدارة</span>
+          <span class="pill">ولي الأمر ↔ المعلم / الإدارة</span>
+          <span class="pill">رسائل وملفات وسجل محادثات</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SYSTEMS — GROUP C: ADMIN & INTELLIGENCE ═══════════════════════════════ -->
+<section class="section tint" aria-labelledby="admin-title">
+  <div class="container">
+    <p id="admin-title" class="t-label" style="display:block; margin-bottom: 18px;" data-reveal>03 — الإدارة والذكاء</p>
+
+    <div class="bgrid bgrid--4" data-reveal-stagger>
+
+      <div class="tile span-2 stack-md">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg></div>
+          <h3 class="t-h3">لوحة الإدارة</h3>
+        </div>
+        <p class="t-body">لوحة مركزية لإدارة الأكاديمية بالكامل.</p>
+        <ul class="feat-cols feat-cols--2">
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الطلاب والمعلمين وأولياء الأمور</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الحصص والجداول</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الاشتراكات والمدفوعات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الاختبارات والواجبات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>التقييمات والإشعارات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>محتوى الموقع والتقارير</li>
+        </ul>
+      </div>
+
+      <div class="tile span-2 stack-md">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M11 20V4M18 20v-7"/></svg></div>
+          <h3 class="t-h3">التقارير والإحصائيات</h3>
+        </div>
+        <p class="t-body">رؤية شاملة لأداء الأكاديمية عبر كل المحاور.</p>
+        <ul class="feat-cols feat-cols--2">
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الحضور والغياب</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الطلاب والمعلمين والحصص</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الاختبارات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>المدفوعات والاشتراكات</li>
+          <li class="feat"><span class="feat-dot" aria-hidden="true"></span>الأداء والإيرادات</li>
+        </ul>
+      </div>
+
+      <div class="tile span-2 stack-sm">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="icon-mark icon-mark--gold" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="12" height="10" rx="2.5"/><path d="M12 8V4M9 3.5h6"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/><path d="M3.5 11v4M20.5 11v4"/></svg></div>
+          <h3 class="t-h3">الأنظمة الذكية</h3>
+        </div>
+        <p class="t-body-sm">إضافة مساعد ذكي لخدمة زوار الموقع والطلاب، والإجابة على الأسئلة، والمساعدة في تحسين تجربة استخدام المنصة.</p>
+      </div>
+
+      <div class="tile span-2 stack-sm">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><rect x="9.5" y="11" width="5" height="4.5" rx="1"/><path d="M10.5 11V9.5a1.5 1.5 0 013 0V11"/></svg></div>
+          <h3 class="t-h3">الأمان والصلاحيات</h3>
+        </div>
+        <p class="t-body-sm">نظام صلاحيات وحماية للحسابات والبيانات والملفات، مع تسجيل العمليات الإدارية المهمة وتجهيز المنصة للاستخدام الفعلي.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ WHATSAPP — DARK SPOTLIGHT ═══════════════════════════════ -->
+<section class="section section--lg" style="background: rgb(var(--contrast)); overflow: hidden; position: relative;" aria-labelledby="wa-title">
+  <div class="glow" style="width: 520px; height: 520px; top: -180px; inset-inline-start: 50%; transform: translateX(-50%); background: radial-gradient(circle, rgb(var(--whatsapp) / .18), transparent 72%);" aria-hidden="true"></div>
+
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(2.5rem, 5vw, 5rem); align-items: center;">
+
+      <div class="stack-md" data-reveal>
+        <span class="eyebrow" style="color: #6FE39A;">
+          <span class="en" style="direction:ltr;">STRATEGIC · WHATSAPP AUTOMATION</span>
+        </span>
+        <h2 id="wa-title" class="t-h1" style="color: #fff;"><span class="en">WhatsApp</span> Automation</h2>
+        <p class="t-body-lg" style="color: rgba(255,255,255,.62); max-width: 460px;">
+          ربط <span class="en">WhatsApp Business</span> بالمنصة لإرسال التنبيهات والتعامل مع بعض الإجراءات تلقائيًا.
+        </p>
+
+        <div class="bgrid bgrid--2" style="margin-top: 8px;">
+          <span class="feat" style="color: rgba(255,255,255,.78);"><span class="feat-dot" style="background:#6FE39A;" aria-hidden="true"></span>تذكير قبل الحصة</span>
+          <span class="feat" style="color: rgba(255,255,255,.78);"><span class="feat-dot" style="background:#6FE39A;" aria-hidden="true"></span>زر دخول الحصة</span>
+          <span class="feat" style="color: rgba(255,255,255,.78);"><span class="feat-dot" style="background:#6FE39A;" aria-hidden="true"></span>زر الاعتذار عن الحضور</span>
+          <span class="feat" style="color: rgba(255,255,255,.78);"><span class="feat-dot" style="background:#6FE39A;" aria-hidden="true"></span>إشعارات تغيير المواعيد</span>
+          <span class="feat" style="color: rgba(255,255,255,.78);"><span class="feat-dot" style="background:#6FE39A;" aria-hidden="true"></span>تنبيهات الغياب</span>
+          <span class="feat" style="color: rgba(255,255,255,.78);"><span class="feat-dot" style="background:#6FE39A;" aria-hidden="true"></span>تذكير التجديد والدفع</span>
+        </div>
+
+        <p class="t-body-sm" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: var(--r-sm); padding: 14px 18px; color: rgba(255,255,255,.6); margin-top: 4px;">
+          يتم تسجيل تفاعل الطالب داخل المنصة وإظهاره للمعلم والإدارة.
+        </p>
+      </div>
+
+      <div data-reveal style="display: flex; justify-content: center;">
+        <div style="width: 100%; max-width: 300px; border-radius: 28px; background: #0b141a; padding: 8px; box-shadow: 0 40px 90px -24px rgba(0,0,0,.7);">
+          <div style="background: #E9EDEF; border-radius: 22px; padding: 16px; background-image: linear-gradient(180deg, #d9e4df 0%, #e9edef 22%);">
+            <div style="background: #DCF8C6; border-radius: 14px 14px 3px 14px; padding: 13px 15px; font-size: 13px; line-height: 1.7; color: #0b1a12;">
+              موعد حصتك اليوم الساعة 7:00 مساءً
+              <span style="display:block; text-align: left; font-size: 10px; color: #5b6b64; margin-top: 6px;" class="en">7:12 PM ✓✓</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px; margin-top: 10px;">
+              <div style="background: #fff; border: 1px solid #d7dedb; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; font-weight: 700; color: #128C4A; text-align: center;">دخول الحصة</div>
+              <div style="background: #fff; border: 1px solid #d7dedb; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; font-weight: 700; color: #128C4A; text-align: center;">الاعتذار عن الحضور</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <p class="t-caption" style="margin-top: 22px; color: rgba(255,255,255,.32);">* شكل توضيحي لتصميم الرسالة — وليس لقطة فعلية من واتساب</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ HOW WE BUILD ═══════════════════════════════ -->
+<section class="section" aria-labelledby="build-title">
+  <div class="container">
+    <div class="stack-md" style="max-width: 620px; margin-bottom: clamp(2.5rem, 5vw, 3.75rem);" data-reveal>
+      <span class="eyebrow">منهجية العمل</span>
+      <h2 id="build-title" class="t-h1">طريقة التنفيذ</h2>
+      <p class="t-body-lg"><span class="en">Custom Development</span> لمنصة خاصة بالأكاديمية: نبدأ بالتحليل والتصميم ثم نطوّر الحل وفق متطلباتكم، من دون الاعتماد على قالب جاهز أو <span class="en">WordPress</span> أو <span class="en">Moodle</span> أو أي نظام <span class="en">LMS</span> جاهز.</p>
+    </div>
+
+    <div class="process-rail" data-reveal-stagger>
+      <div class="process-step"><span class="process-ghost num">01</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;">Planning</span></div>
+      <div class="process-step"><span class="process-ghost num">02</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;"><span class="en">UI / UX</span></span></div>
+      <div class="process-step"><span class="process-ghost num">03</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;">Frontend</span></div>
+      <div class="process-step"><span class="process-ghost num">04</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;">Backend &amp; DB</span></div>
+      <div class="process-step"><span class="process-ghost num">05</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;">APIs &amp; Integrations</span></div>
+      <div class="process-step"><span class="process-ghost num">06</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;">Testing</span></div>
+      <div class="process-step"><span class="process-ghost num">07</span><span class="t-body-sm" style="color: rgb(var(--ink-700)); font-weight: 600;">Deployment</span></div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: clamp(2rem, 4vw, 2.75rem);" data-reveal>
+      <span class="pill">Frontend</span><span class="pill">Backend</span><span class="pill">Database</span>
+      <span class="pill">Dashboards</span><span class="pill">APIs</span><span class="pill">Integrations</span>
+      <span class="pill">Testing</span><span class="pill">Deployment</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ DURATION — 6-8 WEEKS ═══════════════════════════════ -->
+<section class="section tint" aria-labelledby="timeline-title">
+  <div class="container">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: clamp(2.5rem, 5vw, 3.75rem);" data-reveal>
+      <div class="stack-sm">
+        <span class="eyebrow">الجدول الزمني</span>
+        <h2 id="timeline-title" class="t-h1">مدة التنفيذ</h2>
+      </div>
+      <p class="t-num-lg" style="color: rgb(var(--accent-ink));"><span class="num">6–8</span> <span class="t-h3" style="display:inline; font-weight:700;">أسابيع</span></p>
+    </div>
+
+    <div class="phase-track" data-reveal-stagger>
+
+      <div class="phase">
+        <div class="phase-head">
+          <span class="phase-num num">01</span>
+          <span class="phase-week num">WEEK 1</span>
+        </div>
+        <p class="t-h3" style="font-size: 1rem;">Discovery &amp; Planning</p>
+      </div>
+
+      <div class="phase">
+        <div class="phase-head">
+          <span class="phase-num num">02</span>
+          <span class="phase-week num">WEEK 1–2</span>
+        </div>
+        <p class="t-h3" style="font-size: 1rem;">UI/UX &amp; Architecture</p>
+      </div>
+
+      <div class="phase">
+        <div class="phase-head">
+          <span class="phase-num num">03</span>
+          <span class="phase-week num">WEEK 2–5</span>
+        </div>
+        <p class="t-h3" style="font-size: 1rem;">Core Development</p>
+      </div>
+
+      <div class="phase">
+        <div class="phase-head">
+          <span class="phase-num num">04</span>
+          <span class="phase-week num">WEEK 5–7</span>
+        </div>
+        <p class="t-h3" style="font-size: 1rem;">Integrations &amp; Testing</p>
+      </div>
+
+      <div class="phase">
+        <div class="phase-head">
+          <span class="phase-num num">05</span>
+          <span class="phase-week num">WEEK 7–8</span>
+        </div>
+        <p class="t-h3" style="font-size: 1rem;">QA, Deployment &amp; Launch</p>
+      </div>
+
+    </div>
+
+    <p class="t-caption" style="margin-top: clamp(1.75rem, 3vw, 2.5rem); border-inline-start: 2px solid rgb(var(--gold)); padding-inline-start: 14px;">
+      المدة تبدأ بعد اعتماد نطاق العمل واستلام البيانات والمحتوى المطلوب للبدء.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ LANGUAGES ═══════════════════════════════ -->
+<section class="section" aria-labelledby="lang-title">
+  <div class="container">
+    <div class="stack-sm" style="margin-bottom: clamp(2rem, 4vw, 2.75rem);" data-reveal>
+      <span class="eyebrow">دعم اللغات</span>
+      <h2 id="lang-title" class="t-h1">اللغات</h2>
+    </div>
+    <div class="bgrid bgrid--2" data-reveal-stagger>
+      <div class="tile stack-sm">
+        <span class="t-label">PRIMARY</span>
+        <p class="t-h3">العربية</p>
+        <p class="t-body-sm">المنصة الداخلية ولوحات الطالب والمعلم وولي الأمر والإدارة باللغة العربية.</p>
+      </div>
+      <div class="tile stack-sm">
+        <span class="t-label">SECONDARY</span>
+        <p class="t-h3"><span class="en">English</span></p>
+        <p class="t-body-sm">الموقع الخارجي سيكون متاحًا باللغة العربية والإنجليزية مع دعم <span class="en">RTL / LTR</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ NEXT STEP — DARK EDITORIAL ═══════════════════════════════ -->
+<section class="section section--lg" style="background: rgb(var(--contrast)); position: relative; overflow: hidden;" aria-labelledby="invest-title">
+  <div class="glow" style="width: 560px; height: 560px; top: -220px; inset-inline-start: 50%; transform: translateX(-50%); background: radial-gradient(circle, rgb(var(--accent) / .22), transparent 72%);" aria-hidden="true"></div>
+
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="max-width: 720px; margin-inline: auto; text-align: center;" data-reveal>
+      <span class="eyebrow eyebrow--on-dark" style="justify-content: center;"><span class="en">NEXT STEP</span></span>
+      <h2 id="invest-title" class="t-h1" style="color: #fff; margin-top: 16px;">الخطوة التالية</h2>
+
+      <p class="t-body-lg" style="color: rgba(255,255,255,.6); margin-top: 20px;">
+        بعد مراجعة نطاق العمل والتصور المقترح، يتم تحديد اجتماع لمناقشة التفاصيل النهائية وآلية التنفيذ والجدول الزمني والاستثمار النهائي وخطوات بدء المشروع.
+      </p>
+    </div>
+
+    <div style="max-width: 780px; margin: clamp(2.5rem, 5vw, 3.5rem) auto 0; border-top: 1px solid rgba(255,255,255,.12); padding-top: clamp(1.75rem, 3vw, 2.5rem);" data-reveal>
+      <p class="t-label" style="display:block; text-align:center; margin-bottom: 18px; color: rgba(255,255,255,.4);">MEETING AGENDA</p>
+      <div class="bgrid bgrid--3" style="gap: 10px;">
+        <span class="pill" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: rgba(255,255,255,.85); justify-content:center;">اعتماد نطاق التنفيذ</span>
+        <span class="pill" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: rgba(255,255,255,.85); justify-content:center;">التفاصيل النهائية</span>
+        <span class="pill" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: rgba(255,255,255,.85); justify-content:center;">آلية التنفيذ</span>
+        <span class="pill" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: rgba(255,255,255,.85); justify-content:center;">الجدول الزمني</span>
+        <span class="pill" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: rgba(255,255,255,.85); justify-content:center;">الاستثمار النهائي</span>
+        <span class="pill" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: rgba(255,255,255,.85); justify-content:center;">خطوات بدء المشروع</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ INCLUDED SERVICES + SCOPE ═══════════════════════════════ -->
+<section class="section" aria-labelledby="ext-title">
+  <div class="container">
+    <div class="bgrid bgrid--3" style="align-items: start;">
+
+      <div class="stack-sm" data-reveal>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="icon-mark icon-mark--gold" style="width: 38px; height: 38px; border-radius: 10px;" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 6 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-6-3.8-9s1.3-6.3 3.8-9z"/></svg></div>
+          <h3 id="ext-title" class="t-h3">الدومين والاستضافة</h3>
+        </div>
+        <p class="t-body-sm">الدومين والاستضافة للسنة الأولى ضمن العرض دون أي تكلفة إضافية.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+          <span class="pill"><span class="en">Domain Registration</span></span>
+          <span class="pill"><span class="en">Hosting</span> — السنة الأولى هدية</span>
+        </div>
+      </div>
+
+      <div class="stack-sm" data-reveal>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="icon-mark icon-mark--gold" style="width: 38px; height: 38px; border-radius: 10px;" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M12 22a9.5 9.5 0 1 0-9.5-9.5A9.5 9.5 0 0 0 12 22z"/><path d="M12 16.5v.01M12 12.5a2.5 2.5 0 1 0-2.5-2.5"/></svg></div>
+          <h3 class="t-h3">الدعم الفني بعد الإطلاق</h3>
+        </div>
+        <p class="t-body-sm">دعم فني مجاني لمدة <strong>3 أشهر</strong> من تاريخ الإطلاق، يشمل متابعة التشغيل، معالجة الأخطاء التقنية، والمساعدة في الاستخدام.</p>
+        <p class="t-body-sm">لا يشمل الدعم إضافة مميزات أو تكاملات جديدة خارج نطاق العرض؛ ويتم تقييمها وتسعيرها بشكل منفصل.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+          <span class="pill"><span class="en">3 Months</span> — دعم مجاني</span>
+        </div>
+      </div>
+
+      <div class="stack-sm" data-reveal>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="icon-mark" style="width: 38px; height: 38px; border-radius: 10px;" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12h6M12 9v6"/></svg></div>
+          <h3 class="t-h3">نطاق العمل</h3>
+        </div>
+        <p class="t-body-sm">يغطي العرض الأنظمة والمميزات الموضحة في هذا التصور.</p>
+        <p class="t-body-sm">أي ميزة أو نظام جديد خارج النطاق الموضح يتم تقييمه بشكل منفصل وتحديد المدة والتكلفة الخاصة به قبل التنفيذ.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FINAL CTA ═══════════════════════════════ -->
+<section class="section section--lg" style="background: rgb(var(--contrast)); text-align: center; position: relative; overflow: hidden;" aria-labelledby="cta-title">
+  <div class="glow" style="width: 480px; height: 480px; top: -220px; inset-inline-start: 50%; transform: translateX(-50%); background: radial-gradient(circle, rgb(var(--accent) / .3), transparent 72%);" aria-hidden="true"></div>
+  <div class="container" style="position: relative; z-index: 1; max-width: 640px;" data-reveal>
+    <h2 id="cta-title" class="t-h1" style="color: #fff;">جاهزون لبدء المشروع</h2>
+    <p class="t-body-lg" style="color: rgba(255,255,255,.58); margin-top: 16px;">
+      بعد مراجعة التصور، الخطوة التالية هي جلسة لمناقشة التفاصيل النهائية واعتماد نطاق التنفيذ والبدء في مرحلة التحليل والتصميم.
+    </p>
+    <div style="margin-top: clamp(1.75rem, 3.5vw, 2.5rem);">
+      <a href="https://wa.me/201090385390?text=%D9%85%D8%B1%D8%AD%D8%A8%D9%8B%D8%A7%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D9%85%D9%86%D8%A7%D9%82%D8%B4%D8%A9%20%D9%85%D8%B4%D8%B1%D9%88%D8%B9%20%D8%A7%D9%84%D9%85%D9%86%D8%B5%D8%A9%20%D8%A7%D9%84%D8%AA%D8%B9%D9%84%D9%8A%D9%85%D9%8A%D8%A9." class="btn btn-on-dark" target="_blank" rel="noopener noreferrer">
+        مناقشة المشروع
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer style="padding-block: clamp(2.5rem, 5vw, 3.5rem);" id="contact">
+  <div class="container">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAFVCAMAAACuDacRAAAALVBMVEVMaXEGBgYKCwoKCQoDAwMLCwsDAwMICAgEAwMEBAQHBwYICAgFBAQHBgYEBAQvZu2QAAAADXRSTlMA+wED0BPpMKWETGy5XhavpAAAAAlwSFlzAAALEgAACxIB0t1+/AAAFkhJREFUeNrtnYeC47YORQ1JttWo///csIsFLPKUrD33vLxJdsdVBFEuQep2AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADfwzAOI67C32Uc1A+YwF8d/vF2X6bN2gH4c97/dtsex3HsTziBvzn9n/shiOig5Q4T+HvDPy5y6MWhbOB4rCodxGX5Q7n/bX0ccuQ1ghAH/lzyp7z/IeT/NIgDf8/7Czv9jQ84EAf+kvefkuGXnkAImQ/McAJ/wfvPhxpsM/GdAxDKAqQT2EaIAh/u/Ted+7uhl66f1OBrC1B2MSEZ/OzSf5JDLoLYr43Ajr92AgJx4JO9v5z+QfCXPn9elknZgfMCOg4gGfxY4TeY/Wr+73K2326LcwAuDkAU+Fjh94jG/6G8vfzVfASJgDQBKQogGfy4ZT+Kp78KAIua//L/z0OETkCJAtN6Q6fAhwm/8fArA1i1AQy3+8O4ADv+h3ICEAU+y/tHyR9jAGEIOCAKfFTyZ0t/xgBcCFiPaPAFRIGPK/0PhjMJ3MMIYGpClwwiDrz3/JfJn2Cnv3EBugwcF7MacJwu4PDJoFohwnV83+HfHoXp73zAvC0PLQgGzv84ElEAJvCm/v/2rI6/ywwpHHIR/0E5gecNUeD9Zv9gXMC59Mf7ALUYZKTg48wDDx8NtCIwWH8C3mnyaxlH/uAUAMYQggrA/VnLAUJqgoOtJmAC76T83fWADXb9vzb2riXgOA3gdP+rrgLM4hDqgTda9X/YoVM/1kYm4F2A8f/OE0jHYZcE7A4SOIF32e4lS39hGrxaTkCEBnCEWaBZDzA2NKiFROhCb9TzpRp9vP+2A1jPBKLs/zhch+Bw9hCrzmGsD/z7wu+gJivZGi8Yw5lbDogaQ11XiNkrMiXWY3Uh7CR8h1V/4Td8JJmAOJJm0Kw3WNtANP3lK8pSkZxfQLPIvzz901V/KmUCgs0G3EpgmPzrlaSzSkSzyL88/Vfn/c85nmUCbAp4nGsB3PQXsTToogP4x4T/QPU7s/ssmxPlLCCq/W92+lO6UqzUoTuEwX8Ove4jWMG/pxzomv6nQLSNvAmMLH0RrOepL7z8lYe3H1r4mNwTu944f73htfk/6HVfweT2x7npi+sNDSwglP5UH4nght+GgfuFFaJh6FKv+75o719+9Z34sfqil/7qR6++uJ6w3GqfzgQ2szpgnQBlqWDv9PeJ4MC3HzDMW881HzeOuB1BfknuMeOF1123tfhp5MuvkufJGOVY+l/PLgbukSN3xbJHdYRXdt+GavwnmwRkgZ7MHoDRZQLGAkSYD4po+i90VKb/s1AH6A5zxru0F5TH23YkOxaDrrXzUbt9fSNXHWbtsvLyquFReH3DPKloj9nHf/jBULNnXLd5etDRXlo7JvUOe1psZaY3qnbMyxfLFfaF9i/9Hc1bC/evw4o45qlSLHLVYpYsjo3prySBch0oL/ekNMMEMY0Nq5ZvSQzHHj1PdS8yjxJ7wwDSx5csQBqAe6z+t/AGoK7JYltnfWQkcznMY/VP9XfqhzKA/CuJKZ3cwRvqJ6uvvDTHf5DO5c4KcsHMZXLBfITDvoAzU5TpBBXGn+z0H8sDuUaJA9mY0fpWQ9KXaHncUwfApSUkal5dG0D4eaj4eD0e4es6A9C76oQdaO66pDFy0uvxi7mM5B+VXAZ9taJHMEbCzJX5QY+d/Q7n9k8R5QDJIA+hE4gFo0b09wuE5Y+3cCNJdb9mAkD+blsy/qF1hf9V9jDGAOIRkgPLf5zEAIQzAHVVBZUuCpckqQ9k37psqcZfhl+GarbsL4JxNmpS5WXGYHo8bTkgEskvdgLaUgRvGbyJyyvd0oCke5rOb+2umbki1QCQT20Sc3Qx4peuWUpuAOZR5P+LtwBnABQbgGqtE6WQWDYAZdapAUSXQU4W94GI/8p8m5/zY/mXtkPrVX+RZiGRp3dHBcTTf6pO/3tTBdaDmV2fehAYONdOeQDYjtIoPEqOM/YAVPcBfAjIZ3ITa+82ZNE5w8MgYJKEeII92gFAGs0xb2o752PNy4wxUf3pyAvDxAm0p3/SHtQopeNxOqNbOQiUAsCaOABmHOzlLduXSwK9D6hZAB8C/ObZFwzAeTbv4oPLEJo9tTzZqfdMsqCz2WMg+Qu/29tMZCP4Bd1ejBOw1Z7oif7KTmY//evbRsONJkTtOF0IAMecZkyLoILvzbxFIQmkcyAEI2WxHkDtnaXXDMBnRJQEB2/2RNH47y0JQH8dae138+SsHjqH9r4HuWDNCcyh9Fee/iKa/uOzagCcyyxOUj60Z96w7oizBDvWAbwDOO2RswDWA2R/2VsFsB/aXwYfzAPDpKYEoC+WmkvaA3Dj5KazXcflFn/9KSB2KjdrfxFNf91dMteDwGqK5XhiUyn1ttVSlBBTqpok5QWlmX3h1YMcwFbq7oPJ+TYmT+GSwDGuI0t5H28A9lJEFYv9oFFJS33FsvuIx6RzAJoSHkGgTgvCsjAYSH+8+J9Ef60l742qzg0WcVelqwLISuY4t0yLsixicCGAkoFMLYDzAKmy4V6oSujo9zD1IBcL7SSJvtPUIQIHVUCqaMqvuutXXEZrYrogLLR/nKsDYfJPfPIfT3+lxtYNIChwm0FgiK5Q8WKkY0MUJVfqerAVdOiEKbAE82Mfh6FpAFmG2swI5MU9DSCyb7K2ra9Q/IptCSDXAYYEOTfFqdWpgnA6Cj7g7O5y0Z9Y95ZEf7eUVDcAU+FkLoBz0yYVagpHegt77AAomkBUyKACD0CZB9Bl99AygEVQdkmmBrt3dtnz9Tywf0tl1aOuBD5YJfBs4FuGsCAUuQ/QDX4Hbc3an1ysOKe/fP2WAeQaSKESiD17WdhJlYIz76W6IJzoAHHZlUYa3gCyHPCx3S816kyxz9DJ5zOZH3UJIGoTUGsB9/utkFANm54Y+zNUhYjdEOBGdyNBBecmf+MDxc0dMW7qlWa6undEdvnaO6MbZi9vcykuBDcEYSYJPH1uuvbClYGMCrDmvjfzxYXPTia7za5OHtHTG/sEtXdpNdCHc51rmIELF3+5DpDjsUTJPzELv2N0xLjxYk0DGBkNPp+l7MpBLtLklaLN5yOfzl7DUAgikfU3xhZQMIBkeWu/2BEZvYJOVn3co/BVK1L5um3PMGGtneOoE/rAdccFIVMOFFUuu/AbRH9fr7Y9AC/vZWI4k2EzASB5LTN15zR5ZL1oshbACVznu/WEgO5YzdY5dFaWyaWuSABPnS9Oa+f7eidwqkK2TSDdDnrUUtri9O80AF5BjSZcSQKaswQg14CI7s8sO2fKjLgMTNYE7Cz0FtBnANPtYt+eyfjIeykmrxQ1CcA2NIjlNnYinYBuEHSqkL89DLsftKRtnQu/Tls+r3SHAZRqwTWYcHwAyNsmkseZ/J1R6HJBODQAJiJRFJf6kkB3uBoH2/p5GrqaOWFS4D9YVQLQao56bP9JHYNN12NV6NQFg9PADk7SVFJ5afr3GoDt38lFMt9lE2d2jIUE2gdTJ+YFBOOek4aQ1PNaM1idPNtZBTzv9d5RVhr1X+70e9TuaFEGIN3/U32KaVu62RYKJNwhUIX8cUBHZfqffR9aJkjF0C4DYErg0E8PrMbKuHEmluiR5ir0LJQmi0HJ/HeCkLWAPgNQu2QLQsA+L+vzlndr2ReJM8DAAutphfpWQ6kXorwgFcs4Z0EojsrYUyr9am0hy577DGCIirx0irOLLLxUwCQoui01Sw0K+UNx9YbiuqOnChCN1qCDpvxsPePE7Os9H8xSZi2pkL8f72H34CWEPeTFtwlUZr9NikLp17QaZxOwywAC4TqSQiezyr6Krt4xxlCs8M+oTVkASZLAoInA9nS6eaLel18M2rJqo7oYoH673Lk6RqebZrE89qeNLgD1vOtNKcGRH2obT7BDuJ78hdKv322cTeK9V7a09RtlKW/uwPmOCCZTcEUTk2amfcSxEpivCp8dS/rQTNYDrBfbQYg5Wc0s42oFIVwepK7ZJD+HvKuDeuCFHCDm7g56MtJw9bMH03+48buDug2g4OftNN0F41nyQn7KH+bX1JsugAkBj5nypMDudeIMYHxc7QdQKvvKNAArq4htlnq6AIxuWWxlvbI3y9ZzVJn+Wxr9v2QAaZyms+rh5JDHk3UAVIoTuXXoJKK0GOSevTkpWESl7b3QEbQcVw2AUXbkyyxB4ho4o2YXwG4kT2VT2UbDTmFgiO8ZWWz6F/s9UJ6Z6H/VAEq1oAkCsXPl9HBOKwqW/rn4EL8Ilyk+1Shwca3QEfR8Ifzmpb2sDods7atn04ws4CZpi3NoUTK/XudpX57Xj2oo+vVo5ae1PaDbABIVh0IxJanvuGqIX1XkGyvZK88bgG1CSpOxvdAUuh3X8698ZiuBLt3/Qj1dAKoF73kPOzF174dmGS/vLy04gVD6NdM/Wa94zQNEc/iUYrUcFCdxXDXEisDx8s2z7gJytcHYz2b6n9KV+kRxcPsCFnG1LZSV9zOHRV0rC8N4S5b/RtsSaJ5/CV/bHVRc+alP/4sGwPd8uUrgSdX1fCb+JonCyAvCQyUJJG3nmyDiPpdgdwZt4srOoMLKhCkFLkkAQfhIpBHp6RaVzR7rC5mhXS+Kv+t6Tn+znii+xwAiN54MdzDAXDLE2U7Ww5E9JFlw4j2A6qwiasX2c2/gOrnqn7MEPqKm0d0I9GFB2tkGxkqsch7oCyvlx5B9l//YH/Jfs/onYPbfKJ5aZ3NUvUPoFQNgZ6nvjdzDyqD9xKxSyJ0ExUkClwOMvreu7sXP3cFyTX6nUv6fNadYnvW+lheWls/rokWF6+rQadILv8o9sNOfXk8CSxsFXBAwv2IXxFkROHWsDUG4aADWAjoNQHvH+7bsk2zH881o0T5s0VQlAwOg+naWHgOQE4bfU1/lUfMA5z7Y5saHSwYQyL6UdgfZMpHtGB45qai9WBxtEoi2hsVFRNsCojezSdhdwp4Jss7N9oS0s+3YXlN2TFDdn1qnOXLpN7rty+H+UoRHXqSljTWA8gbcLxkAHwTcFtq50NLLibCMobAuYI8NgK8iKxU+5QagRZfhQrKbO/j0Gz1ePGzNfykt3OtjbboZ+WnjDYBdO/tiCCg0h5ggYN6S36zLGOODyxTyzn3vfUtJYHBLlU4PcEowxQprybsHKyGAXjYAvzmAOnaT9Z3j0DCAr3oAd16KYEQQFR84X8hpQIXdU0PWMir7tobSARHBNWtZwKURylO8PYtWaySKvWwANy3Tq0bB50UZYLQty8UQ0G0Aw9csLsj85a9mtp13KmQA6iucrdfsyrJfVizoAEF+Wot5/6wBaHVQnmc2vro8lE6vHzcAOWLpOrif0MPA7hncShnA0N6E4IvwWg7QtgAzQkOvyLYcV0KA+IoBBJpt8OpTF7uWlbdfDQGFjMsKIUxuxe8Gt4sz+XeK47wuKzZ/X9ywG5jS5deqBVwZIdVt8UtJ4LkQ2Eqai9/qt3OA0pQuroXxIcNIB+yeo8L20vB8AL7paDz1OfZScWc5dpaBdQOgLxoAv/Da0SPWZQD0fVJwbaNAaU88v2fQfHL+rMB8bWvx34jiXcHZSv24F3yAPSDi6DgcUm+1qy1MxwZAX/cA1RyEmh6gGgJct+y3GgArMhQWM2rGsreUCns4RXbCk9uckSm0snmV9wH+hBB3jGPqbehsLCYS/UrgD3kA0bVK0TYA+XV2udRUvNCvJIGFac3L4cwqr+/PicW01oJ8tDWs1IIlLYA/B+o0gIsdQeZv78UqgMSPeIBgCwyVP1jTAMyuELNgSNw3fNEA+MWduXhqBOMAeqVKr7QzO4MY7aTU99V7RlCpa2aoO+mfDAHUDAHFMtBcuTFYwkmjbMdxVr1ZAGsArAjMfu7mgjxzPgAnnp3nuopvOCSqpPT/uAc4gsNw0t3URL0e4FwY8g2MyVrXFwygxwPwyYKSdrLfULsnJ9wdTMXDqgZOUP6KB+AKnF8zgHzGhheraQDWdN3HlQ5/fW7T74WAQsEYf2zqGYM5OuSLyh6gcFjNlwyAa3BaoxMUf6QMFHldpDYWbNseLnFVQ4A3AB0XrScNvffPGkDhSNDN+vNLo/C8hU+hmgHky8P0egjgu71/yQNQdnbKrvUMl+ZUPYDeBTHpM0lvN3NE9m40p2BUvjME5Me7lZcNelr0U+s6dQBqGEBmAfRyFVA4u/bcJfxzVQB3do7J6byC1jQA+en1+BsHIJw/OF3Ad3qAo2s75+kA6Fpj5hoZbt0Ach/wUgggu7+mvVz0MzpAtEuRwmaftccATO33WG7+mNtvNoD0TMVcL10Ef88Rk6kzKiCFp4alNxPJ7xhSO7b6GT46FIKSdzRiE/em6vrM/KnqPqsKXv7bdYDIA1DQRuvNr20AwQEcNgSoPohJ/IgH2FNh9snMKnOyyvP6Bp1jHZu9mokFHIwUfOUtp+VZOE47WzD+ESEoPEEv3H3q8752DmANwFrrkTZwU+lc1o6mgPxkhexMWOYx0zyWftNiGbO/qjXRqE6L4KEm8eh+W31AxFg+w00uGEaP/1YDcP284U2IrJ9azZHAcQ4gujyAqSGet3D8D3r5zqFdmyCKTxwv35FwYMai/px4B8YQfujB9iLow4DMcYD2Z/ya4/iV7//FWwfGZ2ja7Fdu+pDZ8Cx6qoAp8QA2UfParD1i9va7/OLdql9/q9IhUbdfvH24bkoIlqackjfN8yPRAXgDuHEGcPoDc37E8PJF+r/vODy88vAhdh35qaDDP3Mn5VHfQV6caaDfghSsVr9uAPoY4jtuHX77t28inx/qFC8OVA1gyHKA80/yj/sTw/+Po7d2P2ra1cseQB42NPxmNAZfjAPXDeBWNYAZ3v+d4sDBmwD1G0AUAvYHvP97xYH1UejsrBnA4G51mBnAeof3f9s4QK8bgK4ptfCH6f8Z9cBVD0Dm1gMDpv+b1gN5p1u3ARzklR9czbeNA3NWD9QMYIw9ANmbDsD7v3McmJIm4QsGIIK7hoB3jQPpcf/dBnBA+flIXajLAHZlAPD+n6ULXfQAy4rh/yRdyB/+1+kBxhu8/0c5AZ8KVDqC3M2uTRMupv/HlYR6faDpAVD6f2gcGMzdxNsGsIw3zP6PjQNHwwAONH18eByoG8C8QPf/aBOQrcP34jmBMlCg9P8DJWHxnMBf7sAG/48TyDfDB7cuwfD/DT8g5eFzjcjeLwiX5W+ZgLwxiLvzEL1w8ynw9rnA4NoGd2R+f1UWWNSS/4rC7y/LAjP6Pf94TYhFn7/tBOD9AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXOU/hpEmr/VB6nsAAAAASUVORK5CYII=" alt="YANSY Tech" width="128" height="85" style="height: 24px; width: auto; object-fit: contain;" />
+        <div>
+          <p class="t-body-sm" style="font-weight: 700; color: rgb(var(--ink-700)); margin: 0;"><span class="en">YANSY Tech</span></p>
+          <p class="t-caption" style="margin: 0;"><span class="en">Digital Product Studio</span></p>
+        </div>
+      </div>
+      <div style="display: flex; gap: clamp(14px, 3vw, 24px); flex-wrap: wrap;">
+        <span class="t-caption" style="display:flex; align-items:center; gap:7px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <span class="en">yansytech@gmail.com</span>
+        </span>
+        <span class="t-caption" style="display:flex; align-items:center; gap:7px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><path d="M4 5c0 8.3 6.7 15 15 15l3-4-6-3-2 2c-2.3-1.1-4-2.8-5-5l2-2-3-6-4 0z"/></svg>
+          <span class="en">+20 109 038 5390</span>
+        </span>
+        <span class="t-caption" style="display:flex; align-items:center; gap:7px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 6 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-6-3.8-9s1.3-6.3 3.8-9z"/></svg>
+          <span class="en">yansytech.com</span>
+        </span>
+      </div>
+    </div>
+    <p class="t-caption" style="text-align: center; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(var(--ink-200));">© 2026 YANSY Tech. جميع الحقوق محفوظة.</p>
+  </div>
+</footer>
+
+<style>
+/* ── Process rail (طريقة التنفيذ) ─────────────────────────────────────── */
+.process-rail {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid rgb(var(--ink-200));
+}
+.process-step {
+  padding: clamp(1rem, 1.6vw, 1.5rem) clamp(.6rem, 1vw, 1rem);
+  border-inline-start: 1px solid rgb(var(--ink-200));
+  display: flex; flex-direction: column; gap: 8px;
+}
+.process-step:first-child { border-inline-start: none; }
+.process-ghost {
+  font-size: clamp(1.6rem, 2vw, 2.1rem); font-weight: 800;
+  color: rgb(var(--ink-200)); line-height: 1;
+}
+
+/* ── Phase track (مدة التنفيذ) ────────────────────────────────────────── */
+.phase-track {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+  background: rgb(var(--ink-200)); border-radius: var(--r-md); overflow: hidden;
+}
+.phase { background: rgb(var(--paper)); padding: clamp(1.25rem, 1.8vw, 1.75rem) clamp(1rem, 1.5vw, 1.5rem); }
+.phase-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.phase-num { font-size: 1.1rem; font-weight: 800; color: rgb(var(--accent-ink)); }
+.phase-week { font-size: .6875rem; font-weight: 700; letter-spacing: .06em; color: rgb(var(--ink-400)); }
+
+/* ── RTL directional correctness ──────────────────────────────────────── */
+[dir="rtl"] .icon-directional { transform: scaleX(-1); }
+
+/* ── Responsive QA — explicit breakpoints ─────────────────────────────
+   1440 / 1280 / 1024 / 900 / 768 / 640 / 480 / 390 / 375 / 360           */
+@media (min-width: 1441px) { :root { --container: 1300px; } }
+
+@media (max-width: 1024px) {
+  .bgrid--4 { grid-template-columns: repeat(2, 1fr); }
+  .bgrid--4 .span-2 { grid-column: span 2; }
+  .process-rail { grid-template-columns: repeat(4, 1fr); }
+  .process-step:nth-child(4n+1) { border-inline-start: none; }
+}
+
+@media (max-width: 900px) {
+  .bgrid--3 { grid-template-columns: repeat(2, 1fr); }
+  .bgrid--3 .span-2 { grid-column: span 2; }
+  section[aria-labelledby="vision-title"] .vision-grid,
+  section[aria-labelledby="wa-title"] .container > div,
+  section[aria-labelledby="ext-title"] .bgrid--3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  :root { --section-y: clamp(2.75rem, 8vw, 4rem); --section-y-lg: clamp(3.25rem, 10vw, 5rem); }
+  .bgrid--4, .bgrid--3, .bgrid--2 { grid-template-columns: 1fr; }
+  .bgrid--4 .span-2, .bgrid--3 .span-2 { grid-column: span 1; }
+  .feat-cols--2 { columns: 1; }
+
+  header .container > div[style*="repeat(3, 1fr)"] { grid-template-columns: 1fr; row-gap: 20px; }
+  header .container > div[style*="repeat(3, 1fr)"] > div { border-inline-start: none !important; padding-inline: 0 !important; padding-block: 0 !important; }
+  header .container > div[style*="repeat(3, 1fr)"] > div + div { border-top: 1px solid rgb(var(--ink-200)); padding-top: 16px !important; }
+
+  .process-rail { grid-template-columns: repeat(2, 1fr); }
+  .process-step:nth-child(2n+1) { border-inline-start: none; }
+  .process-step:nth-child(n+3) { border-top: 1px solid rgb(var(--ink-200)); }
+
+  .phase-track { grid-template-columns: 1fr; }
+  .phase { border-bottom: 1px solid rgb(var(--ink-200)); }
+  .phase:last-child { border-bottom: none; }
+
+  footer .container > div:first-child { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 640px) {
+  .btn { width: 100%; }
+  section[aria-labelledby="invest-title"] .bgrid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 15px; }
+  .container { padding-inline: 1.1rem; }
+  .tile { padding: 1.35rem; }
+  .process-rail { grid-template-columns: repeat(1, 1fr); }
+  .process-step { border-inline-start: none !important; border-top: 1px solid rgb(var(--ink-200)); }
+  .process-step:first-child { border-top: none; }
+  footer .container > div:first-child > div:last-child { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+@media (max-width: 375px) {
+  .t-num-lg { font-size: clamp(2.25rem, 12vw, 3rem); }
+}
+
+/* ── Print / PDF export ──────────────────────────────────────────────── */
+@page { size: A4; margin: 14mm 12mm; }
+@media print {
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .section, .section--lg { padding-block: 20px; }
+  .tile, .phase, .process-step { break-inside: avoid; page-break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+  [data-reveal], [data-reveal-stagger] > * { opacity: 1 !important; transform: none !important; }
+  .glow { display: none; }
+  section[aria-labelledby="cta-title"] a.btn { display: none; }
+}
+</style>
+
+<script>
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var els = document.querySelectorAll('[data-reveal], [data-reveal-stagger]');
+  if (!('IntersectionObserver' in window) || !els.length) {
+    els.forEach(function (el) { el.classList.add('is-in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>

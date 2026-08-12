@@ -1,0 +1,233 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   YANSY TECH — Proposal Template Design System
+   Ported from the hand-built academy-platform.html reference (Editorial /
+   Trust-&-Authority / Bento hybrid on the brand's neutral + single-accent +
+   one premium secondary-accent palette) into a reusable, data-driven
+   stylesheet. Everything is scoped under `.proposal-doc` so it can be
+   imported in the public page AND the admin editor's live-preview pane
+   without leaking into the rest of the app's CSS.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Arabic Fallback';
+  src: local('Geeza Pro'), local('Noto Sans Arabic'), local('Arabic Typesetting'), local('Arial');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 28%;
+  line-gap-override: 0%;
+}
+
+.proposal-doc {
+  --font-arabic:     'IBM Plex Sans Arabic', 'Arabic Fallback', system-ui, sans-serif;
+  --font-display-ar: 'Alexandria', 'IBM Plex Sans Arabic', 'Arabic Fallback', system-ui, sans-serif;
+  --font-latin:      'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ink-900: 10 12 16;
+  --ink-700: 39 44 54;
+  --ink-500: 92 99 112;
+  --ink-400: 124 131 143;
+  --ink-300: 179 185 196;
+  --ink-200: 223 226 232;
+  --ink-100: 238 240 244;
+  --paper:   255 255 255;
+  --paper-2: 249 250 252;
+  --paper-3: 244 245 249;
+
+  /* Branding-overridable at render time via inline CSS vars from
+     proposal.branding.primaryColor / accentColor — see ProposalRenderer. */
+  --accent-rgb:      37 99 235;
+  --accent-ink-rgb:  29 78 216;
+  --accent-tint-rgb: 234 241 255;
+  --gold-rgb:        169 138 82;
+  --gold-tint-rgb:   250 246 237;
+
+  --success-rgb: 22 130 90;
+  --contrast-rgb: 8 10 14;
+
+  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem;
+  --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-8: 2rem; --sp-10: 2.5rem;
+  --sp-12: 3rem; --sp-16: 4rem;
+
+  --section-y: clamp(3.25rem, 4vw + 2rem, 7rem);
+  --section-y-lg: clamp(4rem, 6vw + 2rem, 9rem);
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --container: 1240px;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 26px;
+
+  --shadow-2: 0 20px 48px -20px rgba(10, 12, 16, .16);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --dur-1: .5s;
+
+  background: rgb(var(--paper));
+  color: rgb(var(--ink-900));
+  font-family: var(--font-arabic);
+  font-size: 16px;
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.proposal-doc * { box-sizing: border-box; }
+.proposal-doc img, .proposal-doc svg { display: block; max-width: 100%; }
+.proposal-doc a { color: inherit; }
+.proposal-doc ul { margin: 0; padding: 0; list-style: none; }
+.proposal-doc h1, .proposal-doc h2, .proposal-doc h3, .proposal-doc h4 { margin: 0; font-weight: 700; color: rgb(var(--ink-900)); }
+.proposal-doc p { margin: 0; }
+
+.proposal-doc .en, .proposal-doc .num {
+  font-family: var(--font-latin);
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────── */
+.pt-display  { font-family: var(--font-display-ar); font-weight: 800; font-size: clamp(2.5rem, 2.6vw + 1.7rem, 4.75rem); line-height: 1.28; }
+.pt-h1       { font-family: var(--font-display-ar); font-weight: 800; font-size: clamp(2.1rem, 1.6vw + 1.5rem, 3.1rem); line-height: 1.3; }
+.pt-h2       { font-family: var(--font-display-ar); font-weight: 700; font-size: clamp(1.6rem, 1vw + 1.25rem, 2.2rem); line-height: 1.35; }
+.pt-h3       { font-family: var(--font-arabic); font-weight: 700; font-size: clamp(1.125rem, .3vw + 1.02rem, 1.3rem); line-height: 1.5; }
+.pt-body-lg  { font-size: clamp(1.05rem, .3vw + .95rem, 1.2rem); line-height: 1.95; color: rgb(var(--ink-700)); }
+.pt-body     { font-size: .975rem; line-height: 1.9; color: rgb(var(--ink-700)); }
+.pt-body-sm  { font-size: .875rem; line-height: 1.8; color: rgb(var(--ink-500)); }
+.pt-caption  { font-size: .8125rem; line-height: 1.7; color: rgb(var(--ink-400)); }
+.pt-label {
+  font-family: var(--font-latin); font-size: .6875rem; font-weight: 700; letter-spacing: .09em;
+  text-transform: uppercase; color: rgb(var(--ink-500)); direction: ltr; unicode-bidi: isolate; display: inline-block;
+}
+.pt-num-lg {
+  font-family: var(--font-latin); font-weight: 800; font-variant-numeric: tabular-nums;
+  font-size: clamp(2.75rem, 3.6vw + 1.2rem, 4.75rem); line-height: 1; letter-spacing: -.01em;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────── */
+.pt-container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+.pt-section    { position: relative; padding-block: var(--section-y); }
+.pt-section--lg { padding-block: var(--section-y-lg); }
+.pt-hairline   { border-top: 1px solid rgb(var(--ink-200)); }
+.pt-tint       { background: rgb(var(--paper-2)); }
+
+.pt-stack-sm > * + * { margin-top: var(--sp-4); }
+.pt-stack-md > * + * { margin-top: var(--sp-6); }
+
+.pt-bgrid { display: grid; gap: clamp(1rem, 1.4vw, 1.75rem); }
+.pt-bgrid--2 { grid-template-columns: repeat(2, 1fr); }
+.pt-bgrid--3 { grid-template-columns: repeat(3, 1fr); }
+.pt-bgrid--4 { grid-template-columns: repeat(4, 1fr); }
+.pt-span-2 { grid-column: span 2; }
+.pt-span-full { grid-column: 1 / -1; }
+
+/* ── Components ──────────────────────────────────────────────────────── */
+.pt-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-latin); font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: rgb(var(--accent-ink-rgb)); direction: ltr; unicode-bidi: isolate;
+}
+.pt-eyebrow::before { content: ''; width: 16px; height: 1.5px; background: rgb(var(--accent-rgb)); flex-shrink: 0; }
+.pt-eyebrow--on-dark { color: #8FB4FF; }
+.pt-eyebrow--on-dark::before { background: #5B8DEF; }
+
+.pt-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 1rem 2rem; font-family: var(--font-arabic); font-size: .95rem; font-weight: 600;
+  border-radius: 100px; text-decoration: none; border: 1.5px solid transparent;
+  min-height: 52px; cursor: pointer; transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.pt-btn-dark { background: rgb(var(--contrast-rgb)); color: #fff; border-color: rgb(var(--contrast-rgb)); }
+.pt-btn-dark:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px rgba(0, 0, 0, .4); }
+.pt-btn-on-dark { background: #fff; color: rgb(var(--contrast-rgb)); border-color: #fff; }
+.pt-btn-on-dark:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px rgba(0, 0, 0, .5); }
+.pt-btn-outline { background: transparent; color: rgb(var(--ink-900)); border-color: rgb(var(--ink-300)); }
+.pt-btn-outline:hover { border-color: rgb(var(--ink-900)); transform: translateY(-2px); }
+.pt-btn svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
+[dir="rtl"] .proposal-doc .pt-btn svg { transform: scaleX(-1); }
+
+.pt-icon-mark {
+  width: 44px; height: 44px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgb(var(--accent-tint-rgb)); color: rgb(var(--accent-ink-rgb));
+}
+.pt-icon-mark svg { width: 21px; height: 21px; stroke-width: 1.6; }
+.pt-icon-mark--gold { background: rgb(var(--gold-tint-rgb)); color: rgb(var(--gold-rgb)); }
+
+.pt-feat { display: flex; align-items: flex-start; gap: 10px; font-size: .875rem; line-height: 1.75; color: rgb(var(--ink-700)); }
+.pt-feat-dot { width: 5px; height: 5px; border-radius: 50%; background: rgb(var(--accent-rgb)); flex-shrink: 0; margin-top: .7em; }
+.pt-feat-cols { columns: 1; }
+@media (min-width: 640px) { .pt-feat-cols--2 { columns: 2; column-gap: 1.75rem; } }
+.pt-feat-cols--2 .pt-feat { break-inside: avoid; margin-bottom: 9px; }
+
+.pt-tile {
+  background: rgb(var(--paper)); border: 1px solid rgb(var(--ink-200)); border-radius: var(--r-md);
+  padding: clamp(1.5rem, 2vw, 2.1rem); transition: border-color .3s var(--ease), box-shadow .3s var(--ease), transform .3s var(--ease);
+}
+.pt-tile:hover { border-color: rgb(var(--ink-300)); box-shadow: var(--shadow-2); transform: translateY(-3px); }
+
+.pt-pill {
+  display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; font-weight: 600; color: rgb(var(--ink-700));
+  background: rgb(var(--paper)); border: 1px solid rgb(var(--ink-200)); padding: 7px 15px; border-radius: 100px;
+}
+
+/* ── Dark editorial band (spotlight / investment / CTA) ─────────────── */
+.pt-band-dark { background: rgb(var(--contrast-rgb)); position: relative; overflow: hidden; }
+.pt-glow { position: absolute; z-index: 0; pointer-events: none; border-radius: 50%; filter: blur(100px); }
+
+/* ── Process rail ────────────────────────────────────────────────────── */
+.pt-process-rail { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); border-top: 1px solid rgb(var(--ink-200)); }
+.pt-process-step { padding: clamp(1rem, 1.6vw, 1.5rem) clamp(.6rem, 1vw, 1rem); border-inline-start: 1px solid rgb(var(--ink-200)); display: flex; flex-direction: column; gap: 8px; }
+.pt-process-step:first-child { border-inline-start: none; }
+.pt-process-ghost { font-size: clamp(1.6rem, 2vw, 2.1rem); font-weight: 800; color: rgb(var(--ink-200)); line-height: 1; font-family: var(--font-latin); }
+
+/* ── Phase track (timeline) ──────────────────────────────────────────── */
+.pt-phase-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 2px; background: rgb(var(--ink-200)); border-radius: var(--r-md); overflow: hidden; }
+.pt-phase { background: rgb(var(--paper)); padding: clamp(1.25rem, 1.8vw, 1.75rem) clamp(1rem, 1.5vw, 1.5rem); }
+.pt-phase-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.pt-phase-num { font-size: 1.1rem; font-weight: 800; color: rgb(var(--accent-ink-rgb)); font-family: var(--font-latin); }
+.pt-phase-duration { font-size: .6875rem; font-weight: 700; letter-spacing: .06em; color: rgb(var(--ink-400)); font-family: var(--font-latin); direction: ltr; unicode-bidi: isolate; }
+
+/* ── Client action bar ───────────────────────────────────────────────── */
+.pt-action-bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .proposal-doc .pt-bgrid--4 { grid-template-columns: repeat(2, 1fr); }
+  .proposal-doc .pt-bgrid--4 .pt-span-2 { grid-column: span 2; }
+}
+@media (max-width: 900px) {
+  .proposal-doc .pt-bgrid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .proposal-doc { --section-y: clamp(2.75rem, 8vw, 4rem); --section-y-lg: clamp(3.25rem, 10vw, 5rem); }
+  .proposal-doc .pt-bgrid--4, .proposal-doc .pt-bgrid--3, .proposal-doc .pt-bgrid--2 { grid-template-columns: 1fr; }
+  .proposal-doc .pt-bgrid--4 .pt-span-2 { grid-column: span 1; }
+  .proposal-doc .pt-feat-cols--2 { columns: 1; }
+  .proposal-doc .pt-phase-track { grid-template-columns: 1fr; }
+  .proposal-doc .pt-phase { border-bottom: 1px solid rgb(var(--ink-200)); }
+  .proposal-doc .pt-phase:last-child { border-bottom: none; }
+}
+@media (max-width: 480px) {
+  .proposal-doc { font-size: 15px; }
+  .proposal-doc .pt-container { padding-inline: 1.1rem; }
+  .proposal-doc .pt-tile { padding: 1.35rem; }
+  .proposal-doc .pt-btn { width: 100%; }
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────── */
+/* Reveal-in animation itself lives in hooks/useReveal.js's `revealStyle()`
+   (inline opacity/transform, applied per-element via revealHelper.js) —
+   this stylesheet only needs the print/PDF safety net below, since
+   puppeteer's page.pdf() never scrolls the page and would otherwise leave
+   any section past the first viewport permanently unrevealed. */
+
+/* ── Print / PDF export ──────────────────────────────────────────────── */
+@page { size: A4; margin: 14mm 12mm; }
+@media print {
+  .proposal-doc, .proposal-doc * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .proposal-doc .pt-section, .proposal-doc .pt-section--lg { padding-block: 20px; }
+  .proposal-doc .pt-tile, .proposal-doc .pt-phase, .proposal-doc .pt-process-step { break-inside: avoid; page-break-inside: avoid; }
+  .proposal-doc h1, .proposal-doc h2, .proposal-doc h3 { break-after: avoid; page-break-after: avoid; }
+  .proposal-doc .pt-reveal { opacity: 1 !important; transform: none !important; }
+  .proposal-doc .pt-glow { display: none; }
+  .proposal-doc .pt-no-print { display: none !important; }
+}

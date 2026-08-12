@@ -40,6 +40,7 @@
     "multer": "^2.0.2",
     "nodemailer": "^6.9.16",
     "pdf-parse": "^2.4.5",
+    "puppeteer": "^23.11.1",
     "socket.io": "^4.8.3",
     "stripe": "^22.2.0",
     "ua-parser-js": "^2.0.10",
