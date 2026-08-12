@@ -2,6 +2,7 @@
 const express = require('express');
 const { authenticate, requireRole, requireAdmin } = require('../middleware/auth');
 const ctrl = require('../controllers/proposals/proposalController');
+const htmlImportCtrl = require('../controllers/proposals/htmlImportController');
 
 const router = express.Router();
 
@@ -15,6 +16,10 @@ router.get('/', ctrl.list);
 router.post('/', ctrl.create);
 router.post('/from-template/:templateId', ctrl.createFromTemplate);
 
+// "Import HTML Proposal" — standalone upload, not yet attached to any
+// proposal document (see htmlImportController.js for the full flow).
+router.post('/import/upload', htmlImportCtrl.importUpload);
+
 router.get('/:id', ctrl.getById);
 router.put('/:id', ctrl.update);
 router.delete('/:id', requireAdmin, ctrl.remove); // delete stays Admin+ only
@@ -23,6 +28,7 @@ router.post('/:id/publish', ctrl.publish);
 router.post('/:id/duplicate', ctrl.duplicate);
 router.post('/:id/archive', ctrl.archive);
 router.post('/:id/status', ctrl.changeStatus);
+router.post('/:id/html', htmlImportCtrl.replaceHtml); // "Replace HTML" — versioned, see htmlImportController.js
 
 router.get('/:id/versions', ctrl.listVersions);
 router.post('/:id/restore/:versionId', ctrl.restoreVersion);

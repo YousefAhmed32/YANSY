@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { FileQuestion, Clock3 } from 'lucide-react';
+import { FileQuestion, Clock3, Download } from 'lucide-react';
 import api from '../utils/api';
 import { useSEO } from '../hooks/useSEO';
 import ProposalRenderer from '../components/proposal-template/ProposalRenderer';
+import ImportedHTMLViewer from '../components/imported-html/ImportedHTMLViewer';
 
 const EmptyState = (props) => {
   const Icon = props.Icon;
@@ -106,6 +107,34 @@ const ProposalPublicPage = () => {
         title="انتهت صلاحية هذا العرض"
         body="يرجى التواصل مع YANSY Tech لتجديد العرض."
       />
+    );
+  }
+
+  // IMPORTED_HTML: the hosted document *is* the page — no Hero/Footer/
+  // action-bar chrome wrapped around it, so it reads as a standalone
+  // document rather than a page embedded inside another product. The one
+  // necessary bit of outer UI is a small, unobtrusive PDF button (§23 of
+  // the import-feature spec still requires PDF export for this type).
+  if (state.proposal?.type === 'IMPORTED_HTML') {
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100dvh' }}>
+        <ImportedHTMLViewer htmlAssetUrl={state.proposal.htmlAssetUrl} title={state.proposal.project?.title || 'Proposal'} height="100dvh" />
+        <button
+          type="button"
+          onClick={handleDownloadPdf}
+          aria-label="Download PDF"
+          style={{
+            position: 'fixed', bottom: 18, insetInlineEnd: 18, zIndex: 10,
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(13,17,23,.85)', color: '#fff', border: 'none',
+            borderRadius: 100, padding: '10px 16px', fontSize: 12.5, fontWeight: 600,
+            cursor: 'pointer', backdropFilter: 'blur(6px)', boxShadow: '0 8px 24px rgba(0,0,0,.25)',
+          }}
+        >
+          <Download size={14} aria-hidden="true" />
+          PDF
+        </button>
+      </div>
     );
   }
 

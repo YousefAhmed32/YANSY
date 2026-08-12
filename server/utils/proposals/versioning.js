@@ -6,7 +6,9 @@
  * timestamps, createdBy) which would make every version look "changed" for
  * no content reason.
  */
-const VERSIONED_FIELDS = ['project', 'sections', 'pricing', 'timeline', 'terms', 'branding', 'status'];
+// 'type'/'htmlAsset' cover IMPORTED_HTML proposals — dormant/empty on
+// DYNAMIC ones, so including them here is a no-op for the existing flow.
+const VERSIONED_FIELDS = ['project', 'sections', 'pricing', 'timeline', 'terms', 'branding', 'status', 'type', 'htmlAsset'];
 
 const snapshotOf = (proposalDoc) => {
   const obj = proposalDoc.toObject ? proposalDoc.toObject() : proposalDoc;

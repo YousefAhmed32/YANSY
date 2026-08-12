@@ -80,6 +80,8 @@ const AdminProposals            = lazy(() => import('./pages/AdminProposals'));
 const AdminProposalEditor       = lazy(() => import('./pages/AdminProposalEditor'));
 const AdminProposalTemplates    = lazy(() => import('./pages/AdminProposalTemplates'));
 const AdminProposalTemplateEditor = lazy(() => import('./pages/AdminProposalTemplateEditor'));
+const AdminProposalImport       = lazy(() => import('./pages/AdminProposalImport'));
+const AdminProposalImportEditor = lazy(() => import('./pages/AdminProposalImportEditor'));
 
 /* ── Branded page loader ──────────────────────────────────────────────────── */
 const PageLoader = () => (
@@ -314,6 +316,14 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/proposals/:id/edit"
               element={<ProtectedRoute requireAdmin><AdminProposalEditor /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposals/import"
+              element={<ProtectedRoute requireAdmin><AdminProposalImport /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposals/:id/edit-html"
+              element={<ProtectedRoute requireAdmin><AdminProposalImportEditor /></ProtectedRoute>}
             />
             <Route
               path="admin/proposal-templates"

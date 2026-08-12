@@ -48,6 +48,9 @@ const assertMagicBytes = async (buffer, claimedMime, allowSet) => {
       if (claimedMime === 'text/plain') return;
       if (claimedMime === 'application/pdf' && buffer.slice(0, 4).toString() === '%PDF') return;
       if (claimedMime === 'image/svg+xml' && looksLikeSvg(buffer)) return;
+      // HTML is plain text too — real structural validation (does it even
+      // look like a document?) happens in media/htmlSanitizer.js, not here.
+      if (claimedMime === 'text/html') return;
       const err = new Error('File content could not be verified.');
       err.status = 400;
       throw err;

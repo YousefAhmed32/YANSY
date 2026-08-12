@@ -12,28 +12,43 @@ const NOT_PUBLIC_STATUSES = ['DRAFT', 'ARCHIVED'];
 
 // Fields intentionally excluded from the public payload: createdBy/updatedBy
 // (internal user refs), viewLog (device/browser history — analytics data,
-// not something the visitor needs), and the client's private CRM notes.
-const toPublicProposal = (proposal, client) => ({
-  proposalNumber: proposal.proposalNumber,
-  slug: proposal.slug,
-  project: proposal.project,
-  sections: (proposal.sections || [])
-    .filter((s) => !s.isHidden)
-    .sort((a, b) => (a.order || 0) - (b.order || 0)),
-  // "Sell the scope, discuss the number in the meeting" — hidePriceFromClient
-  // strips every number but keeps the payment-schedule *shape* so a
-  // 'pricing' renderer section can still show something meaningful.
-  pricing: proposal.pricing?.hidePriceFromClient
-    ? { hidePriceFromClient: true, paymentScheduleType: proposal.pricing.paymentScheduleType }
-    : proposal.pricing,
-  timeline: proposal.timeline,
-  terms: proposal.terms,
-  branding: proposal.branding,
-  status: proposal.status,
-  validityDate: proposal.validityDate,
-  publishedAt: proposal.publishedAt,
-  client: client ? { name: client.name, nameAr: client.nameAr, company: client.company } : null,
-});
+// not something the visitor needs), notes (private admin note), and the
+// client's private CRM fields beyond name/company.
+const toPublicProposal = (proposal, client) => {
+  const base = {
+    type: proposal.type,
+    proposalNumber: proposal.proposalNumber,
+    slug: proposal.slug,
+    project: proposal.project,
+    branding: proposal.branding,
+    status: proposal.status,
+    validityDate: proposal.validityDate,
+    publishedAt: proposal.publishedAt,
+    client: client ? { name: client.name, nameAr: client.nameAr, company: client.company } : null,
+  };
+
+  if (proposal.type === 'IMPORTED_HTML') {
+    // The hosted document itself is served by the existing generic
+    // /api/media/:id route (see media/media.routes.js) — no proposal
+    // sections/pricing/timeline/terms to expose for this type.
+    return { ...base, htmlAssetUrl: proposal.htmlAsset?.fileId ? `/api/media/${proposal.htmlAsset.fileId}` : null };
+  }
+
+  return {
+    ...base,
+    sections: (proposal.sections || [])
+      .filter((s) => !s.isHidden)
+      .sort((a, b) => (a.order || 0) - (b.order || 0)),
+    // "Sell the scope, discuss the number in the meeting" — hidePriceFromClient
+    // strips every number but keeps the payment-schedule *shape* so a
+    // 'pricing' renderer section can still show something meaningful.
+    pricing: proposal.pricing?.hidePriceFromClient
+      ? { hidePriceFromClient: true, paymentScheduleType: proposal.pricing.paymentScheduleType }
+      : proposal.pricing,
+    timeline: proposal.timeline,
+    terms: proposal.terms,
+  };
+};
 
 const isExpired = (proposal) => proposal.validityDate && new Date(proposal.validityDate) < new Date();
 
@@ -147,7 +162,7 @@ exports.downloadPdf = async (req, res) => {
     if (proposal.status === 'EXPIRED') return res.status(410).json({ error: 'This proposal has expired' });
 
     const { renderProposalPdf } = require('../../services/proposals/pdfService');
-    const pdfBuffer = await renderProposalPdf(proposal.slug);
+    const pdfBuffer = await renderProposalPdf(proposal);
 
     res.set({
       'Content-Type': 'application/pdf',

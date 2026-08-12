@@ -57,6 +57,15 @@ const VIDEO_MAX_BYTES = 200 * 1024 * 1024;
 const GENERIC_FILE_MIMES = new Set([...IMAGE_MIMES, ...DOCUMENT_MIMES]);
 const GENERIC_FILE_MAX_BYTES = 10 * 1024 * 1024;
 
+// Imported proposal HTML documents (Proposal Management System — "Import
+// HTML Proposal"). Kept separate from GENERIC_FILE_MIMES/DOCUMENT_MIMES
+// since this is executable markup, not a passive document — it goes
+// through its own sanitization pass (media/htmlSanitizer.js) and is only
+// ever rendered back inside a sandboxed iframe, never trusted as safe to
+// embed directly.
+const HTML_MIMES = new Set(['text/html']);
+const HTML_MAX_BYTES = 8 * 1024 * 1024;
+
 module.exports = {
   MIME_TO_EXT,
   IMAGE_MIMES,
@@ -71,4 +80,6 @@ module.exports = {
   VIDEO_MAX_BYTES,
   GENERIC_FILE_MIMES,
   GENERIC_FILE_MAX_BYTES,
+  HTML_MIMES,
+  HTML_MAX_BYTES,
 };

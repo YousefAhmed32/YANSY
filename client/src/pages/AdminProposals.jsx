@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   FileSignature, Plus, Eye, Pencil, Copy, Link2, Archive, Trash2,
-  FileText, Send, CheckCircle2, XCircle, Clock, DollarSign, TrendingUp,
+  FileText, Send, CheckCircle2, Clock, DollarSign, TrendingUp,
+  LayoutDashboard, FileUp, RefreshCw, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   TK, RADIUS, FONT, PageHeader, Card, Button, IconButton, Badge, SearchInput, FilterPills,
-  StatCard, ConfirmDialog, DataTable, useTableState,
+  StatCard, ConfirmDialog, DataTable, useTableState, Modal,
 } from '../admin-ui';
 
 const STATUS_TONE = {
@@ -41,8 +42,10 @@ const AdminProposals = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [newProposalOpen, setNewProposalOpen] = useState(false);
   const { sortKey, sortDir, onSort, sortRows } = useTableState('createdAt');
 
   const T = {
@@ -79,6 +82,15 @@ const AdminProposals = () => {
     accepted: isRTL ? 'مقبولة' : 'Accepted',
     totalValue: isRTL ? 'إجمالي القيمة' : 'Total Value',
     monthValue: isRTL ? 'قيمة هذا الشهر' : "This Month's Value",
+    type: isRTL ? 'النوع' : 'Type',
+    dynamic: isRTL ? 'ديناميكي' : 'Dynamic',
+    importedHtml: isRTL ? 'HTML مستورد' : 'Imported HTML',
+    replaceHtml: isRTL ? 'استبدال HTML' : 'Replace HTML',
+    chooseTypeTitle: isRTL ? 'إنشاء عرض جديد' : 'Create New Proposal',
+    createDynamic: isRTL ? 'إنشاء عرض ديناميكي' : 'Create Dynamic Proposal',
+    createDynamicDesc: isRTL ? 'ابنِ العرض باستخدام نظام YANSY القابل لإعادة الاستخدام.' : "Build using YANSY's reusable proposal system.",
+    importHtml: isRTL ? 'استيراد عرض HTML' : 'Import HTML Proposal',
+    importHtmlDesc: isRTL ? 'ارفع ملف عرض جاهز التصميم وانشره مباشرة.' : 'Upload an already-designed HTML proposal and publish it directly.',
   };
 
   const STATUS_OPTIONS = [
@@ -86,11 +98,17 @@ const AdminProposals = () => {
     ...Object.keys(STATUS_LABEL).map((s) => ({ value: s, label: isRTL ? STATUS_LABEL[s].ar : STATUS_LABEL[s].en })),
   ];
 
+  const TYPE_OPTIONS = [
+    { value: 'all', label: T.all },
+    { value: 'DYNAMIC', label: T.dynamic },
+    { value: 'IMPORTED_HTML', label: T.importedHtml },
+  ];
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const [listRes, statsRes] = await Promise.all([
-        api.get('/proposals', { params: { q: search.trim() || undefined, status: statusFilter === 'all' ? undefined : statusFilter, limit: 100 } }),
+        api.get('/proposals', { params: { q: search.trim() || undefined, status: statusFilter === 'all' ? undefined : statusFilter, type: typeFilter === 'all' ? undefined : typeFilter, limit: 100 } }),
         api.get('/proposals/stats/overview'),
       ]);
       setItems(listRes.data.items || []);
@@ -100,7 +118,7 @@ const AdminProposals = () => {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [search, statusFilter, typeFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -143,11 +161,16 @@ const AdminProposals = () => {
     }
   };
 
+  // IMPORTED_HTML proposals are managed on a lighter dedicated page (no
+  // sections/pricing/timeline wizard to show) — see AdminProposalImportEditor.jsx.
+  const editPath = (r) => (r.type === 'IMPORTED_HTML' ? `/app/admin/proposals/${r._id}/edit-html` : `/app/admin/proposals/${r._id}/edit`);
+
   const columns = [
     { key: 'proposalNumber', label: T.proposalNumber, sortable: true, render: (r) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{r.proposalNumber}</span> },
+    { key: 'type', label: T.type, render: (r) => <Badge tone={r.type === 'IMPORTED_HTML' ? 'purple' : 'neutral'}>{r.type === 'IMPORTED_HTML' ? T.importedHtml : T.dynamic}</Badge> },
     { key: 'client', label: T.client, render: (r) => (isRTL ? r.client?.nameAr : r.client?.name) || r.client?.name || '—' },
     { key: 'project', label: T.project, render: (r) => (isRTL ? r.project?.titleAr : r.project?.title) || r.project?.title || '—' },
-    { key: 'amount', label: T.amount, render: (r) => (r.pricing?.hidePriceFromClient ? '—' : money(r.pricing?.finalPrice, r.pricing?.currency)) },
+    { key: 'amount', label: T.amount, render: (r) => (r.type === 'IMPORTED_HTML' || r.pricing?.hidePriceFromClient ? '—' : money(r.pricing?.finalPrice, r.pricing?.currency)) },
     { key: 'status', label: T.status, render: (r) => <Badge tone={STATUS_TONE[r.status] || 'neutral'} dot>{isRTL ? STATUS_LABEL[r.status]?.ar : STATUS_LABEL[r.status]?.en}</Badge> },
     { key: 'createdAt', label: T.created, sortable: true, render: (r) => dateFmt(r.createdAt) },
     { key: 'lastViewedAt', label: T.lastViewed, render: (r) => dateFmt(r.lastViewedAt) },
@@ -156,7 +179,10 @@ const AdminProposals = () => {
       render: (r) => (
         <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }} onClick={(e) => e.stopPropagation()}>
           <IconButton icon={Eye} size={28} title={T.view} onClick={() => window.open(`/p/${r.slug}`, '_blank', 'noopener,noreferrer')} />
-          <IconButton icon={Pencil} size={28} title={T.edit} onClick={() => navigate(`/app/admin/proposals/${r._id}/edit`)} />
+          <IconButton icon={Pencil} size={28} title={T.edit} onClick={() => navigate(editPath(r))} />
+          {r.type === 'IMPORTED_HTML' && (
+            <IconButton icon={RefreshCw} size={28} title={T.replaceHtml} onClick={() => navigate(editPath(r))} />
+          )}
           <IconButton icon={Copy} size={28} title={T.duplicate} onClick={() => duplicate(r._id)} />
           <IconButton icon={Link2} size={28} title={T.copyLink} onClick={() => copyLink(r.slug)} />
           {r.status !== 'ARCHIVED' && <IconButton icon={Archive} size={28} title={T.archive} onClick={() => archive(r._id)} />}
@@ -175,7 +201,7 @@ const AdminProposals = () => {
         eyebrow={isRTL ? 'نظام العروض' : 'Proposal System'}
         title={T.title}
         subtitle={T.subtitle}
-        actions={<Button variant="primary" icon={Plus} onClick={() => navigate('/app/admin/proposals/new')}>{T.newProposal}</Button>}
+        actions={<Button variant="primary" icon={Plus} onClick={() => setNewProposalOpen(true)}>{T.newProposal}</Button>}
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
@@ -192,6 +218,9 @@ const AdminProposals = () => {
           <SearchInput value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} />
           <FilterPills value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
         </div>
+        <div style={{ marginTop: 10 }}>
+          <FilterPills value={typeFilter} onChange={setTypeFilter} options={TYPE_OPTIONS} />
+        </div>
       </Card>
 
       <DataTable
@@ -201,12 +230,12 @@ const AdminProposals = () => {
         sortKey={sortKey}
         sortDir={sortDir}
         onSort={onSort}
-        onRowClick={(r) => navigate(`/app/admin/proposals/${r._id}/edit`)}
+        onRowClick={(r) => navigate(editPath(r))}
         isRTL={isRTL}
         emptyIcon={FileSignature}
         emptyTitle={search.trim() ? (isRTL ? 'لا توجد نتائج مطابقة' : 'No matches for your search') : T.emptyTitle}
         emptySubtitle={search.trim() ? undefined : T.emptySubtitle}
-        emptyAction={!search.trim() && <Button variant="primary" size="sm" icon={Plus} onClick={() => navigate('/app/admin/proposals/new')}>{T.newProposal}</Button>}
+        emptyAction={!search.trim() && <Button variant="primary" size="sm" icon={Plus} onClick={() => setNewProposalOpen(true)}>{T.newProposal}</Button>}
         footer={`${items.length} ${T.title}`}
       />
 
@@ -220,8 +249,48 @@ const AdminProposals = () => {
         confirmLabel={T.delete}
         cancelLabel={isRTL ? 'إلغاء' : 'Cancel'}
       />
+
+      <Modal open={newProposalOpen} onClose={() => setNewProposalOpen(false)} title={T.chooseTypeTitle} width="620px">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <button
+            type="button"
+            onClick={() => navigate('/app/admin/proposals/new')}
+            style={choiceCardStyle}
+          >
+            <div style={{ width: 40, height: 40, borderRadius: RADIUS.md, background: TK.accentBg, border: `1px solid ${TK.accentBd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <LayoutDashboard size={18} color={TK.accent} />
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: TK.text, margin: 0 }}>{T.createDynamic}</p>
+            <p style={{ fontSize: 12, color: TK.textMuted, marginTop: 6, lineHeight: 1.6 }}>{T.createDynamicDesc}</p>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: TK.accent, marginTop: 14 }}>
+              {isRTL ? 'ابدأ' : 'Start'} {isRTL ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/app/admin/proposals/import')}
+            style={choiceCardStyle}
+          >
+            <div style={{ width: 40, height: 40, borderRadius: RADIUS.md, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <FileUp size={18} color="#7c3aed" />
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: TK.text, margin: 0 }}>{T.importHtml}</p>
+            <p style={{ fontSize: 12, color: TK.textMuted, marginTop: 6, lineHeight: 1.6 }}>{T.importHtmlDesc}</p>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#7c3aed', marginTop: 14 }}>
+              {isRTL ? 'ابدأ' : 'Start'} {isRTL ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+            </span>
+          </button>
+        </div>
+      </Modal>
     </div>
   );
+};
+
+const choiceCardStyle = {
+  display: 'block', width: '100%', textAlign: 'inherit', padding: 20,
+  background: TK.bgSubtle, border: `1px solid ${TK.border}`, borderRadius: RADIUS.xl,
+  cursor: 'pointer', fontFamily: 'inherit',
 };
 
 export default AdminProposals;

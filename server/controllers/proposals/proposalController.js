@@ -5,7 +5,7 @@ const ProposalVersion = require('../../models/proposals/ProposalVersion');
 const ProposalTemplate = require('../../models/proposals/ProposalTemplate');
 const { buildProposalSlug } = require('../../utils/proposals/slug');
 const { buildProposalNumber } = require('../../utils/proposals/proposalNumber');
-const { snapshotOf } = require('../../utils/proposals/versioning');
+const { snapshotVersion } = require('./versionHelpers');
 const { audit } = require('../../utils/auditLogger');
 
 const PUBLIC_CLIENT_FIELDS = 'name nameAr company email phone whatsapp country city';
@@ -34,32 +34,15 @@ const nextProposalNumber = async () => {
   return buildProposalNumber(Date.now() % 10000, year); // pathological fallback, should never trigger
 };
 
-// Snapshots the proposal's *current, pre-edit* in-memory state into a new
-// ProposalVersion, then advances `proposal.currentVersion` in memory —
-// caller is responsible for `proposal.save()` afterwards so this never
-// causes an extra write of its own.
-const snapshotVersion = async (proposal, { changeSummary, userId } = {}) => {
-  const latest = await ProposalVersion.findOne({ proposal: proposal._id }).sort({ versionNumber: -1 }).select('versionNumber');
-  const versionNumber = (latest?.versionNumber || 0) + 1;
-  await ProposalVersion.create({
-    proposal: proposal._id,
-    versionNumber,
-    snapshot: snapshotOf(proposal),
-    changeSummary: changeSummary || null,
-    createdBy: userId,
-  });
-  proposal.currentVersion = versionNumber;
-  return versionNumber;
-};
-
 const PUBLISHED_STATUSES = ['SENT', 'VIEWED', 'CHANGE_REQUESTED', 'ACCEPTED', 'REJECTED'];
 
 // ── List ────────────────────────────────────────────────────────────────
 exports.list = async (req, res) => {
   try {
-    const { q, status, clientId, page = 1, limit = 20, sort } = req.query;
+    const { q, status, type, clientId, page = 1, limit = 20, sort } = req.query;
     const filter = {};
     if (status) filter.status = Array.isArray(status) ? { $in: status } : status;
+    if (type) filter.type = type;
     if (clientId) filter.client = clientId;
     if (q?.trim()) {
       const safe = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -122,7 +105,14 @@ exports.getById = async (req, res) => {
   try {
     const proposal = await Proposal.findById(req.params.id).populate('client');
     if (!proposal) return res.status(404).json({ error: 'Not found' });
-    res.json({ item: proposal });
+    const item = proposal.toObject();
+    // Convenience for the editor's ImportedHTMLViewer preview — the asset
+    // itself is served by the existing generic /api/media/:id route (see
+    // media/media.routes.js), no proposal-specific streaming route needed.
+    if (item.type === 'IMPORTED_HTML' && item.htmlAsset?.fileId) {
+      item.htmlAssetUrl = `/api/media/${item.htmlAsset.fileId}`;
+    }
+    res.json({ item });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -204,7 +194,11 @@ exports.createFromTemplate = async (req, res) => {
 };
 
 // ── Update ──────────────────────────────────────────────────────────────
-const EDITABLE_FIELDS = ['client', 'project', 'sections', 'pricing', 'timeline', 'terms', 'branding', 'validityDate'];
+// Deliberately excludes 'type' and 'htmlAsset' — those only ever change via
+// the dedicated import/replace endpoints (htmlImportController.js), which
+// snapshot a version *before* swapping the HTML. Letting them through this
+// generic PUT would let an HTML swap slip past versioning entirely.
+const EDITABLE_FIELDS = ['client', 'project', 'sections', 'pricing', 'timeline', 'terms', 'branding', 'validityDate', 'notes'];
 
 exports.update = async (req, res) => {
   try {
@@ -252,6 +246,9 @@ exports.publish = async (req, res) => {
     const proposal = await Proposal.findById(req.params.id);
     if (!proposal) return res.status(404).json({ error: 'Not found' });
     if (!proposal.project?.title) return res.status(400).json({ error: 'Proposal is missing a project title' });
+    if (proposal.type === 'IMPORTED_HTML' && !proposal.htmlAsset?.fileId) {
+      return res.status(400).json({ error: 'Upload an HTML file before publishing this proposal' });
+    }
 
     proposal.status = 'SENT';
     proposal.publishedAt = proposal.publishedAt || new Date();
@@ -279,12 +276,19 @@ exports.duplicate = async (req, res) => {
 
     const copy = await Proposal.create({
       client: req.body.client || source.client,
+      type: source.type,
       project: source.project,
       sections: source.sections,
       pricing: source.pricing,
       timeline: source.timeline,
       terms: source.terms,
       branding: source.branding,
+      // IMPORTED_HTML: the new proposal points at the *same* GridFS file —
+      // safe to share, the asset is immutable/read-only once uploaded, and
+      // "Replace HTML" on one copy creates a version on that proposal only,
+      // never mutates the shared file in place.
+      htmlAsset: source.htmlAsset,
+      notes: source.notes,
       template: source.template,
       proposalNumber,
       slug,
@@ -376,7 +380,7 @@ exports.downloadPdf = async (req, res) => {
     if (!proposal) return res.status(404).json({ error: 'Not found' });
 
     const { renderProposalPdf } = require('../../services/proposals/pdfService');
-    const pdfBuffer = await renderProposalPdf(proposal.slug);
+    const pdfBuffer = await renderProposalPdf(proposal);
 
     res.set({
       'Content-Type': 'application/pdf',
