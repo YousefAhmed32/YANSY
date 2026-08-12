@@ -109,7 +109,24 @@ If users see old behavior or auth issues after deployment:
 
 ---
 
-## 8. Checklist Before Go-Live
+## 9. Proposal Management System (PDF Generation)
+
+The admin Proposal system (`/app/admin/proposals`, public pages at `/p/:slug`) generates PDFs by launching headless Chromium via `puppeteer` and printing the real public proposal page — not a screenshot. This needs one extra step beyond the rest of the app:
+
+- **Install:** `puppeteer` is in `server/package.json`; a plain `npm install` in `/server` downloads its own bundled Chromium (no separate browser install needed on most systems).
+- **Ubuntu VPS system packages:** headless Chromium needs a handful of shared libraries the base OS may not have. If PDF generation fails with a Chromium launch error, install:
+  ```bash
+  sudo apt-get install -y ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 \
+    libatk1.0-0 libcups2 libdbus-1-3 libgbm1 libnspr4 libnss3 libx11-xcb1 libxcomposite1 \
+    libxdamage1 libxrandr2 xdg-utils
+  ```
+- **`PUBLIC_SITE_URL`** (server `.env`, optional): the origin the PDF renderer navigates to for a proposal's public page. Falls back to `CLIENT_URL` if unset — only set it separately if the public proposal page ever moves to a different origin than the main site (e.g. a dedicated `proposals.yansytech.com` subdomain).
+- **No extra Nginx config needed:** `/p/:slug` and `/app/admin/proposals*` are ordinary React Router routes served by the same SPA build and the same `/api/*` backend already proxied — nothing new to add to the reverse proxy.
+- **Memory:** headless Chromium is reused across PDF requests (launched once, kept warm) rather than relaunched per request, but still adds meaningful RAM overhead on small VPS tiers — size accordingly if PDF export is used often.
+
+---
+
+## 10. Checklist Before Go-Live
 
 - [ ] Backend `.env`: `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (HTTPS frontend URL).
 - [ ] Frontend build env: `VITE_API_URL` and `VITE_SOCKET_URL` point to backend over HTTPS.
@@ -117,3 +134,4 @@ If users see old behavior or auth issues after deployment:
 - [ ] MongoDB Atlas (if used): Network Access allows your server IP (or `0.0.0.0/0` for testing).
 - [ ] HTTPS: Backend and frontend both served over HTTPS so secure cookies work.
 - [ ] After deploy: Test login, register, protected routes, and logout; clear cookies/cache if needed.
+- [ ] Proposal PDFs: `npm install` in `/server` picked up `puppeteer`; test one PDF download end-to-end (see §9 for the Ubuntu system packages PDF export needs).

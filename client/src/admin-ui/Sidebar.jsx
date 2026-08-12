@@ -8,6 +8,7 @@ import {
   DollarSign, UserCheck, Bell, Target, LineChart, Bot, Brain, Layers, Video,
   Clapperboard, Star, Clock, PanelLeft, PanelLeftClose, GripVertical, Sparkles, Award,
   Library, UserSquare2, Building2, Cpu, Tag as TagIcon, Quote, LayoutGrid, Globe2, Wrench, Shapes,
+  FileSignature, UserRound, HandCoins, LayoutTemplate,
 } from 'lucide-react';
 import { TK, RADIUS, SHADOW, MOTION } from './tokens';
 
@@ -20,6 +21,7 @@ const buildAdminNav = (t, language) => {
     workspace: ar ? 'مساحة العمل' : 'Workspace',
     overview:  ar ? 'نظرة عامة'   : 'Overview',
     content:   ar ? 'المحتوى'     : 'Content',
+    proposals: ar ? 'العروض'      : 'Proposals',
     libraries: ar ? 'مكتبات المحتوى' : 'Content Libraries',
     people:    ar ? 'الأشخاص'     : 'People',
     comms:     ar ? 'التواصل'     : 'Communication',
@@ -41,6 +43,14 @@ const buildAdminNav = (t, language) => {
     { to: '/app/admin/homepage-video',   label: ar ? 'فيديو الصفحة الرئيسية' : 'Video Showcase',    icon: Clapperboard,    group: g.content },
     { to: '/app/admin/client-logos',     label: ar ? 'العملاء الموثوقون'  : 'Trusted By',           icon: Award,           group: g.content },
     { to: '/app/admin/start-project',    label: ar ? 'تدفق بدء المشروع' : 'Start Project Flow',   icon: Target,          group: g.content },
+
+    // Proposal Management System — create/send/track client proposals from
+    // a reusable template + live-preview wizard instead of hand-built HTML
+    // per client. See server/models/proposals/ + components/proposal-template/.
+    { to: '/app/admin/proposals',            label: ar ? 'العروض'            : 'Proposals',           icon: FileSignature,  group: g.proposals },
+    { to: '/app/admin/proposal-templates',   label: ar ? 'قوالب العروض'      : 'Templates',           icon: LayoutTemplate, group: g.proposals },
+    { to: '/app/admin/libraries/proposalClients', label: ar ? 'عملاء العروض' : 'Proposal Clients',    icon: UserRound,      group: g.proposals },
+    { to: '/app/admin/libraries/proposalServices', label: ar ? 'خدمات العروض' : 'Proposal Services',  icon: HandCoins,      group: g.proposals },
 
     // Reusable content libraries the portfolio wizard references instead of
     // duplicating per project — see the CMS normalization plan.

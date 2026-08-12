@@ -1,4 +1,4 @@
-import { Users, Building2, Cpu, Tag as TagIcon, Quote, Award as AwardIcon, LayoutGrid, Globe2, Wrench, Layers } from 'lucide-react';
+import { Users, Building2, Cpu, Tag as TagIcon, Quote, Award as AwardIcon, LayoutGrid, Globe2, Wrench, Layers, UserRound, HandCoins } from 'lucide-react';
 
 /**
  * Declarative config per reusable content library — drives AdminLibrary.jsx
@@ -193,6 +193,49 @@ export const LIBRARY_CONFIGS = {
     ],
     columns: ['name', 'order', 'isActive'],
   },
+
+  // ── Proposal Management System libraries ──────────────────────────────
+  // Distinct from `clients`/`services` above (those are portfolio-CMS
+  // marketing content) — these back the Proposal wizard's Client and
+  // Service-line-item pickers. See server/models/proposals/.
+  proposalClients: {
+    apiBase: '/proposal-clients',
+    icon: UserRound,
+    labelEn: 'Proposal Clients', labelAr: 'عملاء العروض',
+    itemLabelEn: 'client', itemLabelAr: 'عميل',
+    displayField: 'name',
+    fields: [
+      { key: 'name', labelEn: 'Name', labelAr: 'الاسم', required: true },
+      { key: 'nameAr', labelEn: 'Name (Arabic)', labelAr: 'الاسم (عربي)', dir: 'rtl' },
+      { key: 'company', labelEn: 'Company', labelAr: 'الشركة' },
+      { key: 'email', labelEn: 'Email', labelAr: 'البريد الإلكتروني' },
+      { key: 'phone', labelEn: 'Phone', labelAr: 'الهاتف' },
+      { key: 'whatsapp', labelEn: 'WhatsApp', labelAr: 'واتساب' },
+      { key: 'country', labelEn: 'Country', labelAr: 'الدولة' },
+      { key: 'city', labelEn: 'City', labelAr: 'المدينة' },
+      { key: 'notes', labelEn: 'Notes', labelAr: 'ملاحظات', type: 'textarea' },
+    ],
+    columns: ['name', 'company', 'email'],
+  },
+
+  proposalServices: {
+    apiBase: '/proposal-services',
+    icon: HandCoins,
+    labelEn: 'Proposal Services', labelAr: 'خدمات العروض',
+    itemLabelEn: 'service', itemLabelAr: 'خدمة',
+    displayField: 'name',
+    fields: [
+      { key: 'name', labelEn: 'Name', labelAr: 'الاسم', required: true },
+      { key: 'nameAr', labelEn: 'Name (Arabic)', labelAr: 'الاسم (عربي)', dir: 'rtl' },
+      { key: 'category', labelEn: 'Category', labelAr: 'الفئة' },
+      { key: 'description', labelEn: 'Description', labelAr: 'الوصف', type: 'textarea' },
+      { key: 'descriptionAr', labelEn: 'Description (Arabic)', labelAr: 'الوصف (عربي)', type: 'textarea', dir: 'rtl' },
+      { key: 'defaultPrice', labelEn: 'Default Price', labelAr: 'السعر الافتراضي', type: 'number' },
+      { key: 'order', labelEn: 'Order', labelAr: 'الترتيب', type: 'number' },
+      { key: 'isActive', labelEn: 'Active', labelAr: 'مفعّل', type: 'switch' },
+    ],
+    columns: ['name', 'category', 'defaultPrice', 'isActive'],
+  },
 };
 
-export const LIBRARY_ORDER = ['team', 'clients', 'technologies', 'tags', 'testimonials', 'awards', 'categories', 'industries', 'services', 'projectTypes'];
+export const LIBRARY_ORDER = ['team', 'clients', 'technologies', 'tags', 'testimonials', 'awards', 'categories', 'industries', 'services', 'projectTypes', 'proposalClients', 'proposalServices'];

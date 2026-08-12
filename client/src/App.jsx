@@ -75,6 +75,11 @@ const OnboardingWizard    = lazy(() => import('./pages/OnboardingWizard'));
 const Meetings            = lazy(() => import('./pages/Meetings'));
 const ActivityTimeline    = lazy(() => import('./pages/ActivityTimeline'));
 const AdminBlog           = lazy(() => import('./pages/AdminBlog'));
+const ProposalPublicPage        = lazy(() => import('./pages/ProposalPublicPage'));
+const AdminProposals            = lazy(() => import('./pages/AdminProposals'));
+const AdminProposalEditor       = lazy(() => import('./pages/AdminProposalEditor'));
+const AdminProposalTemplates    = lazy(() => import('./pages/AdminProposalTemplates'));
+const AdminProposalTemplateEditor = lazy(() => import('./pages/AdminProposalTemplateEditor'));
 
 /* ── Branded page loader ──────────────────────────────────────────────────── */
 const PageLoader = () => (
@@ -147,6 +152,11 @@ const AnimatedRoutes = () => {
           {/* /process retired — its content lives on the homepage and inside the Contact page's process timeline */}
           <Route path="/process"  element={<Navigate to="/contact" replace />} />
           <Route path="/pricing"  element={<Navigate to="/contact" replace />} />
+
+          {/* ── Public proposal page — no site Header/Footer, no PageTransition:
+              a shared proposal link is its own branded document (see
+              ProposalRenderer), not a page inside the marketing site's nav. ── */}
+          <Route path="/p/:slug" element={<ProposalPublicPage />} />
 
           {/* ── Auth — no transition, instant ── */}
           <Route path="/login"           element={<Login />} />
@@ -292,6 +302,26 @@ const AnimatedRoutes = () => {
             <Route
               path="admin/blog"
               element={<ProtectedRoute requireAdmin><AdminBlog /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposals"
+              element={<ProtectedRoute requireAdmin><AdminProposals /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposals/new"
+              element={<ProtectedRoute requireAdmin><AdminProposalEditor /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposals/:id/edit"
+              element={<ProtectedRoute requireAdmin><AdminProposalEditor /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposal-templates"
+              element={<ProtectedRoute requireAdmin><AdminProposalTemplates /></ProtectedRoute>}
+            />
+            <Route
+              path="admin/proposal-templates/:id/edit"
+              element={<ProtectedRoute requireAdmin><AdminProposalTemplateEditor /></ProtectedRoute>}
             />
           </Route>
 
