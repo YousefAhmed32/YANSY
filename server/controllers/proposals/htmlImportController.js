@@ -1,12 +1,28 @@
 'use strict';
 const multer = require('multer');
+const mongoose = require('mongoose');
 const Proposal = require('../../models/proposals/Proposal');
 const mediaService = require('../../media/media.service');
+const gridfsRepository = require('../../media/gridfsRepository');
+const { getMedia } = require('../../media/media.controller');
 const { assertSize } = require('../../media/mediaValidators');
 const { HTML_MIMES, HTML_MAX_BYTES } = require('../../media/mediaConstants');
 const { sanitizeHtml, inspectWarnings } = require('../../media/htmlSanitizer');
 const { snapshotVersion } = require('./versionHelpers');
 const { audit } = require('../../utils/auditLogger');
+
+// Same origin allow-list the app's CORS config trusts (see server.js
+// ALLOWED_ORIGINS) — reused here as the `frame-ancestors` allow-list so this
+// route only ever relaxes framing for our *own* frontend, never arbitrary
+// third-party sites. In dev, Vite's port isn't fixed (5173 is often already
+// taken by another running instance and it silently picks 5174/5175/...),
+// so — mirroring corsOptions' own "allow any origin in development" rule
+// right below it in server.js — this allows any localhost port instead of
+// hardcoding one, rather than making the preview flaky depending on which
+// port Vite happened to grab.
+const FRAME_ANCESTOR_ORIGINS = process.env.NODE_ENV === 'production'
+  ? (process.env.CLIENT_URL || 'https://yansytech.com').split(',').map((s) => s.trim()).filter(Boolean)
+  : ['http://localhost:*', 'http://127.0.0.1:*'];
 
 /**
  * "Import HTML Proposal" — upload, sanitize, and store an already-designed
@@ -59,7 +75,14 @@ const processAndStoreHtml = async (file, { isRTL = true } = {}) => {
   return {
     storageType: 'gridfs',
     fileId: asset.publicId,
-    url: asset.url,
+    // NOT the generic /api/media/:id URL (asset.url) — that route inherits
+    // the app-wide helmet X-Frame-Options: SAMEORIGIN + CSP frame-ancestors
+    // 'self', which is correct for every other asset type but blocks this
+    // one case, since it needs to render inside <iframe sandbox> in
+    // ImportedHTMLViewer.jsx and the API is a different origin from the
+    // frontend in both dev (different port) and prod (api.yansytech.com vs
+    // yansytech.com). See serveHtmlAsset() below.
+    url: htmlAssetUrl(asset.publicId),
     originalName: file.originalname,
     size: safeBuffer.length,
     mimeType: 'text/html',
@@ -67,6 +90,14 @@ const processAndStoreHtml = async (file, { isRTL = true } = {}) => {
     warnings,
   };
 };
+
+// Single source of truth for "how do you fetch this HTML asset for
+// rendering" — used by processAndStoreHtml (pre-save wizard preview) and
+// mirrored by proposalController.getById / publicProposalController for
+// already-saved proposals, so admin and public always resolve the exact
+// same URL scheme.
+const htmlAssetUrl = (fileId) => `/api/proposals/public/html/${fileId}`;
+exports.htmlAssetUrl = htmlAssetUrl;
 
 // ── POST /api/proposals/import/upload ──────────────────────────────────
 // Standalone upload — not yet attached to any Proposal document. The
@@ -130,4 +161,48 @@ exports.replaceHtml = (req, res) => {
       res.status(err.status || 400).json({ error: err.message });
     }
   });
+};
+
+// ── GET /api/proposals/public/html/:id ──────────────────────────────────
+// Public, unauthenticated (mounted *before* proposals.routes.js's
+// `router.use(authenticate, ...)` — see routes/proposals.routes.js), and
+// deliberately NOT the generic /api/media/:id route.
+//
+// Streams the exact same GridFS bytes via the exact same streaming code
+// (getMedia — Range support, ETag, RAM cache, all of it) so there is no
+// second storage/streaming implementation, only a thin header adjustment on
+// top of it: the app-wide helmet middleware (server.js) sends every
+// response `X-Frame-Options: SAMEORIGIN` and CSP `frame-ancestors 'self'`,
+// which is the right default for images/videos/PDFs (never embedded in a
+// frame) but wrongly blocks *this* asset type, since ImportedHTMLViewer.jsx
+// renders it inside <iframe sandbox> and the API is a different origin
+// from the frontend in both dev (different port) and prod
+// (api.yansytech.com vs yansytech.com) — the generic route's framing
+// headers made the sandboxed iframe unrenderable (a blank/broken-document
+// iframe in every browser), which is what this route exists to fix.
+//
+// Scoped to `text/html` GridFS files only (not "any asset id") — an image
+// or video can't be exploited by relaxed framing (browsers don't apply
+// X-Frame-Options/frame-ancestors to <img>/<video>), but this keeps the
+// route's actual behavior matching its name/intent instead of doubling as
+// a general-purpose framing bypass for the whole media store.
+exports.serveHtmlAsset = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid media id' });
+    }
+    const file = await gridfsRepository.findFileById(id);
+    const contentType = file?.metadata?.contentType || file?.contentType;
+    if (!file || contentType !== 'text/html') {
+      return res.status(404).json({ error: 'Media not found' });
+    }
+
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Security-Policy', `frame-ancestors 'self' ${FRAME_ANCESTOR_ORIGINS.join(' ')}`);
+
+    return getMedia(req, res, next);
+  } catch (err) {
+    next(err);
+  }
 };

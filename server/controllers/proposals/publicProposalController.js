@@ -1,5 +1,6 @@
 'use strict';
 const Proposal = require('../../models/proposals/Proposal');
+const htmlImportController = require('./htmlImportController');
 
 let geoip = null;
 try { geoip = require('geoip-lite'); } catch (_) { /* optional */ }
@@ -28,10 +29,10 @@ const toPublicProposal = (proposal, client) => {
   };
 
   if (proposal.type === 'IMPORTED_HTML') {
-    // The hosted document itself is served by the existing generic
-    // /api/media/:id route (see media/media.routes.js) — no proposal
+    // The hosted document is served by the dedicated frame-safe route (see
+    // htmlImportController.serveHtmlAsset) — no proposal
     // sections/pricing/timeline/terms to expose for this type.
-    return { ...base, htmlAssetUrl: proposal.htmlAsset?.fileId ? `/api/media/${proposal.htmlAsset.fileId}` : null };
+    return { ...base, htmlAssetUrl: proposal.htmlAsset?.fileId ? htmlImportController.htmlAssetUrl(proposal.htmlAsset.fileId) : null };
   }
 
   return {

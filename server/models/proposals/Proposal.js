@@ -111,7 +111,17 @@ proposalSchema.index({ 'project.title': 'text', proposalNumber: 'text' });
 // every save — controllers only ever write the raw inputs, never
 // finalPrice itself, so this is the one place the derived numbers can go
 // stale, and it can't.
-proposalSchema.pre('save', function (next) {
+//
+// No `next` parameter, and never called — this project runs Mongoose 9,
+// which stopped passing pre-hooks a real callback function here (it's some
+// internal non-callable object instead), so the old `function (next) {
+// ...; next(); }` style throws "next is not a function" on literally every
+// save/create, including a bare `Proposal.create({ client, project })`
+// with no pricing at all — every "New Proposal" (DYNAMIC or IMPORTED_HTML)
+// hit this. A synchronous hook that just returns (no next, no promise) is
+// the correct Mongoose 9 pattern — completing the function body is itself
+// the signal to proceed.
+proposalSchema.pre('save', function () {
   if (this.isModified('pricing')) {
     this.pricing.finalPrice = computeFinalPrice(this.pricing);
     if (this.pricing.milestones?.length) {
@@ -119,7 +129,6 @@ proposalSchema.pre('save', function (next) {
       this.pricing.milestones.forEach((m, i) => { m.amount = withAmounts[i]?.amount ?? m.amount; });
     }
   }
-  next();
 });
 
 proposalSchema.statics.STATUSES = STATUSES;

@@ -58,15 +58,20 @@ const supportTicketSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-supportTicketSchema.pre('save', async function (next) {
-  if (this.ticketId) return next();
+// No `next` parameter — this project runs Mongoose 9, which stopped
+// passing pre-hooks a real callable `next` here, so `next()` throws "next
+// is not a function" on every save (see the identical bug/fix in
+// models/proposals/Proposal.js). An async function that just returns
+// (no next, no explicit resolve) is the correct Mongoose 9 pattern —
+// awaiting the returned promise is itself the signal to proceed.
+supportTicketSchema.pre('save', async function () {
+  if (this.ticketId) return;
   try {
     const count   = await this.constructor.countDocuments();
     this.ticketId = `TICK-${String(count + 1).padStart(4, '0')}`;
   } catch {
     this.ticketId = `TICK-${Date.now()}`;
   }
-  next();
 });
 
 supportTicketSchema.index({ status: 1, priority: 1, createdAt: -1 });

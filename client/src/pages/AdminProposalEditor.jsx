@@ -228,7 +228,16 @@ const AdminProposalEditor = () => {
     );
   }
 
-  const StepContent = () => {
+  // A plain function returning JSX (not a component defined inline) —
+  // defining this as `const StepContent = () => <Step.../>` and rendering
+  // `<StepContent />` gives it a fresh function identity on every keystroke
+  // (proposal state changes -> re-render -> new component type each time),
+  // which makes React unmount/remount the whole step subtree — including
+  // every <input> inside it — and drop focus after every character typed
+  // anywhere in the wizard. Calling a function directly to produce JSX has
+  // no such identity, so the same DOM nodes survive across renders. See the
+  // identical comment on RelationPicker.jsx's renderQuickCreateField.
+  const renderStepContent = () => {
     switch (step) {
       case 0: return <StepClient value={proposal.client} onChange={(v) => setProposal((p) => ({ ...p, client: v }))} isRTL={isRTL} />;
       case 1: return <StepProject value={proposal.project} onChange={(v) => setProposal((p) => ({ ...p, project: v }))} isRTL={isRTL} />;
@@ -273,7 +282,7 @@ const AdminProposalEditor = () => {
       {/* Two-panel body */}
       <div className="pe-grid">
         <div style={{ padding: 24, borderInlineEnd: `1px solid ${TK.border}`, overflowY: 'auto', maxHeight: 'calc(100vh - 96px)' }}>
-          <StepContent />
+          {renderStepContent()}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
             <Button variant="secondary" icon={BackIcon} onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>{T.back}</Button>
             {step < T.steps.length - 1 && (

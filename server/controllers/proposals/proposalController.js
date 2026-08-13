@@ -7,6 +7,7 @@ const { buildProposalSlug } = require('../../utils/proposals/slug');
 const { buildProposalNumber } = require('../../utils/proposals/proposalNumber');
 const { snapshotVersion } = require('./versionHelpers');
 const { audit } = require('../../utils/auditLogger');
+const htmlImportController = require('./htmlImportController');
 
 const PUBLIC_CLIENT_FIELDS = 'name nameAr company email phone whatsapp country city';
 
@@ -106,11 +107,11 @@ exports.getById = async (req, res) => {
     const proposal = await Proposal.findById(req.params.id).populate('client');
     if (!proposal) return res.status(404).json({ error: 'Not found' });
     const item = proposal.toObject();
-    // Convenience for the editor's ImportedHTMLViewer preview — the asset
-    // itself is served by the existing generic /api/media/:id route (see
-    // media/media.routes.js), no proposal-specific streaming route needed.
+    // Convenience for the editor's ImportedHTMLViewer preview — served via
+    // the dedicated frame-safe route (see htmlImportController.serveHtmlAsset
+    // for why this can't be the generic /api/media/:id route).
     if (item.type === 'IMPORTED_HTML' && item.htmlAsset?.fileId) {
-      item.htmlAssetUrl = `/api/media/${item.htmlAsset.fileId}`;
+      item.htmlAssetUrl = htmlImportController.htmlAssetUrl(item.htmlAsset.fileId);
     }
     res.json({ item });
   } catch (err) {

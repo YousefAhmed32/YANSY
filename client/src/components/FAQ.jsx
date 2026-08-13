@@ -192,8 +192,14 @@ const FAQ = ({ onStartProject }) => {
            the header stacks above the questions, and a lingering sticky position
            would pin the title/CTA/trust-note block over the accordion while scrolling. */
         .faq-header-col { position: sticky; top: 80px; }
+        /* relative, not static — matches the fix in ProjectEstimator's
+           .est-summary: cancels the sticky-to-viewport behavior (no offsets
+           are set, so layout is identical to static) while still giving any
+           absolutely-positioned descendant a containing block here, instead
+           of having it escape to the initial containing block and risk
+           blowing out the page's horizontal scrollWidth. */
         @media (max-width: 900px) {
-          .faq-header-col { position: static; }
+          .faq-header-col { position: relative; }
         }
       `}</style>
 

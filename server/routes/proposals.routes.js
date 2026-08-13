@@ -6,6 +6,15 @@ const htmlImportCtrl = require('../controllers/proposals/htmlImportController');
 
 const router = express.Router();
 
+// Public, unauthenticated — must be registered *before* the router.use(authenticate, ...)
+// gate below, since Express applies router-level middleware to every route
+// registered after it. Serves an IMPORTED_HTML proposal's document for
+// <iframe> rendering (both the admin preview and the public /p/:slug page
+// use it, via the same ImportedHTMLViewer component) — see
+// htmlImportController.serveHtmlAsset for why this can't just be the
+// generic /api/media/:id route.
+router.get('/public/html/:id', htmlImportCtrl.serveHtmlAsset);
+
 // Proposals are an internal sales tool — Manager and up can create/send
 // them, same tier as project management elsewhere in the app.
 router.use(authenticate, requireRole('MANAGER', 'ADMIN', 'SUPER_ADMIN'));

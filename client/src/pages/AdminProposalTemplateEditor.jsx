@@ -88,7 +88,15 @@ const AdminProposalTemplateEditor = () => {
 
   if (loading || !tpl) return <PageSpinner />;
 
-  const StepContent = () => {
+  // A plain function returning JSX (not a component defined inline) — see
+  // the identical fix/comment in AdminProposalEditor.jsx's
+  // renderStepContent: defining this as `const StepContent = () => {...}`
+  // and rendering `<StepContent />` gave it a fresh function identity on
+  // every keystroke (tpl state changes -> re-render -> new component type),
+  // which remounted the whole step subtree and dropped input focus after
+  // every character typed anywhere in this editor (Name, Category,
+  // Description, and every field in Scope/Pricing/Timeline/Terms/Branding).
+  const renderStepContent = () => {
     switch (step) {
       case 0:
         return (
@@ -135,7 +143,7 @@ const AdminProposalTemplateEditor = () => {
       </div>
 
       <div style={{ maxWidth: 640, margin: '0 auto', padding: 24 }}>
-        <StepContent />
+        {renderStepContent()}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
           <Button variant="secondary" icon={BackIcon} onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>{T.back}</Button>
           {step < T.steps.length - 1 && (

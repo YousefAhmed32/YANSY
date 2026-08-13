@@ -258,7 +258,16 @@ const ProjectEstimator = () => {
           box-shadow: var(--shadow-lg);
           overflow: hidden;
         }
-        @media (max-width: 1024px) { .est-summary { position: static; } }
+        /* relative, not static — this still cancels the sticky-to-viewport
+           behavior below 1024px (no offsets are set, so it sits in normal flow
+           exactly like static would), but keeps .est-summary a positioning
+           context. .est-summary-glow below is an absolutely positioned blob
+           with a negative offset; under static it has no containing block
+           here and escapes all the way to the initial containing block,
+           landing outside .est-summary's own overflow:hidden clip and
+           blowing out the page's horizontal scrollWidth on every mobile
+           width. */
+        @media (max-width: 1024px) { .est-summary { position: relative; } }
         .est-summary-glow {
           position: absolute; top: -60px; ${isRTL ? 'left' : 'right'}: -60px; width: 220px; height: 220px;
           border-radius: 50%; background: rgb(var(--accent) / 0.16); filter: blur(70px);
