@@ -6,6 +6,8 @@ import { Briefcase, Clock, ExternalLink, Figma, Github, Info, Layers, MapPin, Sh
 import ProgressiveImage from '../ProgressiveImage';
 import { mediaSrc } from '../../utils/media';
 import { categoryIcon } from '../../utils/portfolioTaxonomy';
+import { sanitizeLiveUrl, getLiveActionLabel } from '../../utils/liveUrl';
+import { CoverActionCta, COVER_LINK_CSS } from './CoverLink';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -62,14 +64,21 @@ const Hero = ({ project, title, desc, isRTL }) => {
   // live production site — the label must say so honestly. See also
   // PortfolioCard.jsx / PortfolioShowcaseView.jsx for the same rule.
   const isConceptWork = project.deliveryStatus === 'concept';
-  const liveLinkLabel = isConceptWork
-    ? (isRTL ? 'فتح النسخة التجريبية' : 'Open Demo')
-    : (isRTL ? 'زيارة الموقع المباشر' : 'Visit Live Site');
+  const liveLinkLabel = getLiveActionLabel(isRTL, isConceptWork);
+  const liveUrl = sanitizeLiveUrl(project.liveUrl);
+  const coverAriaLabel = isRTL ? `زيارة موقع مشروع ${title}` : `Visit the ${title} website`;
+  const isVideoCover = Boolean(project.coverVideo?.url);
+  // A static cover becomes the click target itself (whole panel -> liveUrl);
+  // a decorative/native-controls video is never wrapped in an anchor — see
+  // CoverLink.jsx — so it gets a separate standalone CTA instead, still
+  // pinned to the panel's top-end corner.
+  const coverClickable = Boolean(liveUrl) && !isVideoCover;
   // Heuristic disclosure (no dedicated schema field): a concept project that
   // still names a real client is very likely referencing that brand for a
   // self-directed/speculative redesign, not a commissioned engagement — make
   // that explicit rather than let the client name imply real client work.
   const showBrandDisclosure = isConceptWork && Boolean(clientName);
+  const PanelTag = coverClickable ? 'a' : 'div';
 
   return (
     <div ref={heroRef} style={{ paddingTop: 'calc(68px + clamp(2rem, 5vw, 3.5rem))', paddingBottom: 0, position: 'relative' }}>
@@ -153,18 +162,23 @@ const Hero = ({ project, title, desc, isRTL }) => {
           </p>
         )}
 
-        {/* Visual panel */}
-        <div
+        {/* Visual panel — the whole thing becomes a semantic external link
+            when it's a static cover with a liveUrl (click anywhere opens
+            the project site); a video cover is never wrapped (its native
+            controls need to stay clickable) and gets a standalone CTA
+            instead. See CoverLink.jsx for the shared pill/scrim behavior. */}
+        <PanelTag
           ref={panelRef}
           data-fade
-          className="hero-panel"
+          className={coverClickable ? 'hero-panel cover-link' : 'hero-panel'}
+          {...(coverClickable ? { href: liveUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': coverAriaLabel } : {})}
           style={{
             opacity: 0, position: 'relative', width: '100%', borderRadius: 'var(--radius-xl)',
             overflow: 'hidden', boxShadow: 'var(--shadow-hero)', border: '1px solid rgb(var(--border))',
           }}
         >
           <div ref={imgWrapRef} style={{ position: 'absolute', inset: '-5% 0', willChange: 'transform' }}>
-            {project.coverVideo?.url ? (
+            {isVideoCover ? (
               <video
                 ref={videoRef}
                 src={mediaSrc(project.coverVideo)}
@@ -178,6 +192,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
                 alt={title}
                 priority
                 fill
+                imgClassName={coverClickable ? 'cover-link-img' : ''}
                 fallbackIcon={categoryIcon(categoryName)}
                 fallbackLabel={categoryDisplay}
                 isRTL={isRTL}
@@ -186,6 +201,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
             )}
           </div>
           <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,17,23,0.65) 0%, transparent 46%)' }} />
+          {coverClickable && <span aria-hidden className="cover-link-scrim" />}
 
           {industryDisplay && (
             <div style={{
@@ -202,7 +218,12 @@ const Hero = ({ project, title, desc, isRTL }) => {
             </div>
           )}
 
-          {hasMetrics ? (
+          {/* Metrics (bottom, full-width) and the website CTA (top-end,
+              opposite the industry badge) occupy independent regions, so
+              either can appear with none, one, or many of the other —
+              unlike the previous hasMetrics ? metrics : liveUrl-button
+              branch, which made the two mutually exclusive. */}
+          {hasMetrics && (
             <div className="hero-stats-row" style={{
               position: 'absolute', bottom: 18, insetInlineStart: 18, insetInlineEnd: 18,
               display: 'grid', gridTemplateColumns: `repeat(${metrics.length}, 1fr)`, gap: 10,
@@ -218,23 +239,16 @@ const Hero = ({ project, title, desc, isRTL }) => {
                 </div>
               ))}
             </div>
-          ) : project.liveUrl ? (
-            <a
-              href={project.liveUrl} target="_blank" rel="noopener noreferrer"
-              style={{
-                position: 'absolute', bottom: 18, [isRTL ? 'right' : 'left']: 18,
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '11px 20px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                border: '1px solid rgba(255,255,255,0.28)', color: '#fff', textDecoration: 'none',
-                fontFamily: font, fontSize: 12, fontWeight: 500,
-              }}
-            >
-              <ExternalLink style={{ width: 13, height: 13 }} aria-hidden />
-              {liveLinkLabel}
-            </a>
-          ) : null}
-        </div>
+          )}
+
+          {liveUrl && (
+            isVideoCover ? (
+              <CoverActionCta as="a" href={liveUrl} label={liveLinkLabel} isRTL={isRTL} position="top-end" ariaLabel={coverAriaLabel} />
+            ) : (
+              <CoverActionCta label={liveLinkLabel} isRTL={isRTL} position="top-end" />
+            )
+          )}
+        </PanelTag>
 
         {showBrandDisclosure && (
           <p data-fade style={{
@@ -250,7 +264,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
         )}
       </div>
 
-      <MetaStrip project={project} isRTL={isRTL} font={font} isConceptWork={isConceptWork} liveLinkLabel={liveLinkLabel} />
+      <MetaStrip project={project} isRTL={isRTL} font={font} liveUrl={liveUrl} liveLinkLabel={liveLinkLabel} />
 
       <style>{`
         .hero-panel { aspect-ratio: 16 / 9; }
@@ -258,6 +272,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
           .hero-panel { aspect-ratio: 4 / 5; }
           .hero-stats-row { grid-template-columns: repeat(2, 1fr) !important; }
         }
+        ${COVER_LINK_CSS}
       `}</style>
     </div>
   );
@@ -285,7 +300,7 @@ const SpecItem = ({ Icon, label, children, isRTL }) => (
  * deliberate at-a-glance summary before the reader commits to the full
  * story below.
  */
-const MetaStrip = ({ project, isRTL, font, isConceptWork, liveLinkLabel }) => {
+const MetaStrip = ({ project, isRTL, font, liveUrl, liveLinkLabel }) => {
   const myRole = isRTL ? (project.myRoleAr || project.myRole) : (project.myRole || project.myRoleAr);
   const fields = [
     myRole && { Icon: Briefcase, label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
@@ -295,7 +310,7 @@ const MetaStrip = ({ project, isRTL, font, isConceptWork, liveLinkLabel }) => {
   ].filter(Boolean);
 
   const links = [
-    project.liveUrl  && { href: project.liveUrl,  label: isConceptWork ? liveLinkLabel : (isRTL ? 'الموقع المباشر' : 'Live Site'), Icon: ExternalLink },
+    liveUrl           && { href: liveUrl,          label: liveLinkLabel, Icon: ExternalLink },
     project.figmaUrl  && { href: project.figmaUrl,  label: 'Figma', Icon: Figma },
     project.githubUrl && { href: project.githubUrl, label: 'GitHub', Icon: Github },
   ].filter(Boolean);

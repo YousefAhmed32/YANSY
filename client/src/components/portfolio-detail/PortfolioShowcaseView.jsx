@@ -12,6 +12,8 @@ import NextProject from './NextProject';
 import CTASection from './CTASection';
 import { mediaSrc } from '../../utils/media';
 import { categoryIcon } from '../../utils/portfolioTaxonomy';
+import { sanitizeLiveUrl, getLiveActionLabel } from '../../utils/liveUrl';
+import { CoverActionCta, COVER_LINK_CSS } from './CoverLink';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -58,18 +60,25 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
 
   const isConceptWork = project.deliveryStatus === 'concept';
   const isArchived = project.deliveryStatus === 'archived';
-  const liveLinkLabel = isConceptWork
-    ? (isRTL ? 'فتح النسخة التجريبية' : 'Open Demo')
-    : (isRTL ? 'زيارة الموقع' : 'Visit Site');
+  const liveUrl = sanitizeLiveUrl(project.liveUrl);
+  const liveLinkLabel = getLiveActionLabel(isRTL, isConceptWork);
+  const coverAriaLabel = isRTL ? `زيارة موقع مشروع ${title}` : `Visit the ${title} website`;
   const showBrandDisclosure = isConceptWork && Boolean(clientName);
 
   const links = [
-    project.liveUrl  && { href: project.liveUrl,  label: liveLinkLabel, Icon: ExternalLink },
+    liveUrl           && { href: liveUrl,          label: liveLinkLabel, Icon: ExternalLink },
     project.figmaUrl  && { href: project.figmaUrl,  label: 'Figma', Icon: Figma },
     project.githubUrl && { href: project.githubUrl, label: 'GitHub', Icon: Github },
   ].filter(Boolean);
 
   const coverAsset = project.coverImage?.url ? project.coverImage : null;
+  const isVideoCover = Boolean(project.coverVideo?.url);
+  // Static covers become the click target themselves; a <video controls>
+  // cover never gets wrapped (would swallow clicks meant for its native
+  // play/seek/volume/fullscreen bar) — it gets a separate standalone CTA
+  // pinned to a top corner instead, clear of the control bar at the bottom.
+  const coverClickable = Boolean(liveUrl) && !isVideoCover && Boolean(coverAsset);
+  const coverStyle = { position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid rgb(var(--border))', boxShadow: 'var(--shadow-lg)', background: '#000' };
 
   return (
     <div className="bg-surface-white text-content-primary min-h-screen overflow-x-hidden" dir={dir}>
@@ -150,14 +159,25 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
       {/* ── Media — cover, then every image/video block in order ───────────── */}
       <section style={{ padding: 'clamp(2.5rem, 5vw, 3.5rem) 0' }}>
         <div className="max-w-5xl mx-auto" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', display: 'flex', flexDirection: 'column', gap: 'clamp(2rem, 4vw, 3rem)' }}>
-          {(coverAsset || project.coverVideo?.url) && (
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid rgb(var(--border))', boxShadow: 'var(--shadow-lg)', background: '#000' }}>
-              {project.coverVideo?.url ? (
+          {(coverAsset || isVideoCover) && (
+            isVideoCover ? (
+              <div style={coverStyle}>
                 <video src={mediaSrc(project.coverVideo)} poster={mediaSrc(project.coverImage)} controls playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
+                {liveUrl && (
+                  <CoverActionCta as="a" href={liveUrl} label={liveLinkLabel} isRTL={isRTL} position="top-end" ariaLabel={coverAriaLabel} />
+                )}
+              </div>
+            ) : coverClickable ? (
+              <a href={liveUrl} target="_blank" rel="noopener noreferrer" aria-label={coverAriaLabel} className="cover-link" style={coverStyle}>
+                <ProgressiveImage asset={coverAsset} alt={title} priority fill imgClassName="cover-link-img" fallbackIcon={categoryIcon(categoryName)} fallbackLabel={categoryDisplay} isRTL={isRTL} fallbackVariant="hero" />
+                <span aria-hidden className="cover-link-scrim" />
+                <CoverActionCta label={liveLinkLabel} isRTL={isRTL} position="bottom-start" />
+              </a>
+            ) : (
+              <div style={coverStyle}>
                 <ProgressiveImage asset={coverAsset} alt={title} priority fill fallbackIcon={categoryIcon(categoryName)} fallbackLabel={categoryDisplay} isRTL={isRTL} fallbackVariant="hero" />
-              )}
-            </div>
+              </div>
+            )
           )}
           <BlockRenderer blocks={project.blocks} isRTL={isRTL} />
         </div>
@@ -173,7 +193,7 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
           onPrev={prevShot}
           onNext={nextShot}
           isRTL={isRTL}
-          liveUrl={project.liveUrl}
+          liveUrl={liveUrl}
           title={title}
         />
       )}
@@ -231,6 +251,7 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
 
       <Footer />
       <ProjectRequestForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+      {liveUrl && <style>{COVER_LINK_CSS}</style>}
     </div>
   );
 };
