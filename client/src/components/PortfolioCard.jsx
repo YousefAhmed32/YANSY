@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, Play, ShieldCheck } from 'lucide-react';
 import ProgressiveImage from './ProgressiveImage';
 import { categoryIcon } from '../utils/portfolioTaxonomy';
 
@@ -41,6 +41,9 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
   const displayAsset = project.coverImage?.url
     ? project.coverImage
     : (project.gallery || []).find((g) => g?.url) || null;
+  // A visitor shouldn't have to open the project to discover it's a video
+  // walkthrough rather than screenshots — surface it on the card itself.
+  const hasVideo = Boolean(project.coverVideo?.url) || (project.gallery || []).some((g) => g?.kind === 'video');
 
   return (
     <Link
@@ -83,9 +86,22 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
               {industryDisplay}
             </span>
           )}
+          {project.presentationMode === 'showcase' && (
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white tracking-wide">
+              {isRTL ? 'عرض سريع' : 'Quick Look'}
+            </span>
+          )}
           {deliveryBadge && (
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[rgb(var(--accent))]/90 backdrop-blur-sm text-white tracking-wide">
               {isRTL ? deliveryBadge.ar : deliveryBadge.en}
+            </span>
+          )}
+          {hasVideo && (
+            <span
+              title={isRTL ? 'يحتوي على فيديو' : 'Includes video'}
+              className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-black/45 backdrop-blur-sm text-white"
+            >
+              <Play className="w-2.5 h-2.5" fill="currentColor" style={{ marginInlineStart: 1 }} />
             </span>
           )}
         </div>

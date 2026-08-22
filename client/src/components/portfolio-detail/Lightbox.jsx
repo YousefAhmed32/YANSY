@@ -51,10 +51,14 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext, isRTL, title }) => 
   useEffect(() => {
     [active - 1, active + 1].forEach((i) => {
       const asset = images[(i + images.length) % images.length];
+      if (asset?.kind === 'video') return; // preloading a video via Image() would fail silently
       const src = mediaSrc(asset);
       if (src) { const img = new Image(); img.src = src; }
     });
   }, [active, images]);
+
+  const activeAsset = images[active];
+  const isVideo = activeAsset?.kind === 'video';
 
   return (
     <div
@@ -78,12 +82,22 @@ const Lightbox = ({ images, active, onClose, onPrev, onNext, isRTL, title }) => 
         {active + 1} / {images.length}
       </span>
 
-      <img
-        src={mediaSrc(images[active])}
-        alt={title ? `${title} — ${active + 1}/${images.length}` : ''}
-        className="max-w-[92vw] max-h-[88vh] object-contain rounded-xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      />
+      {isVideo ? (
+        <video
+          key={activeAsset.publicId || active}
+          src={mediaSrc(activeAsset)}
+          controls autoPlay playsInline
+          className="max-w-[92vw] max-h-[88vh] rounded-xl shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <img
+          src={mediaSrc(activeAsset)}
+          alt={title ? `${title} — ${active + 1}/${images.length}` : ''}
+          className="max-w-[92vw] max-h-[88vh] object-contain rounded-xl shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        />
+      )}
 
       {images.length > 1 && (
         <>

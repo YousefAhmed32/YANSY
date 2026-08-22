@@ -45,6 +45,10 @@ const Portfolio = () => {
   const [industries, setIndustries] = useState([]);
   const [tag, setTag]           = useState(''); // holds a Technology slug
   const [technologies, setTechnologies] = useState([]);
+  const [mode, setMode]         = useState(''); // '' | 'caseStudy' | 'showcase' — presentationMode
+  const [work, setWork]         = useState(''); // '' | 'live' | 'concept' — deliveryStatus
+  const [presentationModes, setPresentationModes] = useState({ caseStudy: 0, showcase: 0 });
+  const [deliveryStatuses, setDeliveryStatuses] = useState({ live: 0, concept: 0, archived: 0 });
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [sort, setSort]         = useState('latest');
   const [searchInput, setSearchInput] = useState('');
@@ -62,9 +66,13 @@ const Portfolio = () => {
 
   useSEO({
     title      : isRTL ? 'معرض الأعمال | يانسي تك' : 'Portfolio | YANSY TECH',
+    // Kept honest now that Concepts/Quick Showcases live alongside shipped
+    // client work in this same listing (see PortfolioCard's Concept badge
+    // and the Live Work / Concepts filter) — "real client work" as a
+    // blanket claim would misdescribe a UI/UX concept or internal demo.
     description: isRTL
-      ? 'مشاريع رقمية حقيقية أطلقناها لعملاء في مجالات التجارة الإلكترونية والـ SaaS والأنظمة الطبية والتعليم.'
-      : 'Real digital products shipped by YANSY TECH — e-commerce platforms, SaaS dashboards, booking systems, enterprise tools, and more.',
+      ? 'مشاريع رقمية أطلقناها لعملاء حقيقيين، إلى جانب مفاهيم تصميم وعروض تجريبية — في مجالات التجارة الإلكترونية والـ SaaS والأنظمة الطبية والتعليم.'
+      : 'Digital products by YANSY TECH — shipped client work alongside design concepts and demos — across e-commerce, SaaS, healthcare systems, and education.',
     keywords   : 'web development portfolio, digital products, SaaS projects, e-commerce portfolio, YANSY TECH work',
     canonical  : 'https://yansytech.com/portfolio',
     schema: {
@@ -73,7 +81,7 @@ const Portfolio = () => {
       '@id': 'https://yansytech.com/portfolio#webpage',
       'url': 'https://yansytech.com/portfolio',
       'name': 'Portfolio | YANSY TECH',
-      'description': 'Digital products built by YANSY TECH — e-commerce, SaaS, booking systems, enterprise software.',
+      'description': 'Digital products by YANSY TECH — shipped client work alongside design concepts and demos.',
       'isPartOf': { '@id': 'https://yansytech.com/#website' },
       'breadcrumb': {
         '@type': 'BreadcrumbList',
@@ -91,6 +99,8 @@ const Portfolio = () => {
       setCategories(data.categories || []);
       setIndustries(data.industries || []);
       setTechnologies(data.technologies || []);
+      if (data.presentationModes) setPresentationModes(data.presentationModes);
+      if (data.deliveryStatuses) setDeliveryStatuses(data.deliveryStatuses);
     }).catch(() => {});
   }, []);
 
@@ -112,6 +122,8 @@ const Portfolio = () => {
           ...(category && { category }),
           ...(industry && { industry }),
           ...(tag && { tag }),
+          ...(mode && { mode }),
+          ...(work && { work }),
           ...(featuredOnly && { featured: 'true' }),
           ...(search && { search }),
           ...(!search && { sort }),
@@ -128,7 +140,7 @@ const Portfolio = () => {
     } finally {
       if (myRequest === requestId.current) setLoading(false);
     }
-  }, [category, industry, tag, featuredOnly, search, sort]);
+  }, [category, industry, tag, mode, work, featuredOnly, search, sort]);
 
   useEffect(() => { loadFirstPage(); }, [loadFirstPage]);
 
@@ -138,7 +150,7 @@ const Portfolio = () => {
     setLoadingMore(true);
     try {
       const { data } = await api.get('/portfolio', {
-        params: { limit: 12, cursor, ...(category && { category }), ...(industry && { industry }), ...(tag && { tag }), ...(featuredOnly && { featured: 'true' }), sort },
+        params: { limit: 12, cursor, ...(category && { category }), ...(industry && { industry }), ...(tag && { tag }), ...(mode && { mode }), ...(work && { work }), ...(featuredOnly && { featured: 'true' }), sort },
       });
       setProjects((prev) => [...prev, ...(data.projects || [])]);
       setCursor(data.nextCursor || null);
@@ -148,7 +160,7 @@ const Portfolio = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [cursor, loadingMore, search, category, industry, tag, featuredOnly, sort]);
+  }, [cursor, loadingMore, search, category, industry, tag, mode, work, featuredOnly, sort]);
 
   // ── IntersectionObserver sentinel for infinite scroll ────────────────────
   useEffect(() => {
@@ -185,7 +197,7 @@ const Portfolio = () => {
     return () => ctx.revert();
   }, []);
 
-  const showFeaturedSpotlight = !category && !industry && !tag && !featuredOnly && !search;
+  const showFeaturedSpotlight = !category && !industry && !tag && !mode && !work && !featuredOnly && !search;
 
   return (
     <div className="bg-surface-white text-[rgb(var(--text-primary))] min-h-screen overflow-x-hidden" dir={dir}>
@@ -221,8 +233,8 @@ const Portfolio = () => {
           </h1>
           <p data-hero className="opacity-0 text-[rgb(var(--text-secondary))] font-normal text-base sm:text-xl max-w-2xl">
             {isRTL
-              ? 'مشاريع رقمية أطلقناها لعملاء حقيقيين في مجالات مختلفة.'
-              : "Digital products we've shipped for real clients across different industries."}
+              ? 'مشاريع رقمية أطلقناها لعملاء حقيقيين، إلى جانب مفاهيم تصميم نستكشف بها أفكارًا جديدة.'
+              : "Digital products we've shipped for real clients, alongside design concepts where we explore new ideas."}
           </p>
         </div>
       </section>
@@ -331,6 +343,50 @@ const Portfolio = () => {
             </div>
           )}
 
+          {/* Presentation-mode / delivery-status chips — only rendered once
+              the site actually has more than one value published for each
+              (a site with zero showcases yet shouldn't show a filter that
+              always returns empty), so this is invisible until it's useful. */}
+          {(presentationModes.showcase > 0 || deliveryStatuses.concept > 0) && (
+            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <div className={`flex items-center gap-1.5 min-w-max ${isRTL ? 'flex-row-reverse' : ''}`}>
+                {presentationModes.showcase > 0 && (
+                  <>
+                    {[
+                      { value: '', en: 'All formats', ar: 'كل الأنواع' },
+                      { value: 'caseStudy', en: 'Case Studies', ar: 'دراسات حالة' },
+                      { value: 'showcase', en: 'Visual Showcases', ar: 'عروض سريعة' },
+                    ].map((o) => (
+                      <button
+                        key={o.value}
+                        onClick={() => setMode(o.value)}
+                        className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
+                        style={{ borderColor: mode === o.value ? 'rgb(var(--accent))' : 'rgb(var(--border))', color: mode === o.value ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))', background: mode === o.value ? 'rgba(37,99,235,0.08)' : 'transparent' }}
+                      >
+                        {isRTL ? o.ar : o.en}
+                      </button>
+                    ))}
+                    <span aria-hidden style={{ width: 1, height: 14, background: 'rgb(var(--border))', margin: '0 4px', flexShrink: 0 }} />
+                  </>
+                )}
+                {deliveryStatuses.concept > 0 && [
+                  { value: '', en: 'All work', ar: 'كل الأعمال' },
+                  { value: 'live', en: 'Live Work', ar: 'أعمال مباشرة' },
+                  { value: 'concept', en: 'Concepts', ar: 'مشاريع تصوّرية' },
+                ].map((o) => (
+                  <button
+                    key={o.value}
+                    onClick={() => setWork(o.value)}
+                    className="px-3 py-1 text-[10px] font-medium tracking-wide rounded-full border transition-colors whitespace-nowrap"
+                    style={{ borderColor: work === o.value ? 'rgb(var(--accent))' : 'rgb(var(--border))', color: work === o.value ? 'rgb(var(--accent))' : 'rgb(var(--text-secondary))', background: work === o.value ? 'rgba(37,99,235,0.08)' : 'transparent' }}
+                  >
+                    {isRTL ? o.ar : o.en}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tech/tag chips — capped to keep the row from exploding on a
               growing tag vocabulary; already alphabetical from the API. */}
           {technologies.length > 0 && (
@@ -386,7 +442,7 @@ const Portfolio = () => {
                 {isRTL ? 'لا توجد مشاريع مطابقة.' : 'No matching projects yet.'}
               </p>
               <button
-                onClick={() => { setCategory(''); setIndustry(''); setTag(''); setFeaturedOnly(false); setSearchInput(''); }}
+                onClick={() => { setCategory(''); setIndustry(''); setTag(''); setMode(''); setWork(''); setFeaturedOnly(false); setSearchInput(''); }}
                 className="text-[rgb(var(--accent))] text-xs tracking-widest uppercase border border-[rgb(var(--accent))]/30 rounded-full px-6 py-3 hover:bg-[rgb(var(--accent))]/08 transition-all"
               >
                 {isRTL ? 'مسح كل الفلاتر' : 'Clear all filters'}

@@ -37,7 +37,9 @@ router.get('/', async (req, res) => {
   try {
     const { q, type, page = 1, limit = 60 } = req.query;
     const filter = {};
-    if (type) filter.type = type;
+    // Accepts a single type ('image') or a comma-separated list ('image,video')
+    // — the portfolio gallery/media pickers browse image+video together.
+    if (type) filter.type = type.includes(',') ? { $in: type.split(',').map((t) => t.trim()).filter(Boolean) } : type;
     if (q?.trim()) {
       const rx = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
       filter.$or = [{ filename: rx }, { alt: rx }, { altAr: rx }, { caption: rx }, { tags: rx }];

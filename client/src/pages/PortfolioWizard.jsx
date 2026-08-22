@@ -15,6 +15,8 @@ import ProofResultsSection from '../components/portfolio-wizard/ProofResultsSect
 import SeoPublishSection from '../components/portfolio-wizard/SeoPublishSection';
 import GenerateDemoModal from '../components/portfolio-wizard/GenerateDemoModal';
 import { generateDemoProject } from '../utils/demoGenerators';
+import { computeMissingFields } from '../components/portfolio-wizard/publishValidation';
+import { ErrorSummary } from '../components/portfolio-wizard/PublishValidationUI';
 
 const EMPTY_FORM = {
   title: '', titleAr: '', tagline: '', taglineAr: '', category: null, industry: null,
@@ -39,6 +41,12 @@ const SECTION_DEFS = [
   { key: 'proof',    en: 'Proof & Results', ar: 'الإثبات والنتائج' },
   { key: 'seo',      en: 'SEO & Publish',   ar: 'SEO والنشر' },
 ];
+
+// Where each publish-validation field (see publishValidation.js — the same
+// contract the backend's assertPublishable enforces) actually lives in this
+// multi-section wizard, so a failed-publish Error Summary can jump the
+// admin to the right tab instead of a single generic toast.
+const FIELD_SECTION = { title: 'overview', category: 'overview', coverImage: 'overview', projectType: 'overview', description: 'story' };
 
 // Smooth 0–100 completion score across the fields that matter for a good
 // case study, rather than a per-section boolean — gives the admin real
@@ -97,8 +105,14 @@ const PortfolioWizard = () => {
   const [duplicating, setDuplicating] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [confirmDemoKey, setConfirmDemoKey] = useState(null); // pending category — asks first if the draft already has content
+  const [attemptedPublish, setAttemptedPublish] = useState(false);
+  const [waitingForUploads, setWaitingForUploads] = useState(false);
+  const [focusToken, setFocusToken] = useState(0);
 
-  const savingRef = useRef(false);
+  const savingPromiseRef = useRef(null);
+  const projectIdRef = useRef(routeId || null);
+  const pendingUploadsRef = useRef([]);
+  const autosaveTimeoutRef = useRef(null);
   const skipNextAutosave = useRef(Boolean(routeId)); // don't autosave the instant we load an existing project
 
   const L = {
@@ -107,8 +121,10 @@ const PortfolioWizard = () => {
     loadFailed: isRTL ? 'فشل تحميل المشروع' : 'Failed to load project',
     uploadFailed: (name) => isRTL ? `فشل رفع ${name}` : `Upload failed: ${name}`,
     autosaveFailed: isRTL ? 'فشل الحفظ التلقائي' : 'Autosave failed',
-    publishMissing: isRTL ? 'أضف ملخصًا وصورة غلاف قبل النشر' : 'Add a summary and cover image before publishing',
     statusUpdateFailed: isRTL ? 'تعذر تحديث الحالة' : 'Could not update status',
+    publishWaiting: isRTL ? 'بانتظار اكتمال الرفع…' : 'Waiting for uploads…',
+    couldNotCreate: isRTL ? 'تعذر إنشاء المشروع — حاول مرة أخرى' : 'Could not create the project — try again',
+    serverRejected: isRTL ? 'رفض الخادم النشر — راجع الحقول أدناه' : 'The server rejected publishing — check the fields below',
     duplicated: isRTL ? 'تم الإنشاء — جارٍ فتح النسخة' : 'Duplicated — opening the copy',
     duplicateFailed: isRTL ? 'فشل النسخ' : 'Duplicate failed',
     duplicate: isRTL ? 'نسخ' : 'Duplicate',
@@ -191,53 +207,136 @@ const PortfolioWizard = () => {
     team: (f.team || []).map((t) => ({ member: toId(t.member), roleOverride: t.roleOverride, roleArOverride: t.roleArOverride })).filter((t) => t.member),
   }), []);
 
-  // ── Save (create-on-first-viable-edit, then PUT thereafter) ──────────────
-  const save = useCallback(async (currentForm) => {
-    if (savingRef.current) return;
-    if (!currentForm.title?.trim() || !currentForm.category) { setSaveState('idle'); return; }
+  useEffect(() => { pendingUploadsRef.current = pendingUploads; }, [pendingUploads]);
+  useEffect(() => { projectIdRef.current = projectId; }, [projectId]);
 
-    savingRef.current = true;
+  // ── Save (create-on-first-viable-edit, then PUT thereafter) ───────────────
+  // Always returns a result object — see PortfolioQuickShowcase.jsx's doc
+  // comment on the same pattern for why (never throws, never silently
+  // no-ops while another save is in flight, `projectIdRef` is updated
+  // synchronously so the very next queued save/publish call can't read a
+  // stale/missing id).
+  const doSave = useCallback(async (currentForm) => {
     setSaveState('saving');
     try {
-      if (!projectId) {
-        const { data } = await api.post('/portfolio/admin', buildPayload(currentForm));
+      const payload = buildPayload(currentForm);
+      if (!projectIdRef.current) {
+        const { data } = await api.post('/portfolio/admin', payload);
+        projectIdRef.current = data.project._id;
         setProjectId(data.project._id);
         navigate(`/app/admin/portfolio/${data.project._id}/edit`, { replace: true });
-      } else {
-        await api.put(`/portfolio/admin/${projectId}`, buildPayload(currentForm));
+        setSaveState('saved');
+        return { ok: true, projectId: data.project._id, project: data.project };
       }
+      const { data } = await api.put(`/portfolio/admin/${projectIdRef.current}`, payload);
       setSaveState('saved');
+      return { ok: true, projectId: projectIdRef.current, project: data.project };
     } catch (err) {
       setSaveState('error');
-      toast.error(err?.response?.data?.error || L.autosaveFailed);
-    } finally {
-      savingRef.current = false;
+      const resp = err?.response?.data;
+      return { ok: false, error: resp?.error || L.autosaveFailed, code: resp?.code, missingFields: resp?.missingFields };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, navigate, buildPayload, isRTL]);
+  }, [buildPayload, navigate]);
+
+  // save() queues behind any in-flight save instead of no-op'ing, so every
+  // caller (autosave OR the Publish button) gets a real, awaitable result
+  // for the form it passed — never a stale silent no-op.
+  const save = useCallback(async (currentForm) => {
+    if (!currentForm.title?.trim() || !currentForm.category) {
+      setSaveState('idle');
+      return { ok: false, skipped: true };
+    }
+    if (savingPromiseRef.current) await savingPromiseRef.current.catch(() => {});
+    const p = doSave(currentForm);
+    savingPromiseRef.current = p;
+    const result = await p;
+    if (savingPromiseRef.current === p) savingPromiseRef.current = null;
+    return result;
+  }, [doSave]);
 
   // ── Debounced autosave on every form change ──────────────────────────────
   useEffect(() => {
     if (loading) return;
     if (skipNextAutosave.current) { skipNextAutosave.current = false; return; }
     setSaveState('pending');
-    const t = setTimeout(() => save(form), AUTOSAVE_DELAY);
-    return () => clearTimeout(t);
+    autosaveTimeoutRef.current = setTimeout(() => save(form), AUTOSAVE_DELAY);
+    return () => clearTimeout(autosaveTimeoutRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, loading]);
 
-  // ── Publish / status ──────────────────────────────────────────────────────
-  const changeStatus = async (status) => {
-    if (status === 'published' && (!form.description?.trim() || !form.coverImage?.url)) {
-      toast.error(L.publishMissing);
-      setActiveSection(!form.coverImage?.url ? 'overview' : 'story');
+  const waitForUploads = useCallback(() => new Promise((resolve) => {
+    const check = () => {
+      if (pendingUploadsRef.current.length === 0) resolve();
+      else setTimeout(check, 150);
+    };
+    check();
+  }), []);
+
+  const missingFields = computeMissingFields(form);
+  const jumpToMissingField = (field) => setActiveSection(FIELD_SECTION[field] || 'overview');
+
+  // ── Publish — validate -> wait for uploads -> flush latest save (create
+  // the doc first if it doesn't exist yet) -> publish only against a
+  // confirmed-fresh id -> map any backend rejection onto the same
+  // Error Summary. Mirrors PortfolioQuickShowcase.jsx's runPublish exactly
+  // — see its doc comment for the full rationale on the save/publish race.
+  const runPublish = async () => {
+    const clientMissing = computeMissingFields(form);
+    if (clientMissing.length) {
+      setAttemptedPublish(true);
+      setFocusToken((t) => t + 1);
+      jumpToMissingField(clientMissing[0]);
+      toast.error(isRTL
+        ? `تعذّر النشر — أكمل ${clientMissing.length} ${clientMissing.length === 1 ? 'حقلاً مطلوبًا' : 'حقول مطلوبة'}.`
+        : `Unable to publish — complete ${clientMissing.length} required ${clientMissing.length === 1 ? 'field' : 'fields'}.`);
       return;
     }
+
     setPublishing(true);
     try {
-      // Flush any pending edits first so the publish reflects the latest text.
+      if (pendingUploadsRef.current.length > 0) {
+        setWaitingForUploads(true);
+        await waitForUploads();
+        setWaitingForUploads(false);
+      }
+      if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
+
+      const saveResult = await save(form);
+      if (!saveResult.ok) {
+        toast.error(saveResult.error || L.autosaveFailed);
+        return;
+      }
+      const idToUse = saveResult.projectId || projectIdRef.current;
+      if (!idToUse) {
+        toast.error(L.couldNotCreate);
+        return;
+      }
+
+      const { data, status } = await api.patch(`/portfolio/admin/${idToUse}/status`, { status: 'published' }, { validateStatus: () => true });
+      if (status >= 200 && status < 300) {
+        setForm((f) => ({ ...f, status: data.project.status }));
+        setAttemptedPublish(false);
+        toast.success(L.statusToast('published'));
+      } else if (data?.code === 'PUBLISH_VALIDATION_FAILED') {
+        setAttemptedPublish(true);
+        setFocusToken((t) => t + 1);
+        jumpToMissingField((data.missingFields || [])[0]);
+        toast.error(L.serverRejected);
+      } else {
+        toast.error(data?.error || L.statusUpdateFailed);
+      }
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const changeStatus = async (status) => {
+    if (status === 'published') { await runPublish(); return; }
+    setPublishing(true);
+    try {
       await save(form);
-      const { data } = await api.patch(`/portfolio/admin/${projectId}/status`, { status });
+      const { data } = await api.patch(`/portfolio/admin/${projectIdRef.current}/status`, { status });
       setForm((f) => ({ ...f, status: data.project.status }));
       toast.success(L.statusToast(status));
     } catch (err) {
@@ -351,13 +450,20 @@ const PortfolioWizard = () => {
               <Button variant="secondary" size="sm" onClick={() => changeStatus('draft')} loading={publishing}>{L.unpublish}</Button>
             </>
           ) : (
-            <Button variant="primary" size="sm" onClick={() => changeStatus('published')} loading={publishing}>{L.publish}</Button>
+            <Button variant="primary" size="sm" onClick={runPublish} loading={publishing}>
+              {publishing && waitingForUploads ? L.publishWaiting : L.publish}
+            </Button>
           )}
         </div>
       </div>
 
       {/* Body */}
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px', display: 'grid', gridTemplateColumns: '200px 1fr', gap: 40 }} className="pw-layout">
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 32px 0' }}>
+        {attemptedPublish && missingFields.length > 0 && (
+          <ErrorSummary missing={missingFields} isRTL={isRTL} onJump={jumpToMissingField} focusToken={focusToken} />
+        )}
+      </div>
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 32px 32px', display: 'grid', gridTemplateColumns: '200px 1fr', gap: 40 }} className="pw-layout">
         <SectionNav sections={sections} active={activeSection} onSelect={setActiveSection} percent={percent} isRTL={isRTL} />
 
         <div style={{ minWidth: 0, maxWidth: 760 }}>

@@ -61,6 +61,23 @@ const { UNRANKED_DISPLAY_ORDER } = require('../utils/displayOrder');
  *                  opposite of "empty sorts last." Every read/write path
  *                  that shows this field to an admin converts the sentinel
  *                  to/from a blank input — see server/utils/displayOrder.js.
+ *
+ * Schema v3.3 (Quick Showcase) adds `presentationMode`, a THIRD, deliberately
+ * independent axis from `projectType` (what the project IS) and
+ * `deliveryStatus` (whether it's live/concept/archived):
+ *
+ *   presentationMode — 'caseStudy' | 'showcase'. Which renderer + how much
+ *                       narrative depth. 'caseStudy' is the full long-form
+ *                       page (Story/Process/Impact/Proof/FAQ). 'showcase' is
+ *                       a short, visual-first page for screenshots/video/
+ *                       concepts that don't warrant a written case study.
+ *                       Defaults to 'caseStudy' so every project that existed
+ *                       before this field shipped renders EXACTLY as it did
+ *                       before — same publish requirements, same page. Never
+ *                       used to infer project type or delivery status, and
+ *                       never inferred FROM them (see PortfolioWizard vs.
+ *                       PortfolioQuickShowcase — the admin picks this once,
+ *                       explicitly, when starting a new project).
  */
 
 // ── Reusable sub-schemas ──────────────────────────────────────────────────────
@@ -171,6 +188,9 @@ const portfolioProjectSchema = new mongoose.Schema(
     // to 'live' — the correct value for every project that existed before
     // this field was introduced.
     deliveryStatus: { type: String, enum: ['live', 'concept', 'archived'], default: 'live' },
+    // Which public renderer + how much narrative depth — see the v3.3 doc
+    // comment above. Independent of projectType/deliveryStatus on purpose.
+    presentationMode: { type: String, enum: ['caseStudy', 'showcase'], default: 'caseStudy' },
 
     // ── Client ────────────────────────────────────────────────────────────
     // Reference into the Client library (server/models/Client.js) — replaces

@@ -3,6 +3,7 @@
   import {
     Plus, Edit2, Trash2, Eye, EyeOff, Star, StarOff, ExternalLink,
     GripVertical, Archive, CheckSquare, Square, Images, ImageOff, Copy, ShieldCheck,
+    FileText, Zap, ArrowRight, ArrowLeft, Play,
   } from 'lucide-react';
   import toast from 'react-hot-toast';
   import api from '../utils/api';
@@ -10,7 +11,7 @@
   import { useLanguage } from '../contexts/LanguageContext';
   import {
     TK, RADIUS, PageHeader, Card, Badge, Button, IconButton,
-    SearchInput, Select, Tabs, ConfirmDialog, Spinner, EmptyState,
+    SearchInput, Select, Tabs, ConfirmDialog, Spinner, EmptyState, Modal,
   } from '../admin-ui';
 
   const getStatusTabs = (language) => [
@@ -21,6 +22,64 @@
   ];
 
   const STATUS_TONE = { published: 'success', draft: 'neutral', archived: 'warning' };
+
+  /**
+   * Shown when "Add Project" is clicked — the explicit fork the redesign
+   * brief calls for, instead of dropping every admin straight into the long
+   * Case Study wizard regardless of what they're actually adding. Picking a
+   * card is the ONLY thing that sets `presentationMode`; it's never inferred
+   * from project type/category/anything else afterward.
+   */
+  const NewProjectPicker = ({ open, onClose, onPick, language, isRTL }) => {
+    const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+    const OPTIONS = [
+      {
+        key: 'caseStudy', Icon: FileText,
+        title: language === 'ar' ? 'دراسة حالة كاملة' : 'Full Case Study',
+        desc: language === 'ar'
+          ? 'مناسبة للمشروعات الموثقة ومشروعات العملاء التي تحتاج قصة ونتائج وتفاصيل.'
+          : 'For documented, client work that needs a story, results, and full detail.',
+      },
+      {
+        key: 'showcase', Icon: Zap,
+        title: language === 'ar' ? 'عرض سريع' : 'Quick Showcase',
+        desc: language === 'ar'
+          ? 'لمفاهيم UI/UX، لقطات شاشة، فيديو، تجارب داخلية — بدون كتابة دراسة حالة طويلة.'
+          : 'For UI/UX concepts, screenshots, video, internal demos — no long write-up needed.',
+      },
+    ];
+    return (
+      <Modal open={open} onClose={onClose} title={language === 'ar' ? 'أضف مشروعًا' : 'Add a project'} width="640px">
+        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 14 }}>
+          {OPTIONS.map((o) => (
+            <button
+              key={o.key}
+              onClick={() => onPick(o.key)}
+              style={{
+                textAlign: isRTL ? 'right' : 'left', padding: 20, borderRadius: RADIUS.lg,
+                border: `1px solid ${TK.border}`, background: TK.surface, cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', gap: 10, fontFamily: 'inherit',
+              }}
+              className="au-card-hover"
+            >
+              <div style={{ width: 36, height: 36, borderRadius: RADIUS.md, background: TK.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <o.Icon style={{ width: 17, height: 17, color: TK.accent }} />
+              </div>
+              <p style={{ fontSize: 14.5, fontWeight: 700, color: TK.text, margin: 0 }}>{o.title}</p>
+              <p style={{ fontSize: 12, color: TK.textMuted, margin: 0, lineHeight: 1.55, flex: 1 }}>{o.desc}</p>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: TK.accent, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                {language === 'ar' ? 'ابدأ' : 'Start'} <ArrowIcon style={{ width: 13, height: 13 }} />
+              </span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+    );
+  };
+
+  const MODE_LABEL_AR = { caseStudy: 'دراسة حالة', showcase: 'عرض سريع' };
+  const modeDisplayLabel = (mode, language) => (language === 'ar' ? (MODE_LABEL_AR[mode] || mode) : (mode === 'showcase' ? 'Showcase' : 'Case Study'));
+  const editUrl = (p) => (p.presentationMode === 'showcase' ? `/app/admin/portfolio/showcase/${p._id}/edit` : `/app/admin/portfolio/${p._id}/edit`);
 
   const Divider = () => <span aria-hidden style={{ width: '1px', height: '18px', background: TK.border, margin: '0 2px', flexShrink: 0 }} />;
 
@@ -56,6 +115,19 @@
             <Star style={{ width: '10px', height: '10px', color: '#FBBF24', fill: '#FBBF24' }} />
           </span>
         )}
+        {(project.coverVideo?.url || (project.gallery || []).some((g) => g?.kind === 'video')) && (
+          <span
+            title={language === 'ar' ? 'يحتوي على فيديو' : 'Includes video'}
+            style={{
+              position: 'absolute', bottom: '4px', insetInlineEnd: '4px',
+              width: '18px', height: '18px', borderRadius: RADIUS.pill,
+              background: 'rgba(13,17,23,0.55)', backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Play style={{ width: '9px', height: '9px', color: '#fff' }} fill="#fff" />
+          </span>
+        )}
       </div>
     );
   };
@@ -72,6 +144,8 @@
     const [status, setStatus]           = useState('all');
     const [category, setCategory]       = useState('All');
     const [categories, setCategories]   = useState([]);
+    const [presentationMode, setPresentationMode] = useState('All');
+    const [pickerOpen, setPickerOpen]   = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const [search, setSearch]           = useState('');
     const [page, setPage]               = useState(1);
@@ -90,7 +164,7 @@
       try {
         setLoading(true);
         const { data } = await api.get('/portfolio/admin', {
-          params: { status, ...(category !== 'All' && { category }), ...(search && { search }), page, limit: 20 },
+          params: { status, ...(category !== 'All' && { category }), ...(presentationMode !== 'All' && { presentationMode }), ...(search && { search }), page, limit: 20 },
         });
         setProjects(data.projects || []);
         setStatusCounts(data.statusCounts || { draft: 0, published: 0, archived: 0 });
@@ -101,7 +175,7 @@
       } finally {
         setLoading(false);
       }
-    }, [status, category, search, page, language]);
+    }, [status, category, presentationMode, search, page, language]);
 
     useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
@@ -114,8 +188,8 @@
       return () => clearTimeout(t);
     }, [searchInput]);
 
-    useEffect(() => { setPage(1); }, [status, category]);
-    useEffect(() => { setSelected(new Set()); }, [status, category, search, page]);
+    useEffect(() => { setPage(1); }, [status, category, presentationMode]);
+    useEffect(() => { setSelected(new Set()); }, [status, category, presentationMode, search, page]);
 
     // `pages <= 1` matters: without it, dragging a row on page 2+ writes
     // dense 0-based ranks (order: i) scoped to THAT page's 20 items, which
@@ -123,7 +197,7 @@
     // catalogs should use the wizard's Display Order field (any integer,
     // any catalog size) instead; drag-and-drop stays a small-catalog
     // convenience.
-    const canReorder = status === 'all' && category === 'All' && !search && pages <= 1;
+    const canReorder = status === 'all' && category === 'All' && presentationMode === 'All' && !search && pages <= 1;
 
     // ── Selection ────────────────────────────────────────────────────────────
     const toggleSelect = (id) => {
@@ -158,7 +232,7 @@
         setDuplicatingId(p._id);
         const { data } = await api.post(`/portfolio/admin/${p._id}/duplicate`);
         toast.success(language === 'ar' ? 'تم إنشاء نسخة' : 'Duplicate created');
-        navigate(`/app/admin/portfolio/${data.project._id}/edit`);
+        navigate(editUrl(data.project));
       } catch {
         toast.error(language === 'ar' ? 'فشل النسخ' : 'Duplicate failed');
       } finally {
@@ -221,7 +295,7 @@
           eyebrow={language === 'ar' ? 'إدارة معرض الأعمال' : 'Portfolio Manager'}
           title={language === 'ar' ? 'معرض الأعمال' : 'Portfolio'}
           subtitle={language === 'ar' ? `${total} مشروع` : `${total} project${total !== 1 ? 's' : ''}`}
-          actions={<Button variant="primary" icon={Plus} onClick={() => navigate('/app/admin/portfolio/new')}>{language === 'ar' ? 'إضافة مشروع' : 'Add Project'}</Button>}
+          actions={<Button variant="primary" icon={Plus} onClick={() => setPickerOpen(true)}>{language === 'ar' ? 'إضافة مشروع' : 'Add Project'}</Button>}
         />
 
         {/* Status tabs */}
@@ -246,6 +320,15 @@
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             options={[{ value: 'All', label: language === 'ar' ? 'كل الفئات' : 'All categories' }, ...categories.map(c => ({ value: c._id, label: language === 'ar' ? (c.nameAr || c.name) : c.name }))]}
+          />
+          <Select
+            value={presentationMode}
+            onChange={(e) => setPresentationMode(e.target.value)}
+            options={[
+              { value: 'All', label: language === 'ar' ? 'كل الأنواع' : 'All formats' },
+              { value: 'caseStudy', label: language === 'ar' ? 'دراسة حالة' : 'Case Study' },
+              { value: 'showcase', label: language === 'ar' ? 'عرض سريع' : 'Quick Showcase' },
+            ]}
           />
           {canReorder && <span style={{ fontSize: '10px', color: TK.textLight, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{language === 'ar' ? 'اسحب الصفوف لإعادة الترتيب' : 'Drag rows to reorder'}</span>}
         </div>
@@ -273,7 +356,7 @@
             <EmptyState
               icon={Images}
               title={language === 'ar' ? 'لا توجد مشاريع مطابقة لهذه الفلاتر' : 'No projects match these filters'}
-              action={<Button variant="primary" icon={Plus} onClick={() => navigate('/app/admin/portfolio/new')}>{language === 'ar' ? 'أضف أول مشروع' : 'Add your first project'}</Button>}
+              action={<Button variant="primary" icon={Plus} onClick={() => setPickerOpen(true)}>{language === 'ar' ? 'أضف أول مشروع' : 'Add your first project'}</Button>}
             />
           </Card>
         ) : (
@@ -328,6 +411,7 @@
                       </span>
                     )}
                     {p.category && <Badge tone="info">{language === 'ar' ? (p.category.nameAr || p.category.name) : p.category.name}</Badge>}
+                    {p.presentationMode === 'showcase' && <Badge tone="purple">{modeDisplayLabel(p.presentationMode, language)}</Badge>}
                     <Badge tone={STATUS_TONE[p.status] || 'neutral'} dot>{statusDisplayLabel(p.status, language)}</Badge>
                     {p.featured && <Badge tone="purple">{language === 'ar' ? 'مميز' : 'Featured'}</Badge>}
                     {p.private && <Badge tone="danger">{language === 'ar' ? 'خاص' : 'Private'}</Badge>}
@@ -361,7 +445,7 @@
                       <ExternalLink style={{ width: '14px', height: '14px' }} />
                     </a>
                   )}
-                  <IconButton icon={Edit2} size={30} onClick={() => navigate(`/app/admin/portfolio/${p._id}/edit`)} title={language === 'ar' ? 'تعديل' : 'Edit'} />
+                  <IconButton icon={Edit2} size={30} onClick={() => navigate(editUrl(p))} title={language === 'ar' ? 'تعديل' : 'Edit'} />
                   <a
                     href={`/app/admin/portfolio/${p._id}/preview`} target="_blank" rel="noopener noreferrer"
                     title={language === 'ar' ? 'معاينة' : 'Preview'}
@@ -418,6 +502,17 @@
           title={language === 'ar' ? `حذف ${selected.size} مشروع؟` : `Delete ${selected.size} project(s)?`}
           description={language === 'ar' ? 'لا يمكن التراجع عن هذا الإجراء.' : 'This action cannot be undone.'}
           confirmLabel={language === 'ar' ? 'حذف' : 'Delete'}
+        />
+
+        <NewProjectPicker
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          language={language}
+          isRTL={isRTL}
+          onPick={(key) => {
+            setPickerOpen(false);
+            navigate(key === 'showcase' ? '/app/admin/portfolio/showcase/new' : '/app/admin/portfolio/new');
+          }}
         />
       </div>
       </div>

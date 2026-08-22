@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Search, X, ChevronDown, ChevronLeft, ChevronRight, Loader2, Check } from 'lucide-react';
+import { Search, X, ChevronDown, ChevronLeft, ChevronRight, Loader2, Check, AlertCircle } from 'lucide-react';
 import { TK, RADIUS, STATUS_TONE, MOTION, colorFromName } from './tokens';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -128,29 +128,62 @@ export const StatCard = ({ icon: Icon, label, value, sub, trend, tone = 'neutral
 };
 
 // ── Inputs ──────────────────────────────────────────────────────────────────
-export const TextInput = ({ icon: Icon, style, containerStyle, ...props }) => (
-  <div className="au-input" style={{
-    display: 'flex', alignItems: 'center', gap: '9px',
-    background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
-    padding: '9px 13px', ...containerStyle,
-  }}>
+// `error` (boolean or message string) switches the field into its invalid
+// visual state (red border + red focus ring) and sets `aria-invalid` — see
+// Field/BilingualPair in components/portfolio-wizard/shared.jsx, which pass
+// this down automatically when a field has a validation error. Comfortable
+// ~40px+ height (10px vertical padding + 13px text) rather than the cramped
+// browser-default feel; consistent across every text-entry primitive.
+export const TextInput = forwardRef(({ icon: Icon, style, containerStyle, error, className = '', ...props }, ref) => (
+  <div
+    className={`au-input ${error ? 'au-input--error' : ''} ${props.disabled ? 'au-input--disabled' : ''} ${className}`}
+    style={{
+      display: 'flex', alignItems: 'center', gap: '9px',
+      background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
+      padding: '10.5px 14px', ...containerStyle,
+    }}
+  >
     {Icon && <Icon style={{ width: '14px', height: '14px', color: TK.textMuted, flexShrink: 0 }} />}
-    <input style={{ flex: 1, fontSize: '13px', color: TK.text, minWidth: 0, ...style }} {...props} />
-  </div>
-);
-
-export const TextArea = ({ style, containerStyle, rows = 3, ...props }) => (
-  <div className="au-input" style={{
-    background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
-    padding: '9px 13px', ...containerStyle,
-  }}>
-    <textarea
-      rows={rows}
-      style={{ width: '100%', fontSize: '13px', color: TK.text, lineHeight: 1.55, resize: 'vertical', display: 'block', ...style }}
+    <input
+      ref={ref}
+      aria-invalid={error ? true : undefined}
+      style={{ flex: 1, fontSize: '13.5px', color: TK.text, minWidth: 0, ...style }}
       {...props}
     />
   </div>
-);
+));
+TextInput.displayName = 'TextInput';
+
+export const TextArea = forwardRef(({ style, containerStyle, rows = 3, error, className = '', ...props }, ref) => (
+  <div
+    className={`au-input ${error ? 'au-input--error' : ''} ${props.disabled ? 'au-input--disabled' : ''} ${className}`}
+    style={{
+      background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
+      padding: '10.5px 14px', ...containerStyle,
+    }}
+  >
+    <textarea
+      ref={ref}
+      rows={rows}
+      aria-invalid={error ? true : undefined}
+      style={{ width: '100%', fontSize: '13.5px', color: TK.text, lineHeight: 1.65, resize: 'vertical', display: 'block', ...style }}
+      {...props}
+    />
+  </div>
+));
+TextArea.displayName = 'TextArea';
+
+// Small inline error line — icon + text (never color alone), used under any
+// invalid field. `id` is what the field's `aria-describedby` points at.
+export const FieldError = ({ id, children }) => {
+  if (!children) return null;
+  return (
+    <p id={id} role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 5, fontSize: '11.5px', color: TK.red, margin: '6px 0 0', lineHeight: 1.5 }}>
+      <AlertCircle style={{ width: 12, height: 12, flexShrink: 0, marginTop: 1.5 }} aria-hidden />
+      <span>{children}</span>
+    </p>
+  );
+};
 
 // ── Switch (toggle) ──────────────────────────────────────────────────────────
 export const Switch = ({ checked, onChange, label, disabled }) => (
@@ -183,14 +216,14 @@ export const SearchInput = ({ value, onChange, placeholder, onClear, style }) =>
     <div className="au-input" style={{
       flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '9px',
       background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
-      padding: '9px 13px', ...style,
+      padding: '10.5px 14px', ...style,
     }}>
       <Search style={{ width: '14px', height: '14px', color: TK.textMuted, flexShrink: 0 }} />
       <input
         value={value}
         onChange={onChange}
         placeholder={placeholder ?? (isRTL ? 'بحث…' : 'Search…')}
-        style={{ flex: 1, fontSize: '13px', color: TK.text, minWidth: 0 }}
+        style={{ flex: 1, fontSize: '13.5px', color: TK.text, minWidth: 0 }}
       />
       {value && (
         <button onClick={onClear} aria-label={isRTL ? 'مسح' : 'Clear'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textMuted, padding: 0, display: 'flex' }}>
@@ -201,31 +234,44 @@ export const SearchInput = ({ value, onChange, placeholder, onClear, style }) =>
   );
 };
 
-export const Select = ({ value, onChange, options, style }) => (
-  <div className="au-input" style={{
-    position: 'relative', display: 'flex', alignItems: 'center',
-    background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
-    padding: '9px 32px 9px 13px', ...style,
-  }}>
+// `insetInlineEnd` (not `right`) matters here: this chevron is absolutely
+// positioned, so it does NOT participate in flexbox's automatic RTL mirroring
+// the way a normal flex child would — a hardcoded `right` would render the
+// chevron on the wrong (start) side in Arabic. Same reasoning for the
+// select's own padding being logical (`paddingInlineEnd`), not `9px 32px 9px 13px`.
+export const Select = ({ value, onChange, options, style, error, disabled }) => (
+  <div
+    className={`au-input ${error ? 'au-input--error' : ''} ${disabled ? 'au-input--disabled' : ''}`}
+    style={{
+      position: 'relative', display: 'flex', alignItems: 'center',
+      background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
+      padding: '10.5px 14px', paddingInlineEnd: '34px', ...style,
+    }}
+  >
     <select
       value={value}
       onChange={onChange}
-      style={{ appearance: 'none', width: '100%', fontSize: '12.5px', color: TK.text, cursor: 'pointer' }}
+      disabled={disabled}
+      aria-invalid={error ? true : undefined}
+      style={{ appearance: 'none', width: '100%', fontSize: '13px', color: TK.text, cursor: disabled ? 'not-allowed' : 'pointer', background: 'transparent' }}
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
-    <ChevronDown style={{ width: '13px', height: '13px', color: TK.textMuted, position: 'absolute', right: '10px', pointerEvents: 'none' }} />
+    <ChevronDown style={{ width: '13px', height: '13px', color: TK.textMuted, position: 'absolute', insetInlineEnd: '12px', pointerEvents: 'none' }} />
   </div>
 );
 
 // ── Segmented filter pills ───────────────────────────────────────────────────
-export const FilterPills = ({ value, onChange, options }) => (
-  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+export const FilterPills = forwardRef(({ value, onChange, options, error }, ref) => (
+  <div ref={ref} role="radiogroup" aria-invalid={error ? true : undefined} style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', padding: error ? '3px' : 0, borderRadius: RADIUS.md, boxShadow: error ? `0 0 0 1.5px ${TK.red}` : 'none' }}>
     {options.map(o => {
       const active = value === o.value;
       return (
         <button
           key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={active}
           onClick={() => onChange(o.value)}
           className="au-btn"
           style={{
@@ -241,7 +287,8 @@ export const FilterPills = ({ value, onChange, options }) => (
       );
     })}
   </div>
-);
+));
+FilterPills.displayName = 'FilterPills';
 
 // ── Empty / Loading / Skeleton ───────────────────────────────────────────────
 export const EmptyState = ({ icon: Icon, title, subtitle, action }) => (

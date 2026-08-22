@@ -105,3 +105,36 @@ describe('Notification model schema', () => {
     expect(n.type).toBe('info');
   });
 });
+
+describe('PortfolioProject model schema — presentationMode (Quick Showcase)', () => {
+  const PortfolioProject = require('../models/PortfolioProject');
+
+  const base = () => ({
+    title: 'Test project', slug: 'test-project', category: new mongoose.Types.ObjectId(),
+  });
+
+  it('defaults presentationMode to caseStudy — every pre-existing project keeps rendering as a full case study', () => {
+    const p = new PortfolioProject(base());
+    expect(p.presentationMode).toBe('caseStudy');
+  });
+
+  it('accepts showcase as an explicit value', () => {
+    const p = new PortfolioProject({ ...base(), presentationMode: 'showcase' });
+    const err = p.validateSync();
+    expect(err?.errors?.presentationMode).toBeUndefined();
+    expect(p.presentationMode).toBe('showcase');
+  });
+
+  it('rejects any value outside caseStudy/showcase', () => {
+    const p = new PortfolioProject({ ...base(), presentationMode: 'bogus' });
+    const err = p.validateSync();
+    expect(err.errors.presentationMode).toBeDefined();
+  });
+
+  it('presentationMode is independent of projectType/deliveryStatus — setting one never touches the others', () => {
+    const p = new PortfolioProject({ ...base(), presentationMode: 'showcase', deliveryStatus: 'concept' });
+    expect(p.presentationMode).toBe('showcase');
+    expect(p.deliveryStatus).toBe('concept');
+    expect(p.projectType).toBeUndefined();
+  });
+});

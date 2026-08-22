@@ -22,10 +22,25 @@
 .au-row { transition: background 0.12s; }
 .au-row:hover { background: rgba(17,24,39,0.02); }
 
-.au-input { transition: border-color 0.15s, box-shadow 0.15s; }
+.au-input { transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
+.au-input:hover:not(:focus-within):not(.au-input--error):not(.au-input--disabled) { border-color: #D3D9E3; }
 .au-input:focus-within { border-color: rgba(37,99,235,0.45) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
 .au-input input, .au-input textarea, .au-input select { outline: none; background: transparent; border: none; font-family: inherit; }
 .au-input input::placeholder, .au-input textarea::placeholder { color: #9CA3AF; }
+
+/* Invalid state — border + focus ring switch to red; never the only signal
+   (the field also gets a FieldError line with an icon, and aria-invalid is
+   set on the control itself for screen readers). */
+.au-input--error { border-color: #dc2626 !important; }
+.au-input--error:focus-within { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,0.10); }
+
+.au-input--disabled { background: #FAFBFC !important; opacity: 0.65; cursor: not-allowed; }
+.au-input--disabled input, .au-input--disabled textarea, .au-input--disabled select { cursor: not-allowed; }
+
+/* Visible keyboard focus ring for plain interactive elements that aren't
+   already covered by .au-input's focus-within treatment (error-summary jump
+   links, readiness-list rows, upload tiles). */
+.au-focus-ring:focus-visible { outline: 2px solid rgba(37,99,235,0.55); outline-offset: 2px; border-radius: 4px; }
 
 .au-skeleton {
   background: linear-gradient(90deg, #F0F1F3 25%, #F7F8F9 37%, #F0F1F3 63%);

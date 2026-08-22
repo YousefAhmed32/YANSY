@@ -28,8 +28,8 @@ const NEW_BLOCK = (type) => ({
   ...(type === 'statRow' ? { stats: [] } : {}),
 });
 
-/* ── Tiny single-image upload chip, reused across block types ────────────── */
-const ImageChip = ({ asset, pending, onUpload, onRemove, label, isRTL }) => (
+/* ── Tiny single-asset upload chip, reused across block types ────────────── */
+const ImageChip = ({ asset, pending, onUpload, onRemove, label, isRTL, accept = 'image/*', kind = 'image' }) => (
   <div>
     {label && <p style={{ fontSize: 10.5, color: TK.textLight, marginBottom: 6, textAlign: isRTL ? 'right' : 'left' }}>{label}</p>}
     <label className="au-upload-tile" style={{
@@ -38,7 +38,9 @@ const ImageChip = ({ asset, pending, onUpload, onRemove, label, isRTL }) => (
     }}>
       {asset?.url ? (
         <>
-          <img src={mediaSrc(asset)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          {kind === 'video'
+            ? <video src={mediaSrc(asset)} muted loop autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <img src={mediaSrc(asset)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
           <button onClick={(e) => { e.preventDefault(); onRemove(); }} style={{ position: 'absolute', top: 5, insetInlineEnd: 5, width: 20, height: 20, borderRadius: '50%', background: 'rgba(13,17,23,0.6)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} aria-label={isRTL ? 'إزالة' : 'Remove'}>
             <X style={{ width: 11, height: 11, color: '#fff' }} />
           </button>
@@ -48,7 +50,7 @@ const ImageChip = ({ asset, pending, onUpload, onRemove, label, isRTL }) => (
       ) : (
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Upload style={{ width: 16, height: 16, color: TK.textLight }} /></div>
       )}
-      <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; e.target.value = ''; if (f) onUpload(f); }} style={{ display: 'none' }} />
+      <input type="file" accept={accept} onChange={(e) => { const f = e.target.files[0]; e.target.value = ''; if (f) onUpload(f); }} style={{ display: 'none' }} />
     </label>
   </div>
 );
@@ -224,7 +226,12 @@ const BlockBody = ({ block, patch, uploadKey, uploadMedia, deleteMedia, pendingU
       return (
         <div className="space-y-3">
           <div style={{ maxWidth: 220 }}>
-            <ImageChip label={L.uploadVideo} asset={block.asset} pending={isPending(uploadKey('asset'))} isRTL={isRTL} onUpload={async (file) => patch({ asset: await uploadMedia(file, uploadKey('asset')) })} onRemove={() => { deleteMedia(block.asset); patch({ asset: null }); }} />
+            <ImageChip
+              label={L.uploadVideo} asset={block.asset} kind="video" accept="video/mp4,video/webm,video/quicktime"
+              pending={isPending(uploadKey('asset'))} isRTL={isRTL}
+              onUpload={async (file) => patch({ asset: await uploadMedia(file, uploadKey('asset')) })}
+              onRemove={() => { deleteMedia(block.asset); patch({ asset: null }); }}
+            />
           </div>
           <p style={{ fontSize: 10.5, color: TK.textLight, textAlign: isRTL ? 'right' : 'left' }}>{L.or}</p>
           <TextInput value={block.embedUrl || ''} onChange={(e) => patch({ embedUrl: e.target.value })} placeholder={L.videoUrlPh} dir="ltr" />
@@ -252,16 +259,25 @@ const BlockBody = ({ block, patch, uploadKey, uploadMedia, deleteMedia, pendingU
  * project's content (wireframes, before/after, embeds, ...) that a rigid
  * field-per-concept schema can't cover; see the doc comment on `blockSchema`
  * in server/models/PortfolioProject.js for the full rationale.
+ *
+ * `allowedTypes` optionally restricts which block types the "Add block" menu
+ * offers — used by PortfolioQuickShowcase.jsx to reuse this exact editor
+ * (same upload pipeline, same reorder/frame/caption UI, same public
+ * BlockRenderer) for its ordered image/video media step, without offering
+ * case-study-only block types (heading/paragraph/quote/statRow/beforeAfter/
+ * embed) a Quick Showcase has no use for. Defaults to every type — the full
+ * Case Study wizard's usage is unaffected.
  */
-const BlocksEditor = ({ blocks, setBlocks, isRTL, uploadMedia, deleteMedia, pendingUploads }) => {
+const BlocksEditor = ({ blocks, setBlocks, isRTL, uploadMedia, deleteMedia, pendingUploads, allowedTypes, intro }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const dragIdx = useRef(null);
   const dragOverIdx = useRef(null);
+  const blockDefs = allowedTypes ? BLOCK_DEFS.filter((d) => allowedTypes.includes(d.type)) : BLOCK_DEFS;
 
   const L = {
-    intro: isRTL
+    intro: intro || (isRTL
       ? 'محتوى مرن للتعمق في عملية التصميم — إطارات أولية، مقارنات قبل/بعد، عروض تجريبية مضمّنة. اختياري بالكامل؛ تخطَّ هذا القسم إذا كان تبويب القصة يغطي كل شيء.'
-      : 'Flexible content for design process deep-dives — wireframes, before/after comparisons, embedded demos. Entirely optional; skip this if the Story tab already tells the whole story.',
+      : 'Flexible content for design process deep-dives — wireframes, before/after comparisons, embedded demos. Entirely optional; skip this if the Story tab already tells the whole story.'),
     removeBlock: isRTL ? 'إزالة الكتلة' : 'Remove block',
     addBlock: isRTL ? 'إضافة كتلة' : 'Add block',
   };
@@ -329,7 +345,7 @@ const BlocksEditor = ({ blocks, setBlocks, isRTL, uploadMedia, deleteMedia, pend
         </button>
         {menuOpen && (
           <div style={{ position: 'absolute', top: '110%', insetInlineStart: 0, zIndex: 20, background: '#fff', border: `1px solid ${TK.border}`, borderRadius: RADIUS.lg, boxShadow: '0 12px 32px rgba(0,0,0,0.12)', padding: 6, minWidth: 200 }}>
-            {BLOCK_DEFS.map((def) => {
+            {blockDefs.map((def) => {
               const DefIcon = def.Icon;
               return (
                 <button

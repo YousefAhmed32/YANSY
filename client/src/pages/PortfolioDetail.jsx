@@ -13,6 +13,7 @@ import api from '../utils/api';
 import { useSEO } from '../hooks/useSEO';
 import { mediaSrc } from '../utils/media';
 import PortfolioDetailView from '../components/portfolio-detail/PortfolioDetailView';
+import PortfolioShowcaseView from '../components/portfolio-detail/PortfolioShowcaseView';
 
 /* ── Skeleton ─────────────────────────────────────────────────────────────── */
 const Skeleton = () => (
@@ -36,7 +37,7 @@ const PortfolioDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title       : project ? `${project.title} — ${isRTL ? 'دراسة حالة' : 'Case Study'} | YANSY TECH` : (isRTL ? 'المحفظة | يانسي تك' : 'Portfolio | YANSY TECH'),
+    title       : project ? `${project.title} — ${project.presentationMode === 'showcase' ? (isRTL ? 'عرض سريع' : 'Showcase') : (isRTL ? 'دراسة حالة' : 'Case Study')} | YANSY TECH` : (isRTL ? 'المحفظة | يانسي تك' : 'Portfolio | YANSY TECH'),
     description : project?.description?.slice(0, 155) || (isRTL ? 'استعرض دراسات حالة أعمالنا.' : 'View our portfolio case studies.'),
     canonical   : `https://yansytech.com/portfolio/${project?.slug || id}`,
     ogImage     : mediaSrc(project?.coverImage),
@@ -99,7 +100,10 @@ const PortfolioDetail = () => {
     </div>
   );
 
-  return <PortfolioDetailView project={project} related={related} isRTL={isRTL} dir={dir} />;
+  // Which renderer, not which route — same fetch, same URL shape, see the
+  // doc comment on PortfolioShowcaseView.jsx for why.
+  const View = project.presentationMode === 'showcase' ? PortfolioShowcaseView : PortfolioDetailView;
+  return <View project={project} related={related} isRTL={isRTL} dir={dir} />;
 };
 
 export default PortfolioDetail;

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, Play } from 'lucide-react';
 import Reveal from '../Reveal';
 import ProgressiveImage from '../ProgressiveImage';
+import { mediaSrc } from '../../utils/media';
 
 const TRAFFIC = ['#FF5F57', '#FEBC2E', '#28C840'];
 
@@ -20,6 +21,8 @@ const hostnameOf = (url) => {
  */
 const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNext, isRTL, liveUrl, title }) => {
   const domain = useMemo(() => (liveUrl ? hostnameOf(liveUrl) : null), [liveUrl]);
+  const activeAsset = images[activeImg];
+  const isActiveVideo = activeAsset?.kind === 'video';
 
   return (
     <section className="section-shell section-shell--tint" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -51,23 +54,35 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
 
             {/* Main viewer */}
             <div
-              className="relative overflow-hidden cursor-zoom-in group"
+              className={`relative overflow-hidden group ${isActiveVideo ? '' : 'cursor-zoom-in'}`}
               style={{ aspectRatio: '16/9' }}
-              onClick={onOpenLightbox}
-              role="button" tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenLightbox(); }}
-              aria-label={isRTL ? `فتح صورة المشروع ${title} بملء الشاشة` : `Open ${title} screenshot fullscreen`}
+              onClick={isActiveVideo ? undefined : onOpenLightbox}
+              role={isActiveVideo ? undefined : 'button'} tabIndex={isActiveVideo ? undefined : 0}
+              onKeyDown={isActiveVideo ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') onOpenLightbox(); }}
+              aria-label={isActiveVideo ? undefined : (isRTL ? `فتح صورة المشروع ${title} بملء الشاشة` : `Open ${title} screenshot fullscreen`)}
             >
-              <ProgressiveImage
-                asset={images[activeImg]}
-                alt={`${title} — ${activeImg + 1}`}
-                fill
-                imgClassName="transition-transform duration-700 group-hover:scale-[1.02]"
-                priority={activeImg === 0}
-              />
-              <div className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border border-border bg-surface-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full">
-                <ZoomIn className="w-4 h-4 text-content-primary" />
-              </div>
+              {isActiveVideo ? (
+                <video
+                  key={activeAsset.publicId || activeImg}
+                  src={mediaSrc(activeAsset)}
+                  poster={mediaSrc(activeAsset)}
+                  controls playsInline
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', background: '#000' }}
+                />
+              ) : (
+                <>
+                  <ProgressiveImage
+                    asset={activeAsset}
+                    alt={`${title} — ${activeImg + 1}`}
+                    fill
+                    imgClassName="transition-transform duration-700 group-hover:scale-[1.02]"
+                    priority={activeImg === 0}
+                  />
+                  <div className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border border-border bg-surface-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full">
+                    <ZoomIn className="w-4 h-4 text-content-primary" />
+                  </div>
+                </>
+              )}
 
               {images.length > 1 && (
                 <>
@@ -93,16 +108,25 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
                   key={i}
                   onClick={() => setActiveImg(i)}
                   style={{
-                    flexShrink: 0, width: 108, aspectRatio: '16/9', overflow: 'hidden', borderRadius: 8,
+                    position: 'relative', flexShrink: 0, width: 108, aspectRatio: '16/9', overflow: 'hidden', borderRadius: 8,
                     border: `2px solid ${i === activeImg ? 'rgb(var(--accent))' : 'transparent'}`,
-                    opacity: i === activeImg ? 1 : 0.55, transition: 'all 0.25s', cursor: 'pointer', padding: 0, background: 'none',
+                    opacity: i === activeImg ? 1 : 0.55, transition: 'all 0.25s', cursor: 'pointer', padding: 0, background: '#000',
                   }}
-                  aria-label={isRTL ? `عرض الصورة ${i + 1}` : `View image ${i + 1}`}
+                  aria-label={isRTL ? (img.kind === 'video' ? `عرض الفيديو ${i + 1}` : `عرض الصورة ${i + 1}`) : (img.kind === 'video' ? `View video ${i + 1}` : `View image ${i + 1}`)}
                   aria-pressed={i === activeImg}
                   onMouseEnter={(e) => { if (i !== activeImg) e.currentTarget.style.opacity = '0.85'; }}
                   onMouseLeave={(e) => { if (i !== activeImg) e.currentTarget.style.opacity = '0.55'; }}
                 >
-                  <ProgressiveImage asset={img} alt="" className="w-full h-full" />
+                  {img.kind === 'video' ? (
+                    <video src={mediaSrc(img)} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <ProgressiveImage asset={img} alt="" className="w-full h-full" />
+                  )}
+                  {img.kind === 'video' && (
+                    <span aria-hidden style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(13,17,23,0.25)' }}>
+                      <Play style={{ width: 16, height: 16, color: '#fff' }} fill="#fff" />
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

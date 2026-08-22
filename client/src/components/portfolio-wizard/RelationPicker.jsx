@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef } from 'react';
 import { Search, X, Plus, Pin, Clock, TrendingUp, ChevronDown, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -21,7 +21,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
  * RelatedPicker in SeoPublishSection.jsx — the same interaction patterns,
  * generalized to every library instead of reimplemented per field.
  */
-const RelationPicker = ({
+const RelationPicker = forwardRef(({
   apiBase,                    // e.g. '/technologies'
   value,                      // object | object[] | null
   onChange,                   // (object | object[] | null) => void
@@ -34,7 +34,9 @@ const RelationPicker = ({
   disabled = false,
   hasAvatar = false,          // show an [image-or-initials] avatar per item (Client/Team/Testimonial pickers)
   createTitle,                // quick-create modal title override, e.g. { en: 'Create client', ar: 'إنشاء عميل' }
-}) => {
+  error = false,              // publish-validation invalid state — red trigger border, see Field's auto-clone
+  id,                         // anchors the search input for label htmlFor / focus-management
+}, forwardedRef) => {
   const { isRTL } = useLanguage();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -46,6 +48,14 @@ const RelationPicker = ({
   const [copyOpen, setCopyOpen] = useState(false);
   const [copyProjects, setCopyProjects] = useState(null);
   const containerRef = useRef(null);
+  // Merge the internal ref (click-outside detection) with any ref the
+  // caller passed in (publish-validation's scrollIntoView/focus) — both
+  // need the same outer DOM node.
+  const setContainerRef = (node) => {
+    containerRef.current = node;
+    if (typeof forwardedRef === 'function') forwardedRef(node);
+    else if (forwardedRef) forwardedRef.current = node;
+  };
 
   const label = (item) => (typeof displayField === 'function' ? displayField(item) : item?.[displayField]) || '';
   const fields = quickCreateFields || [{ key: typeof displayField === 'string' ? displayField : 'name', label: 'Name', labelAr: 'الاسم', required: true }];
@@ -224,7 +234,7 @@ const RelationPicker = ({
   );
 
   return (
-    <div ref={containerRef} style={{ position: 'relative' }}>
+    <div ref={setContainerRef} style={{ position: 'relative' }}>
       {/* Selected chips */}
       {selectedList.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
@@ -248,20 +258,22 @@ const RelationPicker = ({
 
       {!disabled && (multiple || !selectedList.length) && (
         <div
-          className="au-input"
+          className={`au-input ${error ? 'au-input--error' : ''}`}
           onClick={() => setOpen(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-            background: TK.surface, border: `1px solid ${open ? TK.accentBd : TK.border}`, borderRadius: RADIUS.md, padding: '8px 12px',
+            background: TK.surface, border: `1px solid ${error ? TK.red : (open ? TK.accentBd : TK.border)}`, borderRadius: RADIUS.md, padding: '10px 13px',
           }}
         >
           <Search style={{ width: 13, height: 13, color: TK.textMuted, flexShrink: 0 }} />
           <input
+            id={id}
             value={query}
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
+            aria-invalid={error ? true : undefined}
             placeholder={placeholder || (isRTL ? 'بحث أو اختيار…' : 'Search or select…')}
-            style={{ flex: 1, fontSize: '12.5px', color: TK.text, minWidth: 0 }}
+            style={{ flex: 1, fontSize: '13px', color: TK.text, minWidth: 0 }}
           />
           <ChevronDown style={{ width: 12, height: 12, color: TK.textMuted, flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none' }} />
         </div>
@@ -412,6 +424,8 @@ const RelationPicker = ({
       </Modal>
     </div>
   );
-};
+});
+
+RelationPicker.displayName = 'RelationPicker';
 
 export default RelationPicker;

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Briefcase, Clock, ExternalLink, Figma, Github, Layers, MapPin, ShieldCheck, Users } from 'lucide-react';
+import { Briefcase, Clock, ExternalLink, Figma, Github, Info, Layers, MapPin, ShieldCheck, Users } from 'lucide-react';
 import ProgressiveImage from '../ProgressiveImage';
 import { mediaSrc } from '../../utils/media';
 import { categoryIcon } from '../../utils/portfolioTaxonomy';
@@ -58,6 +58,18 @@ const Hero = ({ project, title, desc, isRTL }) => {
   const categoryName = project.category?.name || '';
   const categoryDisplay = isRTL ? (project.category?.nameAr || categoryName) : categoryName;
   const industryDisplay = isRTL ? (project.industry?.nameAr || project.industry?.name) : project.industry?.name;
+  // A concept project's URL (if any) is a self-hosted demo, not a client's
+  // live production site — the label must say so honestly. See also
+  // PortfolioCard.jsx / PortfolioShowcaseView.jsx for the same rule.
+  const isConceptWork = project.deliveryStatus === 'concept';
+  const liveLinkLabel = isConceptWork
+    ? (isRTL ? 'فتح النسخة التجريبية' : 'Open Demo')
+    : (isRTL ? 'زيارة الموقع المباشر' : 'Visit Live Site');
+  // Heuristic disclosure (no dedicated schema field): a concept project that
+  // still names a real client is very likely referencing that brand for a
+  // self-directed/speculative redesign, not a commissioned engagement — make
+  // that explicit rather than let the client name imply real client work.
+  const showBrandDisclosure = isConceptWork && Boolean(clientName);
 
   return (
     <div ref={heroRef} style={{ paddingTop: 'calc(68px + clamp(2rem, 5vw, 3.5rem))', paddingBottom: 0, position: 'relative' }}>
@@ -219,13 +231,26 @@ const Hero = ({ project, title, desc, isRTL }) => {
               }}
             >
               <ExternalLink style={{ width: 13, height: 13 }} aria-hidden />
-              {isRTL ? 'زيارة الموقع المباشر' : 'Visit Live Site'}
+              {liveLinkLabel}
             </a>
           ) : null}
         </div>
+
+        {showBrandDisclosure && (
+          <p data-fade style={{
+            opacity: 0, display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontFamily: font,
+            fontSize: 12, color: 'rgb(var(--text-tertiary))', lineHeight: 1.6, maxWidth: '56ch',
+            marginInlineStart: isRTL ? 'auto' : 0, flexDirection: isRTL ? 'row-reverse' : 'row',
+          }}>
+            <Info style={{ width: 13, height: 13, flexShrink: 0 }} aria-hidden />
+            {isRTL
+              ? 'تصميم تصوّري مستقل، غير تابع أو معتمد من العلامة التجارية.'
+              : 'An independent concept design, not affiliated with or endorsed by the brand.'}
+          </p>
+        )}
       </div>
 
-      <MetaStrip project={project} isRTL={isRTL} font={font} />
+      <MetaStrip project={project} isRTL={isRTL} font={font} isConceptWork={isConceptWork} liveLinkLabel={liveLinkLabel} />
 
       <style>{`
         .hero-panel { aspect-ratio: 16 / 9; }
@@ -260,7 +285,7 @@ const SpecItem = ({ Icon, label, children, isRTL }) => (
  * deliberate at-a-glance summary before the reader commits to the full
  * story below.
  */
-const MetaStrip = ({ project, isRTL, font }) => {
+const MetaStrip = ({ project, isRTL, font, isConceptWork, liveLinkLabel }) => {
   const myRole = isRTL ? (project.myRoleAr || project.myRole) : (project.myRole || project.myRoleAr);
   const fields = [
     myRole && { Icon: Briefcase, label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
@@ -270,7 +295,7 @@ const MetaStrip = ({ project, isRTL, font }) => {
   ].filter(Boolean);
 
   const links = [
-    project.liveUrl  && { href: project.liveUrl,  label: isRTL ? 'الموقع المباشر' : 'Live Site', Icon: ExternalLink },
+    project.liveUrl  && { href: project.liveUrl,  label: isConceptWork ? liveLinkLabel : (isRTL ? 'الموقع المباشر' : 'Live Site'), Icon: ExternalLink },
     project.figmaUrl  && { href: project.figmaUrl,  label: 'Figma', Icon: Figma },
     project.githubUrl && { href: project.githubUrl, label: 'GitHub', Icon: Github },
   ].filter(Boolean);

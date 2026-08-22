@@ -41,13 +41,48 @@ const upload = multer({
 // level (see the comment on those fields in models/PortfolioProject.js) so a
 // brand-new draft can exist — and autosave — the moment it has a title.
 // They're only mandatory the moment a project actually goes live; this is
-// the one place that's enforced, called from every status-change path.
+// the one place that's enforced, called from every status-change path
+// (create-as-published, update-while-published, status-change, bulk-publish
+// — see every `assertPublishable(...)` call site below, all four use this
+// exact same function so frontend/backend can never silently disagree on
+// what "ready to publish" means).
+//
+// Returns an array of stable field keys, never a human sentence — the
+// caller (`publishValidationError` below) turns that into the structured
+// `{ code, error, missingFields }` response; the SAME keys are mirrored in
+// client/src/components/portfolio-wizard/publishValidation.js so the admin
+// UI's field-level errors/focus-management never drift from what the server
+// actually enforces.
+//
+// `title`/`category` are already guaranteed non-empty by Mongoose (title has
+// `required: true`; category has `required: true`) for any document that
+// successfully saved — checked here anyway as defense-in-depth so the
+// missingFields contract is complete and self-describing even in an
+// unexpected state, not because either check is expected to ever fire in
+// practice.
 const assertPublishable = (doc) => {
   const missing = [];
+  if (!doc.title?.trim?.()) missing.push('title');
+  if (!doc.category) missing.push('category');
   if (!doc.description?.trim()) missing.push('description');
   if (!doc.coverImage?.url) missing.push('coverImage');
+  // A Quick Showcase has no narrative fields to fall back on for context —
+  // Project Type is how a visitor (and the card/badge UI) knows what they're
+  // even looking at, so it's hard-required for this mode only. Full case
+  // studies leave it optional, unchanged from before this field existed.
+  if (doc.presentationMode === 'showcase' && !doc.projectType) missing.push('projectType');
   return missing;
 };
+
+// Structured shape every publish-blocking response uses — see the doc
+// comment on `assertPublishable` above. `code` lets the frontend distinguish
+// "you're missing required fields" (recoverable inline, no toast-only dead
+// end) from any other 400 (validation errors, bad input, etc.).
+const publishValidationError = (missing) => ({
+  code: 'PUBLISH_VALIDATION_FAILED',
+  error: 'Project is not ready to publish',
+  missingFields: missing,
+});
 
 // Applied to every route that returns a project doc to the client, so
 // callers get usable objects (client name/logo, team member names, category
@@ -104,7 +139,7 @@ const ensureUniqueSlug = async (title, excludeId) => {
 // onto the document wholesale.
 const WRITABLE_FIELDS = [
   'title', 'titleAr', 'tagline', 'taglineAr', 'category', 'industry',
-  'projectType', 'deliveryStatus',
+  'projectType', 'deliveryStatus', 'presentationMode',
   'client', 'location', 'locationAr', 'confidential', 'private',
   'description', 'descriptionAr',
   'myRole', 'myRoleAr', 'goals', 'goalsAr', 'painPoints', 'painPointsAr',
@@ -252,9 +287,16 @@ const LIST_EXCLUDE = '-myRole -myRoleAr -goals -goalsAr -painPoints -painPointsA
 // GET /api/portfolio — listing with cursor pagination, filters, search, sort
 router.get('/', async (req, res, next) => {
   try {
-    const { category, industry, tag, featured, search, sort = 'latest' } = req.query;
+    const { category, industry, tag, featured, search, sort = 'latest', mode, work } = req.query;
     const limit = Math.min(parseInt(req.query.limit, 10) || 12, 60);
     const filter = { status: 'published', private: { $ne: true } };
+
+    // `mode` = presentationMode ('caseStudy' | 'showcase'), `work` =
+    // deliveryStatus ('live' | 'concept' | 'archived') — the public
+    // "Case Studies / Visual Showcases" and "Live Work / Concepts" filter
+    // chips. Independent of each other and of category/industry/tag.
+    if (mode && ['caseStudy', 'showcase'].includes(mode)) filter.presentationMode = mode;
+    if (work && ['live', 'concept', 'archived'].includes(work)) filter.deliveryStatus = work;
 
     // category/industry/tag arrive as library slugs (readable URLs) — resolve
     // to the referenced ObjectId. An unknown slug filters to zero results
@@ -352,17 +394,26 @@ router.get('/', async (req, res, next) => {
 router.get('/meta', async (req, res, next) => {
   try {
     const baseFilter = { status: 'published', private: { $ne: true } };
-    const [categoryIds, industryIds, technologyIds] = await Promise.all([
+    const [categoryIds, industryIds, technologyIds, presentationCounts, deliveryCounts] = await Promise.all([
       PortfolioProject.distinct('category', baseFilter),
       PortfolioProject.distinct('industry', { ...baseFilter, industry: { $ne: null } }),
       PortfolioProject.distinct('technologies', baseFilter),
+      PortfolioProject.aggregate([{ $match: baseFilter }, { $group: { _id: '$presentationMode', count: { $sum: 1 } } }]),
+      PortfolioProject.aggregate([{ $match: baseFilter }, { $group: { _id: '$deliveryStatus', count: { $sum: 1 } } }]),
     ]);
     const [categories, industries, technologies] = await Promise.all([
       Category.find({ _id: { $in: categoryIds } }).select('name nameAr slug icon').sort({ order: 1, name: 1 }),
       Industry.find({ _id: { $in: industryIds } }).select('name nameAr slug icon').sort({ order: 1, name: 1 }),
       Technology.find({ _id: { $in: technologyIds } }).select('name slug icon color').sort({ name: 1 }),
     ]);
-    res.json({ categories, industries, technologies });
+    // Counts drive whether the public "Visual Showcases" / "Concepts" filter
+    // chips render at all — a site with zero showcases/concepts published
+    // shouldn't show a filter that always returns empty.
+    const presentationModes = { caseStudy: 0, showcase: 0 };
+    presentationCounts.forEach((c) => { if (c._id) presentationModes[c._id] = c.count; });
+    const deliveryStatuses = { live: 0, concept: 0, archived: 0 };
+    deliveryCounts.forEach((c) => { if (c._id) deliveryStatuses[c._id] = c.count; });
+    res.json({ categories, industries, technologies, presentationModes, deliveryStatuses });
   } catch (err) {
     next(err);
   }
@@ -375,7 +426,7 @@ router.get('/meta', async (req, res, next) => {
 // GET /api/portfolio/admin — full list, all statuses, filters + search + pagination
 router.get('/admin', protect, adminOnly, async (req, res, next) => {
   try {
-    const { status, category, search } = req.query;
+    const { status, category, search, presentationMode } = req.query;
     const page  = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
     const filter = {};
@@ -384,6 +435,7 @@ router.get('/admin', protect, adminOnly, async (req, res, next) => {
     // Admin filter sends the Category _id directly (picked from the library
     // dropdown), unlike the public route's slug-based filter.
     if (category && category !== 'All') filter.category = category;
+    if (presentationMode && ['caseStudy', 'showcase'].includes(presentationMode)) filter.presentationMode = presentationMode;
     if (search?.trim()) filter.$text = { $search: search.trim() };
 
     const [projects, total, counts] = await Promise.all([
@@ -465,7 +517,7 @@ router.post('/admin', protect, adminOnly, async (req, res, next) => {
 
     if (status === 'published') {
       const missing = assertPublishable(body);
-      if (missing.length) return res.status(400).json({ error: `Cannot publish — missing: ${missing.join(', ')}` });
+      if (missing.length) return res.status(400).json(publishValidationError(missing));
     }
 
     const project = await PortfolioProject.create({
@@ -503,7 +555,7 @@ router.put('/admin/:id', protect, adminOnly, async (req, res, next) => {
 
     if (project.status === 'published') {
       const missing = assertPublishable(project);
-      if (missing.length) return res.status(400).json({ error: `Cannot publish — missing: ${missing.join(', ')}` });
+      if (missing.length) return res.status(400).json(publishValidationError(missing));
       if (!wasPublished) project.publishedAt = new Date();
     }
 
@@ -574,7 +626,7 @@ router.patch('/admin/:id/status', protect, adminOnly, async (req, res, next) => 
 
     if (status === 'published') {
       const missing = assertPublishable(project);
-      if (missing.length) return res.status(400).json({ error: `Cannot publish — missing: ${missing.join(', ')}` });
+      if (missing.length) return res.status(400).json(publishValidationError(missing));
     }
 
     const before = project.status;
@@ -628,7 +680,7 @@ router.post('/admin/bulk', protect, adminOnly, async (req, res, next) => {
       // Not every selected draft is necessarily publish-ready — silently
       // publishing an incomplete one would put an unfinished case study
       // live. Split the batch instead of failing it outright.
-      const projects = await PortfolioProject.find({ _id: { $in: ids } }).select('description coverImage');
+      const projects = await PortfolioProject.find({ _id: { $in: ids } }).select('title category description coverImage presentationMode projectType');
       const publishableIds = projects.filter((p) => assertPublishable(p).length === 0).map((p) => p._id);
       skipped = ids.length - publishableIds.length;
       if (publishableIds.length) {

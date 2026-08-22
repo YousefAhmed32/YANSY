@@ -13,6 +13,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import api from '../utils/api';
 import { PageSpinner } from '../admin-ui';
 import PortfolioDetailView from '../components/portfolio-detail/PortfolioDetailView';
+import PortfolioShowcaseView from '../components/portfolio-detail/PortfolioShowcaseView';
 
 const STATUS_LABEL = {
   draft:     { en: 'draft',     ar: 'مسودة' },
@@ -64,11 +65,13 @@ const PortfolioPreview = () => {
         {isRTL
           ? `معاينة إدارية — الحالة: ${STATUS_LABEL[project.status]?.ar || project.status}`
           : `Admin Preview — status: ${STATUS_LABEL[project.status]?.en || project.status}`}
-        <Link to={`/app/admin/portfolio/${project._id}/edit`} style={{ color: '#93C5FD', textDecoration: 'underline', marginInlineStart: 8 }}>
+        <Link to={project.presentationMode === 'showcase' ? `/app/admin/portfolio/showcase/${project._id}/edit` : `/app/admin/portfolio/${project._id}/edit`} style={{ color: '#93C5FD', textDecoration: 'underline', marginInlineStart: 8 }}>
           {isRTL ? 'العودة للتحرير' : 'Back to editor'}
         </Link>
       </div>
-      <PortfolioDetailView project={project} related={related} isRTL={isRTL} dir={dir} />
+      {project.presentationMode === 'showcase'
+        ? <PortfolioShowcaseView project={project} related={related} isRTL={isRTL} dir={dir} />
+        : <PortfolioDetailView project={project} related={related} isRTL={isRTL} dir={dir} />}
     </>
   );
 };
