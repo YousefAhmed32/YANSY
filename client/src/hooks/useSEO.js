@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 
 const BASE_TITLE        = 'YANSY TECH';
 const BASE_URL          = 'https://yansytech.com';
-const DEFAULT_OG_IMAGE  = `${BASE_URL}/assets/image/logo/logoweb9.png`;
+const DEFAULT_OG_IMAGE  = `${BASE_URL}/assets/image/logo/og-yansytech-1200x630.png`;
 const PAGE_SCHEMA_ID    = 'yansy-page-schema-ld';
 const DEFAULT_TITLE       = `${BASE_TITLE} | Premium Digital Product Studio — Websites, E-commerce & SaaS`;
 const DEFAULT_DESCRIPTION = 'YANSY TECH is a premium digital product studio. We build enterprise-grade websites, e-commerce platforms, SaaS products, booking systems, and custom software.';
