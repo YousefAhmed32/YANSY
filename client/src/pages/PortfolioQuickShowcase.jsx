@@ -8,6 +8,7 @@ import { TK, RADIUS, PageSpinner, Badge, Button, TextInput, Switch, FilterPills,
 import { mediaSrc } from '../utils/media';
 import { Field, BilingualPair } from '../components/portfolio-wizard/shared';
 import RelationPicker from '../components/portfolio-wizard/RelationPicker';
+import { PROJECT_TYPE_CREATE_TITLE, PROJECT_TYPE_QUICK_CREATE_FIELDS } from '../components/portfolio-wizard/projectTypeQuickCreate';
 import TeamSection from '../components/portfolio-wizard/TeamSection';
 import BlocksEditor from '../components/portfolio-wizard/BlocksEditor';
 import MediaSection from '../components/portfolio-wizard/MediaSection';
@@ -575,7 +576,14 @@ const PortfolioQuickShowcase = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label={L.projectType} required isRTL={isRTL} id="field-projectType" ref={(el) => { fieldRefs.current.projectType = el; }} error={fieldErrorMsg('projectType')}>
-                <RelationPicker apiBase="/project-types" value={form.projectType} onChange={(v) => set('projectType', v)} allowCreate={false} placeholder={L.projectTypePh} />
+                <RelationPicker
+                  apiBase="/project-types"
+                  value={form.projectType}
+                  onChange={(v) => set('projectType', v)}
+                  quickCreateFields={PROJECT_TYPE_QUICK_CREATE_FIELDS}
+                  createTitle={PROJECT_TYPE_CREATE_TITLE}
+                  placeholder={L.projectTypePh}
+                />
               </Field>
               <Field label={L.deliveryStatus} isRTL={isRTL} hint={isRTL ? 'الافتراضي: مباشر' : 'Defaults to Live'}>
                 <FilterPills

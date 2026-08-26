@@ -17,6 +17,11 @@ const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disab
  */
 const useDialogA11y = (open, containerRef, onClose) => {
   const triggerElRef = useRef(null);
+  // Callers commonly pass an inline onClose callback. Keeping the latest
+  // callback in a ref prevents the focus-management effect from tearing
+  // down and re-running on every parent render/keystroke.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -26,12 +31,13 @@ const useDialogA11y = (open, containerRef, onClose) => {
     // via a keyboard Enter/Space on the trigger can leave that key's keyup
     // still pending, and focusing a button synchronously risks it re-firing.
     const raf = requestAnimationFrame(() => {
+      const preferred = containerRef.current?.querySelector('[data-modal-autofocus="true"]');
       const nodes = containerRef.current?.querySelectorAll(FOCUSABLE_SELECTOR);
-      (nodes?.[0] || containerRef.current)?.focus();
+      (preferred || nodes?.[0] || containerRef.current)?.focus();
     });
 
     const onKey = (e) => {
-      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'Escape') { onCloseRef.current?.(); return; }
       if (e.key !== 'Tab' || !containerRef.current) return;
       const nodes = Array.from(containerRef.current.querySelectorAll(FOCUSABLE_SELECTOR));
       if (!nodes.length) return;
@@ -47,7 +53,7 @@ const useDialogA11y = (open, containerRef, onClose) => {
       document.removeEventListener('keydown', onKey);
       triggerElRef.current?.focus?.();
     };
-  }, [open, onClose, containerRef]);
+  }, [open, containerRef]);
 };
 
 export const Modal = ({ open, onClose, title, children, footer, width = '480px' }) => {

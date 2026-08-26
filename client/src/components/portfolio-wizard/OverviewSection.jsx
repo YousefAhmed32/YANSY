@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect } from 'react';
-import { Upload, X, ImageIcon, VideoIcon, Info, Shapes, ArrowUpRight } from 'lucide-react';
+import { useRef } from 'react';
+import { Upload, X, ImageIcon, VideoIcon, Info } from 'lucide-react';
 import { TK, RADIUS, TextInput, Switch, Spinner, FilterPills } from '../../admin-ui';
 import { mediaSrc } from '../../utils/media';
-import api from '../../utils/api';
 import { Field, BilingualPair } from './shared';
 import RelationPicker from './RelationPicker';
+import { PROJECT_TYPE_CREATE_TITLE, PROJECT_TYPE_QUICK_CREATE_FIELDS } from './projectTypeQuickCreate';
 import ProjectOriginField from './ProjectOriginField';
 import HighlightsEditor from './HighlightsEditor';
 
@@ -75,33 +75,6 @@ const SectionLabel = ({ children, isRTL }) => (
   </p>
 );
 
-// Phase 1.1 — stands in for the Project Type picker when the library is
-// genuinely empty (not "no search results," but zero types exist anywhere).
-// Opens the library management screen in a new tab so the in-progress draft
-// here is never lost — the same pattern already used by the wizard's own
-// Preview/View Live links (see PortfolioWizard.jsx).
-const EmptyProjectTypeState = ({ isRTL }) => (
-  <a
-    href="/app/admin/libraries/projectTypes"
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: RADIUS.md,
-      border: `1px dashed ${TK.border}`, background: TK.bgSubtle, textDecoration: 'none',
-      flexDirection: isRTL ? 'row-reverse' : 'row',
-    }}
-  >
-    <Shapes style={{ width: 16, height: 16, color: TK.textLight, flexShrink: 0 }} />
-    <span style={{ flex: 1, fontSize: 12, color: TK.textMuted, textAlign: isRTL ? 'right' : 'left' }}>
-      {isRTL ? 'لا توجد أنواع مشاريع بعد.' : 'No project types yet.'}
-    </span>
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: TK.accent, flexShrink: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-      {isRTL ? 'إنشاء أول نوع مشروع' : 'Create your first Project Type'}
-      <ArrowUpRight style={{ width: 12, height: 12 }} />
-    </span>
-  </a>
-);
-
 const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUploads }) => {
   const isPending = (key) => pendingUploads.some((u) => u.key === key);
   // Drives every conditional field below — see server/models/ProjectType.js.
@@ -109,20 +82,6 @@ const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUp
   // field shipped) resolves to `false` here, so old projects show exactly
   // the same fields they always have.
   const isConceptType = Boolean(form.projectType?.isConceptType);
-
-  // Phase 1.1 — a one-time, lightweight existence check (not the full list;
-  // just `total`) so an admin with zero Project Types ever created sees a
-  // "go create one" prompt instead of an empty dropdown. `null` = still
-  // checking, and deliberately renders the normal picker while unknown so
-  // there's no flash of the empty state for the common case (types exist).
-  const [hasProjectTypes, setHasProjectTypes] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    api.get('/project-types', { params: { limit: 1 } })
-      .then(({ data }) => { if (!cancelled) setHasProjectTypes((data.total || 0) > 0); })
-      .catch(() => { if (!cancelled) setHasProjectTypes(true); }); // fail open — never block the picker on a network hiccup
-    return () => { cancelled = true; };
-  }, []);
 
   const L = {
     coverImage: isRTL ? 'صورة الغلاف *' : 'Cover Image *',
@@ -215,12 +174,15 @@ const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUp
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label={L.projectType} isRTL={isRTL}>
-          {hasProjectTypes === false ? (
-            <EmptyProjectTypeState isRTL={isRTL} />
-          ) : (
-            <RelationPicker apiBase="/project-types" value={form.projectType} onChange={(v) => set('projectType', v)} allowCreate={false} placeholder={L.projectTypePh} />
-          )}
-          {hasProjectTypes !== false && form.projectType && (
+          <RelationPicker
+            apiBase="/project-types"
+            value={form.projectType}
+            onChange={(v) => set('projectType', v)}
+            quickCreateFields={PROJECT_TYPE_QUICK_CREATE_FIELDS}
+            createTitle={PROJECT_TYPE_CREATE_TITLE}
+            placeholder={L.projectTypePh}
+          />
+          {form.projectType && (
             <p style={{ fontSize: 11, color: TK.textLight, margin: '6px 0 0', textAlign: isRTL ? 'right' : 'left' }}>
               {typeHelpText(form.projectType, isRTL)}
             </p>

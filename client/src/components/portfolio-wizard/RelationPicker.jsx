@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, forwardRef } from 'react';
+import { useState, useEffect, useRef, useId, forwardRef } from 'react';
 import { Search, X, Plus, Pin, Clock, TrendingUp, ChevronDown, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -44,10 +44,12 @@ const RelationPicker = forwardRef(({
   const [query, setQuery] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState({});
+  const [createErrors, setCreateErrors] = useState({});
   const [creating, setCreating] = useState(false);
   const [copyOpen, setCopyOpen] = useState(false);
   const [copyProjects, setCopyProjects] = useState(null);
   const containerRef = useRef(null);
+  const createId = useId().replace(/:/g, '');
   // Merge the internal ref (click-outside detection) with any ref the
   // caller passed in (publish-validation's scrollIntoView/focus) — both
   // need the same outer DOM node.
@@ -125,12 +127,18 @@ const RelationPicker = forwardRef(({
       seed[f.key] = f.type === 'image' ? null : (f.key === (typeof displayField === 'string' ? displayField : 'name') ? query : '');
     });
     setCreateForm(seed);
+    setCreateErrors({});
     setCreateOpen(true);
   };
 
   const submitCreate = async () => {
     const missing = fields.find((f) => f.required && f.type !== 'image' && !createForm[f.key]?.trim());
-    if (missing) return toast.error(isRTL ? 'يرجى تعبئة الحقول المطلوبة' : 'Please fill in the required fields');
+    if (missing) {
+      setCreateErrors({ [missing.key]: isRTL ? 'هذا الحقل مطلوب' : 'This field is required' });
+      requestAnimationFrame(() => document.getElementById(`${createId}-${missing.key}`)?.focus());
+      return;
+    }
+    setCreateErrors({});
     setCreating(true);
     try {
       // Falsy image-field values go out as `undefined` (dropped by
@@ -177,7 +185,7 @@ const RelationPicker = forwardRef(({
 
   const quickCreateLabelStyle = { fontSize: '10.5px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', display: 'block', marginBottom: '6px' };
   const quickCreateGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '14px' };
-  const quickCreateInputStyle = { width: '100%', background: TK.bgSubtle, border: `1px solid ${TK.border}`, color: TK.text, fontSize: '13px', padding: '10px 13px', borderRadius: RADIUS.md, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
+  const quickCreateInputStyle = { width: '100%', background: TK.surface, color: TK.text, fontSize: '13px', padding: '11px 13px', borderRadius: RADIUS.md, boxSizing: 'border-box', fontFamily: 'inherit', minHeight: 42 };
 
   // A plain function returning JSX (not a component defined inline) —
   // defining this as `const QuickCreateField = (props) => <div>...</div>`
@@ -186,29 +194,49 @@ const RelationPicker = forwardRef(({
   // React unmount/remount the <input> and drop focus after every character.
   // Calling a function directly to produce JSX has no such identity, so the
   // same DOM node survives across renders.
-  const renderQuickCreateField = (f) => (
+  const renderQuickCreateField = (f, index) => {
+    const fieldId = `${createId}-${f.key}`;
+    const fieldError = createErrors[f.key];
+    const setValue = (value) => {
+      setCreateForm((c) => ({ ...c, [f.key]: value }));
+      if (fieldError) setCreateErrors((current) => ({ ...current, [f.key]: undefined }));
+    };
+    return (
     <div key={f.key} style={f.multiline ? { gridColumn: '1 / -1' } : undefined}>
-      <label style={quickCreateLabelStyle}>
+      <label htmlFor={fieldId} style={{ ...quickCreateLabelStyle, color: fieldError ? TK.red : TK.textMuted }}>
         {(isRTL ? f.labelAr : f.label) || f.key}{f.required && ' *'}
       </label>
       {f.multiline ? (
         <textarea
+          id={fieldId}
           rows={3}
           dir={f.dir}
           value={createForm[f.key] || ''}
-          onChange={(e) => setCreateForm((c) => ({ ...c, [f.key]: e.target.value }))}
-          style={{ ...quickCreateInputStyle, lineHeight: 1.55, resize: 'vertical' }}
+          onChange={(e) => setValue(e.target.value)}
+          aria-invalid={fieldError ? true : undefined}
+          aria-describedby={fieldError ? `${fieldId}-error` : undefined}
+          className="au-input au-focus-ring"
+          style={{ ...quickCreateInputStyle, lineHeight: 1.55, resize: 'vertical', border: `1px solid ${fieldError ? TK.red : TK.border}` }}
         />
       ) : (
         <input
+          id={fieldId}
+          type={['url', 'email', 'tel', 'number'].includes(f.type) ? f.type : 'text'}
           dir={f.dir}
           value={createForm[f.key] || ''}
-          onChange={(e) => setCreateForm((c) => ({ ...c, [f.key]: e.target.value }))}
-          style={quickCreateInputStyle}
+          onChange={(e) => setValue(e.target.value)}
+          aria-invalid={fieldError ? true : undefined}
+          aria-describedby={fieldError ? `${fieldId}-error` : undefined}
+          data-modal-autofocus={index === 0 ? 'true' : undefined}
+          className="au-input au-focus-ring"
+          autoComplete="off"
+          style={{ ...quickCreateInputStyle, border: `1px solid ${fieldError ? TK.red : TK.border}`, textAlign: f.dir === 'ltr' ? 'left' : f.dir === 'rtl' ? 'right' : undefined }}
         />
       )}
+      {fieldError && <p id={`${fieldId}-error`} role="alert" style={{ margin: '5px 0 0', fontSize: 11, color: TK.red }}>{fieldError}</p>}
     </div>
-  );
+    );
+  };
 
   const Row = ({ item, icon: Icon }) => (
     <button
@@ -323,7 +351,7 @@ const RelationPicker = forwardRef(({
               )}
               {rest.length > 0 ? (
                 rest.map((item) => <Row key={item._id} item={item} />)
-              ) : !loading && !pinned.length && !recent.length && !mostUsed.length && (
+              ) : !loading && !pinned.length && !recent.length && !mostUsed.length && !(allowCreate && q) && (
                 <div style={{ padding: '16px 10px', textAlign: 'center', fontSize: '12px', color: TK.textLight }}>
                   {isRTL ? 'لا توجد نتائج' : 'No matches'}
                 </div>
@@ -360,7 +388,10 @@ const RelationPicker = forwardRef(({
           </>
         )}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); submitCreate(); } }}
+        >
           {imageFields.map((f) => (
             <div key={f.key}>
               <label style={quickCreateLabelStyle}>{(isRTL ? f.labelAr : f.label) || f.key}</label>
