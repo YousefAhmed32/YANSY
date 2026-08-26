@@ -1,0 +1,50 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "project": {
+    "title": "",
+    "titleAr": "",
+    "description": "",
+    "descriptionAr": "",
+    "presentationMode": "showcase",
+    "deliveryStatus": "live",
+    "projectOrigin": "selfInitiated",
+    "highlights": [
+      {
+        "text": "",
+        "textAr": ""
+      },
+      {
+        "text": "",
+        "textAr": ""
+      },
+      {
+        "text": "",
+        "textAr": ""
+      }
+    ],
+    "liveUrl": "",
+    "figmaUrl": "",
+    "year": 2026,
+    "featured": false,
+    "metaTitle": "",
+    "metaDescription": ""
+  },
+  "mediaManifest": [
+    {
+      "field": "coverImage",
+      "kind": "image",
+      "alt": "",
+      "altAr": ""
+    },
+    {
+      "field": "gallery",
+      "order": 0,
+      "kind": "image",
+      "alt": "",
+      "altAr": "",
+      "caption": "",
+      "captionAr": ""
+    }
+  ]
+}

@@ -20,6 +20,10 @@ const { uploadPortfolioMedia, deletePortfolioImage, buildResponsiveUrl } = requi
 const { slugify } = require('../utils/slugify');
 const { touchUsage } = require('./libraryRouter.factory');
 const { UNRANKED_DISPLAY_ORDER, normalizeDisplayOrderInput, serializeDisplayOrder } = require('../utils/displayOrder');
+const {
+  FORMAT_ID: PORTABLE_FORMAT_ID, CURRENT_SCHEMA_VERSION: PORTABLE_SCHEMA_VERSION,
+  assertSafeShape, assertSafePayloadSize, resolveRelations,
+} = require('../utils/portfolioPortable');
 
 const protect   = authenticate;
 const adminOnly = requireAdmin;
@@ -139,12 +143,12 @@ const ensureUniqueSlug = async (title, excludeId) => {
 // onto the document wholesale.
 const WRITABLE_FIELDS = [
   'title', 'titleAr', 'tagline', 'taglineAr', 'category', 'industry',
-  'projectType', 'deliveryStatus', 'presentationMode',
+  'projectType', 'deliveryStatus', 'presentationMode', 'projectOrigin',
   'client', 'location', 'locationAr', 'confidential', 'private',
   'description', 'descriptionAr',
   'myRole', 'myRoleAr', 'goals', 'goalsAr', 'painPoints', 'painPointsAr',
   'challenge', 'challengeAr', 'solution', 'solutionAr', 'process', 'processAr', 'results', 'resultsAr',
-  'metrics', 'performanceMetrics', 'testimonials', 'proofScreenshots', 'faqs', 'awards', 'team', 'services', 'blocks',
+  'metrics', 'performanceMetrics', 'testimonials', 'proofScreenshots', 'faqs', 'awards', 'team', 'services', 'highlights', 'blocks',
   'liveUrl', 'figmaUrl', 'githubUrl', 'technologies', 'projectTags', 'duration', 'teamSize', 'startDate', 'launchDate', 'year',
   'relatedProjectsOverride',
   'coverImage', 'coverVideo', 'gallery',
@@ -152,6 +156,30 @@ const WRITABLE_FIELDS = [
   'metaTitle', 'metaDescription',
 ];
 const pickWritable = (body) => Object.fromEntries(WRITABLE_FIELDS.filter((k) => k in body).map((k) => [k, body[k]]));
+
+// `highlights` is capped at 3 by the schema validator too (see
+// models/PortfolioProject.js), but that only rejects an over-limit write
+// outright — this normalizes it instead, the same "be forgiving on write,
+// strict on what's stored" approach the rest of this route file uses
+// (see e.g. applyDisplayOrderCoercion). Trims each side, drops an item that's
+// blank on BOTH languages (an empty item must never reach the DB, let alone
+// render publicly — see the feature brief), and truncates to the schema's
+// own max lengths so a client bug can't silently produce a Mongoose
+// ValidationError instead of a clean, capped save.
+const sanitizeHighlights = (raw) => {
+  if (!Array.isArray(raw)) return undefined;
+  return raw
+    .map((h) => ({
+      text: (h?.text || '').toString().trim().slice(0, PortfolioProject.HIGHLIGHT_TEXT_MAXLEN),
+      textAr: (h?.textAr || '').toString().trim().slice(0, PortfolioProject.HIGHLIGHT_TEXT_AR_MAXLEN),
+    }))
+    .filter((h) => h.text || h.textAr)
+    .slice(0, PortfolioProject.HIGHLIGHTS_MAX);
+};
+const applyHighlightsSanitization = (body) => {
+  if ('highlights' in body) body.highlights = sanitizeHighlights(body.highlights);
+  return body;
+};
 
 // `displayOrder` needs its blank/null/omitted -> sentinel coercion applied
 // on every write path that goes through `pickWritable` (create + update).
@@ -501,6 +529,50 @@ router.delete('/admin/media', protect, adminOnly, async (req, res, next) => {
   }
 });
 
+// POST /api/portfolio/admin/import/resolve — dry-run relation resolution for
+// the JSON Import flow (see client/src/utils/portfolioPortable.js and
+// docs/PORTFOLIO_PORTABLE_FORMAT.md). Read-only: matches portable relation
+// descriptors (slug, then unambiguous name/nameAr) against the real content
+// libraries and reports what resolved/is ambiguous/is unresolved — it never
+// writes anything, never creates a library record, and is called from the
+// import review step BEFORE the admin applies anything to the form.
+router.post('/admin/import/resolve', protect, adminOnly, async (req, res, next) => {
+  try {
+    const { format, schemaVersion, relations } = req.body || {};
+    assertSafePayloadSize(req.body);
+    assertSafeShape(req.body);
+
+    if (format !== PORTABLE_FORMAT_ID) {
+      return res.status(400).json({ error: `Unrecognized file format${format ? `: "${format}"` : ''}.`, code: 'INVALID_FORMAT' });
+    }
+    if (schemaVersion !== PORTABLE_SCHEMA_VERSION) {
+      return res.status(400).json({
+        error: `Unsupported schema version ${schemaVersion} — this server supports version ${PORTABLE_SCHEMA_VERSION}.`,
+        code: 'UNSUPPORTED_SCHEMA_VERSION',
+      });
+    }
+
+    const resolved = await resolveRelations(
+      {
+        category:     { Model: Category },
+        industry:     { Model: Industry },
+        projectType:  { Model: ProjectType },
+        client:       { Model: Client },
+        services:     { Model: Service, multiple: true },
+        technologies: { Model: Technology, multiple: true },
+        projectTags:  { Model: Tag, multiple: true },
+        team:         { Model: TeamMember, multiple: true },
+      },
+      relations || {}
+    );
+
+    res.json({ resolved, schemaVersion: PORTABLE_SCHEMA_VERSION, format: PORTABLE_FORMAT_ID });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message, code: err.code });
+    next(err);
+  }
+});
+
 // POST /api/portfolio/admin — create
 // Deliberately lightweight: a title (and, from Mongoose's own schema, a
 // category) is all that's required to bring a draft into existence — this
@@ -511,6 +583,7 @@ router.post('/admin', protect, adminOnly, async (req, res, next) => {
     const body = pickWritable(req.body);
     if (!body.title?.trim()) return res.status(400).json({ error: 'Title is required' });
     try { applyDisplayOrderCoercion(body); } catch (e) { return res.status(400).json({ error: e.message }); }
+    applyHighlightsSanitization(body);
 
     const slug = await ensureUniqueSlug(body.title);
     const status = ['draft', 'published', 'archived'].includes(body.status) ? body.status : 'draft';
@@ -545,6 +618,7 @@ router.put('/admin/:id', protect, adminOnly, async (req, res, next) => {
     const before = { title: project.title, status: project.status, featured: project.featured };
     const body = pickWritable(req.body);
     try { applyDisplayOrderCoercion(body); } catch (e) { return res.status(400).json({ error: e.message }); }
+    applyHighlightsSanitization(body);
 
     if (body.title && body.title !== project.title) {
       body.slug = await ensureUniqueSlug(body.title, project._id);

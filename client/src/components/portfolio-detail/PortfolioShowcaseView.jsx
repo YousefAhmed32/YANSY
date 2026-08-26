@@ -10,9 +10,11 @@ import Gallery from './Gallery';
 import Lightbox from './Lightbox';
 import NextProject from './NextProject';
 import CTASection from './CTASection';
+import HighlightsList from './HighlightsList';
 import { mediaSrc } from '../../utils/media';
 import { categoryIcon } from '../../utils/portfolioTaxonomy';
 import { sanitizeLiveUrl, getLiveActionLabel } from '../../utils/liveUrl';
+import { projectOriginLabel } from '../../utils/portfolioOrigin';
 import { CoverActionCta, COVER_LINK_CSS } from './CoverLink';
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
@@ -60,6 +62,8 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
 
   const isConceptWork = project.deliveryStatus === 'concept';
   const isArchived = project.deliveryStatus === 'archived';
+  const originLabel = projectOriginLabel(project.projectOrigin, isRTL);
+  const highlights = (project.highlights || []).filter((h) => h?.text || h?.textAr);
   const liveUrl = sanitizeLiveUrl(project.liveUrl);
   const liveLinkLabel = getLiveActionLabel(isRTL, isConceptWork);
   const coverAriaLabel = isRTL ? `زيارة موقع مشروع ${title}` : `Visit the ${title} website`;
@@ -112,6 +116,11 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
                 {isRTL ? 'مؤرشف' : 'Archived'}
               </span>
             )}
+            {originLabel && (
+              <span style={{ fontSize: 10.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999, border: '1px solid rgb(var(--border))', color: 'rgb(var(--text-tertiary))' }}>
+                {originLabel}
+              </span>
+            )}
           </div>
 
           <h1 style={{
@@ -152,6 +161,12 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
               <Info style={{ width: 13, height: 13, flexShrink: 0, marginTop: 1 }} aria-hidden />
               {isRTL ? 'تصميم تصوّري مستقل، غير تابع أو معتمد من العلامة التجارية.' : 'An independent concept design, not affiliated with or endorsed by the brand.'}
             </p>
+          )}
+
+          {highlights.length > 0 && (
+            <div style={{ marginTop: 24, maxWidth: '52ch', marginInlineStart: isRTL ? 'auto' : 0 }}>
+              <HighlightsList highlights={highlights} isRTL={isRTL} variant="compact" />
+            </div>
           )}
         </div>
       </div>
@@ -202,10 +217,22 @@ const PortfolioShowcaseView = ({ project, related, isRTL, dir }) => {
       )}
 
       {/* ── Credits & tools ──────────────────────────────────────────────── */}
-      {(project.team?.length > 0 || project.technologies?.length > 0) && (
+      {(project.team?.length > 0 || project.technologies?.length > 0 || project.services?.length > 0) && (
         <section className="section-shell section-shell--tint" dir={dir}>
           <div className="section-inner" style={{ maxWidth: 860 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(2rem, 5vw, 4rem)', flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+              {project.services?.length > 0 && (
+                <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                  <p className="section-label" style={{ marginBottom: 14 }}>{isRTL ? 'الخدمات المقدمة' : 'Services Delivered'}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                    {project.services.map((s) => (
+                      <span key={s._id} style={{ fontSize: 12, fontWeight: 500, padding: '5px 12px', borderRadius: 999, background: 'rgb(var(--accent-light))', border: '1px solid rgb(var(--accent-muted))', color: '#1E40AF' }}>
+                        {isRTL ? (s.nameAr || s.name) : s.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               {project.team?.length > 0 && (
                 <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
                   <p className="section-label" style={{ marginBottom: 14 }}>{isRTL ? 'فريق العمل' : 'Credits'}</p>

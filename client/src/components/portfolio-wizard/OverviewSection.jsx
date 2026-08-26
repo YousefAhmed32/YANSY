@@ -5,6 +5,8 @@ import { mediaSrc } from '../../utils/media';
 import api from '../../utils/api';
 import { Field, BilingualPair } from './shared';
 import RelationPicker from './RelationPicker';
+import ProjectOriginField from './ProjectOriginField';
+import HighlightsEditor from './HighlightsEditor';
 
 // Phase 1.1 — short, plain-language guidance shown under the Project Type
 // field once a type is picked, keyed by the starter types' slugs (see
@@ -194,6 +196,8 @@ const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUp
       <BilingualPair label={L.title} required isRTL={isRTL} enValue={form.title} arValue={form.titleAr} onEnChange={(v) => set('title', v)} onArChange={(v) => set('titleAr', v)} placeholder={L.titlePh} />
       <BilingualPair label={L.tagline} isRTL={isRTL} enValue={form.tagline} arValue={form.taglineAr} onEnChange={(v) => set('tagline', v)} onArChange={(v) => set('taglineAr', v)} placeholder={L.taglinePh} />
 
+      <HighlightsEditor value={form.highlights} onChange={(v) => set('highlights', v)} isRTL={isRTL} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label={L.category} required isRTL={isRTL}>
           <RelationPicker apiBase="/categories" value={form.category} onChange={(v) => set('category', v)} allowCreate={false} placeholder={isRTL ? 'اختيار فئة…' : 'Select category…'} />
@@ -248,6 +252,8 @@ const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUp
           />
         </Field>
       </div>
+
+      <ProjectOriginField value={form.projectOrigin} onChange={(v) => set('projectOrigin', v)} isRTL={isRTL} />
 
       {isConceptType && (
         <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderRadius: RADIUS.md, background: TK.accentBg, border: `1px solid ${TK.accentBd}`, flexDirection: isRTL ? 'row-reverse' : 'row' }}>

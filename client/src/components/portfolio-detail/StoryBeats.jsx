@@ -32,8 +32,9 @@ const StoryBeats = ({ project, isRTL }) => {
     }))
     .filter((b) => b.content);
   const tags = project.technologies?.filter(Boolean) || [];
+  const services = project.services?.filter(Boolean) || [];
 
-  if (!beats.length && !tags.length) return null;
+  if (!beats.length && !tags.length && !services.length) return null;
 
   return (
     <section className="section-shell section-shell--plain story-beats" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -61,11 +62,36 @@ const StoryBeats = ({ project, isRTL }) => {
           </Reveal>
         ))}
 
-        {tags.length > 0 && (
+        {services.length > 0 && (
           <Reveal distance={16}>
             <div style={{
               marginTop: beats.length ? 'clamp(3rem, 6vw, 4.5rem)' : 0, paddingTop: beats.length ? 'clamp(1.75rem, 3vw, 2.5rem)' : 0,
               borderTop: beats.length ? '1px solid rgb(var(--border))' : 'none',
+              display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
+              flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start',
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgb(var(--text-tertiary))', marginInlineEnd: 4 }}>
+                {isRTL ? 'الخدمات المقدمة' : 'Services Delivered'}
+              </span>
+              {services.map((s) => (
+                <span key={s._id} style={{
+                  fontSize: 12, padding: '6px 14px', borderRadius: 999,
+                  border: '1px solid rgb(var(--border))', background: 'rgb(var(--bg-surface))',
+                  color: 'rgb(var(--text-secondary))', fontWeight: 500, fontFamily: font,
+                }}>
+                  {isRTL ? (s.nameAr || s.name) : s.name}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+        )}
+
+        {tags.length > 0 && (
+          <Reveal distance={16}>
+            <div style={{
+              marginTop: (beats.length || services.length) ? 'clamp(1.5rem, 3vw, 2rem)' : 0,
+              paddingTop: (beats.length && !services.length) ? 'clamp(1.75rem, 3vw, 2.5rem)' : 0,
+              borderTop: (beats.length && !services.length) ? '1px solid rgb(var(--border))' : 'none',
               display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
               flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start',
             }}>

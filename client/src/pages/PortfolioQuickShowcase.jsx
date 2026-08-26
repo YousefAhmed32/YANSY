@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ChevronLeft, ChevronRight, Copy, Eye, ExternalLink, Upload, X, ImageIcon, VideoIcon, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, ExternalLink, Upload, X, ImageIcon, VideoIcon, ChevronDown } from 'lucide-react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { TK, RADIUS, PageSpinner, Badge, Button, TextInput, Switch, FilterPills, Spinner, Card, FieldError } from '../admin-ui';
@@ -11,14 +11,20 @@ import RelationPicker from '../components/portfolio-wizard/RelationPicker';
 import TeamSection from '../components/portfolio-wizard/TeamSection';
 import BlocksEditor from '../components/portfolio-wizard/BlocksEditor';
 import MediaSection from '../components/portfolio-wizard/MediaSection';
+import ProjectOriginField from '../components/portfolio-wizard/ProjectOriginField';
+import HighlightsEditor from '../components/portfolio-wizard/HighlightsEditor';
+import PortfolioIOMenu from '../components/portfolio-wizard/PortfolioIOMenu';
+import PortfolioImportModal from '../components/portfolio-wizard/PortfolioImportModal';
+import ImportResultBanner from '../components/portfolio-wizard/ImportResultBanner';
+import { downloadPortableJson, downloadPortableTemplate } from '../utils/portfolioPortable';
 import { computeMissingFields, fieldMessage } from '../components/portfolio-wizard/publishValidation';
 import { ErrorSummary, PublishReadiness } from '../components/portfolio-wizard/PublishValidationUI';
 
 const EMPTY_FORM = {
   title: '', titleAr: '', category: null, industry: null,
-  projectType: null, deliveryStatus: 'live',
-  description: '', descriptionAr: '',
-  team: [], technologies: [], projectTags: [], blocks: [],
+  projectType: null, deliveryStatus: 'live', projectOrigin: undefined,
+  description: '', descriptionAr: '', highlights: [],
+  team: [], technologies: [], projectTags: [], services: [], blocks: [],
   // Project Screenshots — a separate ordered gallery from Cover Image (one
   // primary image, required to publish) and from Content Blocks (an
   // optional advanced feature for framed/captioned media). This field was
@@ -155,6 +161,9 @@ const PortfolioQuickShowcase = () => {
   const [publishing, setPublishing] = useState(false);
   const [waitingForUploads, setWaitingForUploads] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importResult, setImportResult] = useState(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [blocksOpen, setBlocksOpen] = useState(false);
   const [attemptedPublish, setAttemptedPublish] = useState(false);
@@ -181,6 +190,7 @@ const PortfolioQuickShowcase = () => {
     duplicated: isRTL ? 'تم الإنشاء — جارٍ فتح النسخة' : 'Duplicated — opening the copy',
     duplicateFailed: isRTL ? 'فشل النسخ' : 'Duplicate failed',
     duplicate: isRTL ? 'نسخ' : 'Duplicate',
+    exported: isRTL ? 'تم تصدير JSON — لا تتضمن الصور أو الفيديوهات' : 'Exported JSON — images and video are not included',
     preview: isRTL ? 'معاينة' : 'Preview',
     viewLive: isRTL ? 'عرض مباشر' : 'View live',
     unpublish: isRTL ? 'إلغاء النشر' : 'Unpublish',
@@ -220,6 +230,11 @@ const PortfolioQuickShowcase = () => {
       ? 'ميزة متقدمة اختيارية — عناصر مفردة بإطار عرض (متصفح/موبايل/تابلت) وتسمية توضيحية، أو فيديو خارجي من YouTube/Vimeo/Loom. لا تحل محل معرض اللقطات أعلاه.'
       : 'An optional advanced feature — individual items with a presentation frame (browser/mobile/tablet) and a caption, or an external YouTube/Vimeo/Loom video. Does not replace the screenshot gallery above.',
     team: isRTL ? 'الفريق' : 'Team',
+    services: isRTL ? 'الخدمات المقدمة' : 'Services Delivered',
+    servicesHint: isRTL
+      ? 'القدرات التي نفذتها يانسي تك في هذا المشروع (مثال: التوجيه الإبداعي، تصميم UI/UX، تطوير الواجهة الأمامية، تصميم الحركة والتفاعل، التصميم المتجاوب) — وليست أدوات أو تقنيات برمجية.'
+      : 'The capabilities YANSY Tech delivered on this project (e.g. Creative Direction, UI/UX Design, Front-end Development, Motion & Interaction Design, Responsive Design) — not software tools.',
+    servicesPh: isRTL ? 'اختيار أو إنشاء خدمات…' : 'Select or create services…',
     tools: isRTL ? 'الأدوات / التقنيات' : 'Tools / Technologies',
     toolsPh: isRTL ? 'اختيار أو إنشاء أدوات…' : 'Select or create tools…',
     links: isRTL ? 'الروابط' : 'LINKS',
@@ -282,6 +297,7 @@ const PortfolioQuickShowcase = () => {
     projectType: toId(f.projectType),
     technologies: toIds(f.technologies),
     projectTags: toIds(f.projectTags),
+    services: toIds(f.services),
     gallery: f.gallery || [],
     team: (f.team || []).map((t) => ({ member: toId(t.member), roleOverride: t.roleOverride, roleArOverride: t.roleArOverride })).filter((t) => t.member),
     presentationMode: 'showcase',
@@ -443,6 +459,29 @@ const PortfolioQuickShowcase = () => {
     }
   };
 
+  // ── Export — pure client-side serialization of the CURRENT form state
+  // (including unsaved edits), see utils/portfolioPortable.js. No network
+  // call, no images/video, never disruptive (no confirmation needed). ──────
+  const exportJson = () => {
+    setExporting(true);
+    try {
+      downloadPortableJson(form);
+      toast.success(L.exported);
+    } catch {
+      toast.error(isRTL ? 'تعذّر تصدير الملف' : 'Could not export the file');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // ── Import apply — one coherent state transition (single setForm call);
+  // see PortfolioImportModal.jsx's doc comment. Never publishes, never
+  // touches media, status stays whatever it already was. ──────────────────
+  const applyImport = (nextForm, plan) => {
+    setImportResult({ ...plan, previousForm: form });
+    setForm(nextForm);
+  };
+
   if (loading) return <div style={{ minHeight: '100vh', background: TK.bg }}><PageSpinner /></div>;
 
   const BackChevron = isRTL ? ChevronRight : ChevronLeft;
@@ -463,13 +502,20 @@ const PortfolioQuickShowcase = () => {
           </div>
           <Badge tone={STATUS_TONE[form.status] || 'neutral'} dot>{STATUS_LABEL[form.status]}</Badge>
           {projectId && (
-            <>
-              <Button variant="ghost" size="sm" icon={Copy} onClick={duplicate} loading={duplicating}>{L.duplicate}</Button>
-              <a href={`/app/admin/portfolio/${projectId}/preview`} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm" icon={Eye}>{L.preview}</Button>
-              </a>
-            </>
+            <a href={`/app/admin/portfolio/${projectId}/preview`} target="_blank" rel="noopener noreferrer">
+              <Button variant="secondary" size="sm" icon={Eye}>{L.preview}</Button>
+            </a>
           )}
+          <PortfolioIOMenu
+            isRTL={isRTL}
+            onImport={() => setImportOpen(true)}
+            onExport={exportJson}
+            onDownloadTemplate={() => downloadPortableTemplate('showcase')}
+            exporting={exporting}
+            onDuplicate={projectId ? duplicate : undefined}
+            duplicating={duplicating}
+            canDuplicate={Boolean(projectId)}
+          />
           {form.status === 'published' ? (
             <>
               {form.liveUrl && (
@@ -489,6 +535,12 @@ const PortfolioQuickShowcase = () => {
 
       {/* Body */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '28px 32px 60px' }}>
+        <ImportResultBanner
+          result={importResult}
+          isRTL={isRTL}
+          onUndo={() => { if (importResult?.previousForm) setForm(importResult.previousForm); setImportResult(null); }}
+          onDismiss={() => setImportResult(null)}
+        />
         {attemptedPublish && missingFields.length > 0 ? (
           <ErrorSummary missing={missingFields} isRTL={isRTL} onJump={jumpToField} focusToken={focusToken} />
         ) : (
@@ -534,9 +586,13 @@ const PortfolioQuickShowcase = () => {
               </Field>
               <Field label={L.year} isRTL={isRTL}><TextInput type="number" value={form.year || ''} onChange={(e) => set('year', e.target.value)} dir="ltr" /></Field>
             </div>
+            <ProjectOriginField value={form.projectOrigin} onChange={(v) => set('projectOrigin', v)} isRTL={isRTL} />
             <Field label={L.tags} isRTL={isRTL}>
               <RelationPicker apiBase="/tags" value={form.projectTags} onChange={(v) => set('projectTags', v)} multiple quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }, { key: 'nameAr', label: 'Name (Arabic)', labelAr: 'الاسم (عربي)' }]} placeholder={L.tagsPh} />
             </Field>
+            <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20 }}>
+              <HighlightsEditor value={form.highlights} onChange={(v) => set('highlights', v)} isRTL={isRTL} />
+            </div>
           </div>
         </Section>
 
@@ -587,9 +643,15 @@ const PortfolioQuickShowcase = () => {
             <TeamSection form={form} set={set} isRTL={isRTL} />
           </div>
 
-          <Field label={L.tools} isRTL={isRTL}>
-            <RelationPicker apiBase="/technologies" value={form.technologies} onChange={(v) => set('technologies', v)} multiple quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }]} placeholder={L.toolsPh} />
+          <Field label={L.services} hint={L.servicesHint} isRTL={isRTL}>
+            <RelationPicker apiBase="/services" value={form.services} onChange={(v) => set('services', v)} multiple quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }, { key: 'nameAr', label: 'Name (Arabic)', labelAr: 'الاسم (عربي)' }]} placeholder={L.servicesPh} />
           </Field>
+
+          <div style={{ marginTop: 20 }}>
+            <Field label={L.tools} isRTL={isRTL}>
+              <RelationPicker apiBase="/technologies" value={form.technologies} onChange={(v) => set('technologies', v)} multiple quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }]} placeholder={L.toolsPh} />
+            </Field>
+          </div>
 
           <div style={{ borderTop: `1px solid ${TK.border}`, paddingTop: 20, marginTop: 20 }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>{L.links}</p>
@@ -629,6 +691,14 @@ const PortfolioQuickShowcase = () => {
           </div>
         </Section>
       </div>
+
+      <PortfolioImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        isRTL={isRTL}
+        existingForm={form}
+        onApply={applyImport}
+      />
     </div>
   );
 };

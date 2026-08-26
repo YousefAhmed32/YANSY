@@ -4,6 +4,7 @@ import Footer from '../Footer';
 import ProjectRequestForm from '../ProjectRequestForm';
 import ScrollProgress from './ScrollProgress';
 import Hero from './Hero';
+import HighlightsStrip from './HighlightsStrip';
 import StoryBeats from './StoryBeats';
 import ProcessBand from './ProcessBand';
 import BlockRenderer from './BlockRenderer';
@@ -50,6 +51,8 @@ const PortfolioDetailView = ({ project, related, isRTL, dir }) => {
       <ScrollProgress isRTL={isRTL} />
 
       <Hero project={project} title={title} desc={desc} isRTL={isRTL} />
+
+      <HighlightsStrip highlights={project.highlights} isRTL={isRTL} dir={dir} />
 
       <StoryBeats project={project} isRTL={isRTL} />
 

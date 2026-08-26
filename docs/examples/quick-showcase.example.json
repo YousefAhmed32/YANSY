@@ -1,0 +1,37 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "exportedAt": "2026-08-26T12:00:00.000Z",
+  "project": {
+    "title": "Alto — Fitness Tracker Concept",
+    "titleAr": "ألتو — تصور لتطبيق تتبع اللياقة",
+    "description": "A self-directed UI/UX concept exploring a calmer, data-forward dashboard for daily fitness tracking.",
+    "descriptionAr": "تصور تصميمي ذاتي التوجيه يستكشف لوحة تحكم أهدأ وأكثر تركيزًا على البيانات لتتبع اللياقة اليومية.",
+    "presentationMode": "showcase",
+    "deliveryStatus": "concept",
+    "projectOrigin": "selfInitiated",
+    "category": { "slug": "saas-platforms", "name": "SaaS / Platforms", "nameAr": "برمجيات / منصات" },
+    "projectType": { "slug": "ui-ux-concept", "name": "UI/UX Concept", "nameAr": "تصور UI/UX" },
+    "year": 2026,
+    "highlights": [
+      { "text": "Redesigned the daily summary screen around a single glanceable metric", "textAr": "أعدنا تصميم شاشة الملخص اليومي حول مؤشر واحد يمكن قراءته بلمحة" },
+      { "text": "Built a reusable chart component system for weekly/monthly trends", "textAr": "بنينا نظام مكونات رسوم بيانية قابل لإعادة الاستخدام للاتجاهات الأسبوعية/الشهرية" }
+    ],
+    "services": [
+      { "name": "UI/UX Design" },
+      { "name": "Motion & Interaction Design" }
+    ],
+    "technologies": [
+      { "slug": "figma", "name": "Figma" },
+      { "name": "After Effects" }
+    ],
+    "figmaUrl": "https://www.figma.com/file/example-alto-concept",
+    "metaTitle": "Alto — Fitness Tracker UI/UX Concept",
+    "metaDescription": "A self-directed fitness dashboard concept focused on calm, data-forward daily tracking."
+  },
+  "mediaManifest": [
+    { "field": "coverImage", "kind": "image", "alt": "Alto dashboard home screen" },
+    { "field": "gallery", "order": 0, "kind": "image", "caption": "Weekly trend view" },
+    { "field": "gallery", "order": 1, "kind": "image", "caption": "Onboarding flow, step 2" }
+  ]
+}

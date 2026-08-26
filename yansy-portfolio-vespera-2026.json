@@ -1,0 +1,107 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "exportedAt": "2026-08-26T00:00:00.000Z",
+  "project": {
+    "title": "Vespéra — Luxury Fragrance Experience",
+    "titleAr": "فيسبيرا — تجربة رقمية لعالم العطور الفاخرة",
+    "description": "An immersive digital experience for a fictional luxury fragrance house, combining cinematic product storytelling, refined editorial typography, and atmospheric interactions. Designed and developed as a self-initiated showcase of premium web design and front-end execution.",
+    "descriptionAr": "تجربة رقمية غامرة لدار عطور فاخرة متخيّلة، تجمع بين السرد البصري السينمائي، والطباعة التحريرية الراقية، والتفاعلات المستوحاة من أجواء العطور. صُمّم وطُوّر المشروع كمبادرة ذاتية لاستعراض مستوى التصميم الرقمي والتنفيذ الأمامي الفاخر.",
+    "presentationMode": "showcase",
+    "deliveryStatus": "live",
+    "projectOrigin": "selfInitiated",
+    "category": {
+      "slug": "e-commerce",
+      "name": "E-commerce",
+      "nameAr": "التجارة الإلكترونية"
+    },
+    "technologies": [
+      {
+        "slug": "react",
+        "name": "React"
+      }
+    ],
+    "highlights": [
+      {
+        "text": "Cinematic, atmosphere-led storytelling crafted around the character of a luxury fragrance house.",
+        "textAr": "سرد بصري سينمائي صُمم حول الطابع الحسي لدار عطور فاخرة."
+      },
+      {
+        "text": "Interactive fragrance exploration with editorial product presentation and refined micro-interactions.",
+        "textAr": "تجربة تفاعلية لاستكشاف العطور تجمع بين العرض التحريري للمنتجات والتفاعلات الدقيقة."
+      },
+      {
+        "text": "A fully responsive premium experience designed to preserve its visual impact across screen sizes.",
+        "textAr": "تجربة فاخرة متجاوبة تحافظ على قوتها البصرية عبر مختلف أحجام الشاشات."
+      }
+    ],
+    "liveUrl": "https://vespera.yansytech.com/",
+    "year": 2026,
+    "featured": true,
+    "displayOrder": 1,
+    "metaTitle": "Vespéra Luxury Fragrance Website | YANSY TECH",
+    "metaDescription": "Explore Vespéra, an immersive luxury fragrance website designed and developed by YANSY TECH, featuring cinematic storytelling, refined typography, and interactive product experiences."
+  },
+  "mediaManifest": [
+    {
+      "field": "coverImage",
+      "kind": "image",
+      "alt": "Vespéra luxury fragrance website hero interface",
+      "altAr": "الواجهة الرئيسية لموقع فيسبيرا للعطور الفاخرة"
+    },
+    {
+      "field": "gallery",
+      "order": 0,
+      "kind": "image",
+      "alt": "Editorial brand story section for Vespéra",
+      "altAr": "قسم قصة علامة فيسبيرا بتصميم تحريري",
+      "caption": "Brand story and editorial art direction",
+      "captionAr": "قصة العلامة والتوجيه الفني التحريري"
+    },
+    {
+      "field": "gallery",
+      "order": 1,
+      "kind": "image",
+      "alt": "Interactive Vespéra fragrance collection selector",
+      "altAr": "واجهة تفاعلية لاستعراض مجموعة عطور فيسبيرا",
+      "caption": "Interactive fragrance collection",
+      "captionAr": "استعراض تفاعلي لمجموعة العطور"
+    },
+    {
+      "field": "gallery",
+      "order": 2,
+      "kind": "image",
+      "alt": "Vespéra luxury perfume product detail experience",
+      "altAr": "تجربة تفاصيل أحد عطور فيسبيرا الفاخرة",
+      "caption": "Editorial product detail experience",
+      "captionAr": "تجربة تحريرية لعرض تفاصيل المنتج"
+    },
+    {
+      "field": "gallery",
+      "order": 3,
+      "kind": "image",
+      "alt": "Cinematic fragrance photography gallery",
+      "altAr": "معرض صور سينمائي لمجموعة العطور",
+      "caption": "Cinematic campaign gallery",
+      "captionAr": "معرض الحملة البصرية السينمائية"
+    },
+    {
+      "field": "gallery",
+      "order": 4,
+      "kind": "image",
+      "alt": "Vespéra membership and companion app section",
+      "altAr": "قسم العضوية والتطبيق المصاحب لفيسبيرا",
+      "caption": "Membership tiers and companion app",
+      "captionAr": "مستويات العضوية والتطبيق المصاحب"
+    },
+    {
+      "field": "gallery",
+      "order": 5,
+      "kind": "image",
+      "alt": "Vespéra newsletter and website footer",
+      "altAr": "قسم النشرة البريدية وتذييل موقع فيسبيرا",
+      "caption": "Newsletter and closing brand experience",
+      "captionAr": "النشرة البريدية وختام تجربة العلامة"
+    }
+  ]
+}

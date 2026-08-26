@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ChevronLeft, ChevronRight, Copy, Eye, ExternalLink, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, ExternalLink, Sparkles } from 'lucide-react';
 import api from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { TK, PageSpinner, Badge, Button, ConfirmDialog } from '../admin-ui';
@@ -14,15 +14,19 @@ import BlocksEditor from '../components/portfolio-wizard/BlocksEditor';
 import ProofResultsSection from '../components/portfolio-wizard/ProofResultsSection';
 import SeoPublishSection from '../components/portfolio-wizard/SeoPublishSection';
 import GenerateDemoModal from '../components/portfolio-wizard/GenerateDemoModal';
+import PortfolioIOMenu from '../components/portfolio-wizard/PortfolioIOMenu';
+import PortfolioImportModal from '../components/portfolio-wizard/PortfolioImportModal';
+import ImportResultBanner from '../components/portfolio-wizard/ImportResultBanner';
+import { downloadPortableJson, downloadPortableTemplate } from '../utils/portfolioPortable';
 import { generateDemoProject } from '../utils/demoGenerators';
 import { computeMissingFields } from '../components/portfolio-wizard/publishValidation';
 import { ErrorSummary } from '../components/portfolio-wizard/PublishValidationUI';
 
 const EMPTY_FORM = {
   title: '', titleAr: '', tagline: '', taglineAr: '', category: null, industry: null,
-  projectType: null, deliveryStatus: 'live',
+  projectType: null, deliveryStatus: 'live', projectOrigin: undefined,
   client: null, location: '', locationAr: '', confidential: false, private: false,
-  description: '', descriptionAr: '',
+  description: '', descriptionAr: '', highlights: [],
   myRole: '', myRoleAr: '', goals: '', goalsAr: '', painPoints: '', painPointsAr: '',
   challenge: '', challengeAr: '', solution: '', solutionAr: '', process: '', processAr: '', results: '', resultsAr: '',
   metrics: [], performanceMetrics: [], testimonials: [], proofScreenshots: [], faqs: [], awards: [], team: [], services: [], blocks: [],
@@ -103,6 +107,9 @@ const PortfolioWizard = () => {
   const [pendingUploads, setPendingUploads] = useState([]);
   const [publishing, setPublishing] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importResult, setImportResult] = useState(null);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [confirmDemoKey, setConfirmDemoKey] = useState(null); // pending category — asks first if the draft already has content
   const [attemptedPublish, setAttemptedPublish] = useState(false);
@@ -128,6 +135,7 @@ const PortfolioWizard = () => {
     duplicated: isRTL ? 'تم الإنشاء — جارٍ فتح النسخة' : 'Duplicated — opening the copy',
     duplicateFailed: isRTL ? 'فشل النسخ' : 'Duplicate failed',
     duplicate: isRTL ? 'نسخ' : 'Duplicate',
+    exported: isRTL ? 'تم تصدير JSON — لا تتضمن الصور أو الفيديوهات' : 'Exported JSON — images and video are not included',
     generateDemo: isRTL ? 'بيانات تجريبية' : 'Demo Data',
     demoGenerated: isRTL ? 'تم إنشاء بيانات المشروع التجريبي' : 'Demo project data generated',
     demoGenerateFailed: isRTL ? 'فشل إنشاء البيانات التجريبية' : 'Failed to generate demo data',
@@ -386,6 +394,29 @@ const PortfolioWizard = () => {
     else applyDemoData(categoryKey);
   };
 
+  // ── Export — pure client-side serialization of the CURRENT form state
+  // (including unsaved edits), see utils/portfolioPortable.js. No network
+  // call, no images/video, never disruptive (no confirmation needed). ──────
+  const exportJson = () => {
+    setExporting(true);
+    try {
+      downloadPortableJson(form);
+      toast.success(L.exported);
+    } catch {
+      toast.error(isRTL ? 'تعذّر تصدير الملف' : 'Could not export the file');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // ── Import apply — one coherent state transition (single setForm call);
+  // see PortfolioImportModal.jsx's doc comment. Never publishes, never
+  // touches media, status stays whatever it already was. ──────────────────
+  const applyImport = (nextForm, plan) => {
+    setImportResult({ ...plan, previousForm: form });
+    setForm(nextForm);
+  };
+
   const percent = useMemo(() => calcCompletion(form), [form]);
   const sections = useMemo(() => SECTION_DEFS.map((s) => ({
     key: s.key,
@@ -432,13 +463,20 @@ const PortfolioWizard = () => {
           <Button variant="secondary" size="sm" icon={Sparkles} onClick={() => setDemoModalOpen(true)} loading={generatingDemo}>{L.generateDemo}</Button>
 
           {projectId && (
-            <>
-              <Button variant="ghost" size="sm" icon={Copy} onClick={duplicate} loading={duplicating}>{L.duplicate}</Button>
-              <a href={`/app/admin/portfolio/${projectId}/preview`} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm" icon={Eye}>{L.preview}</Button>
-              </a>
-            </>
+            <a href={`/app/admin/portfolio/${projectId}/preview`} target="_blank" rel="noopener noreferrer">
+              <Button variant="secondary" size="sm" icon={Eye}>{L.preview}</Button>
+            </a>
           )}
+          <PortfolioIOMenu
+            isRTL={isRTL}
+            onImport={() => setImportOpen(true)}
+            onExport={exportJson}
+            onDownloadTemplate={() => downloadPortableTemplate('caseStudy')}
+            exporting={exporting}
+            onDuplicate={projectId ? duplicate : undefined}
+            duplicating={duplicating}
+            canDuplicate={Boolean(projectId)}
+          />
 
           {form.status === 'published' ? (
             <>
@@ -459,6 +497,12 @@ const PortfolioWizard = () => {
 
       {/* Body */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 32px 0' }}>
+        <ImportResultBanner
+          result={importResult}
+          isRTL={isRTL}
+          onUndo={() => { if (importResult?.previousForm) setForm(importResult.previousForm); setImportResult(null); }}
+          onDismiss={() => setImportResult(null)}
+        />
         {attemptedPublish && missingFields.length > 0 && (
           <ErrorSummary missing={missingFields} isRTL={isRTL} onJump={jumpToMissingField} focusToken={focusToken} />
         )}
@@ -488,6 +532,13 @@ const PortfolioWizard = () => {
       </div>
 
       <GenerateDemoModal open={demoModalOpen} onClose={() => setDemoModalOpen(false)} onSelect={handleSelectDemoCategory} isRTL={isRTL} />
+      <PortfolioImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        isRTL={isRTL}
+        existingForm={form}
+        onApply={applyImport}
+      />
       <ConfirmDialog
         open={Boolean(confirmDemoKey)}
         onClose={() => setConfirmDemoKey(null)}

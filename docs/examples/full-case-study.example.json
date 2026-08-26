@@ -1,0 +1,89 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "exportedAt": "2026-08-26T12:00:00.000Z",
+  "project": {
+    "title": "Vespera — Boutique Hotel Booking",
+    "titleAr": "فيسبيرا — منصة حجز فندقي بوتيك",
+    "tagline": "A concierge-grade booking flow for independent hotels",
+    "taglineAr": "تجربة حجز بمستوى الكونسيرج للفنادق المستقلة",
+    "description": "Rebuilt a boutique hotel group's booking experience from a generic template into a fast, concierge-grade flow across mobile and desktop.",
+    "descriptionAr": "أعدنا بناء تجربة الحجز لمجموعة فنادق بوتيك من قالب عام إلى تجربة سريعة بمستوى الكونسيرج على الجوال وسطح المكتب.",
+    "presentationMode": "caseStudy",
+    "deliveryStatus": "live",
+    "projectOrigin": "clientWork",
+    "category": { "slug": "saas-platforms", "name": "SaaS / Platforms", "nameAr": "برمجيات / منصات" },
+    "industry": { "slug": "hospitality", "name": "Hospitality", "nameAr": "الضيافة" },
+    "projectType": { "slug": "web-project", "name": "Web Project", "nameAr": "مشروع ويب" },
+    "client": { "name": "Vespera Hotels" },
+    "location": "Amman, Jordan",
+    "locationAr": "عمّان، الأردن",
+    "confidential": false,
+    "private": false,
+    "myRole": "Lead product design + front-end engineering",
+    "myRoleAr": "قيادة تصميم المنتج وهندسة الواجهة الأمامية",
+    "goals": "Cut booking abandonment and make the flow feel as considered as staying at the hotel itself.",
+    "goalsAr": "تقليل معدل التخلي عن الحجز وجعل التجربة تعكس نفس مستوى العناية الذي يشعر به النزيل داخل الفندق.",
+    "painPoints": "A generic third-party booking widget forced a 6-step checkout and didn't reflect the brand at all.",
+    "painPointsAr": "أداة حجز عامة من طرف ثالث فرضت عملية دفع من 6 خطوات ولم تعكس هوية العلامة إطلاقًا.",
+    "challenge": "Integrate real-time availability across 4 properties while keeping checkout under 3 steps on mobile.",
+    "challengeAr": "دمج التوفر الفوري عبر 4 عقارات مع إبقاء عملية الدفع أقل من 3 خطوات على الجوال.",
+    "solution": "Built a custom availability engine with optimistic UI, collapsing the flow into a single scrollable screen.",
+    "solutionAr": "بنينا محرك توفر مخصصًا بواجهة متفائلة، ودمجنا التجربة في شاشة واحدة قابلة للتمرير.",
+    "process": "Discovery with front-desk staff -> low-fidelity flow testing -> high-fidelity UI -> phased rollout property-by-property.",
+    "processAr": "استكشاف مع طاقم الاستقبال ← اختبار تدفق منخفض الدقة ← تصميم عالي الدقة ← إطلاق تدريجي لكل عقار على حدة.",
+    "results": "Bookings completed in under 90 seconds on average, up from over 4 minutes with the old widget.",
+    "resultsAr": "أصبح إتمام الحجز يستغرق أقل من 90 ثانية في المتوسط، مقارنة بأكثر من 4 دقائق مع الأداة القديمة.",
+    "highlights": [
+      { "text": "Collapsed a 6-step checkout into one scrollable screen", "textAr": "دمجنا عملية دفع من 6 خطوات في شاشة واحدة قابلة للتمرير" },
+      { "text": "Built a real-time availability engine across 4 properties", "textAr": "بنينا محرك توفر فوري عبر 4 عقارات" },
+      { "text": "Shipped a fully bilingual (EN/AR) booking flow at launch", "textAr": "أطلقنا تجربة حجز ثنائية اللغة بالكامل عند الإطلاق" }
+    ],
+    "metrics": [
+      { "label": "Booking completion time", "value": "-63%", "trend": "down" },
+      { "label": "Mobile conversion rate", "value": "+41%", "trend": "up" }
+    ],
+    "performanceMetrics": [
+      { "label": "Time to interactive", "before": "3.8s", "after": "1.1s" }
+    ],
+    "faqs": [
+      { "question": "Was this rebuilt on the existing PMS?", "answer": "Yes — it integrates directly with the hotel group's existing property management system." }
+    ],
+    "services": [
+      { "name": "Creative Direction" },
+      { "name": "UI/UX Design" },
+      { "name": "Front-end Development" }
+    ],
+    "technologies": [
+      { "slug": "nextjs", "name": "Next.js" },
+      { "slug": "nodejs", "name": "Node.js" },
+      { "name": "PostgreSQL" }
+    ],
+    "projectTags": [{ "name": "Booking Flow" }, { "name": "Bilingual" }],
+    "team": [
+      { "name": "Sara Ahmed", "roleOverride": "Lead Designer", "roleArOverride": "مصممة رئيسية" },
+      { "name": "Omar Khalil", "roleOverride": "Front-end Engineer" }
+    ],
+    "testimonials": [
+      { "author": "Layla Haddad", "role": "Director of Operations, Vespera Hotels", "quote": "Bookings that used to take our guests five minutes now take under two." }
+    ],
+    "liveUrl": "https://example-vespera-hotels.com",
+    "duration": "10 weeks",
+    "teamSize": "4 people",
+    "year": 2026,
+    "featured": true,
+    "metaTitle": "Vespera Hotels — Boutique Booking Experience Case Study",
+    "metaDescription": "How we rebuilt a boutique hotel group's booking flow into a fast, concierge-grade experience.",
+    "blocks": [
+      { "type": "heading", "text": "Before & after the rebuild", "textAr": "قبل وبعد إعادة البناء", "level": 2 },
+      { "type": "paragraph", "text": "The original checkout forced guests through six separate screens before confirming a stay.", "textAr": "كانت عملية الدفع الأصلية تُجبر النزلاء على المرور بست شاشات منفصلة قبل تأكيد الإقامة." },
+      { "type": "image", "frame": "browser", "caption": "The rebuilt single-screen checkout", "captionAr": "شاشة الدفع الموحدة الجديدة" }
+    ]
+  },
+  "mediaManifest": [
+    { "field": "coverImage", "kind": "image", "alt": "Vespera booking homepage" },
+    { "field": "gallery", "order": 0, "kind": "image", "caption": "Room selection screen" },
+    { "field": "gallery", "order": 1, "kind": "image", "caption": "Mobile checkout flow" },
+    { "field": "blocks[2].asset", "kind": "image", "caption": "The rebuilt single-screen checkout" }
+  ]
+}

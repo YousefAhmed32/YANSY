@@ -78,6 +78,37 @@ const { UNRANKED_DISPLAY_ORDER } = require('../utils/displayOrder');
  *                       never inferred FROM them (see PortfolioWizard vs.
  *                       PortfolioQuickShowcase — the admin picks this once,
  *                       explicitly, when starting a new project).
+ *
+ * Schema v3.4 (Project Origin + Highlights + Portable JSON) adds a FOURTH
+ * independent classification axis plus one small optional narrative field:
+ *
+ *   projectOrigin — 'clientWork' | 'selfInitiated' | 'internalProduct' |
+ *                    'experimental'. Where the project came from — distinct
+ *                    from deliveryStatus (whether it's live/concept/
+ *                    archived), projectType (what it is), and
+ *                    presentationMode (how it's rendered). A self-initiated
+ *                    project can still be Live; a client project can still
+ *                    be a Concept. Deliberately has NO default and is never
+ *                    inferred from another field — every project that
+ *                    existed before this field shipped simply has it unset
+ *                    (`undefined`), which every read path treats as "not
+ *                    classified," not as any specific value. There is no
+ *                    migration that backfills this field: unlike
+ *                    deliveryStatus (where 'live' was a safe, provably-true
+ *                    default for every pre-existing project), there is no
+ *                    origin value that's safely true for a project we have
+ *                    no record of the provenance of — guessing would be a
+ *                    false claim. Left permanently optional/unset for
+ *                    legacy records that are never manually classified.
+ *
+ *   highlights — up to 3 short bilingual bullets ({ text, textAr }) for
+ *                "what's strongest about this execution," shown compactly in
+ *                both public renderers. Deliberately NOT a place for
+ *                metrics/results/client claims (those live in
+ *                metrics/performanceMetrics/results, hidden for concept
+ *                projects — see the v3.1 doc comment above); highlights are
+ *                allowed on every project type since they describe the
+ *                execution itself, not a business outcome.
  */
 
 // ── Reusable sub-schemas ──────────────────────────────────────────────────────
@@ -112,6 +143,21 @@ const performanceMetricSchema = new mongoose.Schema(
 
 const faqSchema = new mongoose.Schema(
   { question: { type: String, required: true }, questionAr: { type: String }, answer: { type: String, required: true }, answerAr: { type: String } },
+  { _id: false }
+);
+
+// Short, structured "what's strongest about this execution" bullets — see
+// the v3.4 doc comment above. Deliberately NOT a single free-text field: a
+// bounded, structured list is what lets the admin UI enforce "max 3, keep it
+// short" and both public renderers show them as scannable bullets instead of
+// admin-authored markdown-ish bullet formatting.
+const HIGHLIGHT_TEXT_MAXLEN = 140;
+const HIGHLIGHT_TEXT_AR_MAXLEN = 160;
+const highlightSchema = new mongoose.Schema(
+  {
+    text:   { type: String, trim: true, maxlength: HIGHLIGHT_TEXT_MAXLEN },
+    textAr: { type: String, trim: true, maxlength: HIGHLIGHT_TEXT_AR_MAXLEN },
+  },
   { _id: false }
 );
 
@@ -191,6 +237,12 @@ const portfolioProjectSchema = new mongoose.Schema(
     // Which public renderer + how much narrative depth — see the v3.3 doc
     // comment above. Independent of projectType/deliveryStatus on purpose.
     presentationMode: { type: String, enum: ['caseStudy', 'showcase'], default: 'caseStudy' },
+    // Where the project came from — see the v3.4 doc comment above.
+    // Deliberately NO default: unset means "not classified," never a guess.
+    projectOrigin: {
+      type: String,
+      enum: ['clientWork', 'selfInitiated', 'internalProduct', 'experimental'],
+    },
 
     // ── Client ────────────────────────────────────────────────────────────
     // Reference into the Client library (server/models/Client.js) — replaces
@@ -238,6 +290,15 @@ const portfolioProjectSchema = new mongoose.Schema(
 
     // Reference into the Service library — new field, no legacy data.
     services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
+
+    // Up to 3 short bilingual "what's strongest" bullets — see the v3.4 doc
+    // comment above. The count cap is enforced here (not just in the admin
+    // UI) so a direct/import API write can never smuggle in more than 3.
+    highlights: {
+      type: [highlightSchema],
+      default: [],
+      validate: { validator: (arr) => (arr || []).length <= 3, message: 'A project can have at most 3 highlights.' },
+    },
 
     // Flexible mid-page content — see blockSchema doc comment above.
     blocks: [blockSchema],
@@ -302,4 +363,12 @@ portfolioProjectSchema.index({ status: 1, private: 1, displayOrder: 1, featured:
 portfolioProjectSchema.index({ status: 1, featured: 1 });
 portfolioProjectSchema.index({ createdAt: -1, _id: -1 }); // sort=oldest cursor pagination
 
-module.exports = mongoose.model('PortfolioProject', portfolioProjectSchema);
+const PortfolioProject = mongoose.model('PortfolioProject', portfolioProjectSchema);
+// Exposed so route-layer sanitizers (see sanitizeHighlights in
+// server/routes/portfolio.routes.js) and the import validator enforce the
+// exact same limits as the schema itself, instead of a second hardcoded copy.
+PortfolioProject.HIGHLIGHT_TEXT_MAXLEN = HIGHLIGHT_TEXT_MAXLEN;
+PortfolioProject.HIGHLIGHT_TEXT_AR_MAXLEN = HIGHLIGHT_TEXT_AR_MAXLEN;
+PortfolioProject.HIGHLIGHTS_MAX = 3;
+PortfolioProject.PROJECT_ORIGIN_VALUES = ['clientWork', 'selfInitiated', 'internalProduct', 'experimental'];
+module.exports = PortfolioProject;

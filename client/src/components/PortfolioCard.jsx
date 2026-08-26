@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, Play, ShieldCheck } from 'lucide-react';
 import ProgressiveImage from './ProgressiveImage';
 import { categoryIcon } from '../utils/portfolioTaxonomy';
+import { projectOriginLabel } from '../utils/portfolioOrigin';
 
 /**
  * Premium portfolio card — cinematic hover, progressive blur-up image reveal,
@@ -37,6 +38,10 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
     : deliveryStatus === 'archived'
       ? { en: 'Archived', ar: 'مؤرشف' }
       : null;
+  // Independent of deliveryStatus — see server/models/PortfolioProject.js's
+  // v3.4 doc comment. Only rendered when an admin has actually classified
+  // the project (no default value to fall back to, unlike deliveryStatus).
+  const originLabel = projectOriginLabel(project.projectOrigin, isRTL);
 
   const displayAsset = project.coverImage?.url
     ? project.coverImage
@@ -94,6 +99,11 @@ const PortfolioCard = ({ project, isRTL, size = 'default', priority = false }) =
           {deliveryBadge && (
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[rgb(var(--accent))]/90 backdrop-blur-sm text-white tracking-wide">
               {isRTL ? deliveryBadge.ar : deliveryBadge.en}
+            </span>
+          )}
+          {originLabel && (
+            <span className="hidden sm:inline text-[10px] font-semibold px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white tracking-wide">
+              {originLabel}
             </span>
           )}
           {hasVideo && (

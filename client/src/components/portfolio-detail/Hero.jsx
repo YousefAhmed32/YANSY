@@ -7,6 +7,7 @@ import ProgressiveImage from '../ProgressiveImage';
 import { mediaSrc } from '../../utils/media';
 import { categoryIcon } from '../../utils/portfolioTaxonomy';
 import { sanitizeLiveUrl, getLiveActionLabel } from '../../utils/liveUrl';
+import { projectOriginLabel } from '../../utils/portfolioOrigin';
 import { CoverActionCta, COVER_LINK_CSS } from './CoverLink';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -60,6 +61,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
   const categoryName = project.category?.name || '';
   const categoryDisplay = isRTL ? (project.category?.nameAr || categoryName) : categoryName;
   const industryDisplay = isRTL ? (project.industry?.nameAr || project.industry?.name) : project.industry?.name;
+  const originLabel = projectOriginLabel(project.projectOrigin, isRTL);
   // A concept project's URL (if any) is a self-hosted demo, not a client's
   // live production site — the label must say so honestly. See also
   // PortfolioCard.jsx / PortfolioShowcaseView.jsx for the same rule.
@@ -104,6 +106,11 @@ const Hero = ({ project, title, desc, isRTL }) => {
               <span aria-hidden style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgb(var(--border-strong))' }} />
               <span style={{ fontSize: 11.5, color: 'rgb(var(--text-tertiary))' }}>{project.year}</span>
             </>
+          )}
+          {originLabel && (
+            <span style={{ fontSize: 10.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999, border: '1px solid rgb(var(--border))', color: 'rgb(var(--text-tertiary))', fontFamily: font }}>
+              {originLabel}
+            </span>
           )}
         </div>
 

@@ -13,6 +13,7 @@
     TK, RADIUS, PageHeader, Card, Badge, Button, IconButton,
     SearchInput, Select, Tabs, ConfirmDialog, Spinner, EmptyState, Modal,
   } from '../admin-ui';
+  import { projectOriginLabel } from '../utils/portfolioOrigin';
 
   const getStatusTabs = (language) => [
     { value: 'all',       label: language === 'ar' ? 'الكل' : 'All' },
@@ -412,6 +413,7 @@
                     )}
                     {p.category && <Badge tone="info">{language === 'ar' ? (p.category.nameAr || p.category.name) : p.category.name}</Badge>}
                     {p.presentationMode === 'showcase' && <Badge tone="purple">{modeDisplayLabel(p.presentationMode, language)}</Badge>}
+                    {p.projectOrigin && <Badge tone="neutral">{projectOriginLabel(p.projectOrigin, language === 'ar')}</Badge>}
                     <Badge tone={STATUS_TONE[p.status] || 'neutral'} dot>{statusDisplayLabel(p.status, language)}</Badge>
                     {p.featured && <Badge tone="purple">{language === 'ar' ? 'مميز' : 'Featured'}</Badge>}
                     {p.private && <Badge tone="danger">{language === 'ar' ? 'خاص' : 'Private'}</Badge>}
