@@ -168,6 +168,9 @@ const AnimatedRoutes = () => {
           <Route path="/reset-password"  element={<ResetPassword />} />
           <Route path="/verify-email"    element={<VerifyEmail />} />
 
+          {/* Local visual QA only. Vite removes this route from production. */}
+          {import.meta.env.DEV && <Route path="/__visual/dashboard" element={<Dashboard />} />}
+
           {/* ── Protected ── */}
           <Route
             path="/app"

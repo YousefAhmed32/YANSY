@@ -2,7 +2,7 @@ import { TK, RADIUS } from './tokens';
 
 /** Standard admin page header: eyebrow badge + title + subtitle + right-aligned actions. */
 const PageHeader = ({ icon: Icon, eyebrow, title, subtitle, actions }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '24px' }}>
+  <div className="au-page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '24px' }}>
     <div>
       {eyebrow && (
         <div style={{

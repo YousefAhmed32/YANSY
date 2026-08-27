@@ -124,6 +124,7 @@ const Sidebar = ({
   const [recent,    setRecent]    = useState(() => readLS('sidebar-recent', []));
   const [filter,    setFilter]    = useState('');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState(() => new Set([0, 1]));
   const [resizing, setResizing] = useState(false);
 
   const userMenuRef = useRef(null);
@@ -219,9 +220,17 @@ const Sidebar = ({
     return navLinks.filter(l => l.label.toLowerCase().includes(filterQ));
   }, [navLinks, filterQ, isFiltering]);
 
-  const groups = isAdmin && !isFiltering ? [...new Set(adminNav.map(l => l.group))] : null;
+  const groups = useMemo(() => isAdmin && !isFiltering ? [...new Set(adminNav.map(l => l.group))] : null, [isAdmin, isFiltering, adminNav]);
   const favoriteLinks = isAdmin && !isFiltering ? favorites.map(p => byPath.get(p)).filter(Boolean) : [];
   const recentLinks   = isAdmin && !isFiltering ? recent.map(p => byPath.get(p)).filter(Boolean) : [];
+
+  useEffect(() => {
+    if (!groups) return;
+    const activeGroup = adminNav.find(link => location.pathname === link.to || location.pathname.startsWith(`${link.to}/`))?.group;
+    const activeIndex = groups.indexOf(activeGroup);
+    if (activeIndex < 0) return;
+    setExpandedGroups(prev => prev.has(activeIndex) ? prev : new Set([...prev, activeIndex]));
+  }, [groups, adminNav, location.pathname]);
 
   const visiblePaths = useMemo(() => {
     if (isFiltering) return filteredNav.map(l => l.to);
@@ -433,17 +442,28 @@ const Sidebar = ({
               )}
 
               {isAdmin && groups ? (
-                groups.map(group => {
+                groups.map((group, groupIndex) => {
                   const links = adminNav.filter(l => l.group === group);
+                  const expanded = expandedGroups.has(groupIndex);
                   return (
                     <div key={group} style={{ marginBottom: '4px' }}>
                       {!isCollapsed && (
-                        <div style={{ padding: '9px 16px 3px' }}>
-                          <span style={{ fontSize: '9px', letterSpacing: '0.13em', textTransform: 'uppercase', color: TK.textLight, fontWeight: 600 }}>{group}</span>
-                        </div>
+                        <button
+                          type="button"
+                          aria-expanded={expanded}
+                          onClick={() => setExpandedGroups(prev => {
+                            const next = new Set(prev);
+                            if (next.has(groupIndex)) next.delete(groupIndex); else next.add(groupIndex);
+                            return next;
+                          })}
+                          style={{ width: '100%', padding: '10px 16px 5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 0, cursor: 'pointer', color: TK.textLight, fontFamily: 'inherit' }}
+                        >
+                          <span style={{ fontSize: '9px', letterSpacing: '0.13em', textTransform: 'uppercase', fontWeight: 700 }}>{group}</span>
+                          <ChevronDown style={{ width: 11, height: 11, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }} />
+                        </button>
                       )}
                       {isCollapsed && <div style={{ padding: '6px 0 2px', display: 'flex', justifyContent: 'center' }}><div style={{ width: 20, height: 1, background: TK.border }} /></div>}
-                      {links.map(link => <NavRow key={link.to} link={link} isMobileDrawer={isMobileDrawer} />)}
+                      {(isCollapsed || expanded) && links.map(link => <NavRow key={link.to} link={link} isMobileDrawer={isMobileDrawer} />)}
                     </div>
                   );
                 })

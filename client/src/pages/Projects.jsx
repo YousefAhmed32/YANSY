@@ -67,7 +67,7 @@ const Projects = () => {
   };
 
   return (
-    <div style={{
+    <div className="yansy-client-page yansy-projects-page" style={{
       minHeight: '100vh', background: TK.bg,
       padding: 'clamp(16px,3vw,32px)',
       fontFamily: isRTL ? 'IBM Plex Sans Arabic,system-ui,sans-serif' : 'Inter,system-ui,sans-serif',
@@ -75,7 +75,7 @@ const Projects = () => {
     }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="yansy-client-page-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: 'clamp(18px,3vw,24px)', fontWeight: 700, color: TK.text, margin: 0 }}>
             {language === 'ar' ? 'مشاريعي' : 'My Projects'}
@@ -170,7 +170,7 @@ const Projects = () => {
             const progress = project.progress ?? 0;
             const info = STATUS[project.status] || STATUS.PLANNING;
             return (
-              <Link key={project._id} to={`/app/projects/${project._id}`}
+              <Link className="yansy-project-card" key={project._id} to={`/app/projects/${project._id}`}
                 style={{
                   display: 'block', textDecoration: 'none',
                   background: TK.surface, borderRadius: '14px',

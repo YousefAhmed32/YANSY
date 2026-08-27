@@ -65,7 +65,7 @@ const Payments = () => {
   ];
 
   return (
-    <div style={{
+    <div className="yansy-client-page yansy-payments-page" style={{
       minHeight: '100vh', background: TK.bg,
       padding: 'clamp(16px,3vw,32px)',
       fontFamily: isRTL ? 'IBM Plex Sans Arabic,system-ui,sans-serif' : 'Inter,system-ui,sans-serif',
@@ -73,7 +73,7 @@ const Payments = () => {
     }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px' }}>
+      <div className="yansy-client-page-head" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px' }}>
         <div style={{
           width: '36px', height: '36px', borderRadius: '9px', background: TK.accentBg,
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
