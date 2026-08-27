@@ -334,7 +334,7 @@ const BlogPost = () => {
         {/* ── FEATURED BANNER IMAGE ──────────────────────────────────── */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-12">
           <div className="relative aspect-[16/9] rounded-3xl overflow-hidden shadow-2xl border border-[rgb(var(--border))] bg-slate-900">
-            <BlogVisual icon={category?.icon} color={categoryColor} title={post.title} slug={post.slug} coverImage={post.coverImage} />
+            <BlogVisual icon={category?.icon} color={categoryColor} title={post.title} slug={post.slug} coverImage={post.coverImage} isRTL={isRTL} priority />
           </div>
         </div>
 
@@ -436,7 +436,7 @@ const BlogPost = () => {
                 >
                   <div>
                     <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 mb-3">
-                      <BlogVisual icon={category?.icon} color={categoryColor} title={rel.title} slug={rel.slug} coverImage={rel.coverImage} />
+                      <BlogVisual icon={category?.icon} color={categoryColor} title={rel.title} slug={rel.slug} coverImage={rel.coverImage} isRTL={isRTL} />
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[rgb(var(--accent-light))] text-[rgb(var(--accent))] inline-block mb-2">
                       {categoryLabel}

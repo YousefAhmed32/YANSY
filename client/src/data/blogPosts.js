@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
    YANSY TECH — Blog Posts Data (30 articles)
    SEO and AI-search optimized content.
-   Visuals are rendered via <BlogVisual> (generated on-brand placeholder,
-   keyed off `icon`/color below) — no stock photography, per project rule.
+   Every article is assigned a local, on-brand cover through <BlogVisual>.
+   Slug-level artwork is preferred, with a category cover as a resilient fallback.
    Article body copy is English-only; full bilingual translation of all
    30 long-form posts is a dedicated content project, tracked separately
    from this UI/structure pass.

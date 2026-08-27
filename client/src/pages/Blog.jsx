@@ -169,7 +169,7 @@ const Blog = () => {
                 
                 {/* Visual */}
                 <div className="lg:col-span-6 relative aspect-[16/10] lg:aspect-auto lg:h-full min-h-[300px] overflow-hidden bg-slate-900">
-                  <BlogVisual icon={CATEGORIES.find(c => c.slug === featuredPost.category)?.icon} color={CATEGORIES.find(c => c.slug === featuredPost.category)?.color} title={featuredPost.title} slug={featuredPost.slug} coverImage={featuredPost.coverImage} />
+                  <BlogVisual icon={CATEGORIES.find(c => c.slug === featuredPost.category)?.icon} color={CATEGORIES.find(c => c.slug === featuredPost.category)?.color} title={featuredPost.title} slug={featuredPost.slug} coverImage={featuredPost.coverImage} isRTL={isRTL} priority />
                   <span className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} px-3 py-1 rounded-full text-xs font-bold bg-black/60 text-white backdrop-blur-md border border-white/20`}>
                     🌟 {isRTL ? 'مقالة مميزة' : 'Featured Article'}
                   </span>
@@ -268,7 +268,7 @@ const Blog = () => {
                 >
                   {/* Thumbnail */}
                   <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
-                    <BlogVisual icon={CATEGORIES.find(c => c.slug === post.category)?.icon} color={CATEGORIES.find(c => c.slug === post.category)?.color} title={post.title} slug={post.slug} coverImage={post.coverImage} />
+                    <BlogVisual icon={CATEGORIES.find(c => c.slug === post.category)?.icon} color={CATEGORIES.find(c => c.slug === post.category)?.color} title={post.title} slug={post.slug} coverImage={post.coverImage} isRTL={isRTL} />
                     <div className="absolute top-3 right-3 left-3 flex justify-between items-center">
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-white/95 backdrop-blur-md border border-[rgb(var(--border))] text-[rgb(var(--text-primary))]">
                         {categoryLabel(post.category)}

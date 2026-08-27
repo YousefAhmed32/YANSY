@@ -1,0 +1,135 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "exportedAt": "2026-08-27T00:00:00.000Z",
+  "project": {
+    "title": "Nour Clinics — Digital Healthcare Platform",
+    "titleAr": "عيادات نور — منصة رقمية للرعاية الصحية",
+    "description": "A modern Arabic-first healthcare platform that brings specialties, physicians, branches, medical content, and appointment booking into one clear patient journey. The experience combines trustworthy clinical presentation with fast discovery, guided care tools, and a responsive interface designed around accessibility and ease of use.",
+    "descriptionAr": "منصة رعاية صحية حديثة صُممت بالعربية أولًا، تجمع التخصصات والأطباء والفروع والمحتوى الطبي وحجز المواعيد في رحلة واضحة للمريض. تمزج التجربة بين العرض الطبي الموثوق، وسرعة الوصول للخدمة، وأدوات التوجيه الذكية، وواجهة متجاوبة تركز على سهولة الاستخدام وإمكانية الوصول.",
+    "presentationMode": "showcase",
+    "deliveryStatus": "live",
+    "projectOrigin": "selfInitiated",
+    "category": {
+      "slug": "healthcare",
+      "name": "Healthcare",
+      "nameAr": "الرعاية الصحية"
+    },
+    "industry": {
+      "slug": "healthcare-medical",
+      "name": "Healthcare & Medical",
+      "nameAr": "الرعاية الصحية والخدمات الطبية"
+    },
+    "projectType": {
+      "slug": "web-project",
+      "name": "Web Project",
+      "nameAr": "مشروع ويب"
+    },
+    "technologies": [
+      {
+        "slug": "react",
+        "name": "React"
+      }
+    ],
+    "highlights": [
+      {
+        "text": "A streamlined appointment journey that connects specialties, doctors, branches, and available time slots in four clear steps.",
+        "textAr": "رحلة حجز مبسطة تربط بين التخصص والطبيب والفرع والموعد المتاح في أربع خطوات واضحة."
+      },
+      {
+        "text": "Arabic-first RTL product design with responsive layouts, accessible hierarchy, and a calm clinical visual system.",
+        "textAr": "تصميم منتج عربي أولًا يدعم RTL، بتخطيطات متجاوبة وتسلسل بصري واضح وهوية طبية هادئة."
+      },
+      {
+        "text": "Integrated discovery tools including smart specialty guidance, medical content, physician profiles, branch exploration, and an AI care assistant.",
+        "textAr": "أدوات متكاملة للاكتشاف تشمل توجيه التخصص الذكي، والمحتوى الطبي، وملفات الأطباء، واستكشاف الفروع، ومساعد رعاية ذكي."
+      }
+    ],
+    "liveUrl": "https://nour-clinics.yansytech.com/",
+    "year": 2026,
+    "featured": true,
+    "displayOrder": 2,
+    "metaTitle": "Nour Clinics Digital Healthcare Platform | YANSY TECH",
+    "metaDescription": "Explore Nour Clinics, an Arabic-first digital healthcare platform by YANSY TECH featuring appointment booking, specialty guidance, physician discovery, medical content, branch navigation, and an AI care assistant."
+  },
+  "mediaManifest": [
+    {
+      "field": "coverImage",
+      "kind": "image",
+      "alt": "Nour Clinics Arabic healthcare platform homepage and appointment search",
+      "altAr": "الواجهة الرئيسية لمنصة عيادات نور وخاصية البحث عن موعد"
+    },
+    {
+      "field": "gallery",
+      "order": 0,
+      "kind": "image",
+      "alt": "Four-step medical appointment booking experience",
+      "altAr": "تجربة حجز موعد طبي في أربع خطوات",
+      "caption": "Guided appointment booking and specialty discovery",
+      "captionAr": "حجز موجه للمواعيد واكتشاف التخصص المناسب"
+    },
+    {
+      "field": "gallery",
+      "order": 1,
+      "kind": "image",
+      "alt": "Nour Clinics medical knowledge center and healthcare call to action",
+      "altAr": "مركز المعرفة الطبية ودعوة حجز الرعاية في عيادات نور",
+      "caption": "Medical knowledge center and patient conversion journey",
+      "captionAr": "مركز المعرفة ورحلة تحويل الزائر إلى مريض"
+    },
+    {
+      "field": "gallery",
+      "order": 2,
+      "kind": "image",
+      "alt": "Healthcare specialties cards on Nour Clinics website",
+      "altAr": "بطاقات التخصصات الطبية على موقع عيادات نور",
+      "caption": "Scannable specialty discovery with service-level detail",
+      "captionAr": "استكشاف سريع للتخصصات مع تفاصيل الخدمات"
+    },
+    {
+      "field": "gallery",
+      "order": 3,
+      "kind": "image",
+      "alt": "Nour Clinics AI medical assistant interface",
+      "altAr": "واجهة المساعد الطبي الذكي في عيادات نور",
+      "caption": "Always-available AI care assistant with guided prompts",
+      "captionAr": "مساعد رعاية ذكي متاح دائمًا مع أسئلة موجهة"
+    },
+    {
+      "field": "gallery",
+      "order": 4,
+      "kind": "image",
+      "alt": "Smart medical specialty recommendation experience",
+      "altAr": "تجربة التوصية الذكية بالتخصص الطبي المناسب",
+      "caption": "Symptom-led specialty guidance and instant booking",
+      "captionAr": "توجيه حسب الأعراض إلى التخصص المناسب والحجز الفوري"
+    },
+    {
+      "field": "gallery",
+      "order": 5,
+      "kind": "image",
+      "alt": "Advanced diagnostic and treatment technology section",
+      "altAr": "قسم تقنيات التشخيص والعلاج المتقدمة",
+      "caption": "Premium presentation of clinical technology and capabilities",
+      "captionAr": "عرض احترافي للتقنيات والإمكانات الطبية"
+    },
+    {
+      "field": "gallery",
+      "order": 6,
+      "kind": "image",
+      "alt": "Nour Clinics physicians and consultants directory",
+      "altAr": "دليل أطباء واستشاريي عيادات نور",
+      "caption": "Physician discovery with availability and direct booking",
+      "captionAr": "استكشاف الأطباء مع المواعيد المتاحة والحجز المباشر"
+    },
+    {
+      "field": "gallery",
+      "order": 7,
+      "kind": "image",
+      "alt": "Nour Clinics branch locations and accreditation section",
+      "altAr": "فروع عيادات نور وقسم الاعتمادات الطبية",
+      "caption": "Location-led branch discovery supported by trust signals",
+      "captionAr": "استكشاف الفروع حسب الموقع مدعومًا بعناصر الثقة والاعتماد"
+    }
+  ]
+}

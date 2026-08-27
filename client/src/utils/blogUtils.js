@@ -165,7 +165,10 @@ export const getLocalizedPost = (post, lang = 'en') => {
       avatar: authorAvatar,
     },
     content: contentBlocks,
-    coverImage: post.coverImage || post.image || '/placeholders/blog-default.webp',
+    // Leave articles without an explicit CMS image unset so BlogVisual can
+    // select the bundled slug/category cover. The old missing
+    // `/placeholders/blog-default.webp` URL overrode every real local cover.
+    coverImage: post.coverImage || post.image || null,
     readTime,
     publishDate: post.publishDate || post.createdAt || '2025-04-15',
   };
