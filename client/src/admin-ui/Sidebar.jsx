@@ -233,7 +233,9 @@ const Sidebar = ({
   }, [isFiltering, filteredNav, favoriteLinks, recentLinks, groups, adminNav, navLinks]);
 
   const sidebarW = collapsed ? '68px' : `${width}px`;
-  const showFavRecent = isAdmin && !isFiltering && !collapsed && (favoriteLinks.length > 0 || recentLinks.length > 0);
+  // Favorites are intentionally the only shortcut block. Repeating recent
+  // destinations above the same navigation made the admin IA feel noisy.
+  const showFavRecent = isAdmin && !isFiltering && !collapsed && favoriteLinks.length > 0;
 
   // ── Nav row ──────────────────────────────────────────────────────────────
   const NavRow = ({ link, isMobileDrawer, dim }) => {
@@ -323,15 +325,16 @@ const Sidebar = ({
               className="au-icon-btn"
             >
               <div style={{
-                width: '30px', height: '30px', borderRadius: RADIUS.md, flexShrink: 0,
-                background: TK.accent, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '14px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em',
-                boxShadow: `0 2px 8px ${TK.accentBd}`,
-              }}>Y</div>
+                width: isCollapsed ? '38px' : '42px', height: '38px', borderRadius: '11px', flexShrink: 0,
+                background: '#fff', border: `1px solid ${TK.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 6px 18px rgba(15,23,42,.08)', overflow: 'hidden',
+              }}>
+                <img src="/assets/image/logo/favicon-96x96.png" alt="YANSY" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
+              </div>
               {!isCollapsed && (
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: TK.text, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    YANSY Tech
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: TK.text, letterSpacing: '-0.025em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    YANSY <span style={{ color: TK.accent }}>Tech</span>
                   </div>
                   <div style={{ fontSize: '10px', color: TK.textLight, whiteSpace: 'nowrap' }}>
                     {isAdmin ? (isRTL ? 'مساحة الإدارة' : 'Admin Workspace') : (isRTL ? 'مساحة العميل' : 'Client Workspace')}
@@ -423,17 +426,6 @@ const Sidebar = ({
                     </span>
                   </div>
                   {favoriteLinks.map(link => <NavRow key={link.to} link={link} isMobileDrawer={isMobileDrawer} />)}
-                </div>
-              )}
-              {showFavRecent && recentLinks.length > 0 && (
-                <div style={{ marginBottom: '4px' }}>
-                  <div style={{ padding: '6px 16px 4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Clock style={{ width: 10, height: 10, color: TK.textLight }} />
-                    <span style={{ fontSize: '9px', letterSpacing: '0.13em', textTransform: 'uppercase', color: TK.textLight, fontWeight: 600 }}>
-                      {isRTL ? 'الأخيرة' : 'Recent'}
-                    </span>
-                  </div>
-                  {recentLinks.map(link => <NavRow key={link.to} link={link} isMobileDrawer={isMobileDrawer} />)}
                 </div>
               )}
               {(showFavRecent && (favoriteLinks.length > 0 || recentLinks.length > 0)) && (
@@ -570,7 +562,7 @@ const Sidebar = ({
     position: 'fixed', top: 0, [isRTL ? 'right' : 'left']: 0, bottom: 0,
     borderRight: isRTL ? 'none' : `1px solid ${TK.border}`,
     borderLeft: isRTL ? `1px solid ${TK.border}` : 'none',
-    borderRadius: 0, background: TK.surface, boxShadow: 'none',
+    borderRadius: 0, background: 'rgba(255,255,255,.94)', backdropFilter: 'blur(18px)', boxShadow: '0 0 30px rgba(15,23,42,.025)',
   };
   const floatingStyle = {
     position: 'fixed', top: 10, bottom: 10, [isRTL ? 'right' : 'left']: 10,

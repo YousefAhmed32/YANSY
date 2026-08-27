@@ -72,7 +72,8 @@ const Layout = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: TK.bg, direction: isRTL ? 'rtl' : 'ltr' }}>
+    <div className="yansy-app-shell" style={{ display: 'flex', minHeight: '100vh', background: TK.bg, direction: isRTL ? 'rtl' : 'ltr' }}>
+      <a href="#yansy-main" className="yansy-skip-link">{isRTL ? 'تخطّي إلى المحتوى' : 'Skip to content'}</a>
 
       <Sidebar
         isAdmin={isAdmin}
@@ -105,8 +106,8 @@ const Layout = () => {
           <Menu style={{ width: '18px', height: '18px' }} />
         </button>
 
-        <Link to="/app/dashboard" style={{ textDecoration: 'none' }}>
-          <span style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '0.06em', color: TK.text }}>YANSY</span>
+        <Link to="/app/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <img src="/assets/image/logo/logo-2.png" alt="YANSY" style={{ width: 100, height: 32, objectFit: 'contain' }} />
         </Link>
 
         <button onClick={() => setMobileOpen(true)} aria-label={isRTL ? 'قائمة المستخدم' : 'User menu'}
@@ -117,7 +118,7 @@ const Layout = () => {
       </header>
 
       {/* ── Main Content ── */}
-      <main role="main" style={{ flex: 1, minHeight: '100vh' }} className="layout-main">
+      <main id="yansy-main" role="main" style={{ flex: 1, minHeight: '100vh' }} className="layout-main">
         <style>{`
           .layout-sidebar { display: none; }
           .layout-mobile-header { display: flex; }

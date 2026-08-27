@@ -2,15 +2,15 @@
 // Public-site tokens live separately in index.css — these are dashboard-only.
 
 export const TK = {
-  bg:         '#F6F7F9',
-  bgSubtle:   '#FAFBFC',
+  bg:         '#F4F6FA',
+  bgSubtle:   '#F8FAFD',
   surface:    '#FFFFFF',
-  border:     '#E8EBF0',
-  borderSoft: '#EEF1F5',
+  border:     '#E1E6EF',
+  borderSoft: '#EDF1F7',
 
-  text:       '#0D1117',
-  textMuted:  '#6B7280',
-  textLight:  '#9CA3AF',
+  text:       '#111827',
+  textMuted:  '#5F6B7A',
+  textLight:  '#8792A2',
 
   accent:     '#2563EB',
   accentHover:'#1D4ED8',
@@ -44,7 +44,7 @@ export const STATUS_TONE = {
   purple:  { fg: TK.purple, bg: TK.purpleBg, bd: 'rgba(124,58,237,0.22)' },
 };
 
-export const RADIUS = { sm: '6px', md: '8px', lg: '10px', xl: '12px', pill: '999px' };
+export const RADIUS = { sm: '8px', md: '10px', lg: '14px', xl: '18px', pill: '999px' };
 
 // Deterministic per-name color set for identity avatars (Client/Team/Testimonial
 // initials fallback) — distinct from STATUS_TONE, which is semantic (success/
@@ -72,10 +72,10 @@ export const colorFromName = (name = '') => {
 export const SPACE = { xs: '4px', sm: '8px', md: '12px', lg: '16px', xl: '20px', xxl: '28px' };
 
 export const SHADOW = {
-  xs: '0 1px 2px rgba(16,24,40,0.04)',
-  sm: '0 2px 8px rgba(16,24,40,0.06)',
-  md: '0 4px 16px rgba(16,24,40,0.08)',
-  lg: '0 12px 40px rgba(16,24,40,0.12)',
+  xs: '0 1px 2px rgba(15,23,42,0.04)',
+  sm: '0 6px 18px rgba(15,23,42,0.055)',
+  md: '0 12px 30px rgba(15,23,42,0.075)',
+  lg: '0 24px 64px rgba(15,23,42,0.14)',
 };
 
 export const MOTION = { fast: '0.12s', base: '0.18s', slow: '0.28s', ease: 'cubic-bezier(0.4,0,0.2,1)', spring: 'cubic-bezier(0.34,1.56,0.64,1)' };
