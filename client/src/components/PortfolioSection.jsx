@@ -14,23 +14,20 @@ import { categoryLabel } from '../utils/portfolioTaxonomy';
 const frontendAsset = (path) => ({ url: `${window.location.origin}${path}` });
 
 /**
- * Skeleton mirroring one real card, including the featured variant's
- * `sm:col-span-2 sm:row-span-2`. The previous skeleton spanned 2 columns but
- * not 2 rows and only rendered 3 tiles against a 6-card grid, so the loading
- * state resolved into a visibly different layout than the one it stood in for.
+ * Loading skeleton mirroring the uniform 16:10 card layout exactly.
  */
-const SkeletonCard = ({ featured = false }) => (
+const SkeletonCard = () => (
   <div
-    className={`rounded-2xl overflow-hidden bg-surface-white border border-[rgb(var(--border))] ${featured ? 'sm:col-span-2 sm:row-span-2' : ''}`}
+    className="portfolio-card flex flex-col h-full self-stretch rounded-[20px] overflow-hidden bg-surface-white border border-[rgb(var(--border))]"
     aria-hidden
   >
-    <div className={`skeleton ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`} />
-    <div className={`p-5 ${featured ? 'sm:p-7' : ''}`}>
-      <div className="skeleton" style={{ height: 8, width: '22%', borderRadius: 4, marginBottom: 12 }} />
-      <div className="skeleton" style={{ height: featured ? 22 : 17, width: '58%', borderRadius: 6, marginBottom: 10 }} />
-      <div className="skeleton" style={{ height: 12, width: '85%', borderRadius: 4, marginBottom: 8 }} />
-      <div className="skeleton" style={{ height: 12, width: '62%', borderRadius: 4, marginBottom: 16 }} />
-      <div style={{ display: 'flex', gap: 8 }}>
+    <div className="skeleton aspect-[16/10] w-full" />
+    <div className="p-5 flex flex-col flex-1">
+      <div className="skeleton" style={{ height: 8, width: '25%', borderRadius: 4, marginBottom: 12 }} />
+      <div className="skeleton" style={{ height: 18, width: '65%', borderRadius: 6, marginBottom: 10 }} />
+      <div className="skeleton" style={{ height: 12, width: '90%', borderRadius: 4, marginBottom: 8 }} />
+      <div className="skeleton" style={{ height: 12, width: '60%', borderRadius: 4, marginBottom: 16 }} />
+      <div className="mt-auto pt-2" style={{ display: 'flex', gap: 8 }}>
         {[1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 22, width: 52, borderRadius: 100 }} />)}
       </div>
     </div>
@@ -118,16 +115,21 @@ const PortfolioSection = () => {
       <style>{`
         .portfolio-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: clamp(14px, 2vw, 20px);
-          /* The featured card is 2 columns wide, so counts that don't divide
-             into the remaining tracks would otherwise leave a hole. */
-          grid-auto-flow: dense;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: clamp(16px, 2.2vw, 24px);
+          align-items: stretch;
         }
-        @media (max-width: 900px) { .portfolio-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px) {
+          .portfolio-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: clamp(16px, 2vw, 20px);
+          }
+        }
         @media (max-width: 560px) {
-          .portfolio-grid { grid-template-columns: 1fr; }
-          .portfolio-grid > * { grid-column: span 1 !important; }
+          .portfolio-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
         }
         .portfolio-filters {
           display: flex; flex-wrap: wrap; gap: 8px;
@@ -180,8 +182,7 @@ const PortfolioSection = () => {
           }
         />
 
-        {/* Filters. Rendered as inert placeholders while loading so the real
-            pills don't shove the grid down when the request resolves. */}
+        {/* Filters */}
         {loading ? (
           <div className="portfolio-filters" aria-hidden>
             {[54, 132, 104, 92].map((w, i) => (
@@ -213,8 +214,9 @@ const PortfolioSection = () => {
         <div aria-busy={loading} aria-live="polite">
           {loading ? (
             <div className="portfolio-grid">
-              <SkeletonCard featured />
-              {[1, 2, 3, 4, 5].map(i => <SkeletonCard key={i} />)}
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
             </div>
           ) : displayed.length === 0 ? (
             <div style={{
@@ -246,8 +248,8 @@ const PortfolioSection = () => {
                   key={project._id}
                   project={project}
                   isRTL={isRTL}
-                  priority={i === 0}
-                  size={i === 0 && displayed.length > 1 ? 'featured' : 'default'}
+                  priority={i < 3}
+                  featured={i === 0}
                 />
               ))}
             </div>

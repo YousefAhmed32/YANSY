@@ -91,7 +91,7 @@ const CaseStudies = () => {
             aria-hidden
             style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.25), transparent)' }}
           />
-          <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+          <div className="max-w-7xl mx-auto   bg-red-700px-5 sm:px-8 lg:px-12" style={{ textAlign: isRTL ? 'right' : 'left' }}>
             <div data-hero-anim className="opacity-0 flex items-center gap-3 mb-6" style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
               <span aria-hidden style={{ width: 32, height: 1, background: 'linear-gradient(to right, rgb(var(--accent)), transparent)', display: 'inline-block' }} />
               <span className="eyebrow">{isRTL ? 'أعمالنا' : 'Our Work'}</span>

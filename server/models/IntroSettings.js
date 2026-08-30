@@ -8,7 +8,7 @@ const introSettingsSchema = new mongoose.Schema(
     enabled: { type: Boolean, default: true },
 
     // Media
-    videoUrl:      { type: String, default: '/Logo reveal luxury AI company.mp4' },
+    videoUrl:      { type: String, default: '/Logo reveal luxury AI company1.mp4' },
     videoPublicId: { type: String, default: null },
     // 'static' = the bundled default intro clip (no upload). 'cloudinary'/'local'
     // kept only so pre-GridFS documents still deserialize — every new admin

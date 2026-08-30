@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Briefcase, Clock, ExternalLink, Figma, Github, Info, Layers, MapPin, ShieldCheck, Users } from 'lucide-react';
 import ProgressiveImage from '../ProgressiveImage';
 import { mediaSrc } from '../../utils/media';
@@ -9,8 +8,6 @@ import { categoryIcon } from '../../utils/portfolioTaxonomy';
 import { sanitizeLiveUrl, getLiveActionLabel } from '../../utils/liveUrl';
 import { projectOriginLabel } from '../../utils/portfolioOrigin';
 import { CoverActionCta, COVER_LINK_CSS } from './CoverLink';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const FONT_EN = "'Inter',system-ui,sans-serif";
 const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
@@ -25,8 +22,6 @@ const FONT_AR = "'IBM Plex Sans Arabic','Alexandria',system-ui,sans-serif";
 const Hero = ({ project, title, desc, isRTL }) => {
   const font = isRTL ? FONT_AR : FONT_EN;
   const heroRef  = useRef(null);
-  const panelRef = useRef(null);
-  const imgWrapRef = useRef(null);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -38,13 +33,6 @@ const Hero = ({ project, title, desc, isRTL }) => {
     }
     const ctx = gsap.context(() => {
       gsap.fromTo('[data-fade]', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', delay: 0.1 });
-
-      if (panelRef.current && imgWrapRef.current) {
-        gsap.fromTo(imgWrapRef.current, { yPercent: -4 }, {
-          yPercent: 4, ease: 'none',
-          scrollTrigger: { trigger: panelRef.current, start: 'top bottom', end: 'bottom top', scrub: true },
-        });
-      }
     }, heroRef);
     return () => ctx.revert();
   }, [project?._id]);
@@ -70,6 +58,17 @@ const Hero = ({ project, title, desc, isRTL }) => {
   const liveUrl = sanitizeLiveUrl(project.liveUrl);
   const coverAriaLabel = isRTL ? `زيارة موقع مشروع ${title}` : `Visit the ${title} website`;
   const isVideoCover = Boolean(project.coverVideo?.url);
+  const staticCoverAsset = project.coverImage?.url
+    ? project.coverImage
+    : (project.gallery || []).find((item) => item?.url) || null;
+  const activeCoverAsset = isVideoCover ? project.coverVideo : staticCoverAsset;
+  const mediaWidth = Number(activeCoverAsset?.width);
+  const mediaHeight = Number(activeCoverAsset?.height);
+  const naturalAspectRatio = mediaWidth > 0 && mediaHeight > 0 ? mediaWidth / mediaHeight : 16 / 9;
+  // Keep the panel faithful to the uploaded media while clamping extreme
+  // panoramas/portraits to a usable hero frame. `contain` below still shows
+  // every pixel; the clamp only controls the surrounding panel's proportions.
+  const heroAspectRatio = Math.min(2.4, Math.max(0.8, naturalAspectRatio));
   // A static cover becomes the click target itself (whole panel -> liveUrl);
   // a decorative/native-controls video is never wrapped in an anchor — see
   // CoverLink.jsx — so it gets a separate standalone CTA instead, still
@@ -84,7 +83,7 @@ const Hero = ({ project, title, desc, isRTL }) => {
 
   return (
     <div ref={heroRef} style={{ paddingTop: 'calc(68px + clamp(2rem, 5vw, 3.5rem))', paddingBottom: 0, position: 'relative' }}>
-      <div className="max-w-7xl mx-auto" style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', textAlign: isRTL ? 'right' : 'left' }}>
+      <div className="max-w-7xl mx-auto  "  style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', textAlign: isRTL ? 'right' : 'left' }}>
 
         {/* Breadcrumb */}
         <nav data-fade aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} style={{ opacity: 0, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
@@ -175,31 +174,32 @@ const Hero = ({ project, title, desc, isRTL }) => {
             controls need to stay clickable) and gets a standalone CTA
             instead. See CoverLink.jsx for the shared pill/scrim behavior. */}
         <PanelTag
-          ref={panelRef}
           data-fade
           className={coverClickable ? 'hero-panel cover-link' : 'hero-panel'}
           {...(coverClickable ? { href: liveUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': coverAriaLabel } : {})}
           style={{
             opacity: 0, position: 'relative', width: '100%', borderRadius: 'var(--radius-xl)',
             overflow: 'hidden', boxShadow: 'var(--shadow-hero)', border: '1px solid rgb(var(--border))',
+            background: 'rgb(var(--bg-contrast))', '--hero-media-ratio': heroAspectRatio,
           }}
         >
-          <div ref={imgWrapRef} style={{ position: 'absolute', inset: '-5% 0', willChange: 'transform' }}>
+          <div style={{ position: 'absolute', inset: 0 }}>
             {isVideoCover ? (
               <video
                 ref={videoRef}
                 src={mediaSrc(project.coverVideo)}
                 poster={mediaSrc(project.coverImage)}
                 muted loop playsInline autoPlay
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: 'rgb(var(--bg-contrast))' }}
               />
             ) : (
               <ProgressiveImage
-                asset={project.coverImage?.url ? project.coverImage : (project.gallery || []).find((g) => g?.url) || null}
+                asset={staticCoverAsset}
                 alt={title}
                 priority
                 fill
-                imgClassName={coverClickable ? 'cover-link-img' : ''}
+                fit="contain"
+                style={{ background: 'rgb(var(--bg-contrast))' }}
                 fallbackIcon={categoryIcon(categoryName)}
                 fallbackLabel={categoryDisplay}
                 isRTL={isRTL}
@@ -274,7 +274,10 @@ const Hero = ({ project, title, desc, isRTL }) => {
       <MetaStrip project={project} isRTL={isRTL} font={font} liveUrl={liveUrl} liveLinkLabel={liveLinkLabel} />
 
       <style>{`
-        .hero-panel { aspect-ratio: 16 / 9; }
+        .hero-panel {
+          aspect-ratio: var(--hero-media-ratio, 16 / 9);
+          max-height: min(88dvh, 900px);
+        }
         @media (max-width: 640px) {
           .hero-panel { aspect-ratio: 4 / 5; }
           .hero-stats-row { grid-template-columns: repeat(2, 1fr) !important; }
@@ -326,7 +329,7 @@ const MetaStrip = ({ project, isRTL, font, liveUrl, liveLinkLabel }) => {
 
   return (
     <div style={{ borderBottom: '1px solid rgb(var(--border))', marginTop: 'clamp(2.5rem, 5vw, 3.5rem)' }}>
-      <div className="max-w-7xl mx-auto spec-strip" style={{
+      <div className="max-w-7xl mx-auto  spec-strip" style={{
         padding: 'clamp(22px, 3vw, 32px) clamp(1.25rem, 5vw, 3rem)',
         display: 'flex', flexWrap: 'wrap', gap: '22px clamp(28px, 4vw, 48px)', alignItems: 'center', justifyContent: 'space-between',
       }}>

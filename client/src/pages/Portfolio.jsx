@@ -218,7 +218,7 @@ const Portfolio = () => {
           style={{ background: 'radial-gradient(circle, rgb(var(--accent)) 0%, transparent 70%)' }}
         />
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto  relative z-10">
           <p data-hero className="text-xs tracking-[0.4em] text-[rgb(var(--accent))]/60 uppercase mb-6 opacity-0">
             {isRTL ? 'معرض الأعمال' : 'Portfolio'}
           </p>

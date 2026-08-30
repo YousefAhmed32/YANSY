@@ -26,7 +26,7 @@ const Gallery = ({ images, activeImg, setActiveImg, onOpenLightbox, onPrev, onNe
 
   return (
     <section className="section-shell section-shell--tint" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="section-inner" style={{ maxWidth: 1100 }}>
+      <div className="section-inner" style={{ maxWidth: 1350 }}>
         <Reveal distance={16}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 26, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
             <span className="section-label">{isRTL ? 'معرض المشروع' : 'Project Gallery'}</span>
