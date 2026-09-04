@@ -17,9 +17,14 @@ const messageSchema = new mongoose.Schema({
     required: true
   },
   content: {
+    // Not required at schema level — an attachment-only message (no text)
+    // is legitimate. `validate` below is the real guard: content OR at
+    // least one attachment must be present, checked at the document level
+    // where both fields are visible together.
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: '',
+    maxlength: [8000, 'Message is too long (max 8000 characters)'],
   },
   attachments: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -39,6 +44,18 @@ const messageSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// A message must carry *something* — either real text or a real attachment.
+// An empty-content, no-attachment POST would otherwise create an invisible,
+// unrenderable bubble on both sides. A path-level validator (rather than a
+// pre('validate') hook) so it also runs under the synchronous
+// document.validateSync() used by the unit tests below, not just the async
+// document.validate()/save() path every real request goes through.
+messageSchema.path('content').validate(function() {
+  const hasContent = this.content && this.content.trim().length > 0;
+  const hasAttachments = Array.isArray(this.attachments) && this.attachments.length > 0;
+  return hasContent || hasAttachments;
+}, 'Message must have content or at least one attachment');
 
 // Index for efficient queries
 messageSchema.index({ threadId: 1, createdAt: -1 });
@@ -86,6 +103,14 @@ const messageThreadSchema = new mongoose.Schema({
     of: Number,
     default: {},
   },
+  // Admin-only internal notes — never returned to, or visible by, a
+  // customer. Enforced at the controller (admin-only routes), not just by
+  // convention here.
+  notes: [{
+    content:   { type: String, trim: true, required: true, maxlength: 2000 },
+    author:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    createdAt: { type: Date, default: Date.now },
+  }],
   lastMessage: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message'

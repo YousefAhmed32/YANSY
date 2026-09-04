@@ -2,18 +2,8 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { UserCircle, Eye, EyeOff, CheckCircle2, Lock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { TK } from '../admin-ui';
 import axios from 'axios';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  accentBg:  'rgba(37,99,235,0.06)',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
-};
 
 const Field = ({ label, value, onChange, type = 'text', placeholder, disabled = false }) => {
   const [focused, setFocused] = useState(false);

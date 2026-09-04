@@ -127,6 +127,15 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // When/how completion happened — lets us evolve the onboarding flow later
+  // without breaking users who completed an earlier version of it.
+  onboardingCompletedAt: { type: Date, default: null },
+  onboardingVersion: { type: Number, default: null },
+  communicationPreference: {
+    type: String,
+    enum: ['whatsapp', 'phone', 'email', null],
+    default: null,
+  },
   country: { type: String, trim: true, default: null },
   city: { type: String, trim: true, default: null },
   businessType: {

@@ -2,19 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchProjects } from '../store/projectSlice';
-import { FolderKanban, ArrowRight, Clock, CheckCircle2, Circle, Pause } from 'lucide-react';
+import { fetchMyRequests } from '../store/projectRequestSlice';
+import { FolderKanban, ArrowRight, Clock, Sparkles, CalendarDays, UserCheck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  accentBg:  'rgba(37,99,235,0.06)',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
-};
+import ProjectRequestForm from '../components/ProjectRequestForm';
+import { TK } from '../admin-ui';
 
 const STATUS = {
   PLANNING:    { dot: '#94a3b8', en: 'Planning',     ar: 'التخطيط',      bg: 'rgba(148,163,184,0.12)' },
@@ -26,27 +18,35 @@ const STATUS = {
   CANCELLED:   { dot: '#dc2626', en: 'Cancelled',    ar: 'ملغي',         bg: 'rgba(220,38,38,0.08)'   },
 };
 
-const StatusBadge = ({ status, language }) => {
-  const info = STATUS[status] || STATUS.PLANNING;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: '4px',
-      padding: '3px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 500,
-      background: info.bg, color: info.dot,
-    }}>
-      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: info.dot, display: 'inline-block' }} />
-      {language === 'ar' ? info.ar : info.en}
-    </span>
-  );
+const REQUEST_STATUS = {
+  'new':         { dot: '#2563EB', en: 'Under review',          ar: 'قيد المراجعة',      bg: 'rgba(37,99,235,0.08)' },
+  'in-progress': { dot: '#d97706', en: 'Being worked on',       ar: 'قيد المتابعة',      bg: 'rgba(217,119,6,0.08)' },
+  'completed':   { dot: '#16a34a', en: 'Converted to a project',ar: 'تم التحويل لمشروع', bg: 'rgba(22,163,74,0.08)' },
 };
+
+const StatusBadge = ({ info, label }) => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center', gap: '4px',
+    padding: '3px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 500,
+    background: info.bg, color: info.dot,
+  }}>
+    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: info.dot, display: 'inline-block' }} />
+    {label}
+  </span>
+);
 
 const Projects = () => {
   const { language, isRTL } = useLanguage();
   const dispatch = useDispatch();
   const { projects = [], loading } = useSelector(s => s.projects);
+  const { requests = [], loading: requestsLoading, loaded: requestsLoaded } = useSelector(s => s.projectRequests);
   const [search, setSearch] = useState('');
+  const [showRequestForm, setShowRequestForm] = useState(false);
 
-  useEffect(() => { dispatch(fetchProjects()); }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchProjects());
+    dispatch(fetchMyRequests());
+  }, [dispatch]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return projects;
@@ -57,6 +57,13 @@ const Projects = () => {
     );
   }, [projects, search]);
 
+  // Pending requests (not yet converted into a project) — these are what
+  // the customer is actually waiting on when they have no projects yet.
+  const pendingRequests = useMemo(
+    () => [...requests].filter(r => r.status !== 'completed').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+    [requests]
+  );
+
   const fmt = (d) => {
     if (!d) return null;
     try {
@@ -65,6 +72,9 @@ const Projects = () => {
       });
     } catch { return null; }
   };
+
+  const showEmptyState = !loading && filtered.length === 0 && !search;
+  const isReady = !loading && (!requestsLoading || requestsLoaded);
 
   return (
     <div className="yansy-client-page yansy-projects-page" style={{
@@ -86,33 +96,89 @@ const Projects = () => {
               : (language === 'ar' ? 'لا مشاريع بعد' : 'No projects yet')}
           </p>
         </div>
-        {/* Search */}
-        {projects.length > 0 && (
-          <div style={{ position: 'relative' }}>
-            <input
-              type="search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={language === 'ar' ? 'ابحث في المشاريع...' : 'Search projects...'}
-              style={{
-                padding: '8px 14px 8px 34px',
-                borderRadius: '9px', border: `1px solid ${TK.border}`,
-                fontSize: '13px', color: TK.text,
-                background: TK.surface, outline: 'none', width: '220px',
-                fontFamily: 'inherit', transition: 'border-color 0.15s',
-              }}
-              onFocus={e => { e.target.style.borderColor = TK.accent; }}
-              onBlur={e => { e.target.style.borderColor = TK.border; }}
-            />
-            <svg
-              style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: TK.textLight, pointerEvents: 'none' }}
-              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Search */}
+          {projects.length > 0 && (
+            <div style={{ position: 'relative' }}>
+              <input
+                type="search"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder={language === 'ar' ? 'ابحث في المشاريع...' : 'Search projects...'}
+                style={{
+                  padding: '8px 14px 8px 34px',
+                  borderRadius: '9px', border: `1px solid ${TK.border}`,
+                  fontSize: '13px', color: TK.text,
+                  background: TK.surface, outline: 'none', width: '220px',
+                  fontFamily: 'inherit', transition: 'border-color 0.15s',
+                }}
+                onFocus={e => { e.target.style.borderColor = TK.accent; }}
+                onBlur={e => { e.target.style.borderColor = TK.border; }}
+              />
+              <svg
+                style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: TK.textLight, pointerEvents: 'none' }}
+                width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+          )}
+          <button onClick={() => setShowRequestForm(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '9px 16px', borderRadius: '9px', border: 'none',
+              background: TK.accent, color: '#fff', fontSize: '13px', fontWeight: 500,
+              cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}>
+            <Sparkles style={{ width: 14, height: 14 }} />
+            {language === 'ar' ? 'طلب جديد' : 'New request'}
+          </button>
+        </div>
       </div>
+
+      {/* Pending requests — real status, not a project yet */}
+      {isReady && pendingRequests.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '12px', fontWeight: 600, color: TK.textMuted, textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px' }}>
+            {language === 'ar' ? 'طلبات قيد المتابعة' : 'Pending requests'}
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {pendingRequests.map(req => {
+              const info = REQUEST_STATUS[req.status] || REQUEST_STATUS.new;
+              return (
+                <div key={req._id} style={{
+                  background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px',
+                  padding: '14px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap',
+                }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                      <StatusBadge info={info} label={language === 'ar' ? info.ar : info.en} />
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: TK.textLight }}>
+                        <CalendarDays style={{ width: 11, height: 11 }} /> {fmt(req.createdAt)}
+                      </span>
+                      {req.assignedTo?.fullName && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: TK.textLight }}>
+                          <UserCheck style={{ width: 11, height: 11 }} /> {req.assignedTo.fullName}
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '13px', color: TK.text, margin: 0, lineHeight: 1.5 }}>
+                      {req.projectDescription?.slice(0, 140)}{req.projectDescription?.length > 140 ? '…' : ''}
+                    </p>
+                  </div>
+                  <Link to="/app/messages" style={{
+                    flexShrink: 0, fontSize: '12px', fontWeight: 500, color: TK.accent, textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                  }}>
+                    {language === 'ar' ? 'المحادثة' : 'Conversation'}
+                    <ArrowRight style={{ width: 12, height: 12, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Loading */}
       {loading && (
@@ -140,25 +206,31 @@ const Projects = () => {
             <FolderKanban style={{ width: '28px', height: '28px', color: TK.accent }} />
           </div>
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: TK.text, margin: '0 0 8px' }}>
-            {search ? (language === 'ar' ? 'لا نتائج' : 'No results') : (language === 'ar' ? 'لا مشاريع بعد' : 'No projects yet')}
+            {search ? (language === 'ar' ? 'لا نتائج' : 'No results')
+              : pendingRequests.length > 0 ? (language === 'ar' ? 'طلبك قيد المراجعة' : 'Your request is under review')
+              : (language === 'ar' ? 'لا مشاريع بعد' : 'No projects yet')}
           </h2>
           <p style={{ fontSize: '13.5px', color: TK.textMuted, margin: '0 0 20px', lineHeight: 1.5, maxWidth: '340px' }}>
             {search
               ? (language === 'ar' ? 'جرّب كلمة بحث مختلفة' : 'Try a different search term')
-              : (language === 'ar'
-                ? 'ستظهر مشاريعك هنا بعد إعدادها من قِبل فريقنا عقب طلبك.'
-                : 'Your projects will appear here once our team sets them up after your request.')}
+              : pendingRequests.length > 0
+                ? (language === 'ar' ? 'بمجرد أن يوافق فريقنا على طلبك، سيظهر هنا كمشروع نشط.' : "Once our team approves your request, it'll appear here as an active project.")
+                : (language === 'ar'
+                  ? 'ابدأ بإرسال طلب مشروع وسيظهر هنا فور موافقة فريقنا عليه.'
+                  : "Submit a project request and it'll appear here once our team sets it up.")}
           </p>
-          {!search && (
-            <a href="https://wa.me/201090385390" target="_blank" rel="noopener noreferrer"
+          {!search && showEmptyState && pendingRequests.length === 0 && (
+            <button onClick={() => setShowRequestForm(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
-                padding: '9px 20px', borderRadius: '9px',
-                background: '#25D366', color: '#fff', textDecoration: 'none', fontSize: '13px', fontWeight: 500,
+                padding: '9px 20px', borderRadius: '9px', border: 'none',
+                background: TK.accent, color: '#fff', textDecoration: 'none', fontSize: '13px', fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
-              {language === 'ar' ? 'تواصل معنا' : 'Contact Us'}
-            </a>
+              <Sparkles style={{ width: 14, height: 14 }} />
+              {language === 'ar' ? 'ابدأ مشروعك' : 'Start your project'}
+            </button>
           )}
         </div>
       )}
@@ -196,7 +268,7 @@ const Projects = () => {
                   }}>
                     <FolderKanban style={{ width: '18px', height: '18px', color: TK.accent }} />
                   </div>
-                  <StatusBadge status={project.status} language={language} />
+                  <StatusBadge info={info} label={language === 'ar' ? info.ar : info.en} />
                 </div>
 
                 {/* Title + desc */}
@@ -241,6 +313,8 @@ const Projects = () => {
           })}
         </div>
       )}
+
+      <ProjectRequestForm isOpen={showRequestForm} onClose={() => { setShowRequestForm(false); dispatch(fetchMyRequests()); }} />
     </div>
   );
 };

@@ -5,7 +5,7 @@ const { audit } = require('../utils/auditLogger');
 // Update own profile (authenticated user)
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { fullName, phoneNumber, brandName, companyName, country, city, businessType, jobRole, website, howFound, primaryGoal } = req.body;
+    const { fullName, phoneNumber, brandName, companyName, country, city, businessType, jobRole, website, howFound, primaryGoal, communicationPreference } = req.body;
     const updates = {};
     if (fullName)    updates.fullName    = fullName.trim();
     if (phoneNumber !== undefined) updates.phoneNumber = phoneNumber?.trim() || null;
@@ -18,6 +18,9 @@ exports.updateProfile = async (req, res, next) => {
     if (website     !== undefined) updates.website     = website?.trim()     || null;
     if (howFound    !== undefined) updates.howFound    = howFound            || null;
     if (primaryGoal !== undefined) updates.primaryGoal = primaryGoal         || null;
+    if (communicationPreference !== undefined && ['whatsapp', 'phone', 'email', null].includes(communicationPreference)) {
+      updates.communicationPreference = communicationPreference;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -32,20 +35,45 @@ exports.updateProfile = async (req, res, next) => {
   }
 };
 
-// Complete onboarding (marks profile as complete)
+// Onboarding schema/behavior version. Bump this if the questions asked or
+// the fields collected change meaningfully — existing users who completed
+// an earlier version stay `isProfileComplete: true` (never re-gated), but
+// the version is available to admins/analytics to tell cohorts apart.
+const ONBOARDING_VERSION = 2;
+
+// Complete onboarding (marks profile as complete).
+// A phone number is only required here if the user doesn't already have
+// one on file AND their chosen contact preference actually needs one —
+// "email only" must never be blocked on a phone, and a returning Google
+// user who added a phone earlier must never be asked again. See
+// server/utils/onboarding.js for the single source of truth on this rule.
 exports.completeOnboarding = async (req, res, next) => {
   try {
     const {
       phoneNumber, country, city, companyName, brandName,
       businessType, jobRole, website, howFound, primaryGoal,
+      communicationPreference,
     } = req.body;
 
-    if (!phoneNumber) return res.status(400).json({ error: 'Phone number is required' });
+    const existingUser = await User.findById(req.user._id).select('phoneNumber');
+    if (!existingUser) return res.status(404).json({ error: 'User not found' });
+
+    const { resolvePhoneRequirement, VALID_COMM_PREF } = require('../utils/onboarding');
+    const phoneCheck = resolvePhoneRequirement({
+      communicationPreference,
+      hasExistingPhone: !!existingUser.phoneNumber,
+      providedPhone: phoneNumber,
+    });
+    if (!phoneCheck.ok) {
+      return res.status(400).json({ error: phoneCheck.error });
+    }
 
     const updates = {
       isProfileComplete: true,
-      phoneNumber: phoneNumber.trim(),
+      onboardingCompletedAt: new Date(),
+      onboardingVersion: ONBOARDING_VERSION,
     };
+    if (phoneNumber && phoneNumber.trim()) updates.phoneNumber = phoneNumber.trim();
     if (country)      updates.country      = country.trim();
     if (city)         updates.city         = city.trim();
     if (companyName)  updates.companyName  = companyName.trim();
@@ -55,6 +83,9 @@ exports.completeOnboarding = async (req, res, next) => {
     if (website)      updates.website      = website.trim();
     if (howFound)     updates.howFound     = howFound;
     if (primaryGoal)  updates.primaryGoal  = primaryGoal;
+    if (communicationPreference && VALID_COMM_PREF.includes(communicationPreference)) {
+      updates.communicationPreference = communicationPreference;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -114,7 +145,10 @@ exports.getAllUsers = async (req, res, next) => {
     const { role, search, page = 1, limit = 20 } = req.query;
     const query = {};
 
-    if (role) query.role = role;
+    // Accepts a single role ('ADMIN') or a comma-separated list
+    // ('ADMIN,SUPER_ADMIN') — the messaging thread-assignment picker needs
+    // both admin tiers in one call.
+    if (role) query.role = role.includes(',') ? { $in: role.split(',').map(r => r.trim()).filter(Boolean) } : role;
     if (search) {
       query.$or = [
         { email: { $regex: search, $options: 'i' } },

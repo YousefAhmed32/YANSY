@@ -1,57 +1,74 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { Menu } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSocket } from '../contexts/SocketContext';
 import GlobalSearch from './GlobalSearch';
 import EmailVerificationBanner from './EmailVerificationBanner';
 import WhatsAppButton from './WhatsAppButton';
+import MobileLangToggle from './MobileLangToggle';
 import { pushNotification } from '../store/notificationSlice';
-import { fetchInbox } from '../store/messageSlice';
-import { io } from 'socket.io-client';
+import { fetchInbox, pushIncomingMessage } from '../store/messageSlice';
 import toast from 'react-hot-toast';
 import { TK, Sidebar } from '../admin-ui';
 
 const Layout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user }  = useSelector((s) => s.auth);
   const { language, toggleLanguage, isRTL } = useLanguage();
+  const { socket } = useSocket();
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const { totalUnread: msgUnread } = useSelector(s => s.messages);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const socketRef = useRef(null);
 
   useEffect(() => { dispatch(fetchInbox()); }, [dispatch]);
 
-  // Real-time notifications
+  // Real-time notifications + inbox-level message events — shared socket
+  // (see contexts/SocketContext.jsx). This is the one listener for events
+  // that matter app-wide regardless of which page is open; the messaging
+  // pages themselves add their own listeners for thread-scoped events
+  // (message-received while a thread is open, typing, read receipts).
   useEffect(() => {
-    if (!user) return;
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const socketUrl =
-      import.meta.env.VITE_SOCKET_URL ||
-      import.meta.env.VITE_API_URL?.replace('/api', '') ||
-      (import.meta.env.DEV
-        ? 'http://localhost:5000'
-        : 'https://api.yansytech.com');
-    const socket = io(socketUrl, { auth: { token }, transports: ['websocket', 'polling'] });
-    socket.on('connect', () => { if (user._id) socket.emit('join', user._id); });
-    socket.on('notification', (notif) => {
+    if (!socket) return;
+
+    const onNotification = (notif) => {
       dispatch(pushNotification(notif));
       toast(notif.title || (language === 'ar' ? 'إشعار جديد' : 'New notification'), {
         icon: notif.type === 'success' ? '✓' : notif.type === 'project_update' ? '📁' : notif.type === 'message' ? '💬' : '🔔',
         duration: 4000,
         style: { fontSize: '13px', fontWeight: 400, fontFamily: isRTL ? 'IBM Plex Sans Arabic, system-ui' : 'Inter, system-ui' },
       });
-    });
-    socketRef.current = socket;
-    return () => socket.disconnect();
-  }, [user, dispatch]);
+    };
+    // Update inbox previews/unread badges immediately, even when the
+    // messaging page isn't mounted (e.g. the sidebar unread counter).
+    const onMessageReceived = (message) => dispatch(pushIncomingMessage({ message, threadId: message.threadId }));
+    // 'customer-message'/'new-thread' (admin_room broadcasts) carry only an
+    // id, not the full message — refetching the inbox is simplest and these
+    // fire rarely enough (one per customer message) that it's not wasteful.
+    const onCustomerMessage = () => dispatch(fetchInbox());
+    const onNewThread       = () => dispatch(fetchInbox());
+    const onReconnected     = () => dispatch(fetchInbox());
+
+    socket.on('notification', onNotification);
+    socket.on('message-received', onMessageReceived);
+    socket.on('customer-message', onCustomerMessage);
+    socket.on('new-thread', onNewThread);
+    socket.on('client-reconnected', onReconnected);
+    return () => {
+      socket.off('notification', onNotification);
+      socket.off('message-received', onMessageReceived);
+      socket.off('customer-message', onCustomerMessage);
+      socket.off('new-thread', onNewThread);
+      socket.off('client-reconnected', onReconnected);
+    };
+  }, [socket, dispatch, language, isRTL]);
 
   // Close mobile nav on route change happens inside Sidebar via onCloseMobile from link clicks;
   // this also closes it if the browser back/forward button is used.
@@ -100,21 +117,34 @@ const Layout = () => {
         }}
         className="layout-mobile-header"
       >
-        <button onClick={() => setMobileOpen(true)} aria-label={isRTL ? 'فتح التنقل' : 'Open navigation'}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', color: TK.textMuted }}
+        <button onClick={() => setMobileOpen(true)} aria-label={isRTL ? `فتح التنقل${msgUnread > 0 ? ' — رسائل غير مقروءة' : ''}` : `Open navigation${msgUnread > 0 ? ' — unread messages' : ''}`}
+          style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', color: TK.textMuted, flexShrink: 0 }}
         >
           <Menu style={{ width: '18px', height: '18px' }} />
+          {/* Unread-message indicator — messages live behind the nav drawer
+              on mobile, so the badge lives on the button that opens it
+              rather than adding a second competing icon to the header. */}
+          {msgUnread > 0 && (
+            <span aria-hidden style={{
+              position: 'absolute', top: -2, [isRTL ? 'left' : 'right']: -2,
+              width: 9, height: 9, borderRadius: '50%',
+              background: TK.accent, border: '2px solid #fff',
+            }} />
+          )}
         </button>
 
-        <Link to="/app/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-          <img src="/assets/image/logo/logo-2.png" alt="YANSY" style={{ width: 100, height: 32, objectFit: 'contain' }} />
+        <Link to="/app/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', minWidth: 0 }}>
+          <img src="/assets/image/logo/logo-2.png" alt="YANSY" style={{ width: 92, height: 30, objectFit: 'contain' }} />
         </Link>
 
-        <button onClick={() => setMobileOpen(true)} aria-label={isRTL ? 'قائمة المستخدم' : 'User menu'}
-          style={{ width: '34px', height: '34px', borderRadius: '50%', background: TK.accentBg, border: `1px solid ${TK.accentBd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: TK.accent }}
-        >
-          {user?.fullName?.[0]?.toUpperCase() || '?'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <MobileLangToggle size="sm" />
+          <button onClick={() => setMobileOpen(true)} aria-label={isRTL ? 'الحساب' : 'Account'}
+            style={{ width: '34px', height: '34px', borderRadius: '50%', background: TK.accentBg, border: `1px solid ${TK.accentBd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: TK.accent, flexShrink: 0 }}
+          >
+            {user?.fullName?.[0]?.toUpperCase() || '?'}
+          </button>
+        </div>
       </header>
 
       {/* ── Main Content ── */}
@@ -122,7 +152,13 @@ const Layout = () => {
         <style>{`
           .layout-sidebar { display: none; }
           .layout-mobile-header { display: flex; }
-          .layout-main { padding-top: 52px; margin-left: 0 !important; margin-right: 0 !important; transition: margin ${'0.28s cubic-bezier(0.4,0,0.2,1)'}; }
+          /* min-width: 0 overrides the flex-item default of min-width: auto —
+             without it, any wide intrinsic content deep inside (an unwrapped
+             table cell, a long URL) refuses to let this flex item shrink
+             below that content's natural width, forcing the whole page wider
+             than the viewport instead of scrolling within e.g. DataTable's
+             own overflow-x:auto. */
+          .layout-main { min-width: 0; padding-top: 52px; margin-left: 0 !important; margin-right: 0 !important; transition: margin ${'0.28s cubic-bezier(0.4,0,0.2,1)'}; }
 
           @media (min-width: 1024px) {
             .layout-sidebar { display: block; }
@@ -134,13 +170,17 @@ const Layout = () => {
             }
           }
 
-          *:focus-visible { outline: 2px solid rgba(37,99,235,0.45); outline-offset: 2px; border-radius: 4px; }
+          *:focus-visible { outline: 2px solid rgba(24,24,27,0.5); outline-offset: 2px; border-radius: 4px; }
         `}</style>
         <EmailVerificationBanner />
         <Outlet />
       </main>
 
-      {!isAdmin && <WhatsAppButton />}
+      {/* The Messages page already carries its own contextual WhatsApp entry
+          points (sidebar footer + chat header) — a second, floating one sits
+          directly over the composer at the bottom of the screen and competes
+          with the primary in-app reply action. Hide the global shortcut there. */}
+      {!isAdmin && !location.pathname.startsWith('/app/messages') && <WhatsAppButton />}
 
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight, Menu, X, MessageCircle } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
+import MobileLangToggle from './MobileLangToggle';
 
 const Header = ({ onStartProject }) => {
   const { isAuthenticated, user } = useSelector(s => s.auth);
@@ -202,26 +203,14 @@ const Header = ({ onStartProject }) => {
             )}
           </div>
 
-          {/* Mobile cluster */}
+          {/* Mobile cluster — logo (above) on one side, a compact language
+              control + hamburger on the other. The old layout also crammed
+              a full "Start a Project"/"App" pill in here, which combined
+              with the language control and menu button routinely
+              overlapped/truncated at 320–375px; that CTA now lives as the
+              first, most prominent action inside the drawer instead. */}
           <div className="mob-cluster" style={{ alignItems: 'center', gap: '8px' }}>
-            {!isAuthenticated ? (
-              <button
-                onClick={onStartProject}
-                className="btn-primary"
-                style={{ fontSize: '11.5px', padding: '7px 14px' }}
-              >
-                {t('landing.hero.cta', 'Start')}
-              </button>
-            ) : (
-              <Link
-                to="/app/dashboard"
-                className="btn-primary"
-                style={{ fontSize: '11.5px', padding: '7px 14px', textDecoration: 'none' }}
-              >
-                App
-                <ArrowUpRight style={{ width: 12, height: 12 }} aria-hidden />
-              </Link>
-            )}
+            <MobileLangToggle />
             <button
               onClick={() => setMobileMenuOpen(p => !p)}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -264,6 +253,29 @@ const Header = ({ onStartProject }) => {
         >
           <div style={{ padding: '28px 24px 48px', display: 'flex', flexDirection: 'column', flex: 1 }}>
 
+            {/* Prominent primary CTA — first thing a guest sees. The header's
+                mobile cluster no longer has room for a full "Start a
+                Project" pill alongside the language control + hamburger
+                without overlapping/truncating at 320–375px, so it moves
+                here as the drawer's first, most prominent action instead. */}
+            {!isAuthenticated && (
+              <button
+                ref={firstFocRef}
+                onClick={() => { setMobileMenuOpen(false); onStartProject?.(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                  width: '100%', padding: '18px 20px', marginBottom: '28px',
+                  borderRadius: '14px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                  background: 'rgb(var(--surface-strong))', color: 'rgb(var(--on-strong))',
+                }}
+              >
+                <span style={{ fontSize: '1.05rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
+                  {t('landing.hero.cta', 'Start a Project')}
+                </span>
+                <ArrowUpRight style={{ width: 20, height: 20, flexShrink: 0 }} aria-hidden />
+              </button>
+            )}
+
             {/* Nav items */}
             <nav aria-label="Mobile navigation" style={{ marginBottom: '36px' }}>
               {NAV.map((item, i) => {
@@ -278,7 +290,7 @@ const Header = ({ onStartProject }) => {
                 return (
                   <Link
                     key={i}
-                    ref={i === 0 ? firstFocRef : null}
+                    ref={i === 0 && isAuthenticated ? firstFocRef : null}
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     style={{ ...styles }}
@@ -363,19 +375,9 @@ const Header = ({ onStartProject }) => {
                   >
                     {t('common.login', 'Sign In')}
                   </Link>
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); onStartProject?.(); }}
-                    style={{
-                      width: '100%', padding: '16px',
-                      fontSize: '14px', fontWeight: 700,
-                      color: 'rgb(var(--on-strong))', background: 'rgb(var(--surface-strong))',
-                      border: 'none', borderRadius: '10px', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                    }}
-                  >
-                    {t('landing.hero.cta', 'Start a Project')}
-                    <ArrowUpRight style={{ width: 15, height: 15 }} aria-hidden />
-                  </button>
+                  {/* "Start a Project" already sits as the prominent first
+                      action at the top of this drawer — no need to repeat it
+                      here too. */}
                 </>
               )}
             </div>

@@ -383,7 +383,11 @@
                 onDragEnd={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0,
+                  // flexWrap lets the fixed-width actions column (6+ 30px
+                  // icon buttons, flexShrink:0 — never compresses) drop to
+                  // its own line on a narrow viewport instead of forcing the
+                  // whole row — and with it the page — wider than the screen.
+                  display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', minWidth: 0,
                   background: isSelected ? TK.accentBg : TK.surface,
                   borderColor: isSelected ? TK.accentBd : TK.border,
                 }}

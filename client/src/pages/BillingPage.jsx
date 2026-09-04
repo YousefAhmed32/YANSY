@@ -2,8 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  CreditCard, Zap, Crown, Star, Check, X, AlertTriangle,
-  Clock, ChevronRight, RefreshCw, FileText, ExternalLink,
+  CreditCard, Zap, Crown, Star, AlertTriangle,
+  Clock, RefreshCw, FileText, ExternalLink,
 } from 'lucide-react';
 import {
   fetchPlans, fetchSubscription, fetchBillingHistory,
@@ -13,23 +13,26 @@ import {
 } from '../store/billingSlice';
 import { useLanguage } from '../contexts/LanguageContext';
 import { trackInitiateCheckout, trackPurchase } from '../utils/metaPixel';
+import { TK } from '../admin-ui';
 
-const PLAN_ICONS  = { FREE: Star, PROFESSIONAL: Zap, ENTERPRISE: Crown };
-const STATUS_CFG  = {
-  trialing:   { label: 'Trial',      color: '#2563EB', bg: 'rgba(37,99,235,0.1)' },
-  active:     { label: 'Active',     color: '#34d399', bg: 'rgba(52,211,153,0.1)' },
-  past_due:   { label: 'Past Due',   color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
-  cancelled:  { label: 'Cancelled',  color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
-  free:       { label: 'Free',       color: 'rgba(0,0,0,0.45)', bg: 'rgba(0,0,0,0.04)' },
-  paused:     { label: 'Paused',     color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  incomplete: { label: 'Incomplete', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-};
+const PLAN_ICONS = { FREE: Star, PROFESSIONAL: Zap, ENTERPRISE: Crown };
+
+const STATUS_CFG = (ar) => ({
+  trialing:   { label: ar ? 'تجريبي' : 'Trial',       color: TK.accent, bg: TK.accentBg },
+  active:     { label: ar ? 'نشط' : 'Active',          color: TK.green,  bg: TK.greenBg },
+  past_due:   { label: ar ? 'متأخر السداد' : 'Past Due', color: TK.red,  bg: TK.redBg },
+  cancelled:  { label: ar ? 'ملغي' : 'Cancelled',       color: TK.red,   bg: TK.redBg },
+  free:       { label: ar ? 'مجاني' : 'Free',           color: TK.textMuted, bg: 'rgba(107,114,128,0.08)' },
+  paused:     { label: ar ? 'متوقف مؤقتاً' : 'Paused',  color: TK.amber, bg: TK.amberBg },
+  incomplete: { label: ar ? 'غير مكتمل' : 'Incomplete', color: TK.amber, bg: TK.amberBg },
+});
 
 const BillingPage = () => {
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
   const location   = useLocation();
-  const { dir }    = useLanguage();
+  const { language, isRTL, dir } = useLanguage();
+  const ar = language === 'ar';
 
   const { subscription, plans, history, loading, historyLoading, error } = useSelector(s => s.billing);
   const currentPlan = useSelector(selectCurrentPlan);
@@ -37,20 +40,12 @@ const BillingPage = () => {
   const isTrialing  = useSelector(selectIsTrialing);
   const daysLeft    = useSelector(selectTrialDaysLeft);
 
-  const [selectedPlan,   setSelectedPlan]   = useState(null);
   const [billingCycle,   setBillingCycle]   = useState('monthly');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading,  setPortalLoading]  = useState(false);
   const [cancelConfirm,  setCancelConfirm]  = useState(false);
   const [successMsg,     setSuccessMsg]     = useState('');
   const pendingPurchaseRef = useRef(false);
-
-  const gold      = '#2563EB';
-  const bg        = '#fafaf9';
-  const surface   = 'rgba(0,0,0,0.03)';
-  const border    = 'rgba(0,0,0,0.08)';
-  const textMain  = '#0a0a0a';
-  const textMuted = 'rgba(0,0,0,0.4)';
 
   useEffect(() => {
     dispatch(fetchPlans());
@@ -60,7 +55,7 @@ const BillingPage = () => {
     // Handle return from Stripe checkout
     const params = new URLSearchParams(location.search);
     if (params.get('checkout') === 'success') {
-      setSuccessMsg('Payment successful! Your subscription has been activated.');
+      setSuccessMsg(ar ? 'تم الدفع بنجاح! تم تفعيل اشتراكك.' : 'Payment successful! Your subscription has been activated.');
       pendingPurchaseRef.current = true;
       dispatch(fetchSubscription());
       navigate('/app/billing', { replace: true });
@@ -71,9 +66,9 @@ const BillingPage = () => {
 
     // Handle plan pre-selection from Pricing page
     if (location.state?.selectPlan) {
-      setSelectedPlan(location.state.selectPlan);
       if (location.state.billingCycle) setBillingCycle(location.state.billingCycle);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fire Purchase once the freshly-activated subscription (with its real plan/price)
@@ -112,85 +107,90 @@ const BillingPage = () => {
     try {
       const result = await dispatch(createPortal()).unwrap();
       if (result.portalUrl) window.location.href = result.portalUrl;
-    } catch {} finally { setPortalLoading(false); }
+    } catch { /* surfaced via redux `error` state elsewhere on the page */ } finally { setPortalLoading(false); }
   };
 
   const handleCancel = async () => {
     await dispatch(cancelSubscription());
     setCancelConfirm(false);
-    setSuccessMsg('Your subscription will be cancelled at the end of the billing period.');
+    setSuccessMsg(ar ? 'سيتم إلغاء اشتراكك في نهاية فترة الفوترة الحالية.' : 'Your subscription will be cancelled at the end of the billing period.');
   };
 
   const handleReactivate = async () => {
     await dispatch(reactivateSubscription());
-    setSuccessMsg('Your subscription has been reactivated.');
+    setSuccessMsg(ar ? 'تم إعادة تفعيل اشتراكك.' : 'Your subscription has been reactivated.');
   };
 
-  const sub     = subscription;
-  const stCfg   = STATUS_CFG[status] || STATUS_CFG.free;
-  const Icon    = PLAN_ICONS[currentPlan] || Star;
+  const sub    = subscription;
+  const stCfg  = STATUS_CFG(ar)[status] || STATUS_CFG(ar).free;
+  const Icon   = PLAN_ICONS[currentPlan] || Star;
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString('en', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
-  const formatAmount = (amount, currency = 'USD') =>
-    `${amount || 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString(ar ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const formatAmount = (amount) => `${amount || 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  const font = isRTL ? "'IBM Plex Sans Arabic',system-ui,sans-serif" : "'Inter',system-ui,sans-serif";
 
   return (
-    <div dir={dir} style={{ minHeight: '100vh', background: bg, color: textMain, padding: '32px 32px 80px', maxWidth: '900px', margin: '0 auto' }}>
+    <div dir={dir} style={{ minHeight: '100vh', background: TK.bg, color: TK.text, padding: 'clamp(16px,3vw,32px)', paddingBottom: 80, maxWidth: '900px', margin: '0 auto', fontFamily: font }}>
       {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: textMain, margin: '0 0 6px', fontFamily: "'Inter',system-ui,sans-serif" }}>
-          Billing & Subscription
-        </h1>
-        <p style={{ fontSize: '13px', color: textMuted }}>Manage your plan, payment method, and billing history.</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px' }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: TK.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <CreditCard style={{ width: '18px', height: '18px', color: TK.accent }} />
+        </div>
+        <div>
+          <h1 style={{ fontSize: 'clamp(18px,3vw,22px)', fontWeight: 700, color: TK.text, margin: 0 }}>
+            {ar ? 'الفوترة والاشتراك' : 'Billing & Subscription'}
+          </h1>
+          <p style={{ fontSize: '12.5px', color: TK.textMuted, margin: '3px 0 0' }}>
+            {ar ? 'أدِر خطتك وطريقة الدفع وسجل الفوترة.' : 'Manage your plan, payment method, and billing history.'}
+          </p>
+        </div>
       </div>
 
       {/* Success message */}
       {successMsg && (
-        <div style={{ padding: '12px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: '8px', marginBottom: '20px', fontSize: '13px', color: '#34d399' }}>
-          {successMsg}
-          <button onClick={() => setSuccessMsg('')} style={{ marginLeft: '12px', background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '12px 16px', background: TK.greenBg, border: `1px solid ${TK.greenBd}`, borderRadius: '10px', marginBottom: '18px', fontSize: '13px', color: TK.green }}>
+          <span>{successMsg}</span>
+          <button onClick={() => setSuccessMsg('')} aria-label={ar ? 'إغلاق' : 'Dismiss'} style={{ background: 'none', border: 'none', color: TK.green, cursor: 'pointer', fontSize: '13px', flexShrink: 0 }}>✕</button>
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div style={{ padding: '12px 16px', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '8px', marginBottom: '20px', fontSize: '13px', color: '#f87171' }}>
-          {error}
-          <button onClick={() => dispatch(clearBillingError())} style={{ marginLeft: '12px', background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '12px 16px', background: TK.redBg, border: `1px solid ${TK.redBd}`, borderRadius: '10px', marginBottom: '18px', fontSize: '13px', color: TK.red }}>
+          <span>{error}</span>
+          <button onClick={() => dispatch(clearBillingError())} aria-label={ar ? 'إغلاق' : 'Dismiss'} style={{ background: 'none', border: 'none', color: TK.red, cursor: 'pointer', fontSize: '13px', flexShrink: 0 }}>✕</button>
         </div>
       )}
 
       {/* Current plan card */}
-      <div style={{ padding: '24px', background: surface, border: `1px solid ${currentPlan !== 'FREE' ? 'rgba(37,99,235,0.2)' : border}`, borderRadius: '12px', marginBottom: '20px' }}>
+      <div style={{ padding: '22px 24px', background: TK.surface, border: `1px solid ${currentPlan !== 'FREE' ? TK.accentBd : TK.border}`, borderRadius: '14px', marginBottom: '18px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon style={{ width: '22px', height: '22px', color: gold }} />
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: TK.accentBg, border: `1px solid ${TK.accentBd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon style={{ width: '22px', height: '22px', color: TK.accent }} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '20px', fontWeight: 300, color: textMain, fontFamily: "'Inter',system-ui,sans-serif" }}>
-                  {sub?.plan?.displayName || 'Starter'} Plan
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: TK.text }}>
+                  {sub?.plan?.displayName || (ar ? 'الخطة الأساسية' : 'Starter')} {ar ? '' : 'Plan'}
                 </span>
-                <span style={{
-                  padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 300,
-                  background: stCfg.bg, color: stCfg.color, border: `1px solid ${stCfg.color}25`,
-                }}>
+                <span style={{ padding: '2px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 500, background: stCfg.bg, color: stCfg.color }}>
                   {stCfg.label}
                 </span>
               </div>
               {isTrialing && (
-                <div style={{ fontSize: '12px', color: gold, marginTop: '4px' }}>
-                  <Clock style={{ width: '12px', height: '12px', display: 'inline', marginRight: '4px' }} />
-                  Trial ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '12.5px', color: TK.accent, marginTop: '5px' }}>
+                  <Clock style={{ width: '12px', height: '12px' }} />
+                  {ar ? `تنتهي الفترة التجريبية خلال ${daysLeft} يوم` : `Trial ends in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`}
                   {sub?.trialEndsAt && ` — ${formatDate(sub.trialEndsAt)}`}
                 </div>
               )}
               {sub?.currentPeriodEnd && status === 'active' && (
-                <div style={{ fontSize: '11px', color: textMuted, marginTop: '4px' }}>
-                  Renews {formatDate(sub.currentPeriodEnd)}
+                <div style={{ fontSize: '11.5px', color: TK.textMuted, marginTop: '5px' }}>
+                  {ar ? `يتجدد في ${formatDate(sub.currentPeriodEnd)}` : `Renews ${formatDate(sub.currentPeriodEnd)}`}
                   {sub.cancelAtPeriodEnd && (
-                    <span style={{ marginLeft: '8px', color: '#f87171' }}>· Cancels on this date</span>
+                    <span style={{ [isRTL ? 'marginRight' : 'marginLeft']: 8, color: TK.red }}>· {ar ? 'ينتهي في هذا التاريخ' : 'Cancels on this date'}</span>
                   )}
                 </div>
               )}
@@ -205,27 +205,27 @@ const BillingPage = () => {
                   <button
                     onClick={handleReactivate}
                     disabled={loading}
-                    style={{ padding: '8px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '7px', color: '#34d399', fontSize: '11px', fontWeight: 400, letterSpacing: '0.08em', cursor: 'pointer' }}
+                    style={{ padding: '8px 16px', background: TK.greenBg, border: `1px solid ${TK.greenBd}`, borderRadius: '8px', color: TK.green, fontSize: '12.5px', fontWeight: 500, cursor: loading ? 'default' : 'pointer', fontFamily: 'inherit' }}
                   >
-                    Reactivate
+                    {ar ? 'إعادة التفعيل' : 'Reactivate'}
                   </button>
                 ) : (
                   !cancelConfirm && (
                     <button
                       onClick={() => setCancelConfirm(true)}
-                      style={{ padding: '8px 16px', background: 'transparent', border: `1px solid ${border}`, borderRadius: '7px', color: textMuted, fontSize: '11px', fontWeight: 300, cursor: 'pointer' }}
+                      style={{ padding: '8px 16px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: '8px', color: TK.textMuted, fontSize: '12.5px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
                     >
-                      Cancel
+                      {ar ? 'إلغاء' : 'Cancel'}
                     </button>
                   )
                 )}
                 <button
                   onClick={handlePortal}
                   disabled={portalLoading}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'transparent', border: `1px solid ${border}`, borderRadius: '7px', color: textMuted, fontSize: '11px', fontWeight: 300, cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: '8px', color: TK.textMuted, fontSize: '12.5px', fontWeight: 500, cursor: portalLoading ? 'default' : 'pointer', fontFamily: 'inherit' }}
                 >
-                  {portalLoading ? <RefreshCw style={{ width: '12px', height: '12px', animation: 'spin 1s linear infinite' }} /> : <ExternalLink style={{ width: '12px', height: '12px' }} />}
-                  Manage Billing
+                  {portalLoading ? <RefreshCw style={{ width: '13px', height: '13px', animation: 'spin 1s linear infinite' }} /> : <ExternalLink style={{ width: '13px', height: '13px' }} />}
+                  {ar ? 'إدارة الفوترة' : 'Manage Billing'}
                 </button>
               </>
             )}
@@ -234,20 +234,22 @@ const BillingPage = () => {
 
         {/* Cancel confirm */}
         {cancelConfirm && (
-          <div style={{ marginTop: '16px', padding: '14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <AlertTriangle style={{ width: '14px', height: '14px', color: '#f87171' }} />
-              <span style={{ fontSize: '12px', fontWeight: 400, color: '#f87171' }}>Confirm cancellation</span>
+          <div style={{ marginTop: '16px', padding: '14px 16px', background: TK.redBg, border: `1px solid ${TK.redBd}`, borderRadius: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <AlertTriangle style={{ width: '14px', height: '14px', color: TK.red }} />
+              <span style={{ fontSize: '12.5px', fontWeight: 600, color: TK.red }}>{ar ? 'تأكيد الإلغاء' : 'Confirm cancellation'}</span>
             </div>
-            <p style={{ fontSize: '12px', color: textMuted, marginBottom: '12px' }}>
-              Your subscription will remain active until the end of the current billing period. You won't be charged again.
+            <p style={{ fontSize: '12.5px', color: TK.textMuted, margin: '0 0 12px', lineHeight: 1.6 }}>
+              {ar
+                ? 'سيبقى اشتراكك نشطاً حتى نهاية فترة الفوترة الحالية. لن يتم خصم أي مبلغ إضافي.'
+                : "Your subscription will remain active until the end of the current billing period. You won't be charged again."}
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={handleCancel} disabled={loading} style={{ padding: '7px 14px', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '6px', color: '#f87171', fontSize: '11px', cursor: 'pointer' }}>
-                Yes, cancel
+              <button onClick={handleCancel} disabled={loading} style={{ padding: '7px 14px', background: TK.redBg, border: `1px solid ${TK.redBd}`, borderRadius: '7px', color: TK.red, fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                {ar ? 'نعم، ألغِ الاشتراك' : 'Yes, cancel'}
               </button>
-              <button onClick={() => setCancelConfirm(false)} style={{ padding: '7px 14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: '6px', color: textMuted, fontSize: '11px', cursor: 'pointer' }}>
-                Keep subscription
+              <button onClick={() => setCancelConfirm(false)} style={{ padding: '7px 14px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: '7px', color: TK.textMuted, fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                {ar ? 'الإبقاء على الاشتراك' : 'Keep subscription'}
               </button>
             </div>
           </div>
@@ -256,27 +258,30 @@ const BillingPage = () => {
 
       {/* Past due warning */}
       {status === 'past_due' && (
-        <div style={{ padding: '14px 16px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <AlertTriangle style={{ width: '16px', height: '16px', color: '#f87171', flexShrink: 0 }} />
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 400, color: '#f87171', marginBottom: '2px' }}>Payment failed</div>
-            <div style={{ fontSize: '11px', color: textMuted }}>Please update your payment method to restore full access.</div>
+        <div style={{ padding: '14px 16px', background: TK.redBg, border: `1px solid ${TK.redBd}`, borderRadius: '10px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <AlertTriangle style={{ width: '16px', height: '16px', color: TK.red, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <div style={{ fontSize: '12.5px', fontWeight: 600, color: TK.red, marginBottom: '2px' }}>{ar ? 'فشل الدفع' : 'Payment failed'}</div>
+            <div style={{ fontSize: '11.5px', color: TK.textMuted }}>{ar ? 'يرجى تحديث طريقة الدفع لاستعادة كامل الوصول.' : 'Please update your payment method to restore full access.'}</div>
           </div>
-          <button onClick={handlePortal} style={{ marginLeft: 'auto', padding: '7px 14px', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '6px', color: '#f87171', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            Update Payment
+          <button onClick={handlePortal} style={{ padding: '7px 14px', background: TK.redBg, border: `1px solid ${TK.redBd}`, borderRadius: '7px', color: TK.red, fontSize: '11.5px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: 'inherit' }}>
+            {ar ? 'تحديث الدفع' : 'Update Payment'}
           </button>
         </div>
       )}
 
       {/* Plan comparison */}
       {(currentPlan === 'FREE' || isTrialing || status === 'trialing') && (
-        <div style={{ padding: '24px', background: surface, border: `1px solid ${border}`, borderRadius: '12px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: 400, color: textMain, margin: 0 }}>Upgrade your plan</h2>
-            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', padding: '3px', gap: '3px' }}>
-              {['monthly', 'annual'].map(c => (
-                <button key={c} onClick={() => setBillingCycle(c)} style={{ padding: '5px 12px', background: billingCycle === c ? gold : 'transparent', border: 'none', borderRadius: '6px', color: billingCycle === c ? '#000' : textMuted, fontSize: '10px', fontWeight: billingCycle === c ? 600 : 300, cursor: 'pointer', textTransform: 'capitalize' }}>
-                  {c}
+        <div style={{ padding: '22px 24px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '14px', marginBottom: '18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: '18px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: 600, color: TK.text, margin: 0 }}>{ar ? 'قم بترقية خطتك' : 'Upgrade your plan'}</h2>
+            <div style={{ display: 'flex', background: TK.bg, borderRadius: '9px', padding: '3px', gap: '3px' }}>
+              {[
+                { id: 'monthly', label: ar ? 'شهري' : 'Monthly' },
+                { id: 'annual',  label: ar ? 'سنوي' : 'Annual' },
+              ].map(c => (
+                <button key={c.id} onClick={() => setBillingCycle(c.id)} style={{ padding: '6px 14px', background: billingCycle === c.id ? TK.accent : 'transparent', border: 'none', borderRadius: '7px', color: billingCycle === c.id ? '#fff' : TK.textMuted, fontSize: '11.5px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {c.label}
                 </button>
               ))}
             </div>
@@ -290,74 +295,73 @@ const BillingPage = () => {
               const isCurrentPlan = plan.name === currentPlan;
 
               return (
-                <div key={plan._id} style={{ padding: '20px', background: isPro ? 'rgba(37,99,235,0.06)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isPro ? 'rgba(37,99,235,0.25)' : border}`, borderRadius: '10px' }}>
+                <div key={plan._id} style={{ padding: '18px', background: isPro ? TK.accentBg : TK.bg, border: `1px solid ${isPro ? TK.accentBd : TK.border}`, borderRadius: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                    <PIcon style={{ width: '16px', height: '16px', color: isPro ? gold : textMuted }} />
-                    <span style={{ fontSize: '13px', fontWeight: 300, color: textMain }}>{plan.displayName}</span>
+                    <PIcon style={{ width: '16px', height: '16px', color: isPro ? TK.accent : TK.textMuted }} />
+                    <span style={{ fontSize: '13.5px', fontWeight: 600, color: TK.text }}>{plan.displayName}</span>
                   </div>
-                  <div style={{ fontSize: '28px', fontWeight: 600, color: textMain, letterSpacing: '-0.02em', marginBottom: '4px', fontFamily: "'Inter',system-ui,sans-serif" }}>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: TK.text, letterSpacing: '-0.02em', marginBottom: '4px' }}>
                     ${Math.round(cents / 100)}
-                    <span style={{ fontSize: '12px', fontWeight: 300, color: textMuted }}>/mo</span>
+                    <span style={{ fontSize: '12px', fontWeight: 400, color: TK.textMuted }}>/{ar ? 'شهر' : 'mo'}</span>
                   </div>
                   {plan.trialDays > 0 && !isCurrentPlan && (
-                    <div style={{ fontSize: '10px', color: gold, marginBottom: '14px' }}>
-                      {plan.trialDays}-day free trial
+                    <div style={{ fontSize: '11px', color: TK.accent, marginBottom: '14px', fontWeight: 500 }}>
+                      {ar ? `${plan.trialDays} يوم تجربة مجانية` : `${plan.trialDays}-day free trial`}
                     </div>
                   )}
                   <button
                     onClick={() => handleUpgrade(plan)}
                     disabled={checkoutLoading || isCurrentPlan}
                     style={{
-                      width: '100%', padding: '9px',
-                      background: isCurrentPlan ? 'transparent' : (isPro ? gold : 'transparent'),
-                      border: `1px solid ${isCurrentPlan ? border : (isPro ? gold : border)}`,
-                      borderRadius: '7px',
-                      color: isCurrentPlan ? textMuted : (isPro ? '#000' : textMain),
-                      fontSize: '11px', fontWeight: isCurrentPlan ? 300 : (isPro ? 600 : 300),
-                      letterSpacing: '0.08em', cursor: isCurrentPlan ? 'default' : 'pointer',
-                      transition: 'all 0.2s',
+                      width: '100%', padding: '10px',
+                      background: isCurrentPlan ? 'transparent' : (isPro ? TK.accent : 'transparent'),
+                      border: `1px solid ${isCurrentPlan ? TK.border : (isPro ? TK.accent : TK.border)}`,
+                      borderRadius: '8px',
+                      color: isCurrentPlan ? TK.textMuted : (isPro ? '#fff' : TK.text),
+                      fontSize: '12.5px', fontWeight: 500,
+                      cursor: isCurrentPlan ? 'default' : 'pointer',
+                      transition: 'opacity 0.2s', fontFamily: 'inherit',
                     }}
                   >
-                    {checkoutLoading ? 'Loading...' : isCurrentPlan ? 'Current plan' : `Upgrade to ${plan.displayName}`}
+                    {checkoutLoading ? (ar ? 'جارٍ التحميل...' : 'Loading...') : isCurrentPlan ? (ar ? 'خطتك الحالية' : 'Current plan') : (ar ? `الترقية إلى ${plan.displayName}` : `Upgrade to ${plan.displayName}`)}
                   </button>
                 </div>
               );
             })}
           </div>
-
         </div>
       )}
 
       {/* Billing history */}
-      <div style={{ padding: '24px', background: surface, border: `1px solid ${border}`, borderRadius: '12px' }}>
+      <div style={{ padding: '22px 24px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <FileText style={{ width: '14px', height: '14px', color: gold }} />
-          <h2 style={{ fontSize: '12px', fontWeight: 400, color: textMain, letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>
-            Billing History
+          <FileText style={{ width: '15px', height: '15px', color: TK.accent }} />
+          <h2 style={{ fontSize: '13px', fontWeight: 600, color: TK.text, margin: 0 }}>
+            {ar ? 'سجل الفوترة' : 'Billing History'}
           </h2>
         </div>
 
         {historyLoading ? (
           <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid rgba(37,99,235,0.15)', borderTopColor: gold, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${TK.accentBg}`, borderTopColor: TK.accent, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
           </div>
         ) : history.invoices.length === 0 ? (
-          <p style={{ fontSize: '12px', color: textMuted, textAlign: 'center', padding: '20px 0' }}>
-            No billing history yet.
+          <p style={{ fontSize: '12.5px', color: TK.textMuted, textAlign: 'center', padding: '20px 0', margin: 0 }}>
+            {ar ? 'لا يوجد سجل فوترة بعد.' : 'No billing history yet.'}
           </p>
         ) : (
           history.invoices.map(inv => (
-            <div key={inv._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+            <div key={inv._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '11px 0', borderBottom: `1px solid ${TK.border}`, flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 300, color: textMain }}>#{inv.invoiceNumber}</div>
-                <div style={{ fontSize: '10px', color: textMuted }}>{formatDate(inv.createdAt)}</div>
+                <div style={{ fontSize: '12.5px', fontWeight: 500, color: TK.text }}>#{inv.invoiceNumber}</div>
+                <div style={{ fontSize: '11px', color: TK.textLight }}>{formatDate(inv.createdAt)}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 300, color: textMain }}>
+                <span style={{ fontSize: '13.5px', fontWeight: 600, color: TK.text }}>
                   ${formatAmount(inv.total)} {inv.currency}
                 </span>
-                <span style={{ padding: '2px 8px', borderRadius: '8px', fontSize: '9px', background: inv.status === 'paid' ? 'rgba(52,211,153,0.1)' : 'rgba(245,158,11,0.1)', color: inv.status === 'paid' ? '#34d399' : '#f59e0b' }}>
-                  {inv.status}
+                <span style={{ padding: '2px 9px', borderRadius: '999px', fontSize: '10.5px', fontWeight: 500, background: inv.status === 'paid' ? TK.greenBg : TK.amberBg, color: inv.status === 'paid' ? TK.green : TK.amber }}>
+                  {inv.status === 'paid' ? (ar ? 'مدفوعة' : 'Paid') : (ar ? 'معلقة' : inv.status)}
                 </span>
               </div>
             </div>

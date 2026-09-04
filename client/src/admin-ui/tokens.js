@@ -1,32 +1,51 @@
 // Single source of truth for the authenticated-app (dashboard) design system.
 // Public-site tokens live separately in index.css — these are dashboard-only.
-
+//
+// "Warm Neutral" system (2026-09): replaces the earlier navy-sidebar/blue-accent
+// scheme approved for the authenticated shell. White/near-neutral surfaces
+// throughout (sidebar included — no more disconnected dark rail), near-black
+// for primary actions/selected nav/outgoing messages, a restrained warm amber
+// reserved for unread/selection/attention accents. `accent` below is that
+// amber — most "primary" affordances (buttons, selected nav) use `ink`
+// (near-black) instead; components that want the old blue-style "primary
+// call to action" treatment should reach for `ink`/`inkFg`, not `accent`.
 export const TK = {
-  bg:         '#F4F6FA',
-  bgSubtle:   '#F8FAFD',
+  bg:         '#FFFFFF',
+  bgSubtle:   '#FAFAFA',
   surface:    '#FFFFFF',
-  border:     '#E1E6EF',
-  borderSoft: '#EDF1F7',
+  border:     '#E7E7E9',
+  borderSoft: '#EFEFF1',
 
-  text:       '#111827',
-  textMuted:  '#5F6B7A',
-  textLight:  '#8792A2',
+  text:       '#18181B',
+  textMuted:  '#6B6B70',
+  textLight:  '#9A9AA0',
 
-  accent:     '#2563EB',
-  accentHover:'#1D4ED8',
-  accentBg:   'rgba(37,99,235,0.07)',
-  accentBd:   'rgba(37,99,235,0.2)',
+  // Near-black "ink" — primary buttons, selected nav rows, outgoing message
+  // bubbles. Not pure #000 (softer, matches the approved reference).
+  ink:        '#18181B',
+  inkHover:   '#000000',
+  inkFg:      '#FFFFFF',
+
+  // `accent` is now the warm amber used sparingly for unread/selection/
+  // attention (badges, unread dots, selected-row edge, status highlights) —
+  // kept as `accent` (rather than renamed) so every existing TK.accent /
+  // TK.accentBg / TK.accentBd reference across admin + client pages picks up
+  // the new color for free.
+  accent:     '#B45309',
+  accentHover:'#92400E',
+  accentBg:   'rgba(245,158,11,0.10)',
+  accentBd:   'rgba(245,158,11,0.30)',
   accentFg:   '#FFFFFF',
 
-  hoverBg:    'rgba(17,24,39,0.03)',
-  activeBg:   'rgba(37,99,235,0.06)',
+  hoverBg:    'rgba(24,24,27,0.04)',
+  activeBg:   'rgba(245,158,11,0.08)',
 
   green:      '#16a34a',
   greenBg:    'rgba(22,163,74,0.08)',
   greenBd:    'rgba(22,163,74,0.22)',
-  amber:      '#d97706',
-  amberBg:    'rgba(217,119,6,0.08)',
-  amberBd:    'rgba(217,119,6,0.22)',
+  amber:      '#B45309',
+  amberBg:    'rgba(245,158,11,0.10)',
+  amberBd:    'rgba(245,158,11,0.30)',
   red:        '#dc2626',
   redBg:      'rgba(220,38,38,0.08)',
   redBd:      'rgba(220,38,38,0.22)',
@@ -39,7 +58,7 @@ export const STATUS_TONE = {
   success: { fg: TK.green,  bg: TK.greenBg,  bd: TK.greenBd },
   warning: { fg: TK.amber,  bg: TK.amberBg,  bd: TK.amberBd },
   danger:  { fg: TK.red,    bg: TK.redBg,    bd: TK.redBd   },
-  info:    { fg: TK.accent, bg: TK.accentBg, bd: TK.accentBd},
+  info:    { fg: TK.ink,    bg: 'rgba(24,24,27,0.06)', bd: 'rgba(24,24,27,0.16)' },
   neutral: { fg: TK.textMuted, bg: 'rgba(107,114,128,0.08)', bd: 'rgba(107,114,128,0.18)' },
   purple:  { fg: TK.purple, bg: TK.purpleBg, bd: 'rgba(124,58,237,0.22)' },
 };

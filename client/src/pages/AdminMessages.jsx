@@ -1,20 +1,31 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
-  fetchInbox, fetchThreadMessages, sendMessage, markThreadRead, markThreadReadLocal,
+  fetchInbox, fetchThreadMessages, fetchOlderMessages, sendMessage,
+  markThreadRead, markThreadReadLocal, setUserTyping, markMessagesReadByOthers,
+  addOptimisticMessage, retryFailedMessage, pushIncomingMessage, uploadAttachment,
 } from '../store/messageSlice';
 import {
-  MessageSquare, Send, Clock, CheckCheck, User,
-  FolderKanban, Filter, SortAsc, Inbox, ChevronDown,
-  AlertCircle, X, Lock, Megaphone, MoreHorizontal,
-  ArrowRight, RefreshCw, Pencil, Trash2,
+  MessageSquare, Send, User,
+  FolderKanban, Inbox,
+  Lock, ArrowRight, RefreshCw,
+  RotateCw, Loader2, WifiOff, FileText, Download, Paperclip, X,
+  Pin, PinOff, Archive, ArchiveRestore, ArrowDown, AlertCircle,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSocket } from '../contexts/SocketContext';
 import api from '../utils/api';
-import { TK, FONT, Avatar, Badge, SearchInput, FilterPills, IconButton } from '../admin-ui';
+import { TK, FONT, Avatar, Badge, SearchInput, FilterPills, IconButton, Select, Composer, ComposerTextArea } from '../admin-ui';
+
+const MAX_ATTACHMENT_MB = 10;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+const genTempId = () =>
+  (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? `tmp_${crypto.randomUUID()}`
+    : `tmp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
 const fmtTime = (d, language) => {
   if (!d) return '';
@@ -78,11 +89,43 @@ const groupMessagesByDate = (messages) => {
   return groups;
 };
 
+const formatBytes = (bytes) => {
+  if (!bytes && bytes !== 0) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const URL_RE = /(https?:\/\/[^\s<]+[^\s<.,:;!?'")\]])/g;
+const renderMessageText = (text) => {
+  if (!text) return null;
+  const parts = String(text).split(URL_RE);
+  return parts.map((part, i) =>
+    URL_RE.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline', wordBreak: 'break-all' }}>{part}</a>
+      : <span key={i}>{part}</span>
+  );
+};
+
 const WaIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
   </svg>
 );
+
+const STATUS_OPTS = (language) => [
+  { value: 'open',                 label: language === 'ar' ? 'مفتوحة' : 'Open' },
+  { value: 'waiting_for_admin',    label: language === 'ar' ? 'بانتظار الفريق' : 'Waiting on us' },
+  { value: 'waiting_for_customer', label: language === 'ar' ? 'بانتظار العميل' : 'Waiting on customer' },
+  { value: 'resolved',             label: language === 'ar' ? 'تم الحل' : 'Resolved' },
+  { value: 'closed',               label: language === 'ar' ? 'مغلقة' : 'Closed' },
+];
+const PRIORITY_OPTS = (language) => [
+  { value: 'low',    label: language === 'ar' ? 'منخفضة' : 'Low' },
+  { value: 'medium', label: language === 'ar' ? 'متوسطة' : 'Medium' },
+  { value: 'high',   label: language === 'ar' ? 'عالية' : 'High' },
+  { value: 'urgent', label: language === 'ar' ? 'عاجلة' : 'Urgent' },
+];
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
@@ -90,8 +133,11 @@ const AdminMessages = () => {
   const { language, isRTL } = useLanguage();
   const dispatch = useDispatch();
   const { user } = useSelector(s => s.auth);
+  const { socket, connected, joinThread, leaveThread } = useSocket();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
-    threads, inboxLoading, activeThreadId, messages, loading, sending,
+    threads, inboxLoading, activeThreadId, messages, loading, loadingOlder,
+    hasMoreOlder, sending, typingUsers,
   } = useSelector(s => s.messages);
 
   const [search,       setSearch]       = useState('');
@@ -101,13 +147,21 @@ const AdminMessages = () => {
   const [showNote,     setShowNote]     = useState(false);
   const [savingNote,   setSavingNote]   = useState(false);
   const [notes,        setNotes]        = useState({});  // threadId → [notes]
-  const [clientInfo,   setClientInfo]   = useState(null);
-  const [loadingClient, setLoadingClient] = useState(false);
   const [isMobile,     setIsMobile]     = useState(false);
   const [mobileView,   setMobileView]   = useState('list');
+  const [admins,       setAdmins]       = useState([]);
+  const [pendingFile,  setPendingFile]  = useState(null);
+  const [attachError,  setAttachError]  = useState('');
+  const [nearBottom,   setNearBottom]   = useState(true);
+  const [newMsgBanner, setNewMsgBanner] = useState(false);
+  const [savingTriage, setSavingTriage] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const scrollRef       = useRef(null);
   const textareaRef    = useRef(null);
+  const fileInputRef   = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const deepLinkHandled = useRef(false);
 
   const font = FONT(isRTL);
 
@@ -119,44 +173,168 @@ const AdminMessages = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // ── Load all threads (admin sees all) ─────────────────────────────────────
+  // ── Load all threads (admin sees all) + the admin roster for assignment ───
   useEffect(() => {
     dispatch(fetchInbox());
+    api.get('/users', { params: { role: 'ADMIN,SUPER_ADMIN', limit: 100 } })
+      .then(res => setAdmins(res.data?.users || []))
+      .catch(() => setAdmins([]));
   }, [dispatch]);
 
-  // ── Auto-select first ─────────────────────────────────────────────────────
   const sortedThreads = useMemo(() => {
     return [...threads].sort((a, b) => {
-      // Unread first, then by date
+      if ((b.isPinned ? 1 : 0) !== (a.isPinned ? 1 : 0)) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
       if ((b.unreadCount || 0) !== (a.unreadCount || 0))
         return (b.unreadCount || 0) - (a.unreadCount || 0);
       return new Date(b.updatedAt) - new Date(a.updatedAt);
     });
   }, [threads]);
 
-  useEffect(() => {
-    if (!inboxLoading && sortedThreads.length > 0 && !activeThreadId) {
-      handleSelectThread(sortedThreads[0]);
+  const activeThread = useMemo(
+    () => threads.find(t => t._id === activeThreadId),
+    [threads, activeThreadId]
+  );
+
+  // `thread.participants` is already populated with everything the context
+  // panel needs (fullName/email/phoneNumber/companyName/customerStatus/
+  // leadScore — see server/controllers/messageController.js getThreads),
+  // so the "client" is just whichever participant isn't an admin. This used
+  // to fetch `/users/${thread.clientId || thread.userId}` — fields that
+  // don't exist anywhere on the MessageThread schema (only `participants`
+  // does), so that fetch never ran and the panel always showed "No client
+  // data" regardless of how many real conversations existed.
+  const clientInfo = useMemo(() => {
+    if (!activeThread?.participants) return null;
+    return activeThread.participants.find(p => p.role !== 'ADMIN' && p.role !== 'SUPER_ADMIN') || null;
+  }, [activeThread]);
+
+  const loadThreadExtras = useCallback(async (thread) => {
+    try {
+      const res = await api.get(`/messages/threads/${thread._id}/notes`);
+      const threadNotes = res.data?.notes || [];
+      setNotes(prev => ({ ...prev, [thread._id]: threadNotes }));
+    } catch {
+      setNotes(prev => ({ ...prev, [thread._id]: prev[thread._id] || [] }));
     }
+  }, []);
+
+  // ── Select thread ─────────────────────────────────────────────────────────
+  const openThread = useCallback((threadId, { keepQueryParam = false } = {}) => {
+    if (!threadId) return;
+    dispatch(fetchThreadMessages(threadId));
+    dispatch(markThreadRead(threadId));
+    dispatch(markThreadReadLocal(threadId));
+    if (isMobile) setMobileView('chat');
+    if (!keepQueryParam) {
+      setSearchParams(prev => { const n = new URLSearchParams(prev); n.set('thread', threadId); return n; }, { replace: true });
+    }
+    const thread = threads.find(t => t._id === threadId);
+    if (thread) loadThreadExtras(thread);
+  }, [dispatch, isMobile, setSearchParams, threads, loadThreadExtras]);
+
+  const handleSelectThread = useCallback((thread) => openThread(thread._id), [openThread]);
+
+  // ── Deep link (?thread=<id>) — notification links land here ──────────────
+  useEffect(() => {
+    if (inboxLoading || deepLinkHandled.current) return;
+    const requested = searchParams.get('thread');
+    if (requested && threads.some(t => t._id === requested)) {
+      deepLinkHandled.current = true;
+      openThread(requested, { keepQueryParam: true });
+      return;
+    }
+    if (requested) {
+      setSearchParams(prev => { const n = new URLSearchParams(prev); n.delete('thread'); return n; }, { replace: true });
+    }
+    if (sortedThreads.length > 0 && !activeThreadId) {
+      openThread(sortedThreads[0]._id, { keepQueryParam: true });
+    }
+    deepLinkHandled.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inboxLoading, sortedThreads]);
 
-  // ── Auto-scroll ───────────────────────────────────────────────────────────
+  // ── Socket: thread room + live events ─────────────────────────────────────
   useEffect(() => {
+    if (!socket || !activeThreadId) return;
+    joinThread(activeThreadId);
+    return () => leaveThread(activeThreadId);
+  }, [socket, activeThreadId, joinThread, leaveThread]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onMessage = (message) => {
+      dispatch(pushIncomingMessage({ message, threadId: message.threadId }));
+      if (message.threadId === activeThreadId && (message.sender?._id || message.sender) !== user?._id && !nearBottom) {
+        setNewMsgBanner(true);
+      }
+    };
+    const onTyping = ({ userId, threadId, typing }) => {
+      if (threadId === activeThreadId && userId !== user?._id) dispatch(setUserTyping({ userId, typing }));
+    };
+    const onThreadRead = ({ threadId, readBy }) => {
+      if (threadId === activeThreadId) dispatch(markMessagesReadByOthers({ threadId, readerId: readBy }));
+    };
+    const onCustomerMessage = () => dispatch(fetchInbox());
+    const onNewThread       = () => dispatch(fetchInbox());
+    const onReconnected     = () => {
+      dispatch(fetchInbox());
+      if (activeThreadId) dispatch(fetchThreadMessages(activeThreadId));
+    };
+    socket.on('message-received', onMessage);
+    socket.on('user-typing', onTyping);
+    socket.on('thread-read', onThreadRead);
+    socket.on('customer-message', onCustomerMessage);
+    socket.on('new-thread', onNewThread);
+    socket.on('client-reconnected', onReconnected);
+    return () => {
+      socket.off('message-received', onMessage);
+      socket.off('user-typing', onTyping);
+      socket.off('thread-read', onThreadRead);
+      socket.off('customer-message', onCustomerMessage);
+      socket.off('new-thread', onNewThread);
+      socket.off('client-reconnected', onReconnected);
+    };
+  }, [socket, activeThreadId, user?._id, nearBottom, dispatch]);
+
+  // ── Scroll tracking + older-history pagination ────────────────────────────
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const atBottom = distanceFromBottom < 80;
+    setNearBottom(atBottom);
+    if (atBottom) setNewMsgBanner(false);
+    if (el.scrollTop < 60 && hasMoreOlder && !loadingOlder && messages.length > 0) {
+      const prevHeight = el.scrollHeight;
+      dispatch(fetchOlderMessages({ threadId: activeThreadId, before: messages[0]?.createdAt })).then(() => {
+        requestAnimationFrame(() => {
+          if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight - prevHeight;
+        });
+      });
+    }
+  }, [dispatch, hasMoreOlder, loadingOlder, messages, activeThreadId]);
+
+  useEffect(() => {
+    if (nearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setNewMsgBanner(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length]);
+
+  const jumpToLatest = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    setNewMsgBanner(false);
+    setNearBottom(true);
+  };
 
   // ── Textarea resize ───────────────────────────────────────────────────────
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 140) + 'px';
     }
   }, [msgText]);
-
-  const activeThread = useMemo(
-    () => threads.find(t => t._id === activeThreadId),
-    [threads, activeThreadId]
-  );
 
   // ── Filter ────────────────────────────────────────────────────────────────
   const filteredThreads = useMemo(() => {
@@ -177,91 +355,138 @@ const AdminMessages = () => {
   }, [sortedThreads, filter, search, language]);
 
   const grouped = useMemo(() => groupMessagesByDate(messages), [messages]);
+  const someoneTyping = Object.keys(typingUsers).length > 0;
 
   const totalUnread = useMemo(
     () => threads.reduce((acc, t) => acc + (t.unreadCount || 0), 0),
     [threads]
   );
-
-  // ── Select thread ─────────────────────────────────────────────────────────
-  const handleSelectThread = useCallback(async (thread) => {
-    dispatch(fetchThreadMessages(thread._id));
-    dispatch(markThreadRead(thread._id));
-    dispatch(markThreadReadLocal(thread._id));
-    if (isMobile) setMobileView('chat');
-
-    // Load client info
-    if (thread.clientId || thread.userId) {
-      const uid = thread.clientId || thread.userId;
-      setLoadingClient(true);
-      try {
-        const res = await api.get(`/users/${uid}`);
-        setClientInfo(res.data?.user || res.data || null);
-      } catch {
-        setClientInfo(null);
-      } finally {
-        setLoadingClient(false);
-      }
-    } else {
-      setClientInfo(null);
-    }
-
-    // Load notes for this thread
-    if (!notes[thread._id]) {
-      try {
-        const res = await api.get(`/messages/threads/${thread._id}/notes`);
-        const threadNotes = Array.isArray(res.data) ? res.data : (res.data?.notes || []);
-        setNotes(prev => ({ ...prev, [thread._id]: threadNotes }));
-      } catch {
-        setNotes(prev => ({ ...prev, [thread._id]: [] }));
-      }
-    }
-  }, [dispatch, isMobile, notes]);
-
-  // ── Send ─────────────────────────────────────────────────────────────────
-  const handleSend = useCallback(async () => {
-    if (!msgText.trim() || !activeThreadId || sending) return;
-    const content = msgText.trim();
-    setMsgText('');
-    await dispatch(sendMessage({ threadId: activeThreadId, content }));
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-  }, [dispatch, msgText, activeThreadId, sending]);
-
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  }, [handleSend]);
-
-  // ── Save internal note ────────────────────────────────────────────────────
-  const handleSaveNote = useCallback(async () => {
-    if (!noteText.trim() || !activeThreadId) return;
-    setSavingNote(true);
-    const newNote = {
-      _id: `local_${Date.now()}`,
-      content: noteText.trim(),
-      author: user?.fullName || 'Admin',
-      createdAt: new Date().toISOString(),
-      local: true,
-    };
-    try {
-      await api.post(`/messages/threads/${activeThreadId}/notes`, { content: noteText.trim() });
-    } catch {
-      // Save locally even if API fails
-    }
-    setNotes(prev => ({
-      ...prev,
-      [activeThreadId]: [...(prev[activeThreadId] || []), newNote],
-    }));
-    setNoteText('');
-    setSavingNote(false);
-  }, [activeThreadId, noteText, user]);
-
-  // ── Stats bar ─────────────────────────────────────────────────────────────
   const urgentCount = useMemo(
     () => threads.filter(t => getReplyAge(t.updatedAt, language)?.urgent).length,
     [threads, language]
   );
 
+  // ── Attachment picking ────────────────────────────────────────────────────
+  const handlePickFile = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setAttachError('');
+    if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+      setAttachError(language === 'ar' ? `الحد الأقصى للحجم ${MAX_ATTACHMENT_MB}MB` : `Max file size is ${MAX_ATTACHMENT_MB}MB`);
+      return;
+    }
+    setPendingFile({ file, name: file.name, size: file.size });
+  };
+
+  // ── Typing indicator emit ─────────────────────────────────────────────────
+  const emitTyping = useCallback(() => {
+    if (!socket || !activeThreadId) return;
+    socket.emit('typing-start', { threadId: activeThreadId });
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit('typing-stop', { threadId: activeThreadId });
+    }, 2000);
+  }, [socket, activeThreadId]);
+
+  useEffect(() => () => clearTimeout(typingTimeoutRef.current), []);
+
+  // ── Send ─────────────────────────────────────────────────────────────────
+  const doSendToThread = useCallback(async (threadId, content, tempId, attachmentDocs) => {
+    const attachmentIds = (attachmentDocs || []).map(f => f._id);
+    await dispatch(sendMessage({ threadId, content, attachments: attachmentIds, tempId }));
+  }, [dispatch]);
+
+  const handleSend = useCallback(async () => {
+    const content = msgText.trim();
+    if ((!content && !pendingFile) || !activeThreadId || sending) return;
+
+    const tempId = genTempId();
+    setMsgText('');
+    const filePayload = pendingFile;
+    setPendingFile(null);
+
+    dispatch(addOptimisticMessage({
+      tempId, threadId: activeThreadId,
+      message: { content, sender: user, createdAt: new Date().toISOString(), attachments: [] },
+    }));
+
+    let attachmentDocs = [];
+    if (filePayload) {
+      try {
+        const uploaded = await dispatch(uploadAttachment({ file: filePayload.file })).unwrap();
+        attachmentDocs = [uploaded];
+      } catch { /* text portion still sends below */ }
+    }
+
+    await doSendToThread(activeThreadId, content, tempId, attachmentDocs);
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  }, [dispatch, msgText, pendingFile, activeThreadId, sending, user, doSendToThread]);
+
+  const handleRetry = useCallback((message) => {
+    dispatch(retryFailedMessage(message._id));
+    doSendToThread(activeThreadId, message.content, message._id, message.attachments);
+  }, [dispatch, activeThreadId, doSendToThread]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    else emitTyping();
+  }, [handleSend, emitTyping]);
+
+  // ── Save internal note (real backend now — see server/controllers/messageController.js) ─
+  const handleSaveNote = useCallback(async () => {
+    if (!noteText.trim() || !activeThreadId) return;
+    setSavingNote(true);
+    try {
+      const res = await api.post(`/messages/threads/${activeThreadId}/notes`, { content: noteText.trim() });
+      setNotes(prev => ({ ...prev, [activeThreadId]: res.data?.notes || prev[activeThreadId] }));
+      setNoteText('');
+    } catch {
+      // Leave the text in the box and let the user retry — silently
+      // discarding an admin-only note is worse than an extra click.
+    } finally {
+      setSavingNote(false);
+    }
+  }, [activeThreadId, noteText]);
+
+  // ── Triage actions (status / priority / pin / archive / assign) ──────────
+  const patchThread = useCallback(async (path, body) => {
+    if (!activeThreadId) return;
+    setSavingTriage(true);
+    try {
+      await api.patch(`/messages/threads/${activeThreadId}/${path}`, body);
+      dispatch(fetchInbox());
+    } catch { /* transient — inbox refresh on next load will reconcile */ }
+    finally { setSavingTriage(false); }
+  }, [activeThreadId, dispatch]);
+
   // ── Message bubble ────────────────────────────────────────────────────────
+  const renderAttachment = (att, isAdmin) => {
+    if (!att || typeof att !== 'object') return null;
+    const isImage = att.mimeType?.startsWith('image/');
+    return (
+      <a
+        key={att._id} href={att.url} target="_blank" rel="noopener noreferrer" download={att.originalName}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8, marginTop: 6,
+          padding: '8px 10px', borderRadius: 9, textDecoration: 'none', maxWidth: 260,
+          background: isAdmin ? 'rgba(255,255,255,0.12)' : TK.bgSubtle,
+          border: `1px solid ${isAdmin ? 'rgba(255,255,255,0.2)' : TK.border}`,
+          color: isAdmin ? '#fff' : TK.text,
+        }}
+      >
+        {isImage
+          ? <img src={att.url} alt={att.originalName} style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+          : <FileText style={{ width: 18, height: 18, flexShrink: 0, opacity: 0.75 }} />}
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{att.originalName}</div>
+          <div style={{ fontSize: 10, opacity: 0.65 }}>{formatBytes(att.size)}</div>
+        </div>
+        <Download style={{ width: 13, height: 13, flexShrink: 0, opacity: 0.65 }} />
+      </a>
+    );
+  };
+
   const renderMessage = (msg, idx, items) => {
     const isAdmin = msg.sender?.role === 'ADMIN' || msg.sender?.role === 'SUPER_ADMIN'
       || msg.sender?._id === user?._id || msg.sender === user?._id;
@@ -271,6 +496,8 @@ const AdminMessages = () => {
     const nextRole = next && (next.sender?.role === 'ADMIN' || next.sender?.role === 'SUPER_ADMIN' || next.sender?._id === user?._id || next.sender === user?._id);
     const isFirst  = prevRole !== isAdmin;
     const isLast   = nextRole !== isAdmin;
+    const isFailed = msg.status === 'failed';
+    const isSending = msg.status === 'sending';
 
     return (
       <div key={msg._id || idx} style={{
@@ -291,27 +518,41 @@ const AdminMessages = () => {
         )}
 
         <div style={{
-          maxWidth: 'min(70%, 540px)',
+          // `%` max-width here would resolve against this bubble's shrink-to-fit
+          // flex row (an indeterminate containing block), collapsing to ~0 in
+          // Chromium and word-wrapping every couple of characters — see the
+          // matching note in pages/Messages.jsx. `vw` sidesteps it.
+          maxWidth: 'min(70vw, 540px)',
           padding: '9px 13px',
           borderRadius: isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-          background: isAdmin ? TK.accentBg : TK.surface,
-          border: `1px solid ${isAdmin ? TK.accentBd : TK.border}`,
-          color: TK.text,
+          background: isFailed ? 'rgba(220,38,38,0.06)' : (isAdmin ? TK.ink : TK.surface),
+          border: isFailed ? '1px solid rgba(220,38,38,0.3)' : (isAdmin ? 'none' : `1px solid ${TK.border}`),
+          color: isFailed ? TK.red : (isAdmin ? '#fff' : TK.text),
           fontSize: 13.5, lineHeight: 1.55, wordBreak: 'break-word',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          opacity: isSending ? 0.7 : 1,
         }}>
-          {msg.content || msg.text || msg.message || ''}
+          {renderMessageText(msg.content)}
+          {(msg.attachments || []).map(att => renderAttachment(att, isAdmin))}
         </div>
 
-        {isLast && (
+        {isFailed && (
+          <button
+            onClick={() => handleRetry(msg)}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, background: 'none', border: 'none', cursor: 'pointer', color: TK.red, fontSize: 10.5, fontWeight: 600, padding: 0, fontFamily: font }}
+          >
+            <RotateCw style={{ width: 10, height: 10 }} />
+            {language === 'ar' ? 'فشل الإرسال — إعادة المحاولة' : 'Failed to send — Retry'}
+          </button>
+        )}
+
+        {isLast && !isFailed && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 4, marginTop: 3,
             paddingLeft: isRTL ? 0 : 3, paddingRight: isRTL ? 3 : 0,
           }}>
-            <span style={{ fontSize: 10, color: TK.textLight }}>
-              {fmtMsgTime(msg.createdAt, language)}
-            </span>
-            {isAdmin && <CheckCheck style={{ width: 11, height: 11, color: TK.textLight }} />}
+            {isSending
+              ? <Loader2 style={{ width: 10, height: 10, color: TK.textLight, animation: 'spin 0.9s linear infinite' }} />
+              : <span style={{ fontSize: 10, color: TK.textLight }}>{fmtMsgTime(msg.createdAt, language)}</span>}
           </div>
         )}
       </div>
@@ -337,6 +578,11 @@ const AdminMessages = () => {
             <span style={{ fontSize: 14, fontWeight: 600, color: TK.text, fontFamily: font }}>
               {language === 'ar' ? 'صندوق الرسائل' : 'All Conversations'}
             </span>
+            {!connected && (
+              <span title={language === 'ar' ? 'غير متصل — إعادة الاتصال...' : 'Offline — reconnecting…'} style={{ display: 'flex' }}>
+                <WifiOff style={{ width: 13, height: 13, color: TK.textLight }} />
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {totalUnread > 0 && (
@@ -394,7 +640,7 @@ const AdminMessages = () => {
           <div style={{ padding: '40px 20px', textAlign: 'center' }}>
             <Inbox style={{ width: 28, height: 28, color: TK.textLight, margin: '0 auto 10px' }} />
             <p style={{ fontSize: 13, color: TK.textMuted, margin: 0, fontFamily: font }}>
-              {language === 'ar' ? 'لا محادثات' : 'No conversations'}
+              {search || filter !== 'all' ? (language === 'ar' ? 'لا نتائج' : 'No results') : (language === 'ar' ? 'لا محادثات' : 'No conversations')}
             </p>
           </div>
         ) : filteredThreads.map(thread => {
@@ -433,10 +679,12 @@ const AdminMessages = () => {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4, marginBottom: 2 }}>
                   <span style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
                     fontSize: 12.5, fontWeight: unread ? 600 : 500,
                     color: TK.text, flex: 1, minWidth: 0,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
+                    {thread.isPinned && <Pin style={{ width: 10, height: 10, color: TK.accent, flexShrink: 0 }} />}
                     {title}
                   </span>
                   {age && (
@@ -508,16 +756,16 @@ const AdminMessages = () => {
               <div style={{ fontSize: 13.5, fontWeight: 600, color: TK.text, fontFamily: font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {title}
               </div>
-              {clientInfo && (
-                <div style={{ fontSize: 11, color: TK.textMuted, fontFamily: font }}>
-                  {clientInfo.email || ''}{clientInfo.email && clientInfo.phone ? ' · ' : ''}{clientInfo.phone || ''}
-                </div>
-              )}
+              <div style={{ fontSize: 11, color: TK.textMuted, fontFamily: font }}>
+                {someoneTyping
+                  ? <span style={{ color: TK.accent, fontWeight: 500 }}>{language === 'ar' ? 'يكتب الآن...' : 'Typing…'}</span>
+                  : (clientInfo ? `${clientInfo.email || ''}${clientInfo.email && clientInfo.phoneNumber ? ' · ' : ''}${clientInfo.phoneNumber || ''}` : '')}
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 7, flexShrink: 0 }}>
-              {clientInfo?.phone && (
+              {clientInfo?.phoneNumber && (
                 <a
-                  href={`https://wa.me/${clientInfo.phone.replace(/\D/g,'')}`}
+                  href={`https://wa.me/${clientInfo.phoneNumber.replace(/\D/g,'')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -544,6 +792,20 @@ const AdminMessages = () => {
                   {language === 'ar' ? 'المشروع' : 'Project'}
                 </Link>
               )}
+              <button
+                onClick={() => patchThread('pin', { pinned: !activeThread.isPinned })}
+                disabled={savingTriage}
+                title={activeThread.isPinned ? (language === 'ar' ? 'إلغاء التثبيت' : 'Unpin') : (language === 'ar' ? 'تثبيت' : 'Pin')}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: 7,
+                  background: activeThread.isPinned ? TK.accentBg : 'transparent',
+                  border: `1px solid ${activeThread.isPinned ? TK.accent : TK.border}`,
+                  color: activeThread.isPinned ? TK.accent : TK.textMuted, cursor: 'pointer',
+                }}
+              >
+                {activeThread.isPinned ? <PinOff style={{ width: 12, height: 12 }} /> : <Pin style={{ width: 12, height: 12 }} />}
+              </button>
               <button
                 onClick={() => setShowNote(v => !v)}
                 style={{
@@ -572,8 +834,8 @@ const AdminMessages = () => {
         {/* Main content */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           {/* Messages column */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden', position: 'relative' }}>
+            <div ref={scrollRef} onScroll={handleScroll} style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px' }}>
               {!activeThreadId ? (
                 <div style={{
                   height: '100%', display: 'flex', flexDirection: 'column',
@@ -611,6 +873,11 @@ const AdminMessages = () => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {loadingOlder && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+                      <Loader2 style={{ width: 16, height: 16, color: TK.textLight, animation: 'spin 0.8s linear infinite' }} />
+                    </div>
+                  )}
                   {grouped.map((item, idx) =>
                     item.type === 'date' ? (
                       <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '12px 0 8px' }}>
@@ -631,6 +898,22 @@ const AdminMessages = () => {
               )}
             </div>
 
+            {newMsgBanner && (
+              <button
+                onClick={jumpToLatest}
+                style={{
+                  position: 'absolute', bottom: 78, left: '50%', transform: 'translateX(-50%)',
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
+                  borderRadius: 99, background: TK.ink, color: 'white', border: 'none',
+                  cursor: 'pointer', fontSize: 12, fontWeight: 500, fontFamily: font,
+                  boxShadow: '0 6px 20px rgba(15,23,42,0.25)', zIndex: 5,
+                }}
+              >
+                {language === 'ar' ? 'رسائل جديدة' : 'New messages'}
+                <ArrowDown style={{ width: 12, height: 12 }} />
+              </button>
+            )}
+
             {/* Internal note panel */}
             {showNote && activeThreadId && (
               <div style={{
@@ -645,9 +928,8 @@ const AdminMessages = () => {
                   </span>
                 </div>
 
-                {/* Existing notes */}
                 {(notes[activeThreadId] || []).length > 0 && (
-                  <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 160, overflowY: 'auto' }}>
                     {(notes[activeThreadId] || []).map((note, i) => (
                       <div key={note._id || i} style={{
                         background: TK.amberBg, border: `1px solid ${TK.amberBd}`,
@@ -657,7 +939,7 @@ const AdminMessages = () => {
                           {note.content}
                         </div>
                         <div style={{ fontSize: 10, color: TK.amber, marginTop: 4, fontFamily: font }}>
-                          {note.author} · {fmtTime(note.createdAt, language)}
+                          {(note.author?.fullName || note.author) || 'Admin'} · {fmtTime(note.createdAt, language)}
                         </div>
                       </div>
                     ))}
@@ -701,66 +983,134 @@ const AdminMessages = () => {
                 borderTop: `1px solid ${TK.border}`,
                 background: TK.surface, flexShrink: 0,
               }}>
-                <div style={{
-                  display: 'flex', alignItems: 'flex-end', gap: 8,
-                  background: TK.bg, borderRadius: 12,
-                  border: `1px solid ${TK.border}`, padding: '8px 10px',
-                  transition: 'border-color 0.15s',
-                }}
-                  onFocusCapture={e => { e.currentTarget.style.borderColor = TK.accent; }}
-                  onBlurCapture={e => { e.currentTarget.style.borderColor = TK.border; }}
-                >
-                  <textarea
-                    ref={textareaRef}
-                    value={msgText}
-                    onChange={e => setMsgText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={language === 'ar' ? 'اكتب ردك للعميل...' : 'Write your reply to client...'}
-                    rows={1}
-                    style={{
-                      flex: 1, border: 'none', background: 'transparent',
-                      resize: 'none', outline: 'none', fontSize: 13.5,
-                      fontFamily: font, color: TK.text, lineHeight: 1.55,
-                      maxHeight: 120, overflowY: 'auto', padding: '2px 0',
-                    }}
-                  />
+                {attachError && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: 11, color: TK.red, fontFamily: font }}>
+                    <AlertCircle style={{ width: 12, height: 12 }} /> {attachError}
+                  </div>
+                )}
+                {pendingFile && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '7px 10px', borderRadius: 9, background: TK.bgSubtle, border: `1px solid ${TK.border}` }}>
+                    <FileText style={{ width: 15, height: 15, color: TK.text, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11.5, color: TK.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</div>
+                      <div style={{ fontSize: 10, color: TK.textLight }}>{formatBytes(pendingFile.size)}</div>
+                    </div>
+                    <button onClick={() => setPendingFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textLight, display: 'flex' }} aria-label={language === 'ar' ? 'إزالة الملف' : 'Remove file'}>
+                      <X style={{ width: 13, height: 13 }} />
+                    </button>
+                  </div>
+                )}
+                {/* DOM order [input, send] with plain `row` (no manual reverse)
+                    so the send button sits at the inline-end in both directions
+                    via the page's inherited `direction` — same pattern as the
+                    customer composer in pages/Messages.jsx. `Composer`/
+                    `ComposerTextArea` (admin-ui) are the shared shell — see
+                    their doc comment in Primitives.jsx for why a manual
+                    per-page border/focus implementation here used to grow a
+                    second frame around the textarea on focus. */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+                  <Composer style={{ borderRadius: 12, padding: '9px 11px' }}>
+                    <input ref={fileInputRef} type="file" onChange={handlePickFile} hidden accept="image/*,.pdf,.doc,.docx,.txt" />
+                    <ComposerTextArea
+                      ref={textareaRef}
+                      value={msgText}
+                      onChange={e => setMsgText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder={language === 'ar' ? 'اكتب ردك للعميل...' : 'Write your reply to client...'}
+                      style={{ fontFamily: font, color: TK.text, maxHeight: 140, overflowY: 'auto' }}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      aria-label={language === 'ar' ? 'إرفاق ملف' : 'Attach file'}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: pendingFile ? TK.text : TK.textLight, display: 'flex', padding: '4px 2px', flexShrink: 0 }}
+                    >
+                      <Paperclip style={{ width: 15, height: 15 }} />
+                    </button>
+                  </Composer>
                   <button
                     onClick={handleSend}
-                    disabled={!msgText.trim() || sending}
+                    disabled={(!msgText.trim() && !pendingFile) || sending}
                     style={{
-                      width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                      background: (msgText.trim() && !sending) ? TK.accent : TK.accentBg,
-                      border: 'none', cursor: (msgText.trim() && !sending) ? 'pointer' : 'default',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.15s',
+                      display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+                      height: 40, padding: '0 14px', borderRadius: 10,
+                      background: ((msgText.trim() || pendingFile) && !sending) ? TK.ink : TK.bgSubtle,
+                      border: 'none', cursor: ((msgText.trim() || pendingFile) && !sending) ? 'pointer' : 'default',
+                      color: ((msgText.trim() || pendingFile) && !sending) ? '#fff' : TK.textLight,
+                      fontSize: 12.5, fontWeight: 600, fontFamily: font,
+                      transition: 'background 0.15s',
                     }}
                   >
                     {sending ? (
-                      <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', animation: 'spin 0.75s linear infinite' }} />
+                      <Loader2 style={{ width: 13, height: 13, animation: 'spin 0.75s linear infinite' }} />
                     ) : (
-                      <Send style={{ width: 13, height: 13, color: msgText.trim() ? 'white' : TK.textLight, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+                      <Send style={{ width: 13, height: 13, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
                     )}
+                    <span>{language === 'ar' ? 'إرسال' : 'Send'}</span>
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Client info panel (only on desktop) */}
+          {/* Context panel — collapsible on desktop via width; a secondary
+              triage toolset, not the primary chat focus. Hidden entirely on
+              tablet/mobile (one focused screen at a time). */}
           {!isMobile && activeThread && (
             <div style={{
-              width: 240, flexShrink: 0, borderLeft: isRTL ? 'none' : `1px solid ${TK.border}`,
+              width: 250, flexShrink: 0, borderLeft: isRTL ? 'none' : `1px solid ${TK.border}`,
               borderRight: isRTL ? `1px solid ${TK.border}` : 'none',
               background: TK.surface, overflowY: 'auto', padding: '16px 14px',
             }}>
+              {/* Triage controls */}
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: TK.textLight, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, fontFamily: font }}>
+                  {language === 'ar' ? 'الحالة والأولوية' : 'Status & Priority'}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Select
+                    value={activeThread.status}
+                    onChange={e => patchThread('status', { status: e.target.value })}
+                    disabled={savingTriage}
+                    options={STATUS_OPTS(language)}
+                  />
+                  <Select
+                    value={activeThread.priority}
+                    onChange={e => patchThread('priority', { priority: e.target.value })}
+                    disabled={savingTriage}
+                    options={PRIORITY_OPTS(language)}
+                  />
+                  <Select
+                    value={activeThread.assignedTo?._id || ''}
+                    onChange={e => patchThread('assign', { assignedTo: e.target.value || null })}
+                    disabled={savingTriage}
+                    options={[
+                      { value: '', label: language === 'ar' ? 'غير مسند' : 'Unassigned' },
+                      ...admins.map(a => ({ value: a._id, label: a.fullName || a.email })),
+                    ]}
+                  />
+                  <button
+                    onClick={() => patchThread('archive', { archived: !activeThread.isArchived })}
+                    disabled={savingTriage}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '8px 10px', borderRadius: 8, border: `1px solid ${TK.border}`,
+                      background: 'transparent', color: TK.textMuted, cursor: 'pointer',
+                      fontSize: 11.5, fontWeight: 500, fontFamily: font,
+                    }}
+                  >
+                    {activeThread.isArchived
+                      ? <><ArchiveRestore style={{ width: 12, height: 12 }} />{language === 'ar' ? 'إلغاء الأرشفة' : 'Unarchive'}</>
+                      : <><Archive style={{ width: 12, height: 12 }} />{language === 'ar' ? 'أرشفة' : 'Archive'}</>}
+                  </button>
+                </div>
+              </div>
+
               {/* Client info */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: TK.textLight, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, fontFamily: font }}>
                   {language === 'ar' ? 'معلومات العميل' : 'Client'}
                 </div>
-                {loadingClient ? (
-                  <div style={{ height: 60, borderRadius: 8, background: TK.bg, animation: 'shimmer 1.4s infinite' }} />
-                ) : clientInfo ? (
+                {clientInfo ? (
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                       <Avatar name={clientInfo.fullName || clientInfo.name} size={36} tone="info" />
@@ -780,15 +1130,15 @@ const AdminMessages = () => {
                         <span style={{ fontSize: 10.5, color: TK.textMuted, fontFamily: font, flex: 1 }}>{clientInfo.email}</span>
                       </a>
                     )}
-                    {clientInfo.phone && (
-                      <a href={`https://wa.me/${clientInfo.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{
+                    {clientInfo.phoneNumber && (
+                      <a href={`https://wa.me/${clientInfo.phoneNumber.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{
                         display: 'flex', alignItems: 'center', gap: 6,
                         padding: '7px 10px', borderRadius: 7, marginBottom: 8,
                         background: 'rgba(37,211,102,0.07)', border: '1px solid rgba(37,211,102,0.18)',
                         textDecoration: 'none',
                       }}>
                         <WaIcon />
-                        <span style={{ fontSize: 11, color: TK.text, fontFamily: font, fontWeight: 500 }}>{clientInfo.phone}</span>
+                        <span style={{ fontSize: 11, color: TK.text, fontFamily: font, fontWeight: 500 }}>{clientInfo.phoneNumber}</span>
                       </a>
                     )}
                     <Link
@@ -862,6 +1212,9 @@ const AdminMessages = () => {
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+          * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+        }
       `}</style>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

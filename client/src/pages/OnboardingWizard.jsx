@@ -1,11 +1,27 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CheckCircle2, BadgeCheck } from 'lucide-react';
 import api from '../utils/api';
 import { getMe } from '../store/authSlice';
 import { useLanguage } from '../contexts/LanguageContext';
 import { validatePhone } from '../utils/phone';
+
+/* ═══════════════════════════════════════════════════════════════
+   Activation flow — replaces the old 4-step "ceremonial" wizard.
+
+   Design rules:
+   - Never ask for something we already know (email is shown as
+     verified, not requested; phone/company/role are prefilled and
+     the step is skipped entirely if nothing is missing).
+   - Stable enum keys are persisted, never translated display labels.
+   - Step count is derived once and reused everywhere (badge, dots,
+     "n / total") so it can never drift out of sync.
+   - Resumable: current step + in-progress answers survive a refresh
+     via sessionStorage, keyed to the signed-in user.
+   - No fabricated promises (named account manager, "within 2 hours",
+     progress tracking) — only what the system actually does.
+   ═══════════════════════════════════════════════════════════════ */
 
 const PHONE_HINT_COPY = {
   invalid_chars: { en: "That doesn't look like a phone number — keep only digits, spaces, dashes, or a leading +.", ar: 'هذا لا يبدو رقم هاتف صحيح — استخدم الأرقام والمسافات والشرطات وعلامة + فقط.' },
@@ -25,13 +41,18 @@ const TK = {
   textLight:'#9CA3AF',
 };
 
-const GOALS = {
-  en: ['Website', 'E-commerce Store', 'SaaS Platform', 'Mobile App', 'Admin Dashboard', 'Something Else'],
-  ar: ['موقع إلكتروني', 'متجر إلكتروني', 'منصة SaaS', 'تطبيق موبايل', 'لوحة تحكم', 'شيء آخر'],
-};
+// Stable enum keys — mirror server/models/User.js `primaryGoal` enum.
+// Never store the localized label; only ever store `.value`.
+const GOALS = [
+  { value: 'website',    icon: '🌐', en: 'Website',         ar: 'موقع إلكتروني' },
+  { value: 'ecommerce',  icon: '🛒', en: 'Online Store',    ar: 'متجر إلكتروني' },
+  { value: 'saas',       icon: '⚡', en: 'SaaS Platform',   ar: 'منصة SaaS' },
+  { value: 'app',        icon: '📱', en: 'Mobile App',      ar: 'تطبيق موبايل' },
+  { value: 'branding',   icon: '🎨', en: 'Branding',        ar: 'هوية بصرية' },
+  { value: 'other',      icon: '✦',  en: 'Something Else',  ar: 'شيء آخر' },
+];
 
-const STEPS_EN = ['Welcome', 'How to Reach You', 'Your Project', 'All Set!'];
-const STEPS_AR = ['أهلاً', 'طريقة التواصل', 'مشروعك', 'تم التسجيل!'];
+const SESSION_KEY = 'yansy_onboarding_state';
 
 const WaIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -45,62 +66,125 @@ const OnboardingWizard = () => {
   const navigate  = useNavigate();
   const { user }  = useSelector(s => s.auth);
 
-  const [step, setStep]         = useState(0);
+  // ── What's actually missing? Drives which steps exist at all. ──────────
+  const missingPhone = !user?.phoneNumber;
+
+  // Screens: 'welcome' -> 'contact' (only if phone missing) -> 'profile' -> 'done'
+  const SCREENS = useMemo(
+    () => ['welcome', ...(missingPhone ? ['contact'] : []), 'profile', 'done'],
+    [missingPhone]
+  );
+  const TOTAL_STEPS = SCREENS.length - 1; // 'done' isn't a counted step
+
+  const restored = useMemo(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed?.userId === user?._id ? parsed : null;
+    } catch { return null; }
+  }, [user?._id]);
+
+  const [screenIdx, setScreenIdx] = useState(() => {
+    const idx = restored?.screenIdx;
+    return Number.isInteger(idx) && idx < SCREENS.length - 1 ? idx : 0;
+  });
   const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState('');
 
-  // Step 1 — contact preference
-  const [contactMethod, setContactMethod] = useState('whatsapp');
-  const [contactValue,  setContactValue]  = useState('');
+  // Contact preference — only meaningful when phone is missing.
+  const [contactMethod, setContactMethod] = useState(restored?.contactMethod || 'whatsapp');
+  const [contactValue,  setContactValue]  = useState(restored?.contactValue || '');
 
-  // Step 2 — project info
-  const [selectedGoal, setSelectedGoal] = useState('');
-  const [company,  setCompany]  = useState('');
-  const [roleField, setRoleField] = useState('');
+  // Profile extras — all optional, prefilled from known data.
+  const [selectedGoal, setSelectedGoal] = useState(restored?.selectedGoal ?? user?.primaryGoal ?? '');
+  const [company,  setCompany]  = useState(restored?.company ?? user?.companyName ?? '');
+  const [jobRole,  setJobRole]  = useState(restored?.jobRole ?? user?.jobRole ?? '');
 
-  const TOTAL = 4;
-  const progress = ((step) / (TOTAL - 1)) * 100;
-  const steps = language === 'ar' ? STEPS_AR : STEPS_EN;
-  const goals = language === 'ar' ? GOALS.ar : GOALS.en;
+  const screen = SCREENS[screenIdx];
+  const stepNumber = screenIdx + 1; // 1-indexed, only meaningful while screen !== 'done'
+  const progress = (screenIdx / Math.max(TOTAL_STEPS - 1, 1)) * 100;
 
-  const firstName = user?.fullName?.split(' ')[0] || (language === 'ar' ? 'أهلاً' : 'there');
+  const firstName = user?.fullName?.trim().split(' ')[0] || (language === 'ar' ? 'صديقنا' : 'there');
+
+  // ── Persist progress so a refresh resumes instead of restarting ────────
+  useEffect(() => {
+    if (screen === 'done' || !user?._id) return;
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        userId: user._id, screenIdx, contactMethod, contactValue, selectedGoal, company, jobRole,
+      }));
+    } catch { /* storage unavailable — resuming just won't work, non-fatal */ }
+  }, [screen, user?._id, screenIdx, contactMethod, contactValue, selectedGoal, company, jobRole]);
+
+  // ── Already complete? (stale bookmark / back button) — bounce out. ─────
+  // Either signal is sufficient: a phone on file, OR a completed activation
+  // (which covers email-only customers who deliberately have no phone —
+  // requiring *both* used to trap them back into onboarding forever).
+  //
+  // This must only ever fire for a genuinely stale visit (a bookmark, the
+  // back button) — never react to `user` changing later. A naive
+  // `useEffect(() => {...}, [user])` also fires the instant handleSave's
+  // own getMe() flips isProfileComplete to true: react-redux flushes that
+  // external-store update synchronously (ahead of the `await` in
+  // handleSave even continuing to its own setScreenIdx('done') call), so
+  // the effect would see `screen` still 'profile' and navigate away before
+  // the "You're all set!" confirmation ever rendered. A one-time mount
+  // snapshot sidesteps the ordering race entirely.
+  const wasAlreadyComplete = useState(
+    () => !!(user && (user.phoneNumber || user.isProfileComplete))
+  )[0];
+  useEffect(() => {
+    if (wasAlreadyComplete) navigate('/app/dashboard', { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     setError('');
     try {
-      const payload = {
-        onboardingComplete: true,
-        communicationPreference: contactMethod,
-        contactValue: contactValue.trim(),
-        projectGoal: selectedGoal,
-        company: company.trim(),
-        role: roleField.trim(),
-      };
-      if (contactMethod === 'phone' || contactMethod === 'whatsapp') {
-        payload.phone = contactValue.trim();
+      const payload = { primaryGoal: selectedGoal || undefined };
+      if (missingPhone) {
+        // "Email only" deliberately has no phone — never invent one. The
+        // server already has the verified account email; nothing to send.
+        if (contactMethod !== 'email') {
+          payload.phoneNumber = contactValue.trim();
+        }
+        payload.communicationPreference = contactMethod;
       }
-      await api.put('/users/profile', payload);
+      if (company.trim()) payload.companyName = company.trim();
+      if (jobRole.trim()) payload.jobRole = jobRole.trim();
+
+      await api.post('/users/onboarding', payload);
       await dispatch(getMe());
-      setStep(3);
-    } catch {
-      setError(language === 'ar' ? 'حدث خطأ. يرجى المحاولة مجدداً.' : 'Something went wrong. Please try again.');
+      try { sessionStorage.removeItem(SESSION_KEY); } catch { /* non-fatal */ }
+      setScreenIdx(SCREENS.length - 1); // -> 'done'
+    } catch (err) {
+      setError(err?.response?.data?.error || (language === 'ar' ? 'حدث خطأ. يرجى المحاولة مجدداً.' : 'Something went wrong. Please try again.'));
     } finally {
       setSaving(false);
     }
-  }, [dispatch, contactMethod, contactValue, selectedGoal, company, roleField, language]);
+  }, [dispatch, missingPhone, contactMethod, contactValue, selectedGoal, company, jobRole, language, SCREENS.length]);
 
   const handleNext = () => {
-    if (step === 2) { handleSave(); return; }
-    setStep(s => Math.min(s + 1, TOTAL - 1));
+    if (screen === 'profile') { handleSave(); return; }
+    setScreenIdx(i => Math.min(i + 1, SCREENS.length - 2));
   };
 
   const canContinue = () => {
-    if (step === 0) return true;
-    if (step === 1) return contactValue.trim().length > 0;
-    if (step === 2) return true;
+    if (screen === 'welcome') return true;
+    if (screen === 'contact') {
+      // "Email only" needs no input — the verified account email already
+      // covers it. WhatsApp/phone genuinely need a valid number; a garbage
+      // string like "aaaaa" must never pass just because it's non-empty.
+      if (contactMethod === 'email') return true;
+      return validatePhone(contactValue).valid;
+    }
     return true;
   };
+
+  const phoneCheck = contactValue.trim() ? validatePhone(contactValue) : null;
+  const phoneHintCopy = phoneCheck && !phoneCheck.valid ? PHONE_HINT_COPY[phoneCheck.reason] : (phoneCheck?.confidence === 'low' ? PHONE_HINT_COPY.maybe_missing_country_code : null);
 
   return (
     <div style={{
@@ -118,7 +202,7 @@ const OnboardingWizard = () => {
       }}>
 
         {/* Progress bar */}
-        {step < 3 && (
+        {screen !== 'done' && (
           <div style={{ height: '3px', background: TK.bg }}>
             <div style={{
               height: '100%', background: `linear-gradient(90deg, ${TK.accent}, #60a5fa)`,
@@ -128,17 +212,22 @@ const OnboardingWizard = () => {
         )}
 
         {/* Header (top badge) */}
-        {step < 3 && (
+        {screen !== 'done' && (
           <div style={{ padding: '20px 28px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{
               fontSize: '11px', fontWeight: 600, color: TK.accent,
               background: TK.accentBg, padding: '4px 10px', borderRadius: '999px',
               letterSpacing: '0.04em',
             }}>
-              {language === 'ar' ? 'الإعداد — 4 خطوات' : 'Setup — Just 4 steps'}
+              {language === 'ar'
+                ? `الإعداد — ${TOTAL_STEPS} ${TOTAL_STEPS === 1 ? 'خطوة' : 'خطوات'}`
+                : `Setup — ${TOTAL_STEPS} step${TOTAL_STEPS === 1 ? '' : 's'}`}
             </span>
+            {/* <bdi> isolates this numeric pair from the surrounding RTL
+                paragraph direction — without it, Arabic mode renders
+                "2 / 3" as the bidi-reordered "3 / 2". */}
             <span style={{ fontSize: '11px', color: TK.textLight }}>
-              {step + 1} / {TOTAL - 1}
+              <bdi>{stepNumber} / {TOTAL_STEPS}</bdi>
             </span>
           </div>
         )}
@@ -146,8 +235,8 @@ const OnboardingWizard = () => {
         {/* Content */}
         <div style={{ padding: '24px 28px 28px' }}>
 
-          {/* ── Step 0: Welcome ── */}
-          {step === 0 && (
+          {/* ── Welcome ── */}
+          {screen === 'welcome' && (
             <div>
               <div style={{
                 width: '52px', height: '52px', borderRadius: '14px',
@@ -160,49 +249,48 @@ const OnboardingWizard = () => {
               <h1 style={{ fontSize: '22px', fontWeight: 700, color: TK.text, margin: '0 0 8px', lineHeight: 1.3 }}>
                 {language === 'ar' ? `أهلاً بك في YANSY، ${firstName}!` : `Welcome to YANSY, ${firstName}!`}
               </h1>
-              <p style={{ fontSize: '14px', color: TK.textMuted, margin: '0 0 22px', lineHeight: 1.6 }}>
+              <p style={{ fontSize: '14px', color: TK.textMuted, margin: '0 0 18px', lineHeight: 1.6 }}>
                 {language === 'ar'
-                  ? 'يسعدنا التعاون معك. دعنا نُعدّ حسابك في دقائق قليلة.'
-                  : "We're excited to work with you. Let's set up your account in just a few minutes."}
+                  ? 'خطوة أو خطوتان بسرعة، وبعدها حسابك جاهز بالكامل.'
+                  : "One or two quick things, then your account is fully ready."}
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { icon: '👤', en: 'Dedicated account manager', ar: 'مدير حساب مخصص' },
-                  { icon: '📊', en: 'Transparent progress tracking', ar: 'تتبع شفاف للتقدم' },
-                  { icon: '⚡', en: 'Fast delivery cycles',          ar: 'دورات تسليم سريعة' },
-                ].map(item => (
-                  <div key={item.en} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', background: TK.bg, border: `1px solid ${TK.border}` }}>
-                    <span style={{ fontSize: '17px' }}>{item.icon}</span>
-                    <span style={{ fontSize: '13px', color: TK.text, fontWeight: 400 }}>
-                      {language === 'ar' ? item.ar : item.en}
-                    </span>
+              {/* Verified account info — email is shown, never re-requested */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 14px', borderRadius: '10px', background: TK.bg, border: `1px solid ${TK.border}` }}>
+                <BadgeCheck style={{ width: 17, height: 17, color: '#16a34a', flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '12.5px', color: TK.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user?.email}
                   </div>
-                ))}
+                  <div style={{ fontSize: '10.5px', color: TK.textLight }}>
+                    {language === 'ar' ? 'بريد إلكتروني موثّق' : 'Verified email address'}
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* ── Step 1: Contact Method ── */}
-          {step === 1 && (
+          {/* ── Contact (only shown when phone is genuinely missing) ── */}
+          {screen === 'contact' && (
             <div>
               <h2 style={{ fontSize: '20px', fontWeight: 700, color: TK.text, margin: '0 0 6px' }}>
                 {language === 'ar' ? 'كيف نتواصل معك؟' : 'How should we reach you?'}
               </h2>
               <p style={{ fontSize: '13.5px', color: TK.textMuted, margin: '0 0 20px', lineHeight: 1.5 }}>
-                {language === 'ar' ? 'اختر طريقة التواصل المفضلة لديك' : 'Choose your preferred communication method'}
+                {language === 'ar' ? 'لا رقم هاتف مسجّل بعد — اختر طريقة التواصل المفضلة' : "We don't have a phone number for you yet — choose your preferred way to connect"}
               </p>
 
               {/* Method selector */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
                 {[
-                  { id: 'whatsapp', label_en: 'WhatsApp', label_ar: 'واتساب',       desc_en: 'Fastest response — usually within minutes', desc_ar: 'أسرع استجابة — عادةً في دقائق', placeholder_en: '+201090385390', placeholder_ar: '+201090385390', icon: <WaIcon size={18} />, color: '#25D366' },
-                  { id: 'phone',    label_en: 'Phone Call', label_ar: 'مكالمة هاتفية', desc_en: "We'll call you during business hours",       desc_ar: 'سنتصل بك في أوقات العمل',  placeholder_en: '+1 (555) 123-4567', placeholder_ar: '+966 50 123 4567', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.15 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>, color: TK.accent },
-                  { id: 'email',    label_en: 'Email',      label_ar: 'بريد إلكتروني',  desc_en: "We'll reply within a few hours",            desc_ar: 'سنرد خلال ساعات قليلة',   placeholder_en: 'your@email.com', placeholder_ar: 'بريدك@مثال.com',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, color: '#7c3aed' },
+                  { id: 'whatsapp', label_en: 'WhatsApp', label_ar: 'واتساب',       desc_en: 'Fastest way to reach our team', desc_ar: 'أسرع طريقة للتواصل مع الفريق', icon: <WaIcon size={18} />, color: '#25D366' },
+                  { id: 'phone',    label_en: 'Phone Call', label_ar: 'مكالمة هاتفية', desc_en: "We'll call during business hours",       desc_ar: 'سنتصل بك في أوقات العمل',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.15 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>, color: TK.accent },
+                  { id: 'email',    label_en: 'Email Only', label_ar: 'البريد الإلكتروني فقط',  desc_en: 'No phone — reach me by email',            desc_ar: 'بدون هاتف — تواصل معي بالبريد',   icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, color: '#7c3aed' },
                 ].map(method => {
                   const isSelected = contactMethod === method.id;
                   return (
-                    <button key={method.id}
-                      onClick={() => { setContactMethod(method.id); setContactValue(''); }}
+                    <button key={method.id} type="button"
+                      onClick={() => { setContactMethod(method.id); }}
+                      aria-pressed={isSelected}
                       style={{
                         display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 16px',
                         borderRadius: '12px', background: isSelected ? TK.accentBg : TK.bg,
@@ -233,78 +321,94 @@ const OnboardingWizard = () => {
                 })}
               </div>
 
-              {/* Contact value input */}
-              <div>
-                <label style={{ fontSize: '12px', color: TK.textMuted, display: 'block', marginBottom: '6px', fontWeight: 500 }}>
-                  {contactMethod === 'whatsapp' ? (language === 'ar' ? 'رقم واتساب *' : 'WhatsApp Number *')
-                   : contactMethod === 'phone' ? (language === 'ar' ? 'رقم الهاتف *' : 'Phone Number *')
-                   : (language === 'ar' ? 'البريد الإلكتروني *' : 'Email Address *')}
-                </label>
-                <input
-                  type={contactMethod === 'email' ? 'email' : 'tel'}
-                  value={contactValue}
-                  onChange={e => setContactValue(e.target.value)}
-                  placeholder={contactMethod === 'whatsapp' ? (language === 'ar' ? '+20 109 038 5390' : '+20 109 038 5390')
-                    : contactMethod === 'phone' ? (language === 'ar' ? '+966 50 123 4567' : '+1 (555) 123-4567')
-                    : (language === 'ar' ? 'بريدك@مثال.com' : 'your@email.com')}
-                  style={{
-                    width: '100%', padding: '11px 14px', borderRadius: '10px',
-                    border: `1.5px solid ${contactValue ? TK.accent : TK.border}`,
-                    fontSize: '14px', color: TK.text, background: TK.surface,
-                    outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s',
-                  }}
-                  onFocus={e => { e.target.style.borderColor = TK.accent; }}
-                  onBlur={e => { e.target.style.borderColor = contactValue ? TK.accent : TK.border; }}
-                />
-                <p style={{ fontSize: '11px', color: TK.textLight, margin: '6px 0 0' }}>
-                  {language === 'ar' ? 'سيستخدم فريقنا هذا للتواصل معك' : 'Our team will use this to reach you'}
-                </p>
-                {(contactMethod === 'phone' || contactMethod === 'whatsapp') && contactValue.trim() && (() => {
-                  const hint = validatePhone(contactValue);
-                  const copy = PHONE_HINT_COPY[hint.reason];
-                  if (!copy) return null;
-                  const isWarningOnly = hint.valid; // low-confidence but not blocking
-                  return (
-                    <p style={{
+              {/* Contact value input — always a phone number; "email only" still
+                  lets them skip via the skip link below rather than faking a
+                  phone value. */}
+              {contactMethod !== 'email' && (
+                <div>
+                  <label htmlFor="ob-contact-value" style={{ fontSize: '12px', color: TK.textMuted, display: 'block', marginBottom: '6px', fontWeight: 500 }}>
+                    {contactMethod === 'whatsapp' ? (language === 'ar' ? 'رقم واتساب *' : 'WhatsApp Number *')
+                     : (language === 'ar' ? 'رقم الهاتف *' : 'Phone Number *')}
+                  </label>
+                  <input
+                    id="ob-contact-value"
+                    type="tel"
+                    dir="ltr"
+                    value={contactValue}
+                    onChange={e => setContactValue(e.target.value)}
+                    placeholder={language === 'ar' ? '+20 109 038 5390' : '+20 109 038 5390'}
+                    aria-invalid={!!(phoneCheck && !phoneCheck.valid)}
+                    aria-describedby={phoneHintCopy ? 'ob-phone-hint' : undefined}
+                    style={{
+                      width: '100%', padding: '11px 14px', borderRadius: '10px',
+                      textAlign: isRTL ? 'right' : 'left',
+                      border: `1.5px solid ${phoneCheck && !phoneCheck.valid ? '#dc2626' : (contactValue ? TK.accent : TK.border)}`,
+                      fontSize: '14px', color: TK.text, background: TK.surface,
+                      outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.15s',
+                    }}
+                  />
+                  <p style={{ fontSize: '11px', color: TK.textLight, margin: '6px 0 0' }}>
+                    {language === 'ar' ? 'سيستخدم فريقنا هذا للتواصل معك' : 'Our team will use this to reach you'}
+                  </p>
+                  {phoneHintCopy && (
+                    <p id="ob-phone-hint" style={{
                       fontSize: '11px', margin: '6px 0 0', lineHeight: 1.5,
-                      color: isWarningOnly ? '#b45309' : '#b91c1c',
+                      color: phoneCheck?.valid ? '#b45309' : '#b91c1c',
                     }}>
-                      {language === 'ar' ? copy.ar : copy.en}
+                      {language === 'ar' ? phoneHintCopy.ar : phoneHintCopy.en}
                     </p>
-                  );
-                })()}
-              </div>
+                  )}
+                </div>
+              )}
+
+              {/* Email-only: confirm which address we'll use — never re-ask for it */}
+              {contactMethod === 'email' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 14px', borderRadius: '10px', background: TK.bg, border: `1px solid ${TK.border}` }}>
+                  <BadgeCheck style={{ width: 17, height: 17, color: '#16a34a', flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '12.5px', color: TK.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.email}
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: TK.textLight }}>
+                      {language === 'ar' ? 'سنستخدم هذا البريد للتواصل معك' : "We'll reach you at this address"}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* ── Step 2: Project Info ── */}
-          {step === 2 && (
+          {/* ── Profile extras (all optional) ── */}
+          {screen === 'profile' && (
             <div>
               <h2 style={{ fontSize: '20px', fontWeight: 700, color: TK.text, margin: '0 0 6px' }}>
-                {language === 'ar' ? 'أخبرنا عن مشروعك' : 'Tell us about your project'}
+                {language === 'ar' ? 'لمسة أخيرة (اختياري)' : 'One last touch (optional)'}
               </h2>
               <p style={{ fontSize: '13.5px', color: TK.textMuted, margin: '0 0 20px', lineHeight: 1.5 }}>
-                {language === 'ar' ? 'ساعدنا في فهم ما تريد بناءه' : 'Help us understand what you want to build'}
+                {language === 'ar' ? 'يساعدنا هذا على تخصيص تجربتك — يمكنك تخطيه في أي وقت' : 'Helps us tailor your experience — feel free to skip'}
               </p>
 
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontSize: '12px', color: TK.textMuted, display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-                  {language === 'ar' ? 'ماذا تريد أن تبني؟' : 'What do you want to build?'}
+                  {language === 'ar' ? 'ما الذي يهمّك أكثر الآن؟' : "What's most on your mind right now?"}
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '8px' }}>
-                  {goals.map((goal, i) => {
-                    const isSelected = selectedGoal === goal;
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '8px' }} role="radiogroup" aria-label={language === 'ar' ? 'الاهتمام الأساسي' : 'Primary interest'}>
+                  {GOALS.map((goal) => {
+                    const isSelected = selectedGoal === goal.value;
                     return (
-                      <button key={goal} onClick={() => setSelectedGoal(isSelected ? '' : goal)}
+                      <button key={goal.value} type="button" role="radio" aria-checked={isSelected}
+                        onClick={() => setSelectedGoal(isSelected ? '' : goal.value)}
                         style={{
-                          padding: '10px 12px', borderRadius: '9px', textAlign: 'center', fontFamily: 'inherit',
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '10px 12px', borderRadius: '9px', textAlign: isRTL ? 'right' : 'left', fontFamily: 'inherit',
                           background: isSelected ? TK.accentBg : TK.bg,
                           border: `1.5px solid ${isSelected ? TK.accent : TK.border}`,
                           color: isSelected ? TK.accent : TK.textMuted, fontSize: '12.5px', fontWeight: isSelected ? 500 : 400,
                           cursor: 'pointer', transition: 'all 0.15s',
                         }}
                       >
-                        {goal}
+                        <span aria-hidden="true">{goal.icon}</span>
+                        {language === 'ar' ? goal.ar : goal.en}
                       </button>
                     );
                   })}
@@ -313,14 +417,14 @@ const OnboardingWizard = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
-                  { label_en: 'Company Name (optional)', label_ar: 'اسم الشركة (اختياري)', val: company, set: setCompany, placeholder_en: 'Your company name', placeholder_ar: 'اسم شركتك' },
-                  { label_en: 'Your Role (optional)',    label_ar: 'مسماك الوظيفي (اختياري)', val: roleField, set: setRoleField, placeholder_en: 'CEO, Founder, Manager...', placeholder_ar: 'مدير تنفيذي، مؤسس...' },
+                  { key: 'company', label_en: 'Company Name', label_ar: 'اسم الشركة', val: company, set: setCompany, placeholder_en: 'Your company name', placeholder_ar: 'اسم شركتك' },
+                  { key: 'jobRole', label_en: 'Your Role',    label_ar: 'مسماك الوظيفي', val: jobRole, set: setJobRole, placeholder_en: 'CEO, Founder, Manager...', placeholder_ar: 'مدير تنفيذي، مؤسس...' },
                 ].map(f => (
-                  <div key={f.label_en}>
-                    <label style={{ fontSize: '12px', color: TK.textMuted, display: 'block', marginBottom: '5px', fontWeight: 500 }}>
+                  <div key={f.key}>
+                    <label htmlFor={`ob-${f.key}`} style={{ fontSize: '12px', color: TK.textMuted, display: 'block', marginBottom: '5px', fontWeight: 500 }}>
                       {language === 'ar' ? f.label_ar : f.label_en}
                     </label>
-                    <input value={f.val} onChange={e => f.set(e.target.value)}
+                    <input id={`ob-${f.key}`} value={f.val} onChange={e => f.set(e.target.value)}
                       placeholder={language === 'ar' ? f.placeholder_ar : f.placeholder_en}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: '10px',
@@ -335,15 +439,15 @@ const OnboardingWizard = () => {
               </div>
 
               {error && (
-                <div style={{ padding: '10px 14px', borderRadius: '9px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.18)', fontSize: '12.5px', color: '#dc2626', marginTop: '14px' }}>
+                <div role="alert" style={{ padding: '10px 14px', borderRadius: '9px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.18)', fontSize: '12.5px', color: '#dc2626', marginTop: '14px' }}>
                   {error}
                 </div>
               )}
             </div>
           )}
 
-          {/* ── Step 3: Success ── */}
-          {step === 3 && (
+          {/* ── Done ── */}
+          {screen === 'done' && (
             <div style={{ textAlign: 'center', padding: '12px 0' }}>
               <div style={{
                 width: '64px', height: '64px', borderRadius: '50%', margin: '0 auto 18px',
@@ -357,33 +461,11 @@ const OnboardingWizard = () => {
               <h2 style={{ fontSize: '22px', fontWeight: 700, color: TK.text, margin: '0 0 10px' }}>
                 {language === 'ar' ? 'أنت جاهز تماماً!' : "You're all set!"}
               </h2>
-              <p style={{ fontSize: '13.5px', color: TK.textMuted, margin: '0 0 22px', lineHeight: 1.6, maxWidth: '360px', marginLeft: 'auto', marginRight: 'auto' }}>
+              <p style={{ fontSize: '13.5px', color: TK.textMuted, margin: '0 0 26px', lineHeight: 1.6, maxWidth: '360px', marginLeft: 'auto', marginRight: 'auto' }}>
                 {language === 'ar'
-                  ? 'سيتواصل معك مدير حسابك المخصص خلال ساعتين عبر قناتك المفضلة.'
-                  : 'Your dedicated account manager will contact you within 2 hours via your preferred channel.'}
+                  ? 'حسابك جاهز الآن. متى ما أردت، يمكنك بدء طلب مشروع أو التواصل مع فريقنا مباشرة من لوحتك.'
+                  : "Your account is ready. Whenever you're ready, you can start a project request or message our team directly from your dashboard."}
               </p>
-
-              {/* PM placeholder */}
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '12px',
-                padding: '12px 18px', borderRadius: '14px',
-                background: TK.accentBg, border: '1px solid rgba(37,99,235,0.14)',
-                marginBottom: '24px',
-              }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '10px',
-                  background: 'rgba(37,99,235,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '18px', fontWeight: 700, color: TK.accent,
-                }}>Y</div>
-                <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: TK.text }}>
-                    {language === 'ar' ? 'فريق YANSY' : 'YANSY Team'}
-                  </div>
-                  <div style={{ fontSize: '11.5px', color: TK.textMuted }}>
-                    {language === 'ar' ? 'مدير حساب' : 'Account Manager'}
-                  </div>
-                </div>
-              </div>
 
               <button onClick={() => navigate('/app/dashboard')}
                 style={{
@@ -402,10 +484,10 @@ const OnboardingWizard = () => {
           )}
 
           {/* Navigation buttons */}
-          {step < 3 && (
+          {screen !== 'done' && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
-              {step > 0 ? (
-                <button onClick={() => setStep(s => s - 1)}
+              {screenIdx > 0 ? (
+                <button onClick={() => setScreenIdx(i => i - 1)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '5px',
                     padding: '9px 18px', borderRadius: '9px',
@@ -434,7 +516,7 @@ const OnboardingWizard = () => {
               >
                 {saving
                   ? (language === 'ar' ? 'جارٍ الحفظ...' : 'Saving...')
-                  : step === 2
+                  : screen === 'profile'
                     ? (language === 'ar' ? 'إكمال الإعداد' : 'Complete Setup')
                     : (language === 'ar' ? 'متابعة' : 'Continue')}
                 {!saving && <ChevronRight style={{ width: '15px', height: '15px', transform: isRTL ? 'rotate(180deg)' : 'none' }} />}
@@ -442,10 +524,12 @@ const OnboardingWizard = () => {
             </div>
           )}
 
-          {/* Skip link (steps 1 & 2 only) */}
-          {(step === 1 || step === 2) && (
+          {/* Skip link (profile step only — contact step collects the one
+              thing we genuinely need, so it isn't skippable; "email only"
+              already covers "I don't want to give a phone") */}
+          {screen === 'profile' && (
             <div style={{ textAlign: 'center', marginTop: '12px' }}>
-              <button onClick={() => step === 2 ? handleSave() : setStep(s => s + 1)}
+              <button onClick={handleSave} disabled={saving}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer', fontSize: '11.5px',
                   color: TK.textLight, fontFamily: 'inherit', transition: 'color 0.14s',

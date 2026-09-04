@@ -41,6 +41,47 @@ describe('User model schema', () => {
     const schema = User.schema;
     expect(schema.path('passwordResetExpires')).toBeDefined();
   });
+
+  // ── Onboarding / activation-flow fields ─────────────────────────────────
+  // Added alongside the OnboardingWizard rewrite + completeOnboarding fix
+  // (server/controllers/userController.js) — these back the backward-compat
+  // completion policy: a completion timestamp/version distinct from the
+  // boolean flag, and a communication preference distinct from `jobRole`
+  // (business role) and `role` (auth role), which must never be conflated.
+  it('isProfileComplete defaults to false', () => {
+    const user = new User({ email: 'x@x.com', password: 'p', fullName: 'T', phoneNumber: '1' });
+    expect(user.isProfileComplete).toBe(false);
+  });
+
+  it('onboardingCompletedAt and onboardingVersion default to null', () => {
+    const user = new User({ email: 'x@x.com', password: 'p', fullName: 'T', phoneNumber: '1' });
+    expect(user.onboardingCompletedAt).toBeNull();
+    expect(user.onboardingVersion).toBeNull();
+  });
+
+  it('accepts a valid communicationPreference (whatsapp/phone/email)', () => {
+    for (const pref of ['whatsapp', 'phone', 'email']) {
+      const user = new User({ email: 'x@x.com', password: 'p', fullName: 'T', phoneNumber: '1', communicationPreference: pref });
+      const err = user.validateSync();
+      expect(err?.errors?.communicationPreference).toBeUndefined();
+      expect(user.communicationPreference).toBe(pref);
+    }
+  });
+
+  it('rejects a communicationPreference outside the enum', () => {
+    const user = new User({ email: 'x@x.com', password: 'p', fullName: 'T', phoneNumber: '1', communicationPreference: 'carrier-pigeon' });
+    const err = user.validateSync();
+    expect(err.errors.communicationPreference).toBeDefined();
+  });
+
+  it('jobRole (business title) is a distinct free-text field from role (auth level)', () => {
+    const user = new User({
+      email: 'x@x.com', password: 'p', fullName: 'T', phoneNumber: '1',
+      jobRole: 'Founder', role: 'ADMIN',
+    });
+    expect(user.jobRole).toBe('Founder');
+    expect(user.role).toBe('ADMIN');
+  });
 });
 
 describe('Invoice model schema', () => {
@@ -103,6 +144,63 @@ describe('Notification model schema', () => {
   it('type defaults to info', () => {
     const n = new Notification({ user: new mongoose.Types.ObjectId(), title: 'T', message: 'M' });
     expect(n.type).toBe('info');
+  });
+});
+
+describe('Message / MessageThread model schema', () => {
+  const { Message, MessageThread } = require('../models/Message');
+
+  const base = () => ({
+    threadId:  new mongoose.Types.ObjectId(),
+    sender:    new mongoose.Types.ObjectId(),
+    recipient: new mongoose.Types.ObjectId(),
+  });
+
+  it('accepts a text-only message with no attachments', () => {
+    const msg = new Message({ ...base(), content: 'Hello there' });
+    expect(msg.validateSync()).toBeUndefined();
+  });
+
+  it('accepts an attachment-only message with empty content', () => {
+    const msg = new Message({ ...base(), content: '', attachments: [new mongoose.Types.ObjectId()] });
+    expect(msg.validateSync()).toBeUndefined();
+  });
+
+  it('rejects a message with neither content nor attachments', () => {
+    const msg = new Message({ ...base(), content: '' });
+    const err = msg.validateSync();
+    expect(err).toBeDefined();
+    expect(err.message).toMatch(/content or at least one attachment/i);
+  });
+
+  it('rejects a message with only whitespace content and no attachments', () => {
+    const msg = new Message({ ...base(), content: '   ' });
+    expect(msg.validateSync()).toBeDefined();
+  });
+
+  it('caps message content at 8000 characters', () => {
+    const msg = new Message({ ...base(), content: 'a'.repeat(8001) });
+    const err = msg.validateSync();
+    expect(err.errors.content).toBeDefined();
+  });
+
+  it('MessageThread notes require content and author', () => {
+    const thread = new MessageThread({
+      participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
+      notes: [{ content: '' }],
+    });
+    const err = thread.validateSync();
+    expect(err?.errors?.['notes.0.content']).toBeDefined();
+    expect(err?.errors?.['notes.0.author']).toBeDefined();
+  });
+
+  it('MessageThread notes accept a valid entry', () => {
+    const thread = new MessageThread({
+      participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
+      notes: [{ content: 'Internal note', author: new mongoose.Types.ObjectId() }],
+    });
+    expect(thread.validateSync()).toBeUndefined();
+    expect(thread.notes[0].content).toBe('Internal note');
   });
 });
 

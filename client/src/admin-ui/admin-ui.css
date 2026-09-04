@@ -10,22 +10,36 @@
 .au-btn { transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s, box-shadow 0.15s; }
 .au-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.au-btn-primary:hover:not(:disabled)   { background: #1D4ED8 !important; }
-.au-btn-secondary:hover:not(:disabled) { border-color: rgba(37,99,235,0.4) !important; color: #2563EB !important; background: rgba(37,99,235,0.04) !important; }
-.au-btn-ghost:hover:not(:disabled)     { background: rgba(17,24,39,0.04) !important; color: #0D1117 !important; }
+.au-btn-primary:hover:not(:disabled)   { background: #000000 !important; }
+.au-btn-secondary:hover:not(:disabled) { border-color: rgba(24,24,27,0.3) !important; color: #18181B !important; background: rgba(24,24,27,0.03) !important; }
+.au-btn-ghost:hover:not(:disabled)     { background: rgba(24,24,27,0.05) !important; color: #18181B !important; }
 .au-btn-danger:hover:not(:disabled)    { background: rgba(220,38,38,0.14) !important; }
 
 .au-icon-btn { transition: background 0.14s, color 0.14s; }
-.au-icon-btn:hover { background: rgba(17,24,39,0.05); color: #0D1117; }
+.au-icon-btn:hover { background: rgba(24,24,27,0.06); color: #18181B; }
 .au-icon-btn-danger:hover { background: rgba(220,38,38,0.1) !important; color: #dc2626 !important; }
 
 .au-row { transition: background 0.12s; }
-.au-row:hover { background: rgba(17,24,39,0.02); }
+.au-row:hover { background: rgba(24,24,27,0.025); }
 
 .au-input { transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
-.au-input:hover:not(:focus-within):not(.au-input--error):not(.au-input--disabled) { border-color: #D3D9E3; }
-.au-input:focus-within { border-color: rgba(37,99,235,0.45) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
-.au-input input, .au-input textarea, .au-input select { outline: none; background: transparent; border: none; font-family: inherit; }
+.au-input:hover:not(:focus-within):not(.au-input--error):not(.au-input--disabled) { border-color: #D4D4D8; }
+.au-input:focus-within { border-color: rgba(24,24,27,0.4) !important; box-shadow: 0 0 0 3px rgba(24,24,27,0.06); }
+/* The wrapper is the ONLY frame — every state of the inner control (default,
+   hover, focus, keyboard-focus) stays fully unstyled so it can never grow a
+   second border/background/ring of its own. `:focus-visible` needs its own
+   line with `!important`: the site-wide `input:focus-visible` rule in
+   index.css (global focus ring for every standalone field) matches with
+   identical specificity, and — being a separate stylesheet — can win purely
+   on source order, repainting an independent outline + box-shadow directly
+   on the input on top of `.au-input:focus-within`'s ring above. That was the
+   literal cause of the "input inside an input" nested-box bug in the message
+   composers: the wrapper darkened correctly, and the inner textarea grew a
+   second frame from this exact conflict. */
+.au-input input, .au-input textarea, .au-input select,
+.au-input input:focus-visible, .au-input textarea:focus-visible, .au-input select:focus-visible {
+  outline: none; background: transparent; border: none; border-radius: 0; box-shadow: none !important; font-family: inherit;
+}
 .au-input input::placeholder, .au-input textarea::placeholder { color: #9CA3AF; }
 
 /* Invalid state — border + focus ring switch to red; never the only signal
@@ -50,95 +64,66 @@
 }
 
 .au-card { transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s; box-shadow: 0 1px 2px rgba(15,23,42,.025); }
-.au-card-hover:hover { box-shadow: 0 14px 32px rgba(15,23,42,0.08); border-color: rgba(37,99,235,0.22); transform: translateY(-1px); }
+.au-card-hover:hover { box-shadow: 0 10px 26px rgba(15,23,42,0.06); border-color: #D4D4D8; transform: translateY(-1px); }
 
-.yansy-app-shell {
-  background:
-    radial-gradient(circle at 12% 4%, rgba(37,99,235,.07), transparent 25rem),
-    linear-gradient(180deg, #f8faff 0, #f4f6fa 28rem) !important;
-}
+/* Flat, uniform white canvas — the whole shell (sidebar included) reads as
+   one surface rather than a dark rail against a light page. */
+.yansy-app-shell { background: #FFFFFF !important; }
 .layout-main > div { background-color: transparent !important; }
 .au-page-header {
   position: relative;
-  overflow: hidden;
-  padding: clamp(22px, 3vw, 32px) !important;
-  border: 1px solid #e1e6ef;
-  border-radius: 22px;
-  background: linear-gradient(125deg, rgba(255,255,255,.98), rgba(246,249,255,.94));
-  box-shadow: 0 14px 44px rgba(15,23,42,.055);
-}
-.au-page-header::after {
-  content: '';
-  position: absolute;
-  inset-inline-end: -70px;
-  top: -105px;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  border: 1px solid rgba(37,99,235,.12);
-  box-shadow: 0 0 0 36px rgba(37,99,235,.035), 0 0 0 72px rgba(37,99,235,.018);
-  pointer-events: none;
+  padding: clamp(20px, 3vw, 28px) !important;
+  border: 1px solid #E7E7E9;
+  border-radius: 16px;
+  background: #FFFFFF;
 }
 .au-page-header > * { position: relative; z-index: 1; }
 .yansy-client-page { padding: clamp(24px,4vw,52px) !important; }
 .yansy-client-page-head {
   position: relative;
-  padding: 24px 26px;
-  border: 1px solid #e1e6ef;
-  border-radius: 20px;
-  background: rgba(255,255,255,.9);
-  box-shadow: 0 10px 36px rgba(15,23,42,.045);
-  overflow: hidden;
+  padding: 22px 24px;
+  border: 1px solid #E7E7E9;
+  border-radius: 16px;
+  background: #FFFFFF;
 }
-.yansy-client-page-head::after {
-  content: '';
-  position: absolute;
-  inset-inline-end: -28px;
-  top: -64px;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(37,99,235,.12), rgba(37,99,235,.025) 58%, transparent 60%);
-  pointer-events: none;
-}
-.yansy-project-card { box-shadow: 0 8px 26px rgba(15,23,42,.045); }
-.yansy-project-card:hover { transform: translateY(-2px); }
+.yansy-project-card { box-shadow: none; }
+.yansy-project-card:hover { transform: translateY(-1px); }
 @media (max-width: 640px) {
   .yansy-client-page { padding: 18px 14px 36px !important; }
-  .yansy-client-page-head { padding: 20px; border-radius: 17px; }
+  .yansy-client-page-head { padding: 18px; border-radius: 14px; }
 }
-.yansy-skip-link { position: fixed; inset-inline-start: 16px; top: -60px; z-index: 999; padding: 10px 16px; border-radius: 10px; background: #111827; color: #fff; text-decoration: none; transition: top .2s; }
+.yansy-skip-link { position: fixed; inset-inline-start: 16px; top: -60px; z-index: 999; padding: 10px 16px; border-radius: 10px; background: #18181B; color: #fff; text-decoration: none; transition: top .2s; }
 .yansy-skip-link:focus { top: 12px; }
 
 .au-tab { transition: color 0.15s, border-color 0.15s; }
-.au-tab:hover { color: #0D1117 !important; }
+.au-tab:hover { color: #18181B !important; }
 
 .au-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .au-scroll::-webkit-scrollbar-track { background: transparent; }
-.au-scroll::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.15); border-radius: 3px; }
+.au-scroll::-webkit-scrollbar-thumb { background: rgba(24,24,27,0.14); border-radius: 3px; }
 
-.au-checkbox { accent-color: #2563EB; cursor: pointer; }
+.au-checkbox { accent-color: #18181B; cursor: pointer; }
 
 .au-back-link { transition: color 0.15s; }
-.au-back-link:hover { color: #2563EB !important; }
+.au-back-link:hover { color: #18181B !important; }
 
 .au-upload-tile { transition: border-color 0.15s, background 0.15s; }
-.au-upload-tile:hover { border-color: rgba(37,99,235,0.45) !important; background: rgba(37,99,235,0.03); }
+.au-upload-tile:hover { border-color: rgba(24,24,27,0.35) !important; background: rgba(24,24,27,0.02); }
 
-/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+/* ── Sidebar — light, flush with the rest of the shell ─────────────────────── */
 .au-resize-handle::before {
   content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
   transform: translateX(-50%); background: transparent; transition: background 0.15s;
 }
 .au-resize-handle:hover::before,
-.au-resize-handle:active::before { background: #2563EB; }
+.au-resize-handle:active::before { background: #18181B; }
 .au-resize-handle:hover svg { opacity: 0.5 !important; }
-.yansy-sidebar-premium .au-icon-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
-.yansy-sidebar-premium .yansy-sidebar-search:focus-within { border-color: rgba(96,165,250,.45) !important; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
-.yansy-sidebar-premium .yansy-sidebar-search input::placeholder { color: #64748B; }
-.yansy-sidebar-premium .au-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,.16); }
+.yansy-sidebar-premium .au-icon-btn:hover { background: rgba(24,24,27,0.06); color: #18181B; }
+.yansy-sidebar-premium .yansy-sidebar-search:focus-within { border-color: rgba(24,24,27,0.3) !important; box-shadow: 0 0 0 3px rgba(24,24,27,0.06); }
+.yansy-sidebar-premium .yansy-sidebar-search input::placeholder { color: #9A9AA0; }
+.yansy-sidebar-premium .au-scroll::-webkit-scrollbar-thumb { background: rgba(24,24,27,0.12); }
 
-.au-sidebar-row:focus-visible { outline: 2px solid rgba(37,99,235,0.5); outline-offset: -2px; }
+.au-sidebar-row:focus-visible { outline: 2px solid rgba(24,24,27,0.45); outline-offset: -2px; }
 
 @media (max-width: 1180px) and (min-width: 1024px) {
   .layout-sidebar[data-auto-compact="true"] { width: 68px !important; }

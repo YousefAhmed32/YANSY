@@ -33,7 +33,7 @@ const startProjectSettingsSchema = new mongoose.Schema(
       whatsappChosen:   { type: Number, default: 0 },
       formChosen:       { type: Number, default: 0 },
       whatsappSubmitted:{ type: Number, default: 0 },
-      formStepReached:  { type: [Number], default: [0, 0, 0, 0] }, // index = step - 1
+      formStepReached:  { type: [Number], default: [0, 0, 0, 0, 0] }, // index = step - 1 (5 steps as of the guided-workspace redesign)
       formCompleted:    { type: Number, default: 0 },
       totalCompletionSeconds: { type: Number, default: 0 },
     },

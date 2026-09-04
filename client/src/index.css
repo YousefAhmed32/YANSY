@@ -270,10 +270,23 @@
   }
   [dir="rtl"] .section-label { letter-spacing: 0; }
 
-  /* Input focus ring — consistent across all inputs */
-  input:focus-visible,
-  textarea:focus-visible,
-  select:focus-visible {
+  /* Input focus ring — consistent across all STANDALONE inputs (a field that
+     owns its own border/background directly). `:not(.control-embed)` is the
+     escape hatch: a control living inside a compound shell (icon/attachment/
+     action-button composers — see `.control-shell`/`.control-embed` below,
+     and admin-ui's `.au-input`) carries `.control-embed` and is excluded here
+     on purpose — otherwise this rule paints a SECOND, independent focus frame
+     directly on the inner input on top of the shell's own `:focus-within`
+     treatment, which is exactly the "input inside an input" nested-box bug
+     (verified live in the message composers before this fix: the shell's
+     border darkened correctly, but the inner textarea *also* grew its own
+     outline + box-shadow from this rule, rendering as a second box floating
+     inside the pill). Standalone fields (this site's large majority — every
+     plain labeled input/select/textarea with no icon or action button glued
+     to it) are untouched and keep this exact ring. */
+  input:focus-visible:not(.control-embed),
+  textarea:focus-visible:not(.control-embed),
+  select:focus-visible:not(.control-embed) {
     outline: 2px solid rgb(var(--accent) / 0.5);
     outline-offset: 0;
     border-color: rgb(var(--accent)) !important;
@@ -502,12 +515,69 @@
 /* ═══════════════════════════════════════════════════════════════
    ACCESSIBILITY
    ═══════════════════════════════════════════════════════════════ */
-:focus-visible {
+:focus-visible:not(.control-embed) {
   outline: 2px solid rgb(var(--accent, 37 99 235));
   outline-offset: 2px;
   border-radius: 4px;
 }
 :focus:not(:focus-visible) { outline: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPOUND CONTROL SHELL — the shared fix for "input inside an
+   input". Use this pair whenever an editable control needs an icon,
+   a prefix, an attachment chip, or an action button glued to it
+   (a search field, a message composer, a password field with a
+   reveal button, …). A plain standalone field — just a bordered
+   input with a label — does NOT need this; it keeps its native
+   border and the site-wide focus ring above.
+
+   `.control-shell`  → the ONE visual frame: owns background, border,
+                        radius and the focus ring (via :focus-within,
+                        so it lights up for any control inside it,
+                        including a sibling icon-button — no JS
+                        focus/blur handlers needed).
+   `.control-embed`  → every native input/textarea/select inside the
+                        shell. Deliberately paints nothing of its own
+                        — no border, no background, no radius, no
+                        outline, no box-shadow, in every state
+                        (default, hover, focus, focus-visible) — so
+                        the shell is always the only frame the user
+                        sees. Buttons inside the shell (attach, clear,
+                        reveal-password, send) stay independently
+                        focusable/keyboard-reachable; only the text
+                        control itself gives up its own chrome.
+   ───────────────────────────────────────────────────────────────── */
+.control-shell {
+  display: flex;
+  align-items: center;
+  background: rgb(var(--bg-elevated));
+  border: 1px solid rgb(var(--border));
+  border-radius: var(--radius-md, 10px);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.control-shell:focus-within {
+  border-color: rgb(var(--accent));
+  box-shadow: 0 0 0 3px rgb(var(--accent) / 0.1);
+}
+.control-shell:hover:not(:focus-within) { border-color: rgb(var(--border-strong)); }
+.control-shell[aria-disabled="true"],
+.control-shell.is-disabled {
+  background: rgb(var(--bg-secondary));
+  opacity: 0.65;
+}
+.control-shell.has-error { border-color: rgb(var(--danger)) !important; }
+.control-shell.has-error:focus-within { box-shadow: 0 0 0 3px rgb(var(--danger) / 0.12); }
+
+.control-embed,
+.control-embed:hover,
+.control-embed:focus,
+.control-embed:focus-visible {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    REDUCED MOTION

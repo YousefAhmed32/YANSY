@@ -912,9 +912,10 @@
       "step": "Step {{step}} of {{total}}",
       "names": {
         "projectType": "Project Type",
-        "idea": "Your Idea",
-        "details": "Details",
-        "contact": "Contact"
+        "brief": "Project Brief",
+        "capabilities": "Capabilities",
+        "scope": "Scope",
+        "review": "Review & Contact"
       },
       "projectType": {
         "title": "What kind of project is this?",
@@ -941,7 +942,8 @@
       },
       "projectDescription": {
         "title": "Tell us about your project",
-        "placeholder": "What are you building? What problem does it solve? The more detail, the better we can help...",
+        "hint": "Cover the problem you're solving, your goal, and who'll use it — a few sentences is plenty.",
+        "placeholder": "e.g. \"Our clinic still books appointments by phone. We want patients to book online, get reminders, and staff to see a daily schedule.\"",
         "error": "Please add at least a brief description (10+ characters)"
       },
       "reference": {
@@ -952,9 +954,17 @@
       },
       "tags": {
         "title": "What features do you need?",
+        "hint": "Optional — pick what you already know you need. We can suggest the rest together.",
         "optional": "optional",
         "selected": "selected",
         "selectedLabel": "Your selection",
+        "searchPlaceholder": "Search features…",
+        "searchClear": "Clear search",
+        "searchEmpty": "No features match \"{{query}}\"",
+        "emptyHint": "Optional — skip this if you're not sure yet, or pick a few to help our team scope things faster.",
+        "selectedCount": "{{count}} selected",
+        "clearAll": "Clear all",
+        "removeOne": "Remove {{name}}",
         "categories": {
           "auth": "Authentication & Users",
           "dashboard": "Dashboard & Analytics",
@@ -1046,6 +1056,18 @@
         "accountInfo": "Your Account",
         "name": "Name",
         "emailLabel": "Email"
+      },
+      "review": {
+        "title": "Review your request",
+        "hint": "Take a second look before sending — you can edit any section.",
+        "edit": "Edit",
+        "projectType": "Project type",
+        "brief": "Brief",
+        "capabilities": "Capabilities",
+        "capabilitiesNone": "None selected",
+        "budget": "Budget",
+        "timeline": "Timeline",
+        "buildingFor": "Building for"
       }
     },
     "budgetOptions": {
@@ -1105,6 +1127,20 @@
       "messageBudget": "Budget",
       "messageTimeline": "Timeline",
       "messageClosing": "I'd like to discuss my project."
+    },
+    "closeConfirm": {
+      "title": "Keep this for later?",
+      "body": "Your answers are saved automatically — close now and pick up right where you left off next time.",
+      "keepEditing": "Keep editing",
+      "closeAndSave": "Close (draft saved)"
+    },
+    "draftResume": {
+      "banner": "Continuing your saved project brief",
+      "startOver": "Start over"
+    },
+    "languageSwitch": {
+      "toEnglish": "EN",
+      "toArabic": "عربي"
     }
   },
   "onboarding": {

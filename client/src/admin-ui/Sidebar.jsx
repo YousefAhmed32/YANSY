@@ -11,6 +11,7 @@ import {
   FileSignature, UserRound, HandCoins, LayoutTemplate,
 } from 'lucide-react';
 import { TK, RADIUS, SHADOW, MOTION } from './tokens';
+import { Avatar } from './Primitives';
 
 // ── Nav data model — smart grouped IA ─────────────────────────────────────────
 // Grouped by mental model, not by when the feature shipped: Workspace (personal
@@ -103,14 +104,9 @@ const buildClientNav = (language) => {
 const NO_SECTION_HIGHLIGHT = new Set(['/app/dashboard', '/app/admin', '/app/billing', '/app/invoices', '/app/payments', '/app/account', '/app/support', '/feedback']);
 const MIN_W = 208, MAX_W = 336, DEFAULT_W = 248;
 const RECENT_CAP = 4;
-const NAV_TONES = [
-  { fg: '#60A5FA', bg: 'rgba(59,130,246,.16)' },
-  { fg: '#A78BFA', bg: 'rgba(139,92,246,.16)' },
-  { fg: '#34D399', bg: 'rgba(16,185,129,.15)' },
-  { fg: '#FBBF24', bg: 'rgba(245,158,11,.15)' },
-  { fg: '#FB7185', bg: 'rgba(244,63,94,.15)' },
-  { fg: '#22D3EE', bg: 'rgba(6,182,212,.15)' },
-];
+// One consistent neutral tone for every nav icon — the old per-item rainbow
+// (six hues cycled by path-hash) read as decorative noise rather than
+// meaning; the approved reference uses plain outline icons throughout.
 
 const readLS = (key, fallback) => {
   try { const v = localStorage.getItem(key); return v == null ? fallback : JSON.parse(v); } catch { return fallback; }
@@ -261,8 +257,6 @@ const Sidebar = ({
     const active = isActive(link.to) || isActiveSection(link.to);
     const pinned = favorites.includes(link.to);
     const showUnread = (link.to === '/app/messages' || link.to === '/app/admin/messages') && msgUnread > 0;
-    const toneIndex = Math.abs([...link.to].reduce((sum, char) => sum + char.charCodeAt(0), 0)) % NAV_TONES.length;
-    const tone = NAV_TONES[toneIndex];
 
     return (
       <Link
@@ -282,23 +276,15 @@ const Sidebar = ({
           margin: '1px 8px', padding: collapsed ? '9px 0' : '7px 8px 7px 10px',
           justifyContent: collapsed ? 'center' : 'flex-start',
           textDecoration: 'none', minHeight: '34px',
-          color: active ? '#FFFFFF' : (hov ? '#F8FAFC' : '#A8B3C7'),
-          background: active ? 'linear-gradient(90deg,rgba(37,99,235,.28),rgba(37,99,235,.10))' : (hov ? 'rgba(255,255,255,.055)' : 'transparent'),
-          border: `1px solid ${active ? 'rgba(96,165,250,.24)' : 'transparent'}`,
-          borderRadius: '12px',
+          color: active ? TK.inkFg : (hov ? TK.text : TK.textMuted),
+          background: active ? TK.ink : (hov ? TK.hoverBg : 'transparent'),
+          borderRadius: '10px',
           transition: `background ${MOTION.fast} ${MOTION.ease}, color ${MOTION.fast} ${MOTION.ease}`,
           position: 'relative', opacity: dim ? 0.55 : 1,
         }}
       >
-        {active && (
-          <span aria-hidden style={{
-            position: 'absolute', [isRTL ? 'right' : 'left']: collapsed ? 0 : '-1px', top: '22%', bottom: '22%',
-            width: '2.5px', borderRadius: isRTL ? '2px 0 0 2px' : '0 2px 2px 0',
-            background: '#60A5FA', boxShadow: '0 0 14px rgba(96,165,250,.7)', transition: `all ${MOTION.base} ${MOTION.spring}`,
-          }} />
-        )}
-        <span style={{ width: 31, height: 31, borderRadius: 9, display: 'grid', placeItems: 'center', flexShrink: 0, color: active ? '#fff' : tone.fg, background: active ? 'rgba(255,255,255,.12)' : tone.bg, border: `1px solid ${active ? 'rgba(255,255,255,.12)' : 'transparent'}` }}>
-          <Icon style={{ width: '15.5px', height: '15.5px' }} />
+        <span style={{ width: 28, height: 28, borderRadius: 8, display: 'grid', placeItems: 'center', flexShrink: 0, color: active ? TK.inkFg : TK.textMuted }}>
+          <Icon style={{ width: '16px', height: '16px', strokeWidth: 1.8 }} />
         </span>
         {!collapsed && (
           <span style={{
@@ -334,7 +320,7 @@ const Sidebar = ({
       <div className="yansy-sidebar-body" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
         {/* ── Workspace header ── */}
-        <div style={{ padding: isCollapsed ? '13px 0' : '16px 12px 13px', borderBottom: '1px solid rgba(255,255,255,.08)', flexShrink: 0 }}>
+        <div style={{ padding: isCollapsed ? '13px 0' : '16px 12px 13px', borderBottom: `1px solid ${TK.border}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
             <button
               onClick={() => navigate(isAdmin ? '/app/admin/settings' : '/app/account')}
@@ -347,26 +333,34 @@ const Sidebar = ({
               className="au-icon-btn"
             >
               <div style={{
-                width: isCollapsed ? '38px' : '42px', height: '38px', borderRadius: '11px', flexShrink: 0,
-                background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.13)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 24px rgba(0,0,0,.22)', overflow: 'hidden',
+                width: isCollapsed ? '38px' : '40px', height: '36px', borderRadius: '10px', flexShrink: 0,
+                background: TK.bgSubtle, border: `1px solid ${TK.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                overflow: 'hidden',
               }}>
-                <img src="/assets/image/logo/favicon-96x96.png" alt="YANSY" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
+                <img src="/assets/image/logo/favicon-96x96.png" alt="YANSY" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
               </div>
               {!isCollapsed && (
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.025em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    YANSY <span style={{ color: '#60A5FA' }}>Tech</span>
+                  {/* Brand name is always Latin text — without an explicit ltr
+                      isolation it inherits the shell's `direction: rtl` in
+                      Arabic mode, so an overflow ellipsis clips from the front
+                      ("…SY Tech") instead of the end. */}
+                  <div dir="ltr" style={{ fontSize: '14px', fontWeight: 800, color: TK.text, letterSpacing: '-0.025em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: isRTL ? 'right' : 'left' }}>
+                    YANSY Tech
                   </div>
-                  <div style={{ fontSize: '10px', color: '#7F8CA3', whiteSpace: 'nowrap' }}>
-                    {isAdmin ? (isRTL ? 'مساحة الإدارة' : 'Admin Workspace') : (isRTL ? 'مساحة العميل' : 'Client Workspace')}
+                  <div style={{ fontSize: '10px', color: TK.textLight, whiteSpace: 'nowrap' }}>
+                    {isAdmin ? (isRTL ? 'مساحة الإدارة' : 'Admin Workspace') : (isRTL ? 'مساحة العمل' : 'Workspace')}
                   </div>
                 </div>
               )}
               {!isCollapsed && <ChevronDown style={{ width: 13, height: 13, color: TK.textLight, flexShrink: 0 }} />}
             </button>
 
-            {!isMobileDrawer && !isCollapsed && (
+            {/* "Float sidebar" is an admin power-user affordance (dense nav,
+                heavy resizing); the client workspace has 8 static links and
+                doesn't need it — hiding it for clients also recovers width
+                the brand name needs to avoid truncating. */}
+            {isAdmin && !isMobileDrawer && !isCollapsed && (
               <button
                 onClick={() => setFloating(v => !v)}
                 aria-label={floating ? (isRTL ? 'تثبيت الشريط الجانبي' : 'Dock sidebar') : (isRTL ? 'تعويم الشريط الجانبي' : 'Float sidebar')}
@@ -402,14 +396,14 @@ const Sidebar = ({
 
           {/* ── In-sidebar search ── */}
           {!isCollapsed && (
-            <div className="au-input yansy-sidebar-search" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,.055)', border: '1px solid rgba(255,255,255,.09)', borderRadius: '11px', padding: '9px 11px' }}>
-              <Search style={{ width: 14, height: 14, color: '#77849A', flexShrink: 0 }} />
+            <div className="au-input yansy-sidebar-search" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px', background: TK.bgSubtle, border: `1px solid ${TK.border}`, borderRadius: '10px', padding: '9px 11px' }}>
+              <Search style={{ width: 14, height: 14, color: TK.textLight, flexShrink: 0 }} />
               <input
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
                 placeholder={isRTL ? 'تصفية التنقل…' : 'Filter navigation…'}
                 aria-label={isRTL ? 'تصفية التنقل' : 'Filter navigation'}
-                style={{ flex: 1, fontSize: '12px', color: '#F8FAFC', minWidth: 0, background: 'transparent' }}
+                style={{ flex: 1, fontSize: '12px', color: TK.text, minWidth: 0, background: 'transparent' }}
               />
               {filter && (
                 <button onClick={() => setFilter('')} aria-label={isRTL ? 'مسح' : 'Clear'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textLight, padding: 0, display: 'flex' }}>
@@ -490,18 +484,18 @@ const Sidebar = ({
         </nav>
 
         {/* ── Footer ── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', padding: '7px 5px 5px', flexShrink: 0 }}>
+        <div style={{ borderTop: `1px solid ${TK.border}`, padding: '7px 5px 5px', flexShrink: 0 }}>
           <button
             onClick={onOpenSearch}
             aria-label={isRTL ? 'بحث شامل' : 'Global search'}
             className="au-icon-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '9px', width: '100%', padding: isCollapsed ? '9px 0' : '9px 12px', justifyContent: isCollapsed ? 'center' : 'flex-start', background: 'transparent', border: 'none', cursor: 'pointer', color: '#93A0B5' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '9px', width: '100%', padding: isCollapsed ? '9px 0' : '9px 12px', justifyContent: isCollapsed ? 'center' : 'flex-start', background: 'transparent', border: 'none', cursor: 'pointer', color: TK.textMuted }}
           >
-            <Search style={{ width: 13.5, height: 13.5, opacity: 0.6, flexShrink: 0 }} />
+            <Search style={{ width: 13.5, height: 13.5, opacity: 0.7, flexShrink: 0 }} />
             {!isCollapsed && (
               <>
                 <span style={{ flex: 1, fontSize: '12px', textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? 'بحث شامل' : 'Search everywhere'}</span>
-                <kbd style={{ padding: '2px 6px', borderRadius: '5px', fontSize: '9px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#7F8CA3', fontFamily: 'monospace' }}>⌘K</kbd>
+                <kbd style={{ padding: '2px 6px', borderRadius: '5px', fontSize: '9px', background: TK.bgSubtle, border: `1px solid ${TK.border}`, color: TK.textLight, fontFamily: 'monospace' }}>⌘K</kbd>
               </>
             )}
           </button>
@@ -510,9 +504,9 @@ const Sidebar = ({
             onClick={toggleLanguage}
             aria-label={language === 'ar' ? 'Switch to English' : 'التحويل للعربية'}
             className="au-icon-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '9px', width: '100%', padding: isCollapsed ? '9px 0' : '9px 12px', justifyContent: isCollapsed ? 'center' : 'flex-start', background: 'transparent', border: 'none', cursor: 'pointer', color: '#93A0B5' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '9px', width: '100%', padding: isCollapsed ? '9px 0' : '9px 12px', justifyContent: isCollapsed ? 'center' : 'flex-start', background: 'transparent', border: 'none', cursor: 'pointer', color: TK.textMuted }}
           >
-            <Globe style={{ width: 13.5, height: 13.5, opacity: 0.6, flexShrink: 0 }} />
+            <Globe style={{ width: 13.5, height: 13.5, opacity: 0.7, flexShrink: 0 }} />
             {!isCollapsed && <span style={{ fontSize: '12px' }}>{language === 'en' ? 'العربية' : 'English'}</span>}
           </button>
 
@@ -525,23 +519,21 @@ const Sidebar = ({
                 display: 'flex', alignItems: 'center', gap: '9px', padding: isCollapsed ? '9px 0' : '8px 10px',
                 margin: isCollapsed ? 0 : '2px 4px 4px', width: isCollapsed ? '100%' : 'calc(100% - 8px)',
                 justifyContent: isCollapsed ? 'center' : 'flex-start',
-                background: userMenuOpen ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.035)',
-                border: isCollapsed ? 'none' : '1px solid rgba(255,255,255,.08)',
-                borderRadius: isCollapsed ? 0 : '12px', cursor: 'pointer', color: '#93A0B5',
+                background: userMenuOpen ? TK.hoverBg : 'transparent',
+                border: isCollapsed ? 'none' : `1px solid ${TK.border}`,
+                borderRadius: isCollapsed ? 0 : '12px', cursor: 'pointer', color: TK.textMuted,
                 transition: `all ${MOTION.fast} ${MOTION.ease}`,
               }}
               className="au-icon-btn"
             >
-              <div style={{ width: 31, height: 31, borderRadius: 9, flexShrink: 0, background: 'linear-gradient(135deg,#2563EB,#60A5FA)', border: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', boxShadow: '0 6px 16px rgba(37,99,235,.25)' }}>
-                {user?.fullName?.[0]?.toUpperCase() || '?'}
-              </div>
+              <Avatar name={user?.fullName} email={user?.email} size={30} />
               {!isCollapsed && (
                 <>
                   <div style={{ flex: 1, textAlign: isRTL ? 'right' : 'left', overflow: 'hidden', minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 650, color: '#F8FAFC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 12, fontWeight: 650, color: TK.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {user?.fullName || user?.email || (isRTL ? 'مستخدم' : 'User')}
                     </div>
-                    <div style={{ fontSize: 9, color: '#708097', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: 9, color: TK.textLight, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                       {isAdmin ? (isRTL ? 'مدير' : 'Admin') : (isRTL ? 'عضو' : 'Member')}
                     </div>
                   </div>
@@ -595,12 +587,12 @@ const Sidebar = ({
     position: 'fixed', top: 0, [isRTL ? 'right' : 'left']: 0, bottom: 0,
     borderRight: isRTL ? 'none' : `1px solid ${TK.border}`,
     borderLeft: isRTL ? `1px solid ${TK.border}` : 'none',
-    borderRadius: 0, background: 'linear-gradient(180deg,#0B1424 0%,#08101D 100%)', boxShadow: '0 0 42px rgba(2,6,23,.20)',
+    borderRadius: 0, background: TK.surface,
   };
   const floatingStyle = {
     position: 'fixed', top: 10, bottom: 10, [isRTL ? 'right' : 'left']: 10,
     borderRadius: RADIUS.xl, border: `1px solid ${TK.border}`,
-    background: 'rgba(8,16,29,.94)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
+    background: 'rgba(255,255,255,.98)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
     boxShadow: SHADOW.lg,
   };
 
@@ -642,7 +634,7 @@ const Sidebar = ({
           <div onClick={onCloseMobile} style={{ position: 'absolute', inset: 0, background: 'rgba(13,17,23,0.35)', backdropFilter: 'blur(3px)', animation: 'au-fadeIn 0.2s ease' }} />
           <div style={{
             position: 'absolute', top: 0, bottom: 0, [isRTL ? 'right' : 'left']: 0,
-            width: 'min(292px, 88vw)', background: 'linear-gradient(180deg,#0B1424,#08101D)',
+            width: 'min(292px, 88vw)', background: TK.surface,
             borderRight: isRTL ? 'none' : `1px solid ${TK.border}`,
             borderLeft: isRTL ? `1px solid ${TK.border}` : 'none',
             animation: `au-slideIn${isRTL ? 'Right' : 'Left'} 0.24s ${MOTION.ease}`,

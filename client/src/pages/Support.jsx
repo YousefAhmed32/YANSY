@@ -2,18 +2,8 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { LifeBuoy, ChevronDown, ChevronUp, Send, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { TK } from '../admin-ui';
 import axios from 'axios';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  accentBg:  'rgba(37,99,235,0.06)',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
-};
 
 const FAQ_EN = [
   { q: 'How long does a project take?',          a: 'Project timelines vary based on complexity. Most projects take 4–12 weeks. Your account manager will provide a detailed timeline after the kickoff meeting.' },

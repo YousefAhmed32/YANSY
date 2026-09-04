@@ -2,6 +2,14 @@ const { Message, MessageThread } = require('../models/Message');
 const { createNotification }    = require('./notificationController');
 const { logActivity }           = require('./activityController');
 
+// Notification deep-links must land on the interface the recipient actually
+// uses — an admin clicking a "customer replied" notification landing on the
+// customer-facing /app/messages page (which shows THEIR OWN inbox, not the
+// customer's) was a real, silent bug. `?thread=<id>` lets the target page
+// auto-select the right conversation instead of guessing the most-recent one.
+const customerMessagesLink = (threadId) => `/app/messages?thread=${threadId}`;
+const adminMessagesLink    = (threadId) => `/app/admin/messages?thread=${threadId}`;
+
 const THREAD_STATUSES = [
   'open', 'waiting_for_admin', 'waiting_for_customer', 'resolved', 'closed',
   'pending', 'in_progress',  // legacy
@@ -36,16 +44,33 @@ const notifyAllAdmins = async ({ title, message, link, groupKey, refId, io, prio
   ));
 };
 
-// Bump unread counts for all non-sender participants
+// Bump unread counts for all non-sender participants.
+//
+// `thread.participants` is sometimes an array of raw ObjectIds (createThread
+// builds a brand-new thread from `[req.user._id, recipient]`, never
+// populated) and sometimes an array of fully populated User documents
+// (sendMessage's `MessageThread.findById(...).populate('participants', ...)`
+// — needed there to resolve the reply's recipient). A populated Mongoose
+// document's `.toString()` does NOT return its id — it serializes toward a
+// long object-ish string — so calling this unconditionally on `pid` broke
+// every reply into an *existing* thread with a 500 the instant
+// `unreadCounts.set(that huge string, ...)` hit Mongoose's Map key
+// validation (which rejects keys containing "."). The message itself had
+// already been created by that point, so this crash also meant
+// `thread.save()`, the real-time `message-received` broadcast, and the
+// recipient's notification never ran for a reply that otherwise looked
+// like it worked.
 const bumpUnread = async (thread, senderId) => {
-  for (const pid of thread.participants) {
-    const id = pid.toString();
-    if (id !== senderId.toString()) {
+  const senderIdStr = senderId.toString();
+  for (const p of thread.participants) {
+    const id = (p && p._id ? p._id : p).toString();
+    if (id !== senderIdStr) {
       const current = thread.unreadCounts.get(id) || 0;
       thread.unreadCounts.set(id, current + 1);
     }
   }
 };
+exports._bumpUnread = bumpUnread; // exported for unit testing only — see __tests__/messageController.test.js
 
 // ── GET /threads ──────────────────────────────────────────────────────────────
 exports.getThreads = async (req, res, next) => {
@@ -120,20 +145,48 @@ exports.getThread = async (req, res, next) => {
       return res.status(404).json({ error: 'Thread not found' });
     }
 
-    const messages = await Message.find({ threadId: thread._id })
+    // Pagination: default page is the most recent `limit` messages (newest
+    // conversations load fast even after a long history accumulates).
+    // Pass `before` (an ISO timestamp, e.g. the oldest currently-loaded
+    // message's createdAt) to page further back in history.
+    const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
+    const before = req.query.before ? new Date(req.query.before) : null;
+
+    const msgQuery = { threadId: thread._id };
+    if (before && !Number.isNaN(before.getTime())) {
+      msgQuery.createdAt = { $lt: before };
+    }
+
+    const page = await Message.find(msgQuery)
       .populate('sender', 'fullName email role avatar')
-      .sort({ createdAt: 1 });
+      .populate('attachments')
+      .sort({ createdAt: -1 })
+      .limit(limit + 1);
 
-    // Mark read + reset unread counter
-    await Message.updateMany(
-      { threadId: thread._id, recipient: req.user._id, isRead: false },
-      { isRead: true, readAt: new Date() }
-    );
-    const userId = req.user._id.toString();
-    thread.unreadCounts.set(userId, 0);
-    await thread.save();
+    const hasMore  = page.length > limit;
+    const messages = page.slice(0, limit).reverse(); // oldest → newest for rendering
 
-    res.json({ thread, messages });
+    // Mark read + reset unread counter — only meaningful on the initial
+    // (most-recent) load; paging into older history doesn't affect it.
+    if (!before) {
+      await Message.updateMany(
+        { threadId: thread._id, recipient: req.user._id, isRead: false },
+        { isRead: true, readAt: new Date() }
+      );
+      const userId = req.user._id.toString();
+      thread.unreadCounts.set(userId, 0);
+      await thread.save();
+
+      // Let other participants (the sender) see their message flip to "read"
+      // live, without polling.
+      if (req.io) {
+        req.io.to(`thread:${thread._id}`).emit('thread-read', {
+          threadId: thread._id, readBy: req.user._id,
+        });
+      }
+    }
+
+    res.json({ thread, messages, hasMore });
   } catch (error) {
     next(error);
   }
@@ -154,6 +207,7 @@ exports.getThreadByProject = async (req, res, next) => {
 
     const messages = await Message.find({ threadId: thread._id })
       .populate('sender', 'fullName email role avatar')
+      .populate('attachments')
       .sort({ createdAt: 1 });
 
     await Message.updateMany(
@@ -183,6 +237,10 @@ exports.createThread = async (req, res, next) => {
 
     if (isAdmin && !recipient) {
       return res.status(400).json({ error: 'Recipient required' });
+    }
+
+    if (!(content && content.trim()) && !(Array.isArray(attachments) && attachments.length)) {
+      return res.status(400).json({ error: 'Message must have content or at least one attachment' });
     }
 
     // Check for existing open thread between these participants (no project-specific threads)
@@ -228,14 +286,15 @@ exports.createThread = async (req, res, next) => {
     await thread.save();
 
     const populated = await Message.findById(message._id)
-      .populate('sender', 'fullName email role avatar');
+      .populate('sender', 'fullName email role avatar')
+      .populate('attachments');
 
     // Notify the other side
     if (!isAdmin) {
       await notifyAllAdmins({
         title:    'New support request',
         message:  `${req.user.fullName || 'Customer'}: ${content?.slice(0, 80)}${content?.length > 80 ? '…' : ''}`,
-        link:     '/app/messages',
+        link:     adminMessagesLink(thread._id),
         groupKey: `thread_${thread._id}`,
         refId:    message._id,
         io:       req.io,
@@ -251,7 +310,7 @@ exports.createThread = async (req, res, next) => {
         type:     'admin_reply',
         title:    'Message from YANSY Team',
         message:  `${req.user.fullName || 'Support'}: ${content?.slice(0, 80)}${content?.length > 80 ? '…' : ''}`,
-        link:     '/app/messages',
+        link:     customerMessagesLink(thread._id),
         priority: 'high',
         groupKey: `thread_${thread._id}`,
         refType:  'Message',
@@ -294,6 +353,10 @@ exports.sendMessage = async (req, res, next) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    if (!(content && content.trim()) && !(Array.isArray(attachments) && attachments.length)) {
+      return res.status(400).json({ error: 'Message must have content or at least one attachment' });
+    }
+
     // Find the other participant
     const recipient = thread.participants.find(
       p => p._id.toString() !== req.user._id.toString()
@@ -321,7 +384,8 @@ exports.sendMessage = async (req, res, next) => {
     await thread.save();
 
     const populated = await Message.findById(message._id)
-      .populate('sender', 'fullName email role avatar');
+      .populate('sender', 'fullName email role avatar')
+      .populate('attachments');
 
     // Real-time broadcast to thread room
     if (req.io) {
@@ -340,7 +404,7 @@ exports.sendMessage = async (req, res, next) => {
       await notifyAllAdmins({
         title:    'Customer replied',
         message:  `${req.user.fullName || 'Customer'}: ${content?.slice(0, 80)}${content?.length > 80 ? '…' : ''}`,
-        link:     '/app/messages',
+        link:     adminMessagesLink(thread._id),
         groupKey: `thread_${thread._id}`,
         refId:    message._id,
         io:       req.io,
@@ -352,7 +416,7 @@ exports.sendMessage = async (req, res, next) => {
         type:     'admin_reply',
         title:    'YANSY Team replied',
         message:  `${req.user.fullName || 'Support'}: ${content?.slice(0, 80)}${content?.length > 80 ? '…' : ''}`,
-        link:     '/app/messages',
+        link:     customerMessagesLink(thread._id),
         priority: 'high',
         groupKey: `thread_${thread._id}`,
         refType:  'Message',
@@ -500,6 +564,93 @@ exports.searchThreads = async (req, res, next) => {
 
     res.json({ threads });
   } catch (error) {
+    next(error);
+  }
+};
+
+// ── GET /threads/:id/notes — admin-only internal notes ─────────────────────────
+// Never exposed to, or reachable by, a customer — enforced here, not just by
+// the UI hiding the panel.
+exports.getThreadNotes = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const thread = await MessageThread.findById(req.params.id)
+      .select('notes')
+      .populate('notes.author', 'fullName email');
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    res.json({ notes: thread.notes || [] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /threads/:id/notes ─────────────────────────────────────────────────────
+exports.addThreadNote = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const content = (req.body.content || '').trim();
+    if (!content) return res.status(400).json({ error: 'Note content is required' });
+
+    const thread = await MessageThread.findByIdAndUpdate(
+      req.params.id,
+      { $push: { notes: { content, author: req.user._id, createdAt: new Date() } } },
+      { new: true }
+    ).populate('notes.author', 'fullName email');
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+
+    res.status(201).json({ notes: thread.notes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /attachments — upload a file to attach to the NEXT message the
+// caller sends. Two-step (upload, then send-with-attachments) so the
+// composer can preview/remove a picked file before it's actually sent, same
+// as every chat app. Deliberately NOT scoped to an existing thread id —
+// starting a brand-new conversation has no thread yet, and the file isn't
+// readable by anyone until it's actually attached to a message in a thread
+// they have access to (the upload itself just records `uploadedBy`).
+// Reuses the app's single GridFS upload path — no message-specific storage
+// logic. ─────────────────────────────────────────────────────────────────────
+exports.uploadAttachment = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    const { uploadMedia } = require('../media/media.service');
+    const { GENERIC_FILE_MIMES, GENERIC_FILE_MAX_BYTES } = require('../media/mediaConstants');
+    const File = require('../models/File');
+
+    const asset = await uploadMedia(req.file.buffer, req.file.originalname, req.file.mimetype, {
+      allowedMimes: GENERIC_FILE_MIMES,
+      maxSizeBytes: GENERIC_FILE_MAX_BYTES,
+    });
+
+    const file = await File.create({
+      filename:     asset.publicId,
+      originalName: req.file.originalname,
+      mimeType:     req.file.mimetype,
+      size:         req.file.size,
+      url:          asset.url,
+      cloudProvider: 'gridfs',
+      cloudId:      asset.publicId,
+      uploadedBy:   req.user._id,
+    });
+
+    res.status(201).json({
+      file: {
+        _id: file._id, url: file.url, originalName: file.originalName,
+        mimeType: file.mimeType, size: file.size,
+      },
+    });
+  } catch (error) {
+    if (error.status === 400) {
+      return res.status(400).json({ error: error.message });
+    }
     next(error);
   }
 };

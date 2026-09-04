@@ -11,13 +11,16 @@ export const PROJECT_TYPES = [
   { value: 'other',      icon: '💡', key: 'other'      },
 ];
 
+// `icon` is a lookup key into CapabilityPicker's CATEGORY_ICONS map (real
+// Lucide icons), not an emoji — kept as a short string here so this file
+// stays framework-agnostic and doesn't import React components.
 export const FEATURE_TAGS = [
-  { categoryKey: 'auth',         icon: '🔐', tags: ['authBasic','authGoogle','authSocial','authOTP','authRoles','authTwoFactor'] },
-  { categoryKey: 'dashboard',    icon: '📊', tags: ['adminPanel','analytics','charts','reports','multiTenant','notifications'] },
-  { categoryKey: 'ecommerce',    icon: '🛒', tags: ['productCatalog','cart','payments','invoices','inventory','discounts'] },
-  { categoryKey: 'content',      icon: '📝', tags: ['blog','cms','seo','multiLang','fileUpload','mediaGallery'] },
-  { categoryKey: 'communication',icon: '💬', tags: ['liveChat','emailNotif','smsNotif','pushNotif','whatsappInteg','videoCall'] },
-  { categoryKey: 'advanced',     icon: '⚙️', tags: ['api','mobileApp','aiFeatures','maps','booking','subscription'] },
+  { categoryKey: 'auth',         icon: 'shield',    tags: ['authBasic','authGoogle','authSocial','authOTP','authRoles','authTwoFactor'] },
+  { categoryKey: 'dashboard',    icon: 'dashboard', tags: ['adminPanel','analytics','charts','reports','multiTenant','notifications'] },
+  { categoryKey: 'ecommerce',    icon: 'cart',      tags: ['productCatalog','cart','payments','invoices','inventory','discounts'] },
+  { categoryKey: 'content',      icon: 'file',      tags: ['blog','cms','seo','multiLang','fileUpload','mediaGallery'] },
+  { categoryKey: 'communication',icon: 'message',   tags: ['liveChat','emailNotif','smsNotif','pushNotif','whatsappInteg','videoCall'] },
+  { categoryKey: 'advanced',     icon: 'cpu',       tags: ['api','mobileApp','aiFeatures','maps','booking','subscription'] },
 ];
 
 export const BUDGET_OPTIONS = [

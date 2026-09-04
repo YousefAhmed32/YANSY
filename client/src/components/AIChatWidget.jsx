@@ -109,8 +109,40 @@ const THINKING_AR = [
 ];
 
 // ── Rich text renderer ──────────────────────────────────────────────────────────
+// Recognizes, in order: Markdown links `[label](https://…)`, bare
+// http(s):// URLs, and bare WhatsApp links (`wa.me/…` /
+// `api.whatsapp.com/send…` with no protocol — normalized to https:// so
+// they actually navigate). Falls through to the existing **bold** / `code`
+// / *italic* handling for everything else. Every link renders as a real
+// <a>, not raw text — this is what makes `wa.me/201090385390` in a
+// streamed AI response (or the connection-error fallback) clickable and
+// keyboard-accessible instead of inert text a user has to copy by hand.
+const MD_LINK_RE  = /\[[^\]]+\]\(https?:\/\/[^\s)]+\)/;
+const BARE_URL_RE = /https?:\/\/[^\s<>"')\]]+/;
+const BARE_WA_RE  = /(?:wa\.me|api\.whatsapp\.com\/send)[^\s<>"')\]]*/;
+const INLINE_RE   = new RegExp(`(${MD_LINK_RE.source}|${BARE_URL_RE.source}|${BARE_WA_RE.source}|\\*\\*[^*]+\\*\\*|\`[^\`]+\`|\\*[^*]+\\*)`, 'g');
+const TRAILING_PUNCT_RE = /[.,!?;:]+$/;
+
+const LinkChip = ({ href, children }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer"
+    style={{ color: 'rgb(var(--accent))', textDecoration: 'underline', textUnderlineOffset: 2, wordBreak: 'break-word' }}>
+    {children}
+  </a>
+);
+
 const fmtInline = (text) =>
-  text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g).map((part, i) => {
+  text.split(INLINE_RE).map((part, i) => {
+    if (!part) return null;
+    const mdLink = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (mdLink) return <LinkChip key={i} href={mdLink[2]}>{mdLink[1]}</LinkChip>;
+
+    if (/^https?:\/\//.test(part) || /^(?:wa\.me|api\.whatsapp\.com\/send)/.test(part)) {
+      const trailing = part.match(TRAILING_PUNCT_RE)?.[0] || '';
+      const clean = trailing ? part.slice(0, -trailing.length) : part;
+      const href = /^https?:\/\//.test(clean) ? clean : `https://${clean}`;
+      return <span key={i}><LinkChip href={href}>{clean}</LinkChip>{trailing}</span>;
+    }
+
     if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} style={{ color: 'rgb(var(--text-primary))', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
     if (part.startsWith('*')  && part.endsWith('*'))  return <em key={i} style={{ color: 'rgb(var(--text-secondary))' }}>{part.slice(1, -1)}</em>;
     if (part.startsWith('`')  && part.endsWith('`'))  return <code key={i} style={{ background: 'rgba(37,99,235,.1)', color: 'rgb(var(--accent))', padding: '1px 5px', borderRadius: 3, fontSize: '.9em', fontFamily: 'monospace' }}>{part.slice(1, -1)}</code>;
@@ -1000,8 +1032,8 @@ const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
       if (err.name === 'AbortError') return;
       setMessages(prev => prev.map(m => m.id === aiId
         ? { ...m, streaming: false, content: lang === 'ar'
-            ? 'عذراً، خطأ في الاتصال. تواصل معنا على واتساب: wa.me/201090385390'
-            : 'Sorry, connection error. Reach us on WhatsApp: wa.me/201090385390' }
+            ? `عذراً، حدث خطأ في الاتصال. [تواصل معنا مباشرة على واتساب](https://wa.me/${WA_NUMBER})`
+            : `Sorry, we hit a connection error. [Message us directly on WhatsApp](https://wa.me/${WA_NUMBER})` }
         : m
       ));
     } finally {
@@ -1529,40 +1561,53 @@ const AIChatWidget = forwardRef(({ isRTL, user, token, onOpenChange }, ref) => {
                     </div>
                   )}
 
+                  {/* One shared shell (`control-shell`/`control-embed`, index.css)
+                      wraps attach + voice toggles + the textarea — previously
+                      each lived in its own separately bordered box side by
+                      side with the textarea's own border, i.e. several
+                      competing frames in a single row instead of one compound
+                      control. The embedded textarea paints no frame of its
+                      own (in every state, including focus) so the shell stays
+                      the only outline the user sees; toggle buttons keep a
+                      borderless active-state tint (a state indicator, not a
+                      second frame) and stay independently keyboard-focusable.
+                      Send is a distinct primary action and stays outside the
+                      shell, matching the message composers elsewhere. */}
                   <form onSubmit={submit} style={{ display: 'flex', gap: 6, alignItems: 'flex-end' }}>
                     <input ref={fileInputRef} type="file" accept="image/*,.pdf,.docx" multiple hidden onChange={handleFileSelect} />
-                    <button type="button" className="yai-ico" onClick={() => fileInputRef.current?.click()} disabled={uploading} title={isRTL ? 'إرفاق ملف' : 'Attach a file'} aria-label={isRTL ? 'إرفاق ملف' : 'Attach a file'} style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgb(var(--bg-elevated))', border: '1px solid rgb(var(--border))', borderRadius: 9, color: 'rgb(var(--text-tertiary))', cursor: uploading ? 'wait' : 'pointer', transition: 'all .2s' }}>
-                      {uploading ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: 'rgb(var(--accent))', animation: 'yai-spin .7s linear infinite' }} /> : <ClipIcon />}
-                    </button>
-
-                    {voiceUiEnabled && (
-                      <button type="button" className="yai-ico" onClick={togglePushToTalk}
-                        title={voiceMode === 'listening' ? (isRTL ? 'إيقاف الاستماع' : 'Stop listening') : voiceMode === 'speaking' ? (isRTL ? 'إيقاف الصوت' : 'Stop speaking') : (isRTL ? 'تحدث' : 'Push to talk')}
-                        aria-label={voiceMode === 'listening' ? (isRTL ? 'إيقاف الاستماع' : 'Stop listening') : voiceMode === 'speaking' ? (isRTL ? 'إيقاف الصوت' : 'Stop speaking') : (isRTL ? 'تحدث' : 'Push to talk')}
-                        aria-pressed={voiceMode === 'listening'}
-                        style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: voiceMode === 'listening' ? 'rgb(var(--accent-light))' : voiceMode === 'speaking' ? '#F0FDF4' : 'rgb(var(--bg-elevated))', border: `1px solid ${voiceMode === 'listening' ? 'rgb(var(--accent-muted))' : voiceMode === 'speaking' ? '#BBF7D0' : 'rgb(var(--border))'}`, borderRadius: 9, color: voiceMode === 'listening' ? 'rgb(var(--accent))' : voiceMode === 'speaking' ? '#16a34a' : 'rgb(var(--text-tertiary))', cursor: 'pointer', transition: 'all .2s' }}>
-                        {voiceMode === 'listening' ? <Waveform levels={waveLevels} /> : voiceMode === 'speaking' ? <SpeakerIcon /> : <MicIcon on={false} />}
+                    <div className="control-shell" style={{ flex: 1, minWidth: 0, alignItems: 'flex-end', gap: 2, padding: 4 }}>
+                      <button type="button" className="yai-ico" onClick={() => fileInputRef.current?.click()} disabled={uploading} title={isRTL ? 'إرفاق ملف' : 'Attach a file'} aria-label={isRTL ? 'إرفاق ملف' : 'Attach a file'} style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', borderRadius: 8, color: 'rgb(var(--text-tertiary))', cursor: uploading ? 'wait' : 'pointer', transition: 'all .2s' }}>
+                        {uploading ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: 'rgb(var(--accent))', animation: 'yai-spin .7s linear infinite' }} /> : <ClipIcon />}
                       </button>
-                    )}
 
-                    {voiceUiEnabled && (
-                      <button type="button" className="yai-ico" onClick={toggleHandsFree} title={isRTL ? 'وضع اليدين الحرتين' : 'Hands-free mode'} aria-label={isRTL ? 'وضع اليدين الحرتين' : 'Hands-free mode'} aria-pressed={handsFree}
-                        style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: handsFree ? 'rgb(var(--accent-light))' : 'rgb(var(--bg-elevated))', border: `1px solid ${handsFree ? 'rgb(var(--accent-muted))' : 'rgb(var(--border))'}`, borderRadius: 9, color: handsFree ? 'rgb(var(--accent))' : 'rgb(var(--text-tertiary))', cursor: 'pointer', transition: 'all .2s' }}>
-                        <HandsFreeIcon on={handsFree} />
-                      </button>
-                    )}
+                      {voiceUiEnabled && (
+                        <button type="button" className="yai-ico" onClick={togglePushToTalk}
+                          title={voiceMode === 'listening' ? (isRTL ? 'إيقاف الاستماع' : 'Stop listening') : voiceMode === 'speaking' ? (isRTL ? 'إيقاف الصوت' : 'Stop speaking') : (isRTL ? 'تحدث' : 'Push to talk')}
+                          aria-label={voiceMode === 'listening' ? (isRTL ? 'إيقاف الاستماع' : 'Stop listening') : voiceMode === 'speaking' ? (isRTL ? 'إيقاف الصوت' : 'Stop speaking') : (isRTL ? 'تحدث' : 'Push to talk')}
+                          aria-pressed={voiceMode === 'listening'}
+                          style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: voiceMode === 'listening' ? 'rgb(var(--accent-light))' : voiceMode === 'speaking' ? '#F0FDF4' : 'none', border: 'none', borderRadius: 8, color: voiceMode === 'listening' ? 'rgb(var(--accent))' : voiceMode === 'speaking' ? '#16a34a' : 'rgb(var(--text-tertiary))', cursor: 'pointer', transition: 'all .2s' }}>
+                          {voiceMode === 'listening' ? <Waveform levels={waveLevels} /> : voiceMode === 'speaking' ? <SpeakerIcon /> : <MicIcon on={false} />}
+                        </button>
+                      )}
 
-                    <textarea
-                      ref={inputRef} value={input}
-                      onChange={e => setInput(e.target.value)}
-                      onKeyDown={onKey}
-                      placeholder={voiceMode === 'listening' ? (isRTL ? 'أستمع...' : 'Listening...') : isRTL ? 'اكتب رسالتك...' : 'Message YANSY AI...'}
-                      dir={dir} rows={1}
-                      style={{ flex: 1, minWidth: 0, background: 'rgb(var(--bg-elevated))', border: '1px solid rgb(var(--border))', borderRadius: 9, color: 'rgb(var(--text-primary))', padding: '9px 12px', fontSize: 13, outline: 'none', resize: 'none', minHeight: 38, maxHeight: 110, lineHeight: 1.5, fontFamily: 'inherit', transition: 'border-color .2s, box-shadow .2s' }}
-                      onFocus={e => { e.target.style.borderColor = 'rgb(var(--accent))'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.08)'; }}
-                      onBlur={e  => { e.target.style.borderColor = 'rgb(var(--border))'; e.target.style.boxShadow = 'none'; }}
-                      onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 110) + 'px'; }}
-                    />
+                      {voiceUiEnabled && (
+                        <button type="button" className="yai-ico" onClick={toggleHandsFree} title={isRTL ? 'وضع اليدين الحرتين' : 'Hands-free mode'} aria-label={isRTL ? 'وضع اليدين الحرتين' : 'Hands-free mode'} aria-pressed={handsFree}
+                          style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: handsFree ? 'rgb(var(--accent-light))' : 'none', border: 'none', borderRadius: 8, color: handsFree ? 'rgb(var(--accent))' : 'rgb(var(--text-tertiary))', cursor: 'pointer', transition: 'all .2s' }}>
+                          <HandsFreeIcon on={handsFree} />
+                        </button>
+                      )}
+
+                      <textarea
+                        ref={inputRef} value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={onKey}
+                        placeholder={voiceMode === 'listening' ? (isRTL ? 'أستمع...' : 'Listening...') : isRTL ? 'اكتب رسالتك...' : 'Message YANSY AI...'}
+                        dir={dir} rows={1}
+                        className="control-embed"
+                        style={{ flex: 1, minWidth: 0, color: 'rgb(var(--text-primary))', padding: '7px 6px', fontSize: 13, resize: 'none', minHeight: 32, maxHeight: 110, lineHeight: 1.5, fontFamily: 'inherit' }}
+                        onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 110) + 'px'; }}
+                      />
+                    </div>
                     <button type="submit" className="yai-send" disabled={(!input.trim() && !pendingAttachments.length) || streaming} aria-label={isRTL ? 'إرسال' : 'Send message'} style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: (input.trim() || pendingAttachments.length) && !streaming ? 'rgb(var(--accent))' : 'rgb(var(--border-light))', border: 'none', borderRadius: 9, color: (input.trim() || pendingAttachments.length) && !streaming ? 'rgb(var(--bg-elevated))' : 'rgb(var(--text-tertiary))', cursor: (input.trim() || pendingAttachments.length) && !streaming ? 'pointer' : 'not-allowed', transition: 'all .2s' }}>
                       {streaming ? <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(37,99,235,.3)', borderTopColor: 'rgb(var(--accent))', animation: 'yai-spin .7s linear infinite' }} /> : <span style={{ display: 'flex', transform: isRTL ? 'scaleX(-1)' : 'none' }}><SendIcon /></span>}
                     </button>

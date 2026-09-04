@@ -29,7 +29,13 @@ const toPublicShape = (doc) => ({
 const toAdminShape = (doc) => {
   const a = doc.analytics;
   const decisions = (a.whatsappChosen || 0) + (a.formChosen || 0);
-  const stepReached = a.formStepReached && a.formStepReached.length === 4 ? a.formStepReached : [0, 0, 0, 0];
+  // The form has 5 steps (Project Type · Brief · Capabilities · Scope ·
+  // Review & Contact) as of the guided-workspace redesign. Rebuilding from
+  // the raw array index-by-index (rather than requiring an exact length
+  // match) means a pre-redesign document with only 4 recorded slots keeps
+  // its existing counts instead of being silently reset to all zeros.
+  const rawStepReached = Array.isArray(a.formStepReached) ? a.formStepReached : [];
+  const stepReached = Array.from({ length: 5 }, (_, i) => rawStepReached[i] || 0);
   const dropOff = stepReached.map((count, i) => {
     const prev = i === 0 ? a.decisionViews || decisions : stepReached[i - 1];
     return prev ? Math.round((1 - count / prev) * 1000) / 10 : 0;
@@ -78,7 +84,7 @@ router.post('/event', async (req, res) => {
 
     if (type === 'form_step') {
       const idx = Number(step) - 1;
-      if (!Number.isInteger(idx) || idx < 0 || idx > 3) {
+      if (!Number.isInteger(idx) || idx < 0 || idx > 4) {
         return res.status(400).json({ error: 'Invalid step' });
       }
       inc[`analytics.formStepReached.${idx}`] = 1;

@@ -373,41 +373,60 @@ io.use(async (socket, next) => {
 });
 
 /* ================== SOCKET EVENTS ================== */
+// Room membership is authorized purely from `socket.user` (verified above by
+// the JWT-checking io.use middleware) — never from a client-supplied id.
+// The old `join`/`join-thread` handlers trusted whatever id the browser sent
+// and joined that room unconditionally: any authenticated socket could pass
+// another customer's user id or an arbitrary thread id and silently receive
+// their private notifications/messages. `join` is gone entirely (the server
+// already auto-joins the caller's own `user:<id>` room on connect — no
+// client-provided id is ever needed); `join-thread` now checks real
+// participation (or admin role) against the database before joining.
 io.on('connection', (socket) => {
   const userId = socket.user?._id?.toString();
+  const role   = socket.user?.role;
+  const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
   if (userId) {
     socket.join(`user_${userId}`);
     socket.join(`user:${userId}`);
-    const role = socket.user?.role;
-    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
-      socket.join('admin_room');
-    }
+    if (isAdmin) socket.join('admin_room');
   }
 
-  socket.on('join', (id) => {
-    if (id) socket.join(`user:${id}`);
+  socket.on('join-thread', async (threadId) => {
+    if (!threadId || !userId) return;
+    try {
+      const { MessageThread } = require('./models/Message');
+      const thread = await MessageThread.findById(threadId).select('participants').lean();
+      if (!thread) return;
+      const isParticipant = thread.participants.some((p) => p.toString() === userId);
+      if (isAdmin || isParticipant) {
+        socket.join(`thread:${threadId}`);
+      }
+      // Silently no-op for an unauthorized thread id — no error is echoed
+      // back that would confirm/deny whether the id even exists.
+    } catch {
+      // Invalid ObjectId or transient DB error — ignore, no room joined.
+    }
   });
 
-  socket.on('join-thread', (threadId) => {
-    if (threadId) socket.join(`thread:${threadId}`);
+  socket.on('leave-thread', (threadId) => {
+    if (threadId) socket.leave(`thread:${threadId}`);
   });
 
-  // Typing indicators — broadcast to other thread members
-  socket.on('typing-start', ({ threadId }) => {
+  // Typing indicators — broadcast to other thread members. Membership in
+  // the `thread:<id>` room (join-thread, above) is what actually gates who
+  // receives this; no separate check needed here.
+  socket.on('typing-start', ({ threadId } = {}) => {
     if (!threadId) return;
     socket.to(`thread:${threadId}`).emit('user-typing', {
-      userId:   userId,
-      threadId: threadId,
-      typing:   true,
+      userId, threadId, typing: true,
     });
   });
 
-  socket.on('typing-stop', ({ threadId }) => {
+  socket.on('typing-stop', ({ threadId } = {}) => {
     if (!threadId) return;
     socket.to(`thread:${threadId}`).emit('user-typing', {
-      userId:   userId,
-      threadId: threadId,
-      typing:   false,
+      userId, threadId, typing: false,
     });
   });
 
@@ -478,6 +497,17 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+httpServer.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use by another process.`);
+    console.error(`💡 Tip: Check and terminate the process holding port ${PORT}, or specify a different PORT in .env`);
+  } else {
+    console.error('❌ Server startup error:', err.message);
+  }
+  process.exit(1);
+});
+
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 });
+

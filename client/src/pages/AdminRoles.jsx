@@ -176,7 +176,14 @@ const AdminRoles = () => {
         <h2 style={{ fontSize: '10.5px', fontWeight: 600, color: TK.textMuted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: '0 0 14px' }}>
           {language === 'ar' ? 'مصفوفة الصلاحيات' : 'Permission Matrix'}
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+        <div className="admin-roles-matrix" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px' }}>
+          {/* minmax(0,1fr): a bare `1fr` track's minimum width defaults to
+              `auto` (its content's intrinsic min-content width), so a long
+              unbroken permission string refuses to shrink and forces the
+              whole page wider than the viewport — same class of bug as an
+              unconstrained flex item. Below ~640px, 4 columns of permission
+              text is unreadable regardless, so collapse to 2. */}
+          <style>{`@media (max-width: 640px) { .admin-roles-matrix { grid-template-columns: repeat(2, minmax(0,1fr)) !important; } }`}</style>
           {ROLES.map(r => (
             <div key={r.value}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>

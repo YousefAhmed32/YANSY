@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BarChart3, Users, FolderKanban, MessageSquare, TrendingUp,
@@ -8,9 +8,8 @@ import {
   Shield, Database, Zap, Inbox,
 } from 'lucide-react';
 import api from '../utils/api';
-import { io } from 'socket.io-client';
-import { useSelector } from 'react-redux';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSocket } from '../contexts/SocketContext';
 import { timeAgo } from '../utils/time';
 import { TK, FONT, Card, SectionHead, StatCard, Badge, Button, PageSpinner } from '../admin-ui';
 import PageHeader from '../admin-ui/PageHeader';
@@ -74,7 +73,6 @@ const QuickLink = ({ to, icon: Icon, title, subtitle, tone }) => (
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const AdminDashboard = () => {
-  const { user }           = useSelector(s => s.auth);
   const { language, isRTL } = useLanguage();
   const navigate           = useNavigate();
   const font = FONT(isRTL);
@@ -86,7 +84,7 @@ const AdminDashboard = () => {
   const [loading,      setLoading]     = useState(true);
   const [refreshing,   setRefreshing]  = useState(false);
   const [lastUpdated,  setLastUpdated] = useState(null);
-  const socketRef = useRef(null);
+  const { socket, connected: socketConnected } = useSocket();
 
   const T = useMemo(() => ({
     title:         language === 'ar' ? 'لوحة التحكم' : 'Admin Dashboard',
@@ -173,26 +171,22 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // Live-updates via the one shared authenticated socket (contexts/SocketContext.jsx)
+  // — this page used to open its own separate connection.
   useEffect(() => {
-    fetchAll();
-
-    const token = localStorage.getItem('token');
-    if (token && user?._id) {
-      const url =
-        import.meta.env.VITE_SOCKET_URL ||
-        (import.meta.env.DEV
-          ? 'http://localhost:5000'
-          : 'https://api.yansytech.com');
-      const socket = io(url, { auth: { token }, transports: ['websocket', 'polling'] });
-      socket.on('connect', () => socket.emit('join', user._id));
-      socket.on('project-created',  () => fetchAll(true));
-      socket.on('project-updated',  () => fetchAll(true));
-      socket.on('admin-project-update', () => fetchAll(true));
-      socketRef.current = socket;
-    }
-
-    return () => socketRef.current?.disconnect();
-  }, [fetchAll, user?._id]);
+    if (!socket) return;
+    const refresh = () => fetchAll(true);
+    socket.on('project-created', refresh);
+    socket.on('project-updated', refresh);
+    socket.on('admin-project-update', refresh);
+    return () => {
+      socket.off('project-created', refresh);
+      socket.off('project-updated', refresh);
+      socket.off('admin-project-update', refresh);
+    };
+  }, [socket, fetchAll]);
 
   const completionRate = useMemo(() =>
     stats.projects > 0 ? Math.round((stats.completed / stats.projects) * 100) : 0,
@@ -423,7 +417,7 @@ const AdminDashboard = () => {
               { label: T.apiServer,   status: T.operational, ok: true },
               { label: T.database,    status: T.connected,   ok: true },
               { label: T.fileStorage, status: T.operational, ok: true },
-              { label: T.socket,      status: socketRef.current?.connected ? T.connected : T.operational, ok: true },
+              { label: T.socket,      status: socketConnected ? T.connected : (language === 'ar' ? 'غير متصل' : 'Disconnected'), ok: socketConnected },
             ].map(({ label, status, ok }, i) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < 3 ? `1px solid ${TK.border}` : 'none' }}>
                 <span style={{ fontSize: '11.5px', color: TK.textMuted }}>{label}</span>

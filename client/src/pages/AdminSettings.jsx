@@ -81,7 +81,7 @@ const SettingField = ({ setting, onSave, language }) => {
 };
 
 const AdminSettings = () => {
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const CATEGORY_META = categoryMeta(language);
   const [grouped, setGrouped] = useState({});
   const [loading, setLoading] = useState(true);
@@ -161,9 +161,19 @@ const AdminSettings = () => {
           <EmptyState icon={AlertCircle} title={language === 'ar' ? 'لا توجد إعدادات.' : 'No settings found.'} subtitle={language === 'ar' ? 'انقر على "تهيئة الافتراضيات" للبدء.' : 'Click "Seed Defaults" to initialize.'} />
         </Card>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '20px' }}>
+        <div className="admin-settings-grid" style={{ display: 'grid', gridTemplateColumns: '200px minmax(0,1fr)', gap: '20px' }}>
+          {/* min-width:0 on the grid keeps the panel column shrinkable — a
+              grid item's default min-width is `auto`, so without this a wide
+              textarea/input inside would refuse to shrink below its own
+              content and force the whole page wider than the viewport. On
+              narrow screens the media query below collapses to one column. */}
+          <style>{`
+            @media (max-width: 720px) {
+              .admin-settings-grid { grid-template-columns: 1fr !important; }
+            }
+          `}</style>
           {/* Sidebar */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
             {categories.map(cat => {
               const meta = CATEGORY_META[cat];
               const Icon = meta.icon;
@@ -173,18 +183,18 @@ const AdminSettings = () => {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className="au-row"
-                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: RADIUS.md, textAlign: 'left', background: isActive ? `${meta.color}12` : 'transparent', border: `1px solid ${isActive ? `${meta.color}30` : 'transparent'}`, color: isActive ? meta.color : TK.textMuted, fontSize: '12px', fontWeight: isActive ? 600 : 400, cursor: 'pointer', width: '100%' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: RADIUS.md, textAlign: isRTL ? 'right' : 'left', background: isActive ? `${meta.color}12` : 'transparent', border: `1px solid ${isActive ? `${meta.color}30` : 'transparent'}`, color: isActive ? meta.color : TK.textMuted, fontSize: '12px', fontWeight: isActive ? 600 : 400, cursor: 'pointer', width: '100%' }}
                 >
                   <Icon size={14} />
                   {meta.label}
-                  <span style={{ marginLeft: 'auto', fontSize: '10px', opacity: 0.6 }}>{grouped[cat]?.length || 0}</span>
+                  <span style={{ marginInlineStart: 'auto', fontSize: '10px', opacity: 0.6 }}>{grouped[cat]?.length || 0}</span>
                 </button>
               );
             })}
           </div>
 
           {/* Settings Panel */}
-          <Card padding="24px">
+          <Card padding="24px" style={{ minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', paddingBottom: '16px', borderBottom: `1px solid ${TK.border}` }}>
               {(() => { const meta = CATEGORY_META[activeCategory]; const Icon = meta?.icon || Settings; return <Icon size={16} style={{ color: meta?.color || TK.accent }} />; })()}
               <h2 style={{ fontSize: '14px', fontWeight: 600, color: TK.text, margin: 0 }}>

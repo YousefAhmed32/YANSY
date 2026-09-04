@@ -110,9 +110,12 @@ const AdminStartProject = () => {
   }
 
   const { analytics } = settings;
+  // Mirrors ProjectRequestForm's STEP_NAMES (5 steps as of the
+  // guided-workspace redesign: Project Type · Brief · Capabilities ·
+  // Scope · Review & Contact).
   const stepLabels = ar
-    ? ['نوع المشروع', 'فكرتك', 'التفاصيل', 'تواصل معنا']
-    : ['Project Type', 'Your Idea', 'Details', 'Contact'];
+    ? ['نوع المشروع', 'فكرة المشروع', 'المميزات', 'النطاق', 'المراجعة والتواصل']
+    : ['Project Type', 'Project Brief', 'Capabilities', 'Scope', 'Review & Contact'];
 
   return (
     <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px' }}>

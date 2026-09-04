@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Calendar, Clock, Video, MessageCircle, Zap, ChevronRight, Check } from 'lucide-react';
 import { trackSchedule } from '../utils/metaPixel';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-};
+import { TK } from '../admin-ui';
 
 const MEETING_TYPES = [
   {
@@ -70,13 +62,13 @@ export default function Meetings() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px', direction: isRTL ? 'rtl' : 'ltr', fontFamily: "'Inter',system-ui,sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px', direction: isRTL ? 'rtl' : 'ltr', fontFamily: isRTL ? "'IBM Plex Sans Arabic',system-ui,sans-serif" : "'Inter',system-ui,sans-serif" }}>
 
       {/* Header */}
       <div style={{ maxWidth: '720px', marginBottom: '40px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(37,99,235,0.25)', background: 'rgba(37,99,235,0.06)', marginBottom: '14px' }}>
           <Calendar style={{ width: '10px', height: '10px', color: TK.accent }} />
-          <span style={{ fontSize: '10px', fontWeight: 500, color: TK.accent, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '10px', fontWeight: 500, color: TK.accent, letterSpacing: ar ? 0 : '0.14em', textTransform: 'uppercase' }}>
             {ar ? 'اجتماعات' : 'Meetings'}
           </span>
         </div>
@@ -153,7 +145,7 @@ export default function Meetings() {
                   borderRadius: '8px', cursor: 'pointer',
                   color: isSelected ? '#fff' : type.color,
                   fontSize: '12px', fontWeight: 400,
-                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  letterSpacing: ar ? 0 : '0.08em', textTransform: 'uppercase',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   transition: 'all 0.2s',
                   fontFamily: 'inherit',
@@ -172,7 +164,7 @@ export default function Meetings() {
 
       {/* Info section */}
       <div style={{ marginTop: '40px', padding: '22px 24px', background: TK.surface, border: `1px solid ${TK.border}`, borderRadius: '12px', maxWidth: '520px' }}>
-        <h3 style={{ fontSize: '13px', fontWeight: 400, color: TK.text, margin: '0 0 12px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 400, color: TK.text, margin: '0 0 12px', letterSpacing: ar ? 0 : '0.06em', textTransform: 'uppercase' }}>
           {ar ? 'كيف يعمل' : 'How it works'}
         </h3>
         {[
@@ -181,7 +173,7 @@ export default function Meetings() {
           { step: '03', en: 'Join via Google Meet, Zoom, or WhatsApp video — your choice.', ar: 'انضم عبر Google Meet أو Zoom أو واتساب فيديو — اختيارك.' },
         ].map(s => (
           <div key={s.step} style={{ display: 'flex', gap: '14px', marginBottom: '12px' }}>
-            <span style={{ fontSize: '10px', fontWeight: 600, color: TK.accent, letterSpacing: '0.06em', minWidth: '20px', paddingTop: '1px' }}>{s.step}</span>
+            <span style={{ fontSize: '10px', fontWeight: 600, color: TK.accent, letterSpacing: ar ? 0 : '0.06em', minWidth: '20px', paddingTop: '1px' }}>{s.step}</span>
             <span style={{ fontSize: '12px', color: TK.textMuted, lineHeight: 1.6, fontWeight: 300 }}>{ar ? s.ar : s.en}</span>
           </div>
         ))}

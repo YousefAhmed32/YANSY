@@ -4,8 +4,12 @@ import { TK, RADIUS, STATUS_TONE, MOTION, colorFromName } from './tokens';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // ── Button ──────────────────────────────────────────────────────────────────
+// "primary" is the near-black ink fill (matches the approved reference's send
+// buttons / primary CTAs) — the warm amber (`TK.accent`) is reserved for
+// restrained attention accents (unread badges, selected-item indicators),
+// never a full button fill.
 const BTN_VARIANTS = {
-  primary:   { background: TK.accent, border: 'none', color: TK.accentFg },
+  primary:   { background: TK.ink, border: 'none', color: TK.inkFg },
   secondary: { background: TK.surface, border: `1px solid ${TK.border}`, color: TK.text },
   ghost:     { background: 'transparent', border: 'none', color: TK.textMuted },
   danger:    { background: TK.redBg, border: `1px solid ${TK.redBd}`, color: TK.red },
@@ -173,6 +177,49 @@ export const TextArea = forwardRef(({ style, containerStyle, rows = 3, error, cl
 ));
 TextArea.displayName = 'TextArea';
 
+// ── Composer shell ────────────────────────────────────────────────────────
+// The shared fix for the "input inside an input" nested-box bug that recurred
+// across every message composer (customer Messages, ProjectDetails' project
+// chat tab, AdminMessages' reply box all hand-rolled the same wrapper). ONE
+// `.au-input` frame owns background/border/radius and the focus ring — via
+// CSS `:focus-within`, so it lights up whenever the textarea *or* a sibling
+// icon button (e.g. attach) inside it has focus, with no manual onFocus/
+// onBlur JS needed. `.au-input`'s reset (admin-ui.css) strips the embedded
+// textarea's own border/background/outline/box-shadow in every state,
+// including `:focus-visible` — the one place a second, independent frame
+// used to sneak back in (the site-wide focus ring in index.css targets bare
+// `input`/`textarea`/`select` and, without that reset, paints its own ring
+// directly on the textarea on top of this shell's ring).
+// A send button is intentionally NOT part of this shell — it's a distinct,
+// independently focusable primary action and stays a sibling outside
+// `<Composer>`, matching the approved reference layout (pill composer +
+// separate send button).
+export const Composer = forwardRef(({ children, error, disabled, style, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`au-input ${error ? 'au-input--error' : ''} ${disabled ? 'au-input--disabled' : ''}`}
+    style={{
+      flex: 1, display: 'flex', alignItems: 'flex-end', gap: 6,
+      background: TK.bgSubtle, border: `1px solid ${TK.border}`, borderRadius: RADIUS.md,
+      padding: '9px 12px', ...style,
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+));
+Composer.displayName = 'Composer';
+
+export const ComposerTextArea = forwardRef(({ style, ...props }, ref) => (
+  <textarea
+    ref={ref}
+    rows={1}
+    style={{ flex: 1, minWidth: 0, resize: 'none', fontSize: 13.5, lineHeight: 1.55, padding: '2px 0', ...style }}
+    {...props}
+  />
+));
+ComposerTextArea.displayName = 'ComposerTextArea';
+
 // Small inline error line — icon + text (never color alone), used under any
 // invalid field. `id` is what the field's `aria-describedby` points at.
 export const FieldError = ({ id, children }) => {
@@ -196,7 +243,7 @@ export const Switch = ({ checked, onChange, label, disabled }) => (
       onClick={() => !disabled && onChange?.(!checked)}
       style={{
         width: '36px', height: '20px', borderRadius: RADIUS.pill, flexShrink: 0,
-        background: checked ? TK.accent : TK.border, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+        background: checked ? TK.ink : TK.border, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
         position: 'relative', transition: `background ${MOTION.base} ${MOTION.ease}`,
       }}
     >
@@ -275,10 +322,10 @@ export const FilterPills = forwardRef(({ value, onChange, options, error }, ref)
           onClick={() => onChange(o.value)}
           className="au-btn"
           style={{
-            padding: '8px 14px', borderRadius: RADIUS.md,
-            background: active ? TK.accentBg : 'transparent',
-            border: `1px solid ${active ? TK.accentBd : TK.border}`,
-            color: active ? TK.accent : TK.textMuted,
+            padding: '8px 14px', borderRadius: RADIUS.pill,
+            background: active ? TK.ink : 'transparent',
+            border: `1px solid ${active ? TK.ink : TK.border}`,
+            color: active ? TK.inkFg : TK.textMuted,
             fontSize: '11.5px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
           }}
         >
@@ -335,9 +382,9 @@ export const Pagination = ({ page, totalPages, onChange, isRTL = false }) => {
       {pages.map(p => (
         <button key={p} onClick={() => onChange(p)} aria-current={page === p ? 'page' : undefined} className="au-btn" style={{
           width: '30px', height: '30px', borderRadius: RADIUS.sm,
-          background: page === p ? TK.accentBg : 'transparent',
-          border: `1px solid ${page === p ? TK.accentBd : TK.border}`,
-          color: page === p ? TK.accent : TK.textMuted,
+          background: page === p ? TK.ink : 'transparent',
+          border: `1px solid ${page === p ? TK.ink : TK.border}`,
+          color: page === p ? TK.inkFg : TK.textMuted,
           fontSize: '12px', fontWeight: page === p ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit',
         }}>
           {p}
@@ -350,7 +397,11 @@ export const Pagination = ({ page, totalPages, onChange, isRTL = false }) => {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 export const Tabs = ({ value, onChange, items }) => (
-  <div style={{ display: 'flex', gap: '4px', borderBottom: `1px solid ${TK.border}` }}>
+  // overflowX:auto + flexShrink:0 per tab lets a page with many tabs (or a
+  // narrow viewport) scroll the tab strip horizontally within itself instead
+  // of forcing — via the flex row's content — the whole page wider than the
+  // viewport (the same class of bug as an unconstrained table/grid column).
+  <div className="au-scroll" style={{ display: 'flex', gap: '4px', borderBottom: `1px solid ${TK.border}`, overflowX: 'auto' }}>
     {items.map(it => {
       const active = value === it.value;
       return (
@@ -359,8 +410,8 @@ export const Tabs = ({ value, onChange, items }) => (
           onClick={() => onChange(it.value)}
           className="au-tab"
           style={{
-            padding: '10px 4px', marginBottom: '-1px',
-            background: 'none', border: 'none', borderBottom: `2px solid ${active ? TK.accent : 'transparent'}`,
+            padding: '10px 4px', marginBottom: '-1px', flexShrink: 0, whiteSpace: 'nowrap',
+            background: 'none', border: 'none', borderBottom: `2px solid ${active ? TK.ink : 'transparent'}`,
             color: active ? TK.text : TK.textMuted, fontSize: '13px', fontWeight: active ? 600 : 400,
             cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '6px',
             marginInlineEnd: '18px',
@@ -369,7 +420,7 @@ export const Tabs = ({ value, onChange, items }) => (
           {it.icon && <it.icon style={{ width: '14px', height: '14px' }} />}
           {it.label}
           {it.count !== undefined && (
-            <span style={{ fontSize: '10.5px', padding: '1px 6px', borderRadius: RADIUS.pill, background: active ? TK.accentBg : 'rgba(107,114,128,0.1)', color: active ? TK.accent : TK.textMuted }}>
+            <span style={{ fontSize: '10.5px', padding: '1px 6px', borderRadius: RADIUS.pill, background: active ? 'rgba(24,24,27,0.08)' : 'rgba(107,114,128,0.1)', color: active ? TK.text : TK.textMuted }}>
               {it.count}
             </span>
           )}
@@ -404,9 +455,9 @@ export const Stepper = ({ steps, current, onStepChange }) => {
                 width: '26px', height: '26px', borderRadius: RADIUS.pill, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '11px', fontWeight: 600,
-                background: done ? TK.accent : active ? TK.accentBg : TK.surface,
-                border: `1.5px solid ${done || active ? TK.accent : TK.border}`,
-                color: done ? TK.accentFg : active ? TK.accent : TK.textLight,
+                background: done ? TK.ink : active ? 'rgba(24,24,27,0.06)' : TK.surface,
+                border: `1.5px solid ${done || active ? TK.ink : TK.border}`,
+                color: done ? TK.inkFg : active ? TK.text : TK.textLight,
                 transition: `all ${MOTION.base} ${MOTION.ease}`,
               }}>
                 {done ? <Check style={{ width: '13px', height: '13px' }} /> : i + 1}
@@ -419,7 +470,7 @@ export const Stepper = ({ steps, current, onStepChange }) => {
               </span>
             </button>
             {i < steps.length - 1 && (
-              <div style={{ flex: 1, height: '1px', margin: '0 14px', minWidth: '20px', background: done ? TK.accent : TK.border, transition: `background ${MOTION.base} ${MOTION.ease}` }} />
+              <div style={{ flex: 1, height: '1px', margin: '0 14px', minWidth: '20px', background: done ? TK.ink : TK.border, transition: `background ${MOTION.base} ${MOTION.ease}` }} />
             )}
           </div>
         );

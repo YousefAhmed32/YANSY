@@ -9,18 +9,7 @@ import {
   Download, AlertCircle, Activity, CheckCheck, Zap,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E7EAF0',
-  accent:    '#2563EB',
-  accentBg:  '#EFF6FF',
-  accentBd:  '#DBEAFE',
-  text:      '#111827',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
-};
+import { TK, Composer, ComposerTextArea } from '../admin-ui';
 
 const STATUS = {
   PLANNING:    { dot: '#94a3b8', en: 'Planning',     ar: 'التخطيط',       bg: 'rgba(148,163,184,0.12)' },
@@ -377,7 +366,7 @@ const ProjectDetails = () => {
 
             {/* Details card */}
             <div style={{ background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`, padding: 20 }}>
-              <h3 style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <h3 style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: language === 'ar' ? 0 : '0.08em' }}>
                 {language === 'ar' ? 'تفاصيل المشروع' : 'Project Details'}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -397,7 +386,7 @@ const ProjectDetails = () => {
 
             {/* PM card */}
             <div style={{ background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`, padding: 20 }}>
-              <h3 style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <h3 style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: language === 'ar' ? 0 : '0.08em' }}>
                 {language === 'ar' ? 'مدير مشروعك' : 'Your Project Manager'}
               </h3>
               {pm ? (
@@ -615,27 +604,18 @@ const ProjectDetails = () => {
               borderTop: `1px solid ${TK.border}`,
               background: TK.surface, flexShrink: 0,
             }}>
-              <div style={{
-                display: 'flex', alignItems: 'flex-end', gap: 8,
-                background: TK.bg, borderRadius: 12, border: `1px solid ${TK.border}`,
-                padding: '8px 10px', transition: 'border-color 0.15s',
-              }}
-                onFocusCapture={e => { e.currentTarget.style.borderColor = TK.accent; }}
-                onBlurCapture={e => { e.currentTarget.style.borderColor = TK.border; }}
-              >
-                <textarea
+              {/* `Composer`/`ComposerTextArea` (admin-ui) are the shared shell —
+                  see their doc comment in Primitives.jsx for why a manual
+                  per-page border/focus implementation here used to grow a
+                  second frame around the textarea on focus. */}
+              <Composer style={{ background: TK.bg, borderRadius: 12, padding: '8px 10px' }}>
+                <ComposerTextArea
                   ref={textareaRef}
                   value={msgText}
                   onChange={e => setMsgText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...'}
-                  rows={1}
-                  style={{
-                    flex: 1, border: 'none', background: 'transparent',
-                    resize: 'none', outline: 'none', fontSize: 13.5,
-                    fontFamily: font, color: TK.text, lineHeight: 1.55,
-                    maxHeight: 120, overflowY: 'auto', padding: '2px 0',
-                  }}
+                  style={{ fontFamily: font, color: TK.text, maxHeight: 120, overflowY: 'auto' }}
                 />
                 <button
                   onClick={handleSend}
@@ -660,7 +640,7 @@ const ProjectDetails = () => {
                     }} />
                   )}
                 </button>
-              </div>
+              </Composer>
               <p style={{ fontSize: 10.5, color: TK.textLight, margin: '5px 0 0 4px', fontFamily: font }}>
                 {language === 'ar' ? 'Enter للإرسال · Shift+Enter لسطر جديد' : 'Enter to send · Shift+Enter for new line'}
               </p>

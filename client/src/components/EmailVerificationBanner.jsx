@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Mail, X, CheckCircle } from 'lucide-react';
 import api from '../utils/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { TK } from '../admin-ui';
 
 const EmailVerificationBanner = () => {
   const { user }                        = useSelector((s) => s.auth);
+  const { isRTL }                       = useLanguage();
   const [dismissed, setDismissed]       = useState(false);
   const [sending,   setSending]         = useState(false);
   const [sent,      setSent]            = useState(false);
@@ -19,28 +22,28 @@ const EmailVerificationBanner = () => {
       await api.post('/auth/resend-verification');
       setSent(true);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send. Please try again.');
+      setError(err.response?.data?.error || (isRTL ? 'فشل الإرسال. يرجى المحاولة مجدداً.' : 'Failed to send. Please try again.'));
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <div style={{
+    <div dir={isRTL ? 'rtl' : 'ltr'} style={{
       position: 'sticky', top: 0, zIndex: 999,
-      background: '#EFF6FF',
-      borderBottom: '1px solid #DBEAFE',
+      background: TK.accentBg,
+      borderBottom: `1px solid ${TK.accentBd}`,
     }}>
       <div style={{
         maxWidth: 1100, margin: '0 auto',
         padding: '10px 24px',
         display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
       }}>
-        <Mail style={{ width: 14, height: 14, color: '#2563EB', flexShrink: 0 }} />
-        <span style={{ flex: 1, fontSize: 12, color: '#1D4ED8', fontWeight: 500, minWidth: 200 }}>
+        <Mail style={{ width: 14, height: 14, color: TK.accentHover, flexShrink: 0 }} />
+        <span style={{ flex: 1, fontSize: 12, color: TK.accentHover, fontWeight: 500, minWidth: 200 }}>
           {sent
-            ? 'Verification email sent — check your inbox.'
-            : 'Please verify your email address to access all features.'}
+            ? (isRTL ? 'تم إرسال رابط التحقق — تحقق من بريدك الإلكتروني.' : 'Verification email sent — check your inbox.')
+            : (isRTL ? 'يرجى تفعيل بريدك الإلكتروني للوصول إلى جميع الميزات.' : 'Please verify your email address to access all features.')}
         </span>
 
         {!sent && (
@@ -49,36 +52,37 @@ const EmailVerificationBanner = () => {
             disabled={sending}
             style={{
               padding: '5px 14px',
-              background: '#2563EB',
+              background: TK.ink,
               border: 'none',
               borderRadius: '6px', color: '#FFFFFF',
               fontSize: 11, fontWeight: 600,
-              letterSpacing: '0.06em', textTransform: 'uppercase',
+              letterSpacing: isRTL ? 0 : '0.06em', textTransform: isRTL ? 'none' : 'uppercase',
               cursor: sending ? 'not-allowed' : 'pointer',
               opacity: sending ? 0.6 : 1,
-              transition: 'background 0.2s', whiteSpace: 'nowrap',
+              transition: 'background 0.2s', whiteSpace: 'nowrap', fontFamily: 'inherit',
             }}
-            onMouseEnter={e => { if (!sending) e.currentTarget.style.background = '#1D4ED8'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; }}
+            onMouseEnter={e => { if (!sending) e.currentTarget.style.background = TK.inkHover; }}
+            onMouseLeave={e => { e.currentTarget.style.background = TK.ink; }}
           >
-            {sending ? 'Sending…' : 'Resend Email'}
+            {sending ? (isRTL ? 'جارٍ الإرسال…' : 'Sending…') : (isRTL ? 'إعادة الإرسال' : 'Resend Email')}
           </button>
         )}
 
-        {sent && <CheckCircle style={{ width: 14, height: 14, color: '#10B981', flexShrink: 0 }} />}
+        {sent && <CheckCircle style={{ width: 14, height: 14, color: TK.green, flexShrink: 0 }} />}
 
-        {error && <span style={{ fontSize: 11, color: '#EF4444' }}>{error}</span>}
+        {error && <span style={{ fontSize: 11, color: TK.red }}>{error}</span>}
 
         <button
           onClick={() => setDismissed(true)}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#93C5FD', padding: 2, flexShrink: 0,
-            display: 'flex', alignItems: 'center', transition: 'color 0.15s',
+            color: TK.accent, opacity: 0.6, padding: 2, flexShrink: 0,
+            display: 'flex', alignItems: 'center', transition: 'opacity 0.15s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#2563EB'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = '#93C5FD'; }}
-          title="Dismiss"
+          onMouseEnter={e => { e.currentTarget.style.opacity = '1'; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = '0.6'; }}
+          title={isRTL ? 'إغلاق' : 'Dismiss'}
+          aria-label={isRTL ? 'إغلاق' : 'Dismiss'}
         >
           <X style={{ width: 14, height: 14 }} />
         </button>

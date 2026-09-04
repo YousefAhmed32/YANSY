@@ -2,17 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { CreditCard, Download, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  accentBg:  'rgba(37,99,235,0.06)',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
-};
+import { TK } from '../admin-ui';
 
 const INV_STATUS = {
   PAID:    { en: 'Paid',    ar: 'مدفوعة', bg: 'rgba(22,163,74,0.08)',  color: '#16a34a', icon: CheckCircle2 },
@@ -216,7 +206,7 @@ const Payments = () => {
       {/* ── Subscription Tab ── */}
       {activeTab === 'subscription' && (
         <div style={{ background: TK.surface, borderRadius: '16px', border: `1px solid ${TK.border}`, padding: '24px' }}>
-          <h2 style={{ fontSize: '14px', fontWeight: 600, color: TK.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 18px' }}>
+          <h2 style={{ fontSize: '14px', fontWeight: 600, color: TK.textMuted, textTransform: 'uppercase', letterSpacing: language === 'ar' ? 0 : '0.06em', margin: '0 0 18px' }}>
             {language === 'ar' ? 'خطتك الحالية' : 'Current Plan'}
           </h2>
 

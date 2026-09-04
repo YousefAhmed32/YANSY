@@ -1,10 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, FolderKanban, Images, MessageSquare, Users, Loader2 } from 'lucide-react';
 import api from '../utils/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { TK } from '../admin-ui';
 
-const TYPE_ICON  = { project: FolderKanban, portfolio: Images, message: MessageSquare, user: Users };
-const TYPE_LABEL = { project: 'Project', portfolio: 'Portfolio', message: 'Message', user: 'User' };
+const TYPE_ICON = { project: FolderKanban, portfolio: Images, message: MessageSquare, user: Users };
+const TYPE_LABEL = (isRTL) => ({
+  project:   isRTL ? 'مشاريع'   : 'Projects',
+  portfolio: isRTL ? 'أعمال'    : 'Portfolio',
+  message:   isRTL ? 'رسائل'    : 'Messages',
+  user:      isRTL ? 'مستخدمون' : 'Users',
+});
 
 const useDebounce = (value, delay) => {
   const [debounced, setDebounced] = useState(value);
@@ -17,6 +24,7 @@ const useDebounce = (value, delay) => {
 
 const GlobalSearch = ({ open, onClose }) => {
   const navigate  = useNavigate();
+  const { isRTL }  = useLanguage();
   const inputRef  = useRef(null);
   const [query,    setQuery]    = useState('');
   const [results,  setResults]  = useState(null);
@@ -24,6 +32,7 @@ const GlobalSearch = ({ open, onClose }) => {
   const [selected, setSelected] = useState(0);
 
   const debouncedQuery = useDebounce(query, 300);
+  const typeLabel = TYPE_LABEL(isRTL);
 
   useEffect(() => {
     if (open) {
@@ -77,9 +86,10 @@ const GlobalSearch = ({ open, onClose }) => {
 
   return (
     <div
+      dir={isRTL ? 'rtl' : 'ltr'}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.45)',
+        background: 'rgba(24,24,27,0.45)',
         backdropFilter: 'blur(4px)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         paddingTop: '80px',
@@ -88,7 +98,7 @@ const GlobalSearch = ({ open, onClose }) => {
     >
       <div style={{
         width: '100%', maxWidth: '560px',
-        background: '#FFFFFF', border: '1px solid #E8EBF0',
+        background: TK.surface, border: `1px solid ${TK.border}`,
         borderRadius: '14px', overflow: 'hidden',
         boxShadow: '0 24px 64px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08)',
         animation: 'searchSlide 0.18s cubic-bezier(0.16,1,0.3,1)',
@@ -102,34 +112,35 @@ const GlobalSearch = ({ open, onClose }) => {
         <div style={{
           display: 'flex', alignItems: 'center', gap: '12px',
           padding: '16px 20px',
-          borderBottom: flatItems.length > 0 ? '1px solid #E8EBF0' : 'none',
+          borderBottom: flatItems.length > 0 ? `1px solid ${TK.border}` : 'none',
         }}>
           {loading
-            ? <Loader2 style={{ width: '18px', height: '18px', color: '#2563EB', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
-            : <Search style={{ width: '18px', height: '18px', color: '#9CA3AF', flexShrink: 0 }} />
+            ? <Loader2 style={{ width: '18px', height: '18px', color: TK.text, animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+            : <Search style={{ width: '18px', height: '18px', color: TK.textLight, flexShrink: 0 }} />
           }
           <input
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search projects, portfolio, messages..."
+            placeholder={isRTL ? 'ابحث في المشاريع والأعمال والرسائل...' : 'Search projects, portfolio, messages...'}
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
-              fontSize: '15px', fontWeight: 400, color: '#0D1117',
-              caretColor: '#2563EB',
+              fontSize: '15px', fontWeight: 400, color: TK.text,
+              caretColor: TK.text,
             }}
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <kbd style={{
               padding: '2px 6px', borderRadius: '5px', fontSize: '10px',
-              background: 'rgba(0,0,0,0.05)', color: '#9CA3AF',
-              border: '1px solid #E8EBF0', fontFamily: 'monospace',
+              background: TK.bgSubtle, color: TK.textLight,
+              border: `1px solid ${TK.border}`, fontFamily: 'monospace',
             }}>ESC</kbd>
             {query && (
               <button
                 onClick={() => { setQuery(''); setResults(null); inputRef.current?.focus(); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: '2px', display: 'flex' }}
+                aria-label={isRTL ? 'مسح' : 'Clear'}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: TK.textLight, padding: '2px', display: 'flex' }}
               >
                 <X style={{ width: '15px', height: '15px' }} />
               </button>
@@ -148,9 +159,9 @@ const GlobalSearch = ({ open, onClose }) => {
                   <div style={{
                     padding: '6px 20px 4px',
                     fontSize: '9px', fontWeight: 600,
-                    color: '#9CA3AF', letterSpacing: '0.14em', textTransform: 'uppercase',
+                    color: TK.textLight, letterSpacing: isRTL ? 0 : '0.14em', textTransform: isRTL ? 'none' : 'uppercase',
                   }}>
-                    {TYPE_LABEL[items[0]?.type] || groupKey}s
+                    {typeLabel[items[0]?.type] || groupKey}
                   </div>
                   {items.map((item, i) => {
                     const globalIdx = startIdx + i;
@@ -163,31 +174,31 @@ const GlobalSearch = ({ open, onClose }) => {
                         style={{
                           display: 'flex', alignItems: 'center', gap: '12px',
                           padding: '10px 20px', cursor: 'pointer',
-                          background: isSelected ? '#F6F7F9' : 'transparent',
-                          borderLeft: isSelected ? '2px solid #2563EB' : '2px solid transparent',
+                          background: isSelected ? TK.bgSubtle : 'transparent',
+                          borderInlineStart: isSelected ? `2px solid ${TK.ink}` : '2px solid transparent',
                           transition: 'all 0.1s',
                         }}
                         onMouseEnter={() => setSelected(globalIdx)}
                       >
                         <div style={{
                           width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
-                          background: 'rgba(37,99,235,0.08)',
+                          background: TK.bgSubtle,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <Icon style={{ width: '14px', height: '14px', color: '#2563EB' }} />
+                          <Icon style={{ width: '14px', height: '14px', color: TK.text }} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '13px', fontWeight: 400, color: '#0D1117', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 400, color: TK.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {item.title}
                           </div>
                           {item.subtitle && (
-                            <div style={{ fontSize: '11px', color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '11px', color: TK.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {item.subtitle}
                             </div>
                           )}
                         </div>
                         {item.meta && (
-                          <span style={{ fontSize: '10px', color: '#9CA3AF', flexShrink: 0 }}>{item.meta}</span>
+                          <span style={{ fontSize: '10px', color: TK.textLight, flexShrink: 0 }}>{item.meta}</span>
                         )}
                       </div>
                     );
@@ -200,23 +211,29 @@ const GlobalSearch = ({ open, onClose }) => {
 
         {/* Empty state */}
         {query.length >= 2 && !loading && results && flatItems.length === 0 && (
-          <div style={{ padding: '32px', textAlign: 'center', color: '#9CA3AF' }}>
+          <div style={{ padding: '32px', textAlign: 'center', color: TK.textLight }}>
             <Search style={{ width: '28px', height: '28px', margin: '0 auto 10px', opacity: 0.3 }} />
-            <p style={{ fontSize: '13px', fontWeight: 400, color: '#6B7280' }}>No results for "{query}"</p>
+            <p style={{ fontSize: '13px', fontWeight: 400, color: TK.textMuted }}>
+              {isRTL ? `لا نتائج لـ "${query}"` : `No results for "${query}"`}
+            </p>
           </div>
         )}
 
         {/* Footer */}
         <div style={{
-          padding: '10px 20px', borderTop: '1px solid #E8EBF0',
+          padding: '10px 20px', borderTop: `1px solid ${TK.border}`,
           display: 'flex', gap: '16px', alignItems: 'center',
         }}>
-          {[['↑↓', 'Navigate'], ['↵', 'Select'], ['Esc', 'Close']].map(([key, label]) => (
-            <span key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: '#9CA3AF' }}>
+          {[
+            ['↑↓', isRTL ? 'تنقل' : 'Navigate'],
+            ['↵', isRTL ? 'اختيار' : 'Select'],
+            ['Esc', isRTL ? 'إغلاق' : 'Close'],
+          ].map(([key, label]) => (
+            <span key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: TK.textLight }}>
               <kbd style={{
                 padding: '1px 5px', borderRadius: '4px',
-                background: 'rgba(0,0,0,0.05)', border: '1px solid #E8EBF0',
-                fontFamily: 'monospace', fontSize: '10px', color: '#6B7280',
+                background: TK.bgSubtle, border: `1px solid ${TK.border}`,
+                fontFamily: 'monospace', fontSize: '10px', color: TK.textMuted,
               }}>{key}</kbd>
               {label}
             </span>

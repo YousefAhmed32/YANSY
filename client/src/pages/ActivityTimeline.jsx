@@ -3,15 +3,7 @@ import { useSelector } from 'react-redux';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Activity, FolderKanban, MessageSquare, CreditCard, CheckCircle2, Upload, RefreshCw, Loader2 } from 'lucide-react';
 import api from '../utils/api';
-
-const TK = {
-  bg:        '#F6F7F9',
-  surface:   '#FFFFFF',
-  border:    '#E8EBF0',
-  accent:    '#2563EB',
-  text:      '#0D1117',
-  textMuted: '#6B7280',
-};
+import { TK } from '../admin-ui';
 
 const TYPE_CONFIG = {
   project_created:   { icon: FolderKanban, color: '#2563EB',  label_en: 'Project Created',   label_ar: 'تم إنشاء المشروع' },
@@ -140,14 +132,14 @@ export default function ActivityTimeline() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px', direction: isRTL ? 'rtl' : 'ltr', fontFamily: "'Inter',system-ui,sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: TK.bg, padding: '32px 32px 60px', direction: isRTL ? 'rtl' : 'ltr', fontFamily: isRTL ? "'IBM Plex Sans Arabic',system-ui,sans-serif" : "'Inter',system-ui,sans-serif" }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(37,99,235,0.25)', background: 'rgba(37,99,235,0.06)', marginBottom: '10px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', border: `1px solid ${TK.accentBd}`, background: TK.accentBg, marginBottom: '10px' }}>
             <Activity style={{ width: '10px', height: '10px', color: TK.accent }} />
-            <span style={{ fontSize: '10px', fontWeight: 500, color: TK.accent, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '10px', fontWeight: 500, color: TK.accent, letterSpacing: ar ? 0 : '0.14em', textTransform: 'uppercase' }}>
               {ar ? 'النشاط' : 'Activity'}
             </span>
           </div>
@@ -162,7 +154,7 @@ export default function ActivityTimeline() {
           onClick={fetchActivity}
           disabled={loading}
           style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', background: 'transparent', border: `1px solid ${TK.border}`, borderRadius: '8px', color: TK.textMuted, fontSize: '11px', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
-          onMouseEnter={e => { if (!loading) { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.4)'; e.currentTarget.style.color = TK.accent; } }}
+          onMouseEnter={e => { if (!loading) { e.currentTarget.style.borderColor = TK.accentBd; e.currentTarget.style.color = TK.text; } }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = TK.border; e.currentTarget.style.color = TK.textMuted; }}
         >
           <RefreshCw style={{ width: '12px', height: '12px', animation: loading ? 'spin 1s linear infinite' : 'none' }} />
@@ -214,7 +206,7 @@ export default function ActivityTimeline() {
             <div key={day} style={{ marginBottom: '32px' }}>
               {/* Day header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 500, color: TK.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: TK.textMuted, letterSpacing: ar ? 0 : '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                   {formatDate(day, ar)}
                 </span>
                 <div style={{ flex: 1, height: '1px', background: TK.border }} />
@@ -243,7 +235,7 @@ export default function ActivityTimeline() {
                       >
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                           <div>
-                            <span style={{ fontSize: '10px', fontWeight: 400, color: cfg.color, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 400, color: cfg.color, letterSpacing: ar ? 0 : '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
                               {ar ? cfg.label_ar : cfg.label_en}
                             </span>
                             <p style={{ fontSize: '13px', color: TK.text, margin: '0 0 2px', fontWeight: 300, lineHeight: 1.4 }}>

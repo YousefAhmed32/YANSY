@@ -94,9 +94,10 @@ const AdminNotifications = () => {
         subtitle={language === 'ar' ? 'بث الإعلانات للمستخدمين حسب الدور أو على مستوى المنصة' : 'Broadcast announcements to users by role or platform-wide'}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
+      <div className="admin-notif-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: '24px' }}>
+        <style>{`@media (max-width: 860px) { .admin-notif-grid { grid-template-columns: 1fr !important; } }`}</style>
         {/* Compose panel */}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <Card style={{ marginBottom: '20px' }}>
             <SectionHead title={language === 'ar' ? 'إنشاء بث' : 'Compose Broadcast'} />
 
