@@ -149,7 +149,21 @@ exports.accept = async (req, res) => {
     };
     await proposal.save();
 
-    res.json({ ok: true, status: proposal.status });
+    // Auto-convert to active Project & Deposit Invoice #1
+    let conversion = null;
+    try {
+      const { convertAcceptedProposal } = require('../../services/proposals/conversionService');
+      conversion = await convertAcceptedProposal(proposal._id, { io: req.io });
+    } catch (convErr) {
+      console.error('[Public Proposal Accept] Conversion error:', convErr.message);
+    }
+
+    res.json({
+      ok: true,
+      status: proposal.status,
+      projectId: conversion?.project?._id || proposal.convertedProjectId || null,
+      invoiceId: conversion?.invoice?._id || proposal.convertedInvoiceId || null,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

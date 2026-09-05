@@ -83,6 +83,7 @@ const AdminProposalTemplates    = lazy(() => import('./pages/AdminProposalTempla
 const AdminProposalTemplateEditor = lazy(() => import('./pages/AdminProposalTemplateEditor'));
 const AdminProposalImport       = lazy(() => import('./pages/AdminProposalImport'));
 const AdminProposalImportEditor = lazy(() => import('./pages/AdminProposalImportEditor'));
+const ProjectBriefResume        = lazy(() => import('./pages/ProjectBriefResume'));
 
 /* ── Branded page loader ──────────────────────────────────────────────────── */
 const PageLoader = () => (
@@ -160,6 +161,7 @@ const AnimatedRoutes = () => {
               a shared proposal link is its own branded document (see
               ProposalRenderer), not a page inside the marketing site's nav. ── */}
           <Route path="/p/:slug" element={<ProposalPublicPage />} />
+          <Route path="/brief/:token" element={<ProjectBriefResume />} />
 
           {/* ── Auth — no transition, instant ── */}
           <Route path="/login"           element={<Login />} />

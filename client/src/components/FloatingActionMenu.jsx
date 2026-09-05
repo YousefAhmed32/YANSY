@@ -70,6 +70,12 @@ const CSS = `
     .fab-main, .fab-main-icon, .fab-item { transition-duration: .01ms !important; }
   }
 
+  @media (max-width: 768px) {
+    .fab-container {
+      bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
   @media (max-width: 640px) {
     .fab-main { width: 52px; height: 52px; }
     .fab-item { height: 46px; }
@@ -189,6 +195,7 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
       <style>{CSS}</style>
       <div
         ref={containerRef}
+        className="fab-container"
         style={{
           // Shared corner geometry: identical edge gap in both directions, so
           // RTL is a real mirror of LTR rather than a separately tuned offset.

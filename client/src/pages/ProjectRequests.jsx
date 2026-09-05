@@ -1,646 +1,891 @@
-import { useEffect, useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
-  Filter, ChevronDown, ChevronUp, Calendar, User, Building2,
-  DollarSign, FileText, CheckCircle, Clock, Circle, X,
-  Tag, Globe, Timer, Layers, TrendingUp
+  Kanban, Table, Plus, Search, Filter, Calendar, Clock,
+  DollarSign, CheckCircle2, AlertTriangle, AlertCircle,
+  MessageSquare, User, Building2, Tag, Globe, ExternalLink,
+  ChevronRight, RefreshCw, X, ArrowRight, ArrowLeft, Phone,
+  Mail, Link2, Copy, Trash2, Edit3, Send, ShieldCheck
 } from 'lucide-react';
 import api from '../utils/api';
-import { format } from 'date-fns';
-import { gsap } from 'gsap';
 import toast from 'react-hot-toast';
+import {
+  TK, FONT, PageHeader, Card, Button, IconButton, Badge,
+  SearchInput, Select, Modal, Spinner
+} from '../admin-ui';
 
-const ProjectRequests = () => {
-  const { t } = useTranslation();
-  const { isRTL, dir } = useLanguage();
+// ─── STAGE DEFINITIONS ────────────────────────────────────────────────────────
+const STAGES = [
+  { key: 'new',           ar: 'جديد',          en: 'New',           color: '#2563EB', bg: 'rgba(37,99,235,0.08)'  },
+  { key: 'contacted',     ar: 'تم التواصل',    en: 'Contacted',     color: '#6366F1', bg: 'rgba(99,102,241,0.08)' },
+  { key: 'qualified',     ar: 'مؤهل',          en: 'Qualified',     color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)' },
+  { key: 'proposal_sent', ar: 'عرض مُرسل',    en: 'Proposal Sent', color: '#D97706', bg: 'rgba(217,119,6,0.08)'  },
+  { key: 'negotiating',   ar: 'قيد التفاوض',   en: 'Negotiating',   color: '#EA580C', bg: 'rgba(234,88,12,0.08)'  },
+  { key: 'won',           ar: 'تعاقد ناجح',    en: 'Won',           color: '#16A34A', bg: 'rgba(22,163,74,0.08)'  },
+  { key: 'lost',          ar: 'معتذر / مغلق',  en: 'Lost',          color: '#64748B', bg: 'rgba(100,116,139,0.08)'},
+];
 
-  const [requests, setRequests] = useState([]);
+const PRIORITY_BADGES = {
+  urgent: { ar: 'عاجل جداً', en: 'Urgent', color: '#DC2626', bg: 'rgba(220,38,38,0.1)' },
+  high:   { ar: 'أولوية عالية', en: 'High', color: '#EA580C', bg: 'rgba(234,88,12,0.1)' },
+  medium: { ar: 'متوسط',     en: 'Medium', color: '#2563EB', bg: 'rgba(37,99,235,0.1)' },
+  low:    { ar: 'منخفض',     en: 'Low',    color: '#64748B', bg: 'rgba(100,116,139,0.1)' },
+};
+
+const LOSS_REASONS = [
+  { value: 'budget_too_low',    ar: 'الميزانية أقل من الحد الأدنى', en: 'Budget too low' },
+  { value: 'chose_competitor',  ar: 'اختار منافساً آخر',            en: 'Chose a competitor' },
+  { value: 'ghosted',           ar: 'انقطع التواصل / لم يرد',        en: 'Client stopped responding' },
+  { value: 'timing_not_right',  ar: 'التوقيت غير مناسب حالياً',      en: 'Timing not right' },
+  { value: 'out_of_scope',      ar: 'المشروع خارج تخصصنا',           en: 'Out of scope' },
+  { value: 'other',             ar: 'سبب آخر',                      en: 'Other reason' },
+];
+
+export default function ProjectRequests() {
+  const { isRTL, language } = useLanguage();
+  const font = FONT(isRTL);
+
+  const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'table'
+  const [pipeline, setPipeline] = useState(null);
+  const [tableRequests, setTableRequests] = useState([]);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const [overdueCount, setOverdueCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(null);
-  const [filters, setFilters] = useState({
+  const [search, setSearch] = useState('');
+  const [serviceFilter, setServiceFilter] = useState('all');
+
+  // Selected lead for detail/action modal
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [leadFormData, setLeadFormData] = useState({
     status: '',
-    clientType: '',
-    budgetRange: '',
-    projectType: '',
-    timeline: '',
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    priority: 'medium',
+    estimatedValue: 0,
+    nextFollowUpDate: '',
+    lossReason: '',
+    stageNote: '',
+    adminNotes: '',
   });
-  const [expandedRequest, setExpandedRequest] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [statusUpdate, setStatusUpdate] = useState({ status: '', adminNotes: '' });
 
-  const containerRef = useRef(null);
-  const titleRef = useRef(null);
-  const statsRef = useRef(null);
-
-  const bgClass       = 'bg-white';
-  const textClass     = 'text-gray-900';
-  const textMuted     = 'text-gray-600';
-  const textSecondary = 'text-gray-500';
-  const surfaceClass  = 'bg-black/5';
-  const borderClass   = 'border-gray-200';
-  const borderLight   = 'border-gray-300';
-  const hoverSurface  = 'hover:bg-black/5';
-  const inputBg       = 'bg-white text-gray-900 hover:bg-gray-50';
-
-  // ─── Label maps ──────────────────────────────────────────────────────────────
-
-  const budgetLabels = {
-    'less-than-500': t('projectRequests.lessThan500', 'Less than $500'),
-    '500-1000':      t('projectRequests.500to1000',  '$500 – $1,000'),
-    '1000-3000':     t('projectRequests.1000to3000', '$1,000 – $3,000'),
-    '3000-10000':    t('projectRequests.3000to10000','$3,000 – $10,000'),
-    '10000-plus':    t('projectRequests.10000plus',  '$10,000+'),
-  };
-
-  const timelineLabels = {
-    'asap':       t('projectForm.steps.timeline.options.asap',       'ASAP'),
-    '1month':     t('projectForm.steps.timeline.options.1month',     '1 Month'),
-    '2-3months':  t('projectForm.steps.timeline.options.2to3months', '2–3 Months'),
-    'flexible':   t('projectForm.steps.timeline.options.flexible',   'Flexible'),
-  };
-
-  const projectTypeLabels = {
-    restaurant: t('projectForm.steps.projectType.options.restaurant', 'Restaurant'),
-    clinic:     t('projectForm.steps.projectType.options.clinic',     'Clinic'),
-    pharmacy:   t('projectForm.steps.projectType.options.pharmacy',   'Pharmacy'),
-    ecommerce:  t('projectForm.steps.projectType.options.ecommerce',  'E-commerce'),
-    saas:       t('projectForm.steps.projectType.options.saas',       'SaaS / Platform'),
-    realestate: t('projectForm.steps.projectType.options.realestate', 'Real Estate'),
-    education:  t('projectForm.steps.projectType.options.education',  'Education'),
-    delivery:   t('projectForm.steps.projectType.options.delivery',   'Delivery'),
-    other:      t('projectForm.steps.projectType.options.other',      'Other'),
-  };
-
-  const statusConfig = {
-    new: {
-      label: t('projectRequests.new', 'New'),
-      icon: Circle,
-      color: 'text-blue-600 bg-blue-50 border-blue-200',
-    },
-    'in-progress': {
-      label: t('projectRequests.inProgress', 'In Progress'),
-      icon: Clock,
-      color: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    },
-    completed: {
-      label: t('projectRequests.completed', 'Completed'),
-      icon: CheckCircle,
-      color: 'text-[#18181B] bg-[#18181B]/10 border-[#18181B]/30',
-    },
-  };
-
-  // ─── Data fetching ────────────────────────────────────────────────────────────
-
-  useEffect(() => { fetchRequests(); fetchStats(); }, [filters]);
-
-  useEffect(() => {
-    if (!containerRef.current || !titleRef.current) return;
-    gsap.fromTo(titleRef.current,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.1 }
-    );
-    if (statsRef.current) {
-      gsap.fromTo(statsRef.current.children,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.3 }
-      );
-    }
-  }, [stats]);
-
-  const fetchRequests = async () => {
+  // ── Load Pipeline Data ───────────────────────────────────────────────────
+  const fetchPipeline = useCallback(async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([k, v]) => { if (v) params.append(k, v); });
-      const res = await api.get(`/project-requests?${params}`);
-      setRequests(res.data.requests || []);
-    } catch {
-      toast.error(t('common.error', 'Error loading requests'));
+      const res = await api.get('/project-requests/pipeline');
+      setPipeline(res.data.pipeline || {});
+      setTotalLeads(res.data.totalLeads || 0);
+      setOverdueCount(res.data.overdueCount || 0);
+    } catch (err) {
+      console.error('Failed to load pipeline:', err);
+      toast.error(isRTL ? 'فشل تحميل بيانات مسار المبيعات' : 'Failed to load pipeline');
     } finally {
       setLoading(false);
     }
+  }, [isRTL]);
+
+  // ── Load Table Data ──────────────────────────────────────────────────────
+  const fetchTable = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/project-requests', {
+        params: { limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }
+      });
+      setTableRequests(res.data.requests || []);
+    } catch (err) {
+      console.error('Failed to load requests:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (viewMode === 'kanban') fetchPipeline();
+    else fetchTable();
+  }, [viewMode, fetchPipeline, fetchTable]);
+
+  // ── Open Lead Modal ──────────────────────────────────────────────────────
+  const handleOpenLead = (lead) => {
+    setSelectedLead(lead);
+    const dt = lead.nextFollowUpDate ? new Date(lead.nextFollowUpDate).toISOString().slice(0, 16) : '';
+    setLeadFormData({
+      status: lead.status || 'new',
+      priority: lead.priority || 'medium',
+      estimatedValue: lead.estimatedValue || 0,
+      nextFollowUpDate: dt,
+      lossReason: lead.lossReason || '',
+      stageNote: '',
+      adminNotes: lead.adminNotes || '',
+    });
   };
 
-  const fetchStats = async () => {
-    try {
-      const res = await api.get('/project-requests/stats');
-      setStats(res.data);
-    } catch { /* silent */ }
-  };
+  // ── Update Lead ──────────────────────────────────────────────────────────
+  const handleSaveLead = async () => {
+    if (!selectedLead) return;
+    if (leadFormData.status === 'lost' && !leadFormData.lossReason) {
+      toast.error(isRTL ? 'يرجى تحديد سبب الاعتذار عند إغلاق الفرصة' : 'Please specify a loss reason');
+      return;
+    }
 
-  const handleFilterChange = (key, value) =>
-    setFilters(prev => ({ ...prev, [key]: value }));
-
-  const handleStatusUpdate = async () => {
-    if (!selectedRequest) return;
     try {
-      await api.patch(`/project-requests/${selectedRequest._id}/status`, statusUpdate);
-      await fetchRequests(); await fetchStats();
-      setShowStatusModal(false); setSelectedRequest(null);
-      setStatusUpdate({ status: '', adminNotes: '' });
-      toast.success(t('common.success', 'Status updated successfully'));
-    } catch {
-      toast.error(t('projectRequests.updateFailed', 'Failed to update status.'));
+      setActionLoading(true);
+      const payload = {
+        status: leadFormData.status,
+        priority: leadFormData.priority,
+        estimatedValue: Number(leadFormData.estimatedValue) || 0,
+        nextFollowUpDate: leadFormData.nextFollowUpDate ? new Date(leadFormData.nextFollowUpDate) : null,
+        lossReason: leadFormData.status === 'lost' ? leadFormData.lossReason : undefined,
+        stageNote: leadFormData.stageNote,
+        adminNotes: leadFormData.adminNotes,
+      };
+
+      const res = await api.patch(`/project-requests/${selectedLead._id}/status`, payload);
+      toast.success(isRTL ? 'تم تحديث بيانات الفرصة بنجاح' : 'Lead updated successfully');
+      setSelectedLead(null);
+      if (viewMode === 'kanban') fetchPipeline();
+      else fetchTable();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (isRTL ? 'فشل التحديث' : 'Update failed'));
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const openStatusModal = (req) => {
-    setSelectedRequest(req);
-    setStatusUpdate({ status: req.status, adminNotes: req.adminNotes || '' });
-    setShowStatusModal(true);
+  // ── Fast Stage Mover ─────────────────────────────────────────────────────
+  const handleFastMoveStage = async (leadId, newStage) => {
+    try {
+      await api.patch(`/project-requests/${leadId}/status`, {
+        status: newStage,
+        stageNote: isRTL ? `تم النقل السريع إلى ${newStage}` : `Moved to ${newStage}`,
+      });
+      toast.success(isRTL ? 'تم تغيير المرحلة' : 'Stage updated');
+      fetchPipeline();
+    } catch (err) {
+      toast.error(isRTL ? 'فشل نقل المرحلة' : 'Failed to change stage');
+    }
   };
 
-  // ─── UI helpers ───────────────────────────────────────────────────────────────
-
-  const getStatusBadge = (status) => {
-    const cfg = statusConfig[status] || statusConfig.new;
-    const Icon = cfg.icon;
-    return (
-      <span className={`inline-flex items-center gap-2 px-3 py-1.5 border rounded-sm text-xs font-light tracking-wide uppercase ${cfg.color}`}>
-        <Icon className="w-3.5 h-3.5" />
-        {cfg.label}
-      </span>
-    );
+  // ── Copy Magic Brief Link ────────────────────────────────────────────────
+  const handleCopyMagicLink = (token) => {
+    if (!token) return;
+    const url = `${window.location.origin}/brief/${token}`;
+    navigator.clipboard.writeText(url);
+    toast.success(isRTL ? 'تم نسخ رابط استكمال المواصفات' : 'Magic Brief link copied');
   };
 
-  const Pill = ({ label }) => (
-    <span className="inline-block px-2.5 py-1 text-xs font-light tracking-wide border rounded-full border-gray-200 text-gray-500 bg-gray-50">
-      {label}
-    </span>
-  );
-
-  // ─── Select helper ────────────────────────────────────────────────────────────
-
-  const FilterSelect = ({ label, value, onChange, children }) => (
-    <div>
-      <label className={`block text-xs font-light ${textMuted} tracking-widest uppercase mb-2`}>{label}</label>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`w-full px-3 py-2.5 rounded-sm ${inputBg} border-b ${borderLight} font-light focus:outline-none focus:border-[#18181B] transition-colors duration-300 text-sm`}
-      >
-        {children}
-      </select>
-    </div>
-  );
-
-  // ─── Stat card ────────────────────────────────────────────────────────────────
-
-  const StatCard = ({ icon: Icon, iconClass, label, value }) => (
-    <div className={`p-5 ${surfaceClass} border ${borderClass} transition-colors duration-300`}>
-      <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className={`flex-shrink-0 p-2.5 ${iconClass} border rounded-sm ${isRTL ? 'ml-4' : 'mr-4'}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <p className={`text-xs font-light ${textMuted} tracking-widest uppercase`}>{label}</p>
-          <p className={`text-2xl font-light ${textClass} mt-0.5`}>{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ─── Loading ─────────────────────────────────────────────────────────────────
-
-  if (loading && requests.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#18181B]/50 border-t-[#18181B] rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // ─── Render ───────────────────────────────────────────────────────────────────
+  // ── Filtered leads for Kanban ────────────────────────────────────────────
+  const filterLead = (lead) => {
+    if (!lead) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const match = (lead.fullName || '').toLowerCase().includes(q) ||
+                    (lead.email || '').toLowerCase().includes(q) ||
+                    (lead.phoneNumber || '').includes(q) ||
+                    (lead.companyName || '').toLowerCase().includes(q) ||
+                    (lead.projectDescription || '').toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    if (serviceFilter !== 'all' && lead.projectType !== serviceFilter) return false;
+    return true;
+  };
 
   return (
-    <div ref={containerRef} className={`space-y-10 px-4 py-8 ${bgClass} ${textClass} transition-colors duration-300`} dir={dir}>
+    <div style={{
+      minHeight: '100vh',
+      background: TK.bg,
+      padding: '24px 28px 60px',
+      direction: isRTL ? 'rtl' : 'ltr',
+      fontFamily: font,
+    }}>
 
-      {/* Header */}
-      <div>
-        <h1 ref={titleRef} className={`text-5xl md:text-6xl font-light tracking-tight mb-3 ${textClass}`}>
-          {t('projectRequests.title', 'Project Requests')}
-        </h1>
-        <p className={`text-base font-light ${textSecondary}`}>
-          {t('projectRequests.subtitle', 'Manage and review project requests from potential clients')}
-        </p>
-      </div>
-
-      {/* ── Stats ── */}
-      {stats && (
-        <div ref={statsRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            icon={FileText}
-            iconClass={`${surfaceClass} border ${borderLight}`}
-            label={t('projectRequests.totalRequests', 'Total')}
-            value={stats.total || 0}
-          />
-          <StatCard
-            icon={Circle}
-            iconClass="bg-blue-100 border-blue-200 text-blue-600"
-            label={t('projectRequests.new', 'New')}
-            value={stats.byStatus?.new || 0}
-          />
-          <StatCard
-            icon={Clock}
-            iconClass="bg-yellow-100 border-yellow-200 text-yellow-600"
-            label={t('projectRequests.inProgress', 'In Progress')}
-            value={stats.byStatus?.['in-progress'] || 0}
-          />
-          <StatCard
-            icon={CheckCircle}
-            iconClass="bg-[#18181B]/20 border-[#18181B]/30 text-[#18181B]"
-            label={t('projectRequests.completed', 'Completed')}
-            value={stats.byStatus?.completed || 0}
-          />
-        </div>
-      )}
-
-      {/* ── Extra stats row: project types / timelines ── */}
-      {stats && (stats.byProjectType || stats.byTimeline) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          {/* By project type */}
-          {stats.byProjectType && Object.keys(stats.byProjectType).length > 0 && (
-            <div className={`p-6 ${surfaceClass} border ${borderClass}`}>
-              <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Layers className={`w-4 h-4 ${textMuted}`} />
-                <h3 className={`text-xs font-light tracking-widest uppercase ${textMuted}`}>
-                  {t('projectRequests.byProjectType', 'By Project Type')}
-                </h3>
-              </div>
-              <div className="space-y-2">
-                {Object.entries(stats.byProjectType).map(([type, count]) => (
-                  <div key={type} className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span className={`text-sm font-light ${textMuted} capitalize`}>
-                      {projectTypeLabels[type] || type}
-                    </span>
-                    <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <div className={`h-1.5 rounded-full bg-[#18181B]/40`} style={{ width: `${Math.max(20, (count / (stats.total || 1)) * 120)}px` }} />
-                      <span className={`text-sm font-light ${textClass} w-6 text-right`}>{count}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* By timeline */}
-          {stats.byTimeline && Object.keys(stats.byTimeline).length > 0 && (
-            <div className={`p-6 ${surfaceClass} border ${borderClass}`}>
-              <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Timer className={`w-4 h-4 ${textMuted}`} />
-                <h3 className={`text-xs font-light tracking-widest uppercase ${textMuted}`}>
-                  {t('projectRequests.byTimeline', 'By Timeline')}
-                </h3>
-              </div>
-              <div className="space-y-2">
-                {Object.entries(stats.byTimeline).map(([tl, count]) => (
-                  <div key={tl} className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span className={`text-sm font-light ${textMuted}`}>
-                      {timelineLabels[tl] || tl}
-                    </span>
-                    <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <div className="h-1.5 rounded-full bg-blue-400/40" style={{ width: `${Math.max(20, (count / (stats.total || 1)) * 120)}px` }} />
-                      <span className={`text-sm font-light ${textClass} w-6 text-right`}>{count}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Filters ── */}
-      <div className={`${surfaceClass} border ${borderClass} p-6 transition-colors duration-300`}>
-        <div className={`flex items-center gap-3 mb-5 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Filter className={`w-4 h-4 ${textMuted}`} />
-          <h2 className={`text-xs font-light ${textMuted} tracking-widest uppercase`}>
-            {t('projectRequests.filters', 'Filters')}
-          </h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-
-          <FilterSelect
-            label={t('projectRequests.status', 'Status')}
-            value={filters.status}
-            onChange={v => handleFilterChange('status', v)}
-          >
-            <option value="">{t('projectRequests.allStatuses', 'All')}</option>
-            <option value="new">{t('projectRequests.new', 'New')}</option>
-            <option value="in-progress">{t('projectRequests.inProgress', 'In Progress')}</option>
-            <option value="completed">{t('projectRequests.completed', 'Completed')}</option>
-          </FilterSelect>
-
-          <FilterSelect
-            label={t('projectRequests.clientType', 'Client Type')}
-            value={filters.clientType}
-            onChange={v => handleFilterChange('clientType', v)}
-          >
-            <option value="">{t('projectRequests.allTypes', 'All')}</option>
-            <option value="individual">{t('projectRequests.individual', 'Individual')}</option>
-            <option value="company">{t('projectRequests.company', 'Company')}</option>
-          </FilterSelect>
-
-          <FilterSelect
-            label={t('projectRequests.budgetRange', 'Budget')}
-            value={filters.budgetRange}
-            onChange={v => handleFilterChange('budgetRange', v)}
-          >
-            <option value="">{t('projectRequests.allBudgets', 'All')}</option>
-            {Object.entries(budgetLabels).map(([val, lbl]) => (
-              <option key={val} value={val}>{lbl}</option>
-            ))}
-          </FilterSelect>
-
-          {/* NEW: project type filter */}
-          <FilterSelect
-            label={t('projectForm.steps.projectType.title', 'Project Type')}
-            value={filters.projectType}
-            onChange={v => handleFilterChange('projectType', v)}
-          >
-            <option value="">All Types</option>
-            {Object.entries(projectTypeLabels).map(([val, lbl]) => (
-              <option key={val} value={val}>{lbl}</option>
-            ))}
-          </FilterSelect>
-
-          {/* NEW: timeline filter */}
-          <FilterSelect
-            label={t('projectForm.steps.timeline.title', 'Timeline')}
-            value={filters.timeline}
-            onChange={v => handleFilterChange('timeline', v)}
-          >
-            <option value="">All</option>
-            {Object.entries(timelineLabels).map(([val, lbl]) => (
-              <option key={val} value={val}>{lbl}</option>
-            ))}
-          </FilterSelect>
-
-          <FilterSelect
-            label={t('projectRequests.sortBy', 'Sort By')}
-            value={filters.sortBy}
-            onChange={v => handleFilterChange('sortBy', v)}
-          >
-            <option value="createdAt">{t('projectRequests.date', 'Date')}</option>
-            <option value="budgetRange">{t('projectRequests.budget', 'Budget')}</option>
-            <option value="status">{t('projects.status', 'Status')}</option>
-          </FilterSelect>
-
-        </div>
-      </div>
-
-      {/* ── Requests list ── */}
-      <div className={`${surfaceClass} border ${borderClass} transition-colors duration-300`}>
-        <div className={`px-6 py-5 border-b ${borderClass} flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <h2 className={`text-sm font-light tracking-widest uppercase ${textMuted}`}>
-            {t('projectRequests.requests', 'Requests')}
-          </h2>
-          <span className={`text-sm font-light ${textSecondary}`}>{requests.length}</span>
+      {/* ── Page Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 14 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: TK.text, margin: '0 0 4px' }}>
+            {isRTL ? 'إدارة فرص البيع والطلبات' : 'Sales Pipeline & Inquiries'}
+          </h1>
+          <p style={{ fontSize: 13, color: TK.textMuted, margin: 0 }}>
+            {isRTL
+              ? 'متابعة مسار العملاء المحتملين من أول استفسار حتى التعاقد وإصدار العرض'
+              : 'Track and qualify prospective client deals from inquiry to closing'}
+          </p>
         </div>
 
-        {requests.length === 0 ? (
-          <div className="p-16 text-center">
-            <FileText className={`w-10 h-10 ${textSecondary} mx-auto mb-3`} />
-            <p className={`${textSecondary} font-light text-sm`}>
-              {t('projectRequests.noRequests', 'No project requests found')}
-            </p>
+        {/* View Switcher & Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            display: 'flex',
+            background: TK.surface,
+            border: `1px solid ${TK.border}`,
+            borderRadius: 10,
+            padding: 3,
+            gap: 4,
+          }}>
+            <button
+              onClick={() => setViewMode('kanban')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                border: 'none', cursor: 'pointer', fontFamily: font,
+                background: viewMode === 'kanban' ? TK.accent : 'transparent',
+                color: viewMode === 'kanban' ? '#FFFFFF' : TK.textMuted,
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <Kanban style={{ width: 14, height: 14 }} />
+              {isRTL ? 'لوحة المسار (Kanban)' : 'Kanban Board'}
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                border: 'none', cursor: 'pointer', fontFamily: font,
+                background: viewMode === 'table' ? TK.accent : 'transparent',
+                color: viewMode === 'table' ? '#FFFFFF' : TK.textMuted,
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <Table style={{ width: 14, height: 14 }} />
+              {isRTL ? 'جدول الطلبات' : 'Data Table'}
+            </button>
           </div>
-        ) : (
-          <div className={`divide-y ${borderClass}`}>
-            {requests.map((request) => (
-              <div key={request._id} className={`p-6 ${hoverSurface} transition-colors duration-300`}>
-                <div className={`flex items-start justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
 
-                  {/* Left: main info */}
-                  <div className="flex-1 min-w-0">
+          <Button
+            size="sm"
+            onClick={viewMode === 'kanban' ? fetchPipeline : fetchTable}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshCw style={{ width: 13, height: 13 }} />
+            {isRTL ? 'تحديث' : 'Refresh'}
+          </Button>
+        </div>
+      </div>
 
-                    {/* Row 1: badges */}
-                    <div className={`flex flex-wrap items-center gap-3 mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      {getStatusBadge(request.status)}
+      {/* ── Stats Strip ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+        gap: 14,
+        marginBottom: 24,
+      }}>
+        <div style={{
+          background: TK.surface, border: `1px solid ${TK.border}`,
+          borderRadius: 12, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 12, color: TK.textMuted, marginBottom: 4 }}>
+            {isRTL ? 'إجمالي الطلبات والفرص' : 'Total Inquiries'}
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: TK.text }}>
+            {totalLeads}
+          </div>
+        </div>
 
-                      {request.projectType && (
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded-sm text-xs font-light tracking-wide ${
-                          'border-gray-200 text-gray-500'
-                        }`}>
-                          <Layers className="w-3 h-3" />
-                          {projectTypeLabels[request.projectType] || request.projectType}
-                        </span>
-                      )}
+        <div style={{
+          background: TK.surface, border: `1px solid ${TK.border}`,
+          borderRadius: 12, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 12, color: TK.textMuted, marginBottom: 4 }}>
+            {isRTL ? 'الفرص النشطة في المسار' : 'Active Pipeline Deals'}
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: TK.accent }}>
+            {pipeline ? (
+              (pipeline.new?.leads?.length || 0) +
+              (pipeline.contacted?.leads?.length || 0) +
+              (pipeline.qualified?.leads?.length || 0) +
+              (pipeline.proposal_sent?.leads?.length || 0) +
+              (pipeline.negotiating?.leads?.length || 0)
+            ) : 0}
+          </div>
+        </div>
 
-                      {request.timeline && (
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded-sm text-xs font-light tracking-wide ${
-                          'border-gray-200 text-gray-500'
-                        }`}>
-                          <Timer className="w-3 h-3" />
-                          {timelineLabels[request.timeline] || request.timeline}
-                        </span>
-                      )}
+        <div style={{
+          background: overdueCount > 0 ? 'rgba(239, 68, 68, 0.05)' : TK.surface,
+          border: `1px solid ${overdueCount > 0 ? 'rgba(239, 68, 68, 0.3)' : TK.border}`,
+          borderRadius: 12, padding: '16px 20px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: overdueCount > 0 ? '#DC2626' : TK.textMuted, marginBottom: 4 }}>
+            {overdueCount > 0 && <AlertCircle style={{ width: 14, height: 14 }} />}
+            {isRTL ? 'متابعات متأخرة / مستحقة' : 'Overdue Follow-ups'}
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: overdueCount > 0 ? '#DC2626' : TK.text }}>
+            {overdueCount}
+          </div>
+        </div>
 
-                      <div className={`flex items-center gap-1.5 text-xs font-light ${textSecondary}`}>
-                        {request.clientType === 'company' ? <Building2 className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
-                        <span className="capitalize">{t(`projectRequests.${request.clientType}`, request.clientType)}</span>
-                      </div>
+        <div style={{
+          background: TK.surface, border: `1px solid ${TK.border}`,
+          borderRadius: 12, padding: '16px 20px',
+        }}>
+          <div style={{ fontSize: 12, color: TK.textMuted, marginBottom: 4 }}>
+            {isRTL ? 'تعاقدات ناجحة (Won)' : 'Deals Won'}
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#16A34A' }}>
+            {pipeline?.won?.leads?.length || 0}
+          </div>
+        </div>
+      </div>
 
-                      <div className={`flex items-center gap-1.5 text-xs font-light ${textSecondary}`}>
-                        <DollarSign className="w-3.5 h-3.5" />
-                        {budgetLabels[request.budgetRange] || request.budgetRange}
-                      </div>
+      {/* ── Search & Filter Bar ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap',
+      }}>
+        <div style={{ flex: '1', minWidth: 260 }}>
+          <SearchInput
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={isRTL ? 'بحث بالاسم، الشركة، الهاتف، أو محتوى الطلب...' : 'Search by name, company, phone, notes...'}
+          />
+        </div>
 
-                      <div className={`flex items-center gap-1.5 text-xs font-light ${textSecondary}`}>
-                        <Calendar className="w-3.5 h-3.5" />
-                        {format(new Date(request.createdAt), 'MMM d, yyyy')}
-                      </div>
+        <select
+          value={serviceFilter}
+          onChange={e => setServiceFilter(e.target.value)}
+          style={{
+            height: 38, padding: '0 12px', borderRadius: 9,
+            border: `1px solid ${TK.border}`, background: TK.surface,
+            color: TK.text, fontSize: 12.5, fontFamily: font, outline: 'none',
+          }}
+        >
+          <option value="all">{isRTL ? 'جميع الخدمات والأنظمة' : 'All Services'}</option>
+          <option value="website">{isRTL ? 'مواقع ويب' : 'Websites'}</option>
+          <option value="ecommerce">{isRTL ? 'متاجر إلكترونية' : 'E-commerce'}</option>
+          <option value="saas">{isRTL ? 'منصات SaaS' : 'SaaS Platforms'}</option>
+          <option value="mobile">{isRTL ? 'تطبيقات جوال' : 'Mobile Apps'}</option>
+          <option value="erp">{isRTL ? 'أنظمة ERP / CRM' : 'ERP / CRM Systems'}</option>
+          <option value="automation">{isRTL ? 'أتمتة وسير عمل' : 'Automations'}</option>
+          <option value="other">{isRTL ? 'أخرى' : 'Other'}</option>
+        </select>
+      </div>
+
+      {/* ── VIEW MODE: KANBAN PIPELINE ── */}
+      {viewMode === 'kanban' && (
+        <div style={{
+          display: 'flex',
+          gap: 16,
+          overflowX: 'auto',
+          paddingBottom: 20,
+          minHeight: 560,
+        }}>
+          {STAGES.map((stage) => {
+            const columnData = pipeline?.[stage.key] || { leads: [], totalValue: 0 };
+            const visibleLeads = columnData.leads.filter(filterLead);
+
+            return (
+              <div
+                key={stage.key}
+                style={{
+                  flex: '0 0 290px',
+                  background: 'rgba(248,250,252,0.85)',
+                  border: `1px solid ${TK.border}`,
+                  borderRadius: 14,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  maxHeight: 'calc(100vh - 270px)',
+                }}
+              >
+                {/* Column Header */}
+                <div style={{
+                  padding: '12px 14px',
+                  borderBottom: `1px solid ${TK.border}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: TK.surface,
+                  borderTopLeftRadius: 14,
+                  borderTopRightRadius: 14,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: '50%',
+                      background: stage.color, display: 'inline-block',
+                    }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: TK.text }}>
+                      {isRTL ? stage.ar : stage.en}
+                    </span>
+                  </div>
+                  <span style={{
+                    padding: '2px 8px', borderRadius: 99,
+                    fontSize: 11, fontWeight: 700,
+                    background: stage.bg, color: stage.color,
+                  }}>
+                    {visibleLeads.length}
+                  </span>
+                </div>
+
+                {/* Leads Scroll Area */}
+                <div style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: 10,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}>
+                  {visibleLeads.length === 0 ? (
+                    <div style={{
+                      padding: '30px 10px', textAlign: 'center',
+                      fontSize: 12, color: TK.textLight,
+                    }}>
+                      {isRTL ? 'لا توجد فرص هنا' : 'No leads in this stage'}
                     </div>
+                  ) : (
+                    visibleLeads.map((lead) => {
+                      const priority = PRIORITY_BADGES[lead.priority] || PRIORITY_BADGES.medium;
+                      const hasPhone = Boolean(lead.phoneNumber && lead.phoneNumber.length > 5);
 
-                    {/* Row 2: name */}
-                    <h3 className={`text-xl font-light ${textClass} mb-2`}>
-                      {request.fullName}
-                      {request.companyName && <span className={`${textSecondary}`}> — {request.companyName}</span>}
-                    </h3>
-
-                    {/* Row 3: description preview */}
-                    <p className={`${textMuted} font-light text-sm mb-4 line-clamp-2 leading-relaxed`}>
-                      {request.projectDescription}
-                    </p>
-
-                    {/* Row 4: contact + tags row */}
-                    <div className={`flex flex-wrap items-center gap-4 text-xs font-light ${textSecondary} mb-3`}>
-                      <span>📞 {request.phoneNumber}</span>
-                      {request.email && <span>✉️ {request.email}</span>}
-                      {request.companySize && <span>👥 {request.companySize.replace('-', ' ')}</span>}
-                      {request.referenceUrl && (
-                        <a
-                          href={request.referenceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[#18181B] hover:underline"
-                          onClick={e => e.stopPropagation()}
+                      return (
+                        <div
+                          key={lead._id}
+                          style={{
+                            background: TK.surface,
+                            borderRadius: 12,
+                            border: `1px solid ${lead.isOverdue ? 'rgba(239, 68, 68, 0.4)' : TK.border}`,
+                            boxShadow: lead.isOverdue ? '0 2px 8px rgba(239, 68, 68, 0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
+                            padding: '12px 14px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                          onClick={() => handleOpenLead(lead)}
                         >
-                          <Globe className="w-3 h-3" />
-                          {t('projectForm.steps.reference.title', 'Reference')}
-                        </a>
-                      )}
-                    </div>
+                          {/* Card Top: Priority & Followup SLA */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, gap: 6 }}>
+                            <span style={{
+                              padding: '2px 7px', borderRadius: 6,
+                              fontSize: 10, fontWeight: 600,
+                              background: priority.bg, color: priority.color,
+                            }}>
+                              {isRTL ? priority.ar : priority.en}
+                            </span>
 
-                    {/* Tags */}
-                    {request.tags && request.tags.length > 0 && (
-                      <div className={`flex flex-wrap gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        {request.tags.slice(0, 8).map(tag => <Pill key={tag} label={tag} />)}
-                        {request.tags.length > 8 && (
-                          <Pill label={`+${request.tags.length - 8}`} />
-                        )}
-                      </div>
-                    )}
-
-                    {/* Expanded detail */}
-                    {expandedRequest === request._id && (
-                      <div className={`mt-5 p-5 ${surfaceClass} border ${borderClass} space-y-4`}>
-                        <div>
-                          <h4 className={`text-xs font-light ${textClass} mb-2 tracking-widest uppercase`}>
-                            {t('projectRequests.projectDescription', 'Project Description')}
-                          </h4>
-                          <p className="text-gray-700 font-light text-sm whitespace-pre-wrap leading-relaxed">
-                            {request.projectDescription}
-                          </p>
-                        </div>
-
-                        {request.referenceUrl && (
-                          <div className={`pt-4 border-t ${borderClass}`}>
-                            <h4 className={`text-xs font-light ${textClass} mb-2 tracking-widest uppercase`}>
-                              {t('projectForm.steps.reference.title', 'Reference URL')}
-                            </h4>
-                            <a
-                              href={request.referenceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#18181B] text-sm font-light hover:underline break-all"
-                            >
-                              {request.referenceUrl}
-                            </a>
+                            {lead.isOverdue ? (
+                              <span style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 3,
+                                fontSize: 10, fontWeight: 700, color: '#DC2626',
+                                background: 'rgba(220,38,38,0.1)', padding: '2px 6px', borderRadius: 6,
+                              }}>
+                                <AlertCircle style={{ width: 10, height: 10 }} />
+                                {isRTL ? 'تأخرت المتابعة' : 'Overdue'}
+                              </span>
+                            ) : lead.nextFollowUpDate ? (
+                              <span style={{ fontSize: 10.5, color: TK.textMuted, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                <Clock style={{ width: 10, height: 10 }} />
+                                {new Date(lead.nextFollowUpDate).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
+                              </span>
+                            ) : null}
                           </div>
-                        )}
 
-                        {request.tags && request.tags.length > 0 && (
-                          <div className={`pt-4 border-t ${borderClass}`}>
-                            <h4 className={`text-xs font-light ${textClass} mb-3 tracking-widest uppercase`}>
-                              {t('projectForm.steps.tags.title', 'Requested Features')}
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {request.tags.map(tag => <Pill key={tag} label={tag} />)}
+                          {/* Client Name & Company */}
+                          <div style={{ fontSize: 13.5, fontWeight: 700, color: TK.text, marginBottom: 2 }}>
+                            {lead.fullName}
+                          </div>
+                          {lead.companyName && (
+                            <div style={{ fontSize: 11.5, color: TK.textMuted, display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                              <Building2 style={{ width: 11, height: 11 }} />
+                              {lead.companyName}
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {request.adminNotes && (
-                          <div className={`pt-4 border-t ${borderClass}`}>
-                            <h4 className={`text-xs font-light ${textClass} mb-2 tracking-widest uppercase`}>
-                              {t('projectRequests.adminNotes', 'Admin Notes')}
-                            </h4>
-                            <p className="text-gray-700 font-light text-sm whitespace-pre-wrap leading-relaxed">
-                              {request.adminNotes}
+                          {/* Service & Budget Tags */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, margin: '8px 0' }}>
+                            <span style={{
+                              padding: '2px 8px', borderRadius: 6,
+                              fontSize: 10.5, background: 'rgba(0,0,0,0.04)', color: TK.textSecondary,
+                            }}>
+                              {lead.projectType || 'General'}
+                            </span>
+                            {lead.budgetRange && lead.budgetRange !== 'unknown' && (
+                              <span style={{
+                                padding: '2px 8px', borderRadius: 6,
+                                fontSize: 10.5, background: 'rgba(16,185,129,0.08)', color: '#059669', fontWeight: 600,
+                              }}>
+                                {lead.budgetRange}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Brief Excerpt */}
+                          {lead.projectDescription && (
+                            <p style={{
+                              fontSize: 11.5, color: TK.textMuted, lineHeight: 1.4,
+                              margin: '0 0 10px',
+                              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}>
+                              {lead.projectDescription}
                             </p>
+                          )}
+
+                          {/* Card Footer Actions */}
+                          <div
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                              paddingTop: 8, borderTop: `1px solid ${TK.border}`, marginTop: 8,
+                            }}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              {hasPhone && (
+                                <a
+                                  href={`https://wa.me/${lead.phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(isRTL ? `مرحباً ${lead.fullName} 👋 معك فريق YANSY Tech بخصوص طلبك.` : `Hi ${lead.fullName} 👋 This is YANSY Tech regarding your project inquiry.`)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={isRTL ? 'مراسلة عبر واتساب' : 'Chat on WhatsApp'}
+                                  style={{
+                                    width: 26, height: 26, borderRadius: 6,
+                                    background: '#25D366', color: '#FFFFFF',
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    textDecoration: 'none',
+                                  }}
+                                >
+                                  <Phone style={{ width: 12, height: 12 }} />
+                                </a>
+                              )}
+                              {lead.magicToken && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyMagicLink(lead.magicToken)}
+                                  title={isRTL ? 'نسخ رابط مواصفات العميل (Magic Brief)' : 'Copy Magic Brief Link'}
+                                  style={{
+                                    width: 26, height: 26, borderRadius: 6,
+                                    background: TK.surface, border: `1px solid ${TK.border}`,
+                                    color: TK.textMuted, cursor: 'pointer',
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                  }}
+                                >
+                                  <Link2 style={{ width: 12, height: 12 }} />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Quick stage mover dropdown */}
+                            <select
+                              value={lead.status}
+                              onChange={(e) => handleFastMoveStage(lead._id, e.target.value)}
+                              style={{
+                                fontSize: 11, height: 24, padding: '0 4px', borderRadius: 6,
+                                border: `1px solid ${TK.border}`, background: TK.surface,
+                                color: TK.textSecondary, fontFamily: font, outline: 'none',
+                              }}
+                            >
+                              {STAGES.map(s => (
+                                <option key={s.key} value={s.key}>{isRTL ? s.ar : s.en}</option>
+                              ))}
+                            </select>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right: actions */}
-                  <div className={`flex flex-col items-end gap-2 flex-shrink-0 ${isRTL ? 'items-start' : ''}`}>
-                    <button
-                      onClick={() => setExpandedRequest(expandedRequest === request._id ? null : request._id)}
-                      className={`p-2 ${textMuted} hover:text-[#18181B] transition-colors duration-300`}
-                    >
-                      {expandedRequest === request._id
-                        ? <ChevronUp className="w-4 h-4" />
-                        : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    <button
-                      onClick={() => openStatusModal(request)}
-                      className="px-4 py-2 border border-[#18181B] text-[#18181B] text-xs font-light tracking-widest uppercase hover:bg-[#18181B] hover:text-white transition-all duration-500 whitespace-nowrap"
-                    >
-                      {t('projectRequests.updateStatus', 'Update')}
-                    </button>
-                  </div>
-
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* ── Status modal ── */}
-      {showStatusModal && selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className={`${bgClass} border ${borderLight} max-w-md w-full p-8 transition-colors duration-300`}>
-            <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <h3 className={`text-xl font-light ${textClass}`}>
-                {t('projectRequests.updateRequestStatus', 'Update Request Status')}
-              </h3>
-              <button
-                onClick={() => { setShowStatusModal(false); setSelectedRequest(null); setStatusUpdate({ status: '', adminNotes: '' }); }}
-                className={`p-2 ${textMuted} hover:text-[#18181B] transition-colors duration-300`}
-              >
-                <X className="h-5 w-5" />
-              </button>
+      {/* ── VIEW MODE: DATA TABLE ── */}
+      {viewMode === 'table' && (
+        <Card style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${TK.border}`, background: 'rgba(0,0,0,0.02)', textAlign: isRTL ? 'right' : 'left' }}>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'العميل' : 'Client'}</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'نوع المشروع' : 'Service'}</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'الميزانية' : 'Budget'}</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'المرحلة' : 'Stage'}</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'الأولوية' : 'Priority'}</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'تاريخ الورود' : 'Date'}</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, color: TK.textMuted }}>{isRTL ? 'إجراء' : 'Actions'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRequests.filter(filterLead).map((req) => (
+                <tr
+                  key={req._id}
+                  style={{ borderBottom: `1px solid ${TK.border}`, cursor: 'pointer' }}
+                  onClick={() => handleOpenLead(req)}
+                >
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ fontWeight: 600, color: TK.text }}>{req.fullName}</div>
+                    <div style={{ fontSize: 11, color: TK.textMuted }}>{req.email || req.phoneNumber || '—'}</div>
+                  </td>
+                  <td style={{ padding: '12px 16px', color: TK.textSecondary }}>{req.projectType}</td>
+                  <td style={{ padding: '12px 16px', color: TK.textSecondary }}>{req.budgetRange || '—'}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{
+                      padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      background: 'rgba(37,99,235,0.08)', color: '#2563EB',
+                    }}>
+                      {req.status}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontSize: 11, color: TK.textMuted }}>{req.priority || 'medium'}</span>
+                  </td>
+                  <td style={{ padding: '12px 16px', color: TK.textMuted, fontSize: 12 }}>
+                    {new Date(req.createdAt).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}
+                  </td>
+                  <td style={{ padding: '12px 16px' }} onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => handleOpenLead(req)}
+                      style={{
+                        padding: '5px 12px', borderRadius: 7,
+                        border: `1px solid ${TK.border}`, background: TK.surface,
+                        fontSize: 12, cursor: 'pointer', fontFamily: font,
+                      }}
+                    >
+                      {isRTL ? 'تفاصيل' : 'Details'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {/* ── LEAD ACTION / DETAIL MODAL ── */}
+      {selectedLead && (
+        <Modal
+          open={Boolean(selectedLead)}
+          onClose={() => setSelectedLead(null)}
+          title={isRTL ? 'متابعة وإدارة الفرصة البيعية' : 'Manage Lead & Sales Opportunity'}
+          width={640}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Client Profile Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', borderRadius: 10, background: 'rgba(0,0,0,0.02)',
+              border: `1px solid ${TK.border}`,
+            }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: TK.text }}>
+                  {selectedLead.fullName}
+                </div>
+                <div style={{ fontSize: 12, color: TK.textMuted, display: 'flex', gap: 12, marginTop: 4 }}>
+                  {selectedLead.email && <span>✉️ {selectedLead.email}</span>}
+                  {selectedLead.phoneNumber && <span>📞 {selectedLead.phoneNumber}</span>}
+                </div>
+              </div>
+
+              {selectedLead.magicToken && (
+                <button
+                  type="button"
+                  onClick={() => handleCopyMagicLink(selectedLead.magicToken)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '6px 12px', borderRadius: 8, fontSize: 11.5,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    cursor: 'pointer', fontFamily: font,
+                  }}
+                >
+                  <Copy style={{ width: 12, height: 12 }} />
+                  {isRTL ? 'رابط العميل (Brief)' : 'Copy Magic Link'}
+                </button>
+              )}
             </div>
 
-            <div className="space-y-5">
+            {/* Project Details Description */}
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 4 }}>
+                {isRTL ? 'وصف المشروع والمواصفات الأولية:' : 'Project Scope / Inquiry Details:'}
+              </div>
+              <div style={{
+                fontSize: 13, color: TK.text, background: TK.surface,
+                padding: '10px 14px', borderRadius: 8, border: `1px solid ${TK.border}`,
+                lineHeight: 1.5, maxHeight: 120, overflowY: 'auto',
+              }}>
+                {selectedLead.projectDescription || '—'}
+              </div>
+            </div>
+
+            {/* Pipeline Stage & Priority */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label className={`block text-xs font-light ${textMuted} tracking-widest uppercase mb-2`}>
-                  {t('projectRequests.status', 'Status')}
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 6 }}>
+                  {isRTL ? 'مرحلة المسار البيعي (Stage):' : 'Pipeline Stage:'}
                 </label>
                 <select
-                  value={statusUpdate.status}
-                  onChange={e => setStatusUpdate(p => ({ ...p, status: e.target.value }))}
-                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} font-light focus:outline-none focus:border-[#18181B] transition-colors duration-300`}
+                  value={leadFormData.status}
+                  onChange={e => setLeadFormData(p => ({ ...p, status: e.target.value }))}
+                  style={{
+                    width: '100%', height: 38, padding: '0 10px', borderRadius: 8,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    fontSize: 13, fontFamily: font, outline: 'none',
+                  }}
                 >
-                  <option value="new">{t('projectRequests.new', 'New')}</option>
-                  <option value="in-progress">{t('projectRequests.inProgress', 'In Progress')}</option>
-                  <option value="completed">{t('projectRequests.completed', 'Completed')}</option>
+                  {STAGES.map(s => (
+                    <option key={s.key} value={s.key}>{isRTL ? s.ar : s.en}</option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className={`block text-xs font-light ${textMuted} tracking-widest uppercase mb-2`}>
-                  {t('projectRequests.adminNotes', 'Admin Notes')}
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 6 }}>
+                  {isRTL ? 'الأولوية (Priority):' : 'Priority:'}
                 </label>
-                <textarea
-                  value={statusUpdate.adminNotes}
-                  onChange={e => setStatusUpdate(p => ({ ...p, adminNotes: e.target.value }))}
-                  rows={4}
-                  className={`w-full px-4 py-3 ${surfaceClass} border-b ${borderLight} ${textClass} placeholder-gray-400 font-light focus:outline-none focus:border-[#18181B] transition-colors duration-300 resize-none`}
-                  placeholder={t('projectRequests.addNotes', 'Add notes about this request...')}
+                <select
+                  value={leadFormData.priority}
+                  onChange={e => setLeadFormData(p => ({ ...p, priority: e.target.value }))}
+                  style={{
+                    width: '100%', height: 38, padding: '0 10px', borderRadius: 8,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    fontSize: 13, fontFamily: font, outline: 'none',
+                  }}
+                >
+                  <option value="urgent">{isRTL ? 'عاجل جداً (Urgent)' : 'Urgent'}</option>
+                  <option value="high">{isRTL ? 'أولوية عالية (High)' : 'High'}</option>
+                  <option value="medium">{isRTL ? 'متوسط (Medium)' : 'Medium'}</option>
+                  <option value="low">{isRTL ? 'منخفض (Low)' : 'Low'}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Next Followup Date & Estimated Value */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 6 }}>
+                  {isRTL ? 'موعد المتابعة القادم (Follow-up):' : 'Next Follow-up Date:'}
+                </label>
+                <input
+                  type="datetime-local"
+                  value={leadFormData.nextFollowUpDate}
+                  onChange={e => setLeadFormData(p => ({ ...p, nextFollowUpDate: e.target.value }))}
+                  style={{
+                    width: '100%', height: 38, padding: '0 10px', borderRadius: 8,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    fontSize: 12.5, fontFamily: font, outline: 'none',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 6 }}>
+                  {isRTL ? 'القيمة التقديرية (USD / EGP):' : 'Estimated Deal Value:'}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={leadFormData.estimatedValue}
+                  onChange={e => setLeadFormData(p => ({ ...p, estimatedValue: e.target.value }))}
+                  placeholder="0"
+                  style={{
+                    width: '100%', height: 38, padding: '0 10px', borderRadius: 8,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    fontSize: 13, fontFamily: font, outline: 'none',
+                  }}
                 />
               </div>
             </div>
 
-            <div className={`flex gap-3 mt-7 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <button
-                onClick={() => { setShowStatusModal(false); setSelectedRequest(null); setStatusUpdate({ status: '', adminNotes: '' }); }}
-                className={`flex-1 px-4 py-3 border ${borderLight} ${textMuted} text-xs font-light tracking-widest uppercase hover:border-[#18181B] transition-all duration-300`}
-              >
-                {t('common.cancel', 'Cancel')}
-              </button>
-              <button
-                onClick={handleStatusUpdate}
-                className="flex-1 px-4 py-3 border border-[#18181B] text-[#18181B] text-xs font-light tracking-widest uppercase hover:bg-[#18181B] hover:text-white transition-all duration-500"
-              >
-                {t('projectRequests.update', 'Update')}
-              </button>
+            {/* If Stage is LOST: Require Loss Reason */}
+            {leadFormData.status === 'lost' && (
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#DC2626', marginBottom: 6 }}>
+                  {isRTL ? 'سبب الاعتذار / خسارة الفرصة (إلزامي):' : 'Reason for Lost Deal (Required):'}
+                </label>
+                <select
+                  value={leadFormData.lossReason}
+                  onChange={e => setLeadFormData(p => ({ ...p, lossReason: e.target.value }))}
+                  style={{
+                    width: '100%', height: 38, padding: '0 10px', borderRadius: 8,
+                    border: '1px solid rgba(220,38,38,0.5)', background: 'rgba(220,38,38,0.03)',
+                    fontSize: 13, fontFamily: font, outline: 'none',
+                  }}
+                >
+                  <option value="">{isRTL ? '-- اختر سبب الرفض أو الاعتذار --' : '-- Select Reason --'}</option>
+                  {LOSS_REASONS.map(r => (
+                    <option key={r.value} value={r.value}>{isRTL ? r.ar : r.en}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Transition Note */}
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 6 }}>
+                {isRTL ? 'ملاحظة حركة المرحلة (تُسجل في سجل المتابعة):' : 'Stage Transition Note:'}
+              </label>
+              <input
+                type="text"
+                value={leadFormData.stageNote}
+                onChange={e => setLeadFormData(p => ({ ...p, stageNote: e.target.value }))}
+                placeholder={isRTL ? 'مثال: تم التواصل وتحديد موعد مكالمة استكشافية غداً...' : 'e.g., Called client, scheduled demo call tomorrow...'}
+                style={{
+                  width: '100%', height: 38, padding: '0 10px', borderRadius: 8,
+                  border: `1px solid ${TK.border}`, background: TK.surface,
+                  fontSize: 12.5, fontFamily: font, outline: 'none',
+                }}
+              />
             </div>
+
+            {/* Admin Notes */}
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 6 }}>
+                {isRTL ? 'ملاحظات الإدارة الداخلية الدائمة:' : 'Internal Team Notes:'}
+              </label>
+              <textarea
+                rows={3}
+                value={leadFormData.adminNotes}
+                onChange={e => setLeadFormData(p => ({ ...p, adminNotes: e.target.value }))}
+                placeholder={isRTL ? 'ملاحظات خاصة بالفريق لا يراها العميل...' : 'Internal notes visible to team only...'}
+                style={{
+                  width: '100%', padding: '8px 10px', borderRadius: 8,
+                  border: `1px solid ${TK.border}`, background: TK.surface,
+                  fontSize: 12.5, fontFamily: font, outline: 'none', resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {/* Stage History Timeline */}
+            {selectedLead.stageHistory && selectedLead.stageHistory.length > 0 && (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 8 }}>
+                  {isRTL ? 'سجل متابعات وتطورات الفرصة:' : 'Stage Movement History:'}
+                </div>
+                <div style={{
+                  display: 'flex', flexDirection: 'column', gap: 6,
+                  maxHeight: 110, overflowY: 'auto', paddingRight: 4,
+                }}>
+                  {selectedLead.stageHistory.slice().reverse().map((h, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      fontSize: 11.5, padding: '5px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.02)',
+                    }}>
+                      <span style={{ fontWeight: 600, color: TK.text }}>{h.stage}</span>
+                      <span style={{ color: TK.textMuted }}>{h.note || '—'}</span>
+                      <span style={{ color: TK.textLight, fontSize: 10 }}>
+                        {new Date(h.movedAt).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Dialog Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedLead(null)}
+              >
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSaveLead}
+                disabled={actionLoading}
+              >
+                {actionLoading ? (isRTL ? 'جاري الحفظ...' : 'Saving...') : (isRTL ? 'حفظ التغييرات' : 'Save Changes')}
+              </Button>
+            </div>
+
           </div>
-        </div>
+        </Modal>
       )}
 
     </div>
   );
-};
-
-export default ProjectRequests;
+}

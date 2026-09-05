@@ -349,7 +349,7 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                   className="hero-cta-wa"
                   style={{ fontSize: '13.5px', padding: '13px 22px' }}
                 >
-                  {isRTL ? 'احجز استشارة مجانية' : 'Book Strategy Call'}
+                  {isRTL ? 'ابدأ دراسة مشروعك' : 'Start Project Brief'}
                   <ArrowUpRight style={{ width: 15, height: 15, flexShrink: 0 }} aria-hidden />
                 </button>
               </div>

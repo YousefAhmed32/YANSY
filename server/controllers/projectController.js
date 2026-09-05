@@ -11,8 +11,8 @@ exports.getAllProjects = async (req, res, next) => {
     const { status, phase, client, page = 1, limit = 20 } = req.query;
     const query = {};
 
-    // Users can only see their own projects
-    if (req.user.role === 'USER') {
+    // Non-admin users can only see their own projects
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(req.user.role)) {
       query.client = req.user._id;
     } else if (client) {
       query.client = client;
@@ -55,8 +55,8 @@ exports.getProjectById = async (req, res, next) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    // Check access
-    if (req.user.role === 'USER' && project.client._id.toString() !== req.user._id.toString()) {
+    // Check access: non-admin can only access own project
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(req.user.role) && project.client?._id?.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'Access denied' });
     }
 

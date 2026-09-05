@@ -72,7 +72,7 @@ const ImpactSection = ({ project, isRTL }) => {
                   {m.value}
                 </div>
                 <div style={{ fontFamily: font, fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10 }}>
-                  {isRTL && m.labelAr ? m.labelAr : m.label}
+                  {isRTL ? (m.labelAr || m.label) : (m.labelEn || (m.label && !/[\u0600-\u06FF]/.test(m.label) ? m.label : m.labelEn || m.label))}
                 </div>
               </div>
             ))}

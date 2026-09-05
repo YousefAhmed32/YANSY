@@ -332,8 +332,19 @@ exports.changeStatus = async (req, res) => {
     if (validityDate) proposal.validityDate = validityDate;
     proposal.updatedBy = req.user._id;
     await proposal.save();
+
+    let conversion = null;
+    if (status === 'ACCEPTED') {
+      try {
+        const { convertAcceptedProposal } = require('../../services/proposals/conversionService');
+        conversion = await convertAcceptedProposal(proposal._id, { io: req.io });
+      } catch (convErr) {
+        console.error('[Admin Proposal ACCEPTED] Conversion error:', convErr.message);
+      }
+    }
+
     audit({ req, action: 'proposal.status_change', entityType: 'Proposal', entityId: proposal._id, before, after: { status, validityDate } });
-    res.json({ item: proposal });
+    res.json({ item: proposal, conversion });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

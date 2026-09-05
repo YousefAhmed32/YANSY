@@ -20,42 +20,110 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  proposalId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Proposal',
+    default: null,
+  },
+  // Environment URLs
+  stagingUrl:    { type: String, trim: true, default: '' },
+  figmaUrl:      { type: String, trim: true, default: '' },
+  productionUrl: { type: String, trim: true, default: '' },
+
   // Budget and client info
   budget: {
     type: String,
-    enum: ['less-than-500', '500-1000', '1000-3000', '3000-10000', '10000-plus'],
-    required: true
+    default: 'not-specified',
+  },
+  budgetAmount: {
+    type: Number,
+    default: 0,
+  },
+  currency: {
+    type: String,
+    default: 'USD',
   },
   clientType: {
     type: String,
-    enum: ['individual', 'company'],
-    required: true
+    enum: ['individual', 'company', 'unknown'],
+    default: 'company',
   },
   companyName: {
     type: String,
-    trim: true
+    trim: true,
   },
   companySize: {
     type: String,
-    enum: ['less-than-10', '10-50', '50-plus']
+    enum: ['less-than-10', '10-50', '50-plus', null],
   },
   // Progress tracking
   progress: {
     type: Number,
     min: 0,
     max: 100,
-    default: 0
+    default: 0,
   },
   phase: {
     type: String,
     enum: ['planning', 'design', 'development', 'testing', 'launch', 'completed'],
-    default: 'planning'
+    default: 'planning',
   },
   status: {
     type: String,
     enum: ['pending', 'in-progress', 'near-completion', 'delivered', 'cancelled'],
-    default: 'pending'
+    default: 'pending',
   },
+  // Interactive Milestones & Deliverable Review
+  milestones: [
+    {
+      title:       { type: String, required: true, trim: true },
+      description: { type: String, default: '', trim: true },
+      status: {
+        type: String,
+        enum: ['pending', 'in_progress', 'ready_for_review', 'approved', 'revision_requested'],
+        default: 'pending',
+      },
+      dueDate: Date,
+      amount:  { type: Number, default: 0 },
+      deliverables: [
+        {
+          name:        { type: String, required: true },
+          url:         { type: String, trim: true, required: true },
+          notes:       { type: String, trim: true, default: '' },
+          submittedAt: { type: Date, default: Date.now },
+        }
+      ],
+      revisionsUsed: { type: Number, default: 0 },
+      revisionsMax:  { type: Number, default: 3 },
+      clientReview: {
+        status:      { type: String, enum: ['approved', 'revision_requested', null], default: null },
+        notes:       { type: String, trim: true, default: '' },
+        respondedAt: Date,
+      },
+    }
+  ],
+  // Scope Creep & Change Orders
+  changeRequests: [
+    {
+      title:              { type: String, required: true, trim: true },
+      description:        { type: String, required: true, trim: true },
+      priceImpact:        { type: Number, default: 0, min: 0 },
+      timelineDaysImpact: { type: Number, default: 0, min: 0 },
+      status: {
+        type: String,
+        enum: ['draft', 'pending_client_approval', 'approved', 'declined'],
+        default: 'pending_client_approval',
+      },
+      requestedBy: { type: String, enum: ['client', 'team'], default: 'team' },
+      notes:       { type: String, trim: true, default: '' },
+      approvedAt:  Date,
+      createdAt:   { type: Date, default: Date.now },
+    }
+  ],
+  // Warranty & Retention
+  warrantyStartDate: Date,
+  warrantyEndDate:   Date,
+
   updates: [{
     title: {
       type: String,

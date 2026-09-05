@@ -20,10 +20,10 @@ import ChatLightbox from './ChatLightbox';
 import s from './ClientProof.module.css';
 
 const CHAT_SCREENSHOTS = [
-  '/assets/review/whatsapp-1.png',
-  '/assets/review/whatsapp-2.png',
-  '/assets/review/whatsapp-3.png',
-  '/assets/review/whatsapp-4.png',
+  '/assets/review/whatsapp-1.webp',
+  '/assets/review/whatsapp-2.webp',
+  '/assets/review/whatsapp-3.webp',
+  '/assets/review/whatsapp-4.webp',
 ];
 
 const VOICE_NOTES = [

@@ -29,6 +29,7 @@ export const BUDGET_OPTIONS = [
   { value: '1000-3000',     icon: '⭐', key: '1000to3000'  },
   { value: '3000-10000',    icon: '💎', key: '3000to10000' },
   { value: '10000-plus',    icon: '👑', key: '10000plus'   },
+  { value: 'not-sure',      icon: '❓', key: 'notSure'      },
 ];
 
 export const TIMELINE_OPTIONS = [

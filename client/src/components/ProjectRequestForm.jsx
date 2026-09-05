@@ -464,6 +464,17 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
     setWaErrors({});
   };
 
+  const openDirectWhatsApp = () => {
+    trackWhatsAppClick('modal_skip_direct');
+    beacon('whatsapp_direct_skip');
+    const waNumber = (settings.whatsappNumber || '+201090385390').replace(/[^0-9]/g, '');
+    const msg = isRTL
+      ? 'مرحباً YANSY 👋 أرغب في الاستفسار عن مشروع جديد.'
+      : "Hello YANSY 👋 I'd like to inquire about a new project.";
+    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+    performClose();
+  };
+
   /* ── WhatsApp quick-brief ───────────────────────────────────── */
   const setWa = (field, value) => {
     setWaForm(p => ({ ...p, [field]: value }));
@@ -1637,12 +1648,19 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
                     <ChevronLeft style={{ width: 14, height: 14, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
                     {t('projectForm.navigation.backToOptions')}
                   </button>
-                  <button type="submit" form="sp-form-whatsapp"
-                    className="sp-btn-wa flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-lg"
-                    style={{ fontSize: 12.5 }}>
-                    <MessageCircle style={{ width: 15, height: 15 }} />
-                    {t('projectForm.whatsappBrief.continueButton')}
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <button type="button" onClick={openDirectWhatsApp}
+                      className="sp-btn-back px-3.5 py-2.5 rounded-lg border font-medium"
+                      style={{ fontSize: 11.5, color: T.textSecondary, borderColor: T.border, background: T.bg, cursor: 'pointer' }}>
+                      {isRTL ? 'تخطي للواتساب مباشرة' : 'Direct WhatsApp (Skip)'}
+                    </button>
+                    <button type="submit" form="sp-form-whatsapp"
+                      className="sp-btn-wa flex items-center gap-2 px-5 py-2.5 text-white font-semibold rounded-lg"
+                      style={{ fontSize: 12.5 }}>
+                      <MessageCircle style={{ width: 15, height: 15 }} />
+                      {t('projectForm.whatsappBrief.continueButton')}
+                    </button>
+                  </div>
                 </div>
               ) : submitted ? (
                 <div className="flex justify-center">

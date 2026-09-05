@@ -242,7 +242,9 @@ const Hero = ({ project, title, desc, isRTL }) => {
                   border: '1px solid rgba(255,255,255,0.14)',
                 }}>
                   <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 'clamp(1.1rem,2vw,1.5rem)', fontWeight: 700, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }} dir="ltr">{m.value}</div>
-                  <div style={{ fontFamily: font, fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.68)', marginTop: 5, letterSpacing: isRTL ? 0 : '0.04em' }}>{isRTL && m.labelAr ? m.labelAr : m.label}</div>
+                  <div style={{ fontFamily: font, fontSize: 10, fontWeight: 400, color: 'rgba(255,255,255,0.68)', marginTop: 5, letterSpacing: isRTL ? 0 : '0.04em' }}>
+                    {isRTL ? (m.labelAr || m.label) : (m.labelEn || (m.label && !/[\u0600-\u06FF]/.test(m.label) ? m.label : m.labelEn || m.label))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -314,7 +316,13 @@ const MetaStrip = ({ project, isRTL, font, liveUrl, liveLinkLabel }) => {
   const myRole = isRTL ? (project.myRoleAr || project.myRole) : (project.myRole || project.myRoleAr);
   const fields = [
     myRole && { Icon: Briefcase, label: isRTL ? 'دورنا' : 'Our Role', value: myRole },
-    project.duration && { Icon: Clock, label: isRTL ? 'المدة' : 'Duration', value: project.duration },
+    project.duration && {
+      Icon: Clock,
+      label: isRTL ? 'المدة' : 'Duration',
+      value: isRTL
+        ? (project.durationAr || (/^\d+$/.test(String(project.duration).trim()) ? `${project.duration} أسابيع` : project.duration))
+        : (project.durationEn || (/^\d+$/.test(String(project.duration).trim()) ? `${project.duration} weeks` : project.duration)),
+    },
     project.teamSize && !project.team?.length && { Icon: Users, label: isRTL ? 'الفريق' : 'Team', value: project.teamSize },
     project.technologies?.length > 0 && { Icon: Layers, label: isRTL ? 'التقنيات' : 'Tech Stack', value: isRTL ? `${project.technologies.length} تقنية` : `${project.technologies.length} technologies` },
   ].filter(Boolean);

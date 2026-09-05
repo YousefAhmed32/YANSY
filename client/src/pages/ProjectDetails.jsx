@@ -7,9 +7,12 @@ import {
   ArrowLeft, Send, FileText, CheckCircle2,
   Clock, FolderKanban, MessageSquare, CreditCard, LifeBuoy,
   Download, AlertCircle, Activity, CheckCheck, Zap,
+  ExternalLink, Layers, ShieldCheck, Plus, Check, X, Sparkles
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { TK, Composer, ComposerTextArea } from '../admin-ui';
+import { TK, Composer, ComposerTextArea, Modal, Button, Badge } from '../admin-ui';
+import api from '../utils/api';
+import toast from 'react-hot-toast';
 
 const STATUS = {
   PLANNING:    { dot: '#94a3b8', en: 'Planning',     ar: 'التخطيط',       bg: 'rgba(148,163,184,0.12)' },
@@ -22,51 +25,14 @@ const STATUS = {
 };
 
 const TABS = [
-  { id: 'overview',   en: 'Overview',  ar: 'نظرة عامة', icon: FolderKanban  },
-  { id: 'messages',   en: 'Messages',  ar: 'الرسائل',   icon: MessageSquare },
-  { id: 'milestones', en: 'Milestones',ar: 'المعالم',   icon: CheckCircle2  },
-  { id: 'activity',   en: 'Activity',  ar: 'النشاط',    icon: Activity      },
-  { id: 'files',      en: 'Files',     ar: 'الملفات',   icon: FileText      },
-  { id: 'invoices',   en: 'Invoices',  ar: 'الفواتير',  icon: CreditCard    },
+  { id: 'overview',        en: 'Overview',      ar: 'نظرة عامة',     icon: FolderKanban  },
+  { id: 'messages',        en: 'Messages',      ar: 'الرسائل',       icon: MessageSquare },
+  { id: 'milestones',      en: 'Deliverables',  ar: 'المراحل والتسليمات', icon: CheckCircle2 },
+  { id: 'change-requests', en: 'Change Orders', ar: 'أوامر التعديل', icon: Layers },
+  { id: 'activity',        en: 'Activity',      ar: 'النشاط',        icon: Activity      },
+  { id: 'files',           en: 'Files',         ar: 'الملفات',       icon: FileText      },
+  { id: 'invoices',        en: 'Invoices',      ar: 'الفواتير',      icon: CreditCard    },
 ];
-
-// ── Sample activity events (populated from project data) ──────────────────────
-const buildActivity = (project, language) => {
-  const events = [];
-  if (project.createdAt) {
-    events.push({
-      id: 'created',
-      icon: Zap,
-      color: '#2563EB',
-      title: language === 'ar' ? 'تم إنشاء المشروع' : 'Project created',
-      desc:  project.name,
-      date:  project.createdAt,
-    });
-  }
-  (project.milestones || []).forEach(m => {
-    if (m.completedAt || (m.status === 'COMPLETED' && m.updatedAt)) {
-      events.push({
-        id:    m._id || m.title,
-        icon:  CheckCircle2,
-        color: '#16a34a',
-        title: language === 'ar' ? 'تم إنجاز مرحلة' : 'Milestone completed',
-        desc:  m.title || m.name || '',
-        date:  m.completedAt || m.updatedAt,
-      });
-    }
-  });
-  (project.updates || []).forEach(u => {
-    events.push({
-      id:    u._id || u.createdAt,
-      icon:  Zap,
-      color: '#2563EB',
-      title: u.title || (language === 'ar' ? 'تحديث من الفريق' : 'Team update'),
-      desc:  u.body || u.message || '',
-      date:  u.createdAt,
-    });
-  });
-  return events.sort((a, b) => new Date(b.date) - new Date(a.date));
-};
 
 const WaIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -74,22 +40,47 @@ const WaIcon = () => (
   </svg>
 );
 
+const buildActivity = (project, language) => {
+  const events = [];
+  if (project?.createdAt) {
+    events.push({
+      id: 'created',
+      icon: Zap,
+      color: '#2563EB',
+      title: language === 'ar' ? 'تم إنشاء المشروع' : 'Project created',
+      desc:  project.title || project.name,
+      date:  project.createdAt,
+    });
+  }
+  (project?.milestones || []).forEach(m => {
+    if (m.clientReview?.status === 'approved' || m.status === 'approved') {
+      events.push({
+        id:    m._id || m.title,
+        icon:  CheckCircle2,
+        color: '#16a34a',
+        title: language === 'ar' ? 'تم اعتماد مرحلة' : 'Milestone approved',
+        desc:  m.title,
+        date:  m.clientReview?.respondedAt || m.updatedAt || new Date(),
+      });
+    }
+  });
+  (project?.updates || []).forEach(u => {
+    events.push({
+      id:    u._id || u.createdAt,
+      icon:  Zap,
+      color: '#2563EB',
+      title: u.title || (language === 'ar' ? 'تحديث من الفريق' : 'Team update'),
+      desc:  u.content || u.message || '',
+      date:  u.createdAt,
+    });
+  });
+  return events.sort((a, b) => new Date(b.date) - new Date(a.date));
+};
+
 const fmtMsgTime = (d, language) => {
   if (!d) return '';
   try { return new Date(d).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' }); }
   catch { return ''; }
-};
-
-const fmtDateHeader = (d, language) => {
-  if (!d) return '';
-  try {
-    const dt   = new Date(d);
-    const now  = new Date();
-    const diff = Math.floor((now - dt) / 86400000);
-    if (diff === 0) return language === 'ar' ? 'اليوم' : 'Today';
-    if (diff === 1) return language === 'ar' ? 'أمس' : 'Yesterday';
-    return dt.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  } catch { return ''; }
 };
 
 const getDateKey = (d) => { try { return new Date(d).toDateString(); } catch { return ''; } };
@@ -108,9 +99,7 @@ const groupMessagesByDate = (messages) => {
   return groups;
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
-
-const ProjectDetails = () => {
+export default function ProjectDetails() {
   const { id }   = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -124,9 +113,29 @@ const ProjectDetails = () => {
   const messagesEndRef = useRef(null);
   const textareaRef    = useRef(null);
 
+  // Review & Sign-off Modals
+  const [approvingMilestone, setApprovingMilestone] = useState(null);
+  const [revisingMilestone, setRevisingMilestone]   = useState(null);
+  const [revisionNotes, setRevisionNotes]           = useState('');
+  const [reviewLoading, setReviewLoading]           = useState(false);
+
+  // Change Orders Modal
+  const [showAddChangeOrder, setShowAddChangeOrder] = useState(false);
+  const [changeOrderForm, setChangeOrderForm]       = useState({
+    title: '',
+    description: '',
+    priceImpact: 0,
+    timelineDaysImpact: 0,
+    notes: '',
+  });
+
   const font = isRTL
     ? 'IBM Plex Sans Arabic, system-ui, sans-serif'
     : 'Inter, system-ui, sans-serif';
+
+  const reloadProject = useCallback(() => {
+    if (id) dispatch(fetchProjectById(id));
+  }, [dispatch, id]);
 
   useEffect(() => {
     if (id) {
@@ -141,13 +150,6 @@ const ProjectDetails = () => {
     }
   }, [activeTab, reduxMessages]);
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
-    }
-  }, [msgText]);
-
   const handleSend = useCallback(async () => {
     if (!msgText.trim() || !currentThread?._id) return;
     await dispatch(sendMessage({ threadId: currentThread._id, content: msgText.trim() }));
@@ -159,763 +161,917 @@ const ProjectDetails = () => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }, [handleSend]);
 
-  const fmt = (d) => {
-    if (!d) return null;
-    try { return new Date(d).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }); }
-    catch { return null; }
+  // ── Milestone Actions ───────────────────────────────────────────────────
+  const handleConfirmApprove = async () => {
+    if (!approvingMilestone) return;
+    try {
+      setReviewLoading(true);
+      await api.post(`/projects/${id}/milestones/${approvingMilestone._id}/approve`, {
+        notes: isRTL ? 'تم الاعتماد الرقمي من العميل' : 'Digitally approved by client',
+      });
+      toast.success(isRTL ? 'تم اعتماد المرحلة بنجاح' : 'Milestone approved successfully');
+      setApprovingMilestone(null);
+      reloadProject();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (isRTL ? 'فشل الاعتماد' : 'Approval failed'));
+    } finally {
+      setReviewLoading(false);
+    }
   };
 
-  // ── Loading / Error States ────────────────────────────────────────────────
+  const handleConfirmRevision = async () => {
+    if (!revisingMilestone) return;
+    if (!revisionNotes.trim() || revisionNotes.trim().length < 5) {
+      toast.error(isRTL ? 'يرجى كتابة نقاط الملاحظات بالتفصيل' : 'Please provide detailed revision notes');
+      return;
+    }
+
+    try {
+      setReviewLoading(true);
+      await api.post(`/projects/${id}/milestones/${revisingMilestone._id}/request-revision`, {
+        notes: revisionNotes.trim(),
+      });
+      toast.success(isRTL ? 'تم إرسال طلب التعديل للفريق' : 'Revision request sent to team');
+      setRevisingMilestone(null);
+      setRevisionNotes('');
+      reloadProject();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (isRTL ? 'فشل إرسال الطلب' : 'Request failed'));
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // ── Change Order Actions ────────────────────────────────────────────────
+  const handleSaveChangeOrder = async () => {
+    if (!changeOrderForm.title || !changeOrderForm.description) {
+      toast.error(isRTL ? 'يرجى إدخال عنوان ووصف التعديل' : 'Title and description are required');
+      return;
+    }
+    try {
+      setReviewLoading(true);
+      await api.post(`/projects/${id}/change-requests`, changeOrderForm);
+      toast.success(isRTL ? 'تم إنشاء أمر التعديل بنجاح' : 'Change order created');
+      setShowAddChangeOrder(false);
+      setChangeOrderForm({ title: '', description: '', priceImpact: 0, timelineDaysImpact: 0, notes: '' });
+      reloadProject();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (isRTL ? 'فشل الإنشاء' : 'Creation failed'));
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  const handleRespondChangeOrder = async (crId, action) => {
+    try {
+      setReviewLoading(true);
+      await api.post(`/projects/${id}/change-requests/${crId}/respond`, { action });
+      toast.success(action === 'approved' ? (isRTL ? 'تم اعتماد أمر التعديل' : 'Change order approved') : (isRTL ? 'تم رفض أمر التعديل' : 'Change order declined'));
+      reloadProject();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (isRTL ? 'فشل الإجراء' : 'Action failed'));
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   if (loading && !project) {
     return (
-      <div style={{
-        minHeight: '100vh', background: TK.bg, display: 'flex',
-        alignItems: 'center', justifyContent: 'center', fontFamily: font,
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: '50%', margin: '0 auto 12px',
-            border: `3px solid ${TK.accentBg}`, borderTopColor: TK.accent,
-            animation: 'spin 0.7s linear infinite',
-          }} />
-          <p style={{ fontSize: 13, color: TK.textMuted }}>
-            {language === 'ar' ? 'جارٍ التحميل...' : 'Loading...'}
-          </p>
-          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.1)', borderTopColor: TK.accent, animation: 'spin 0.75s linear infinite' }} />
       </div>
     );
   }
 
-  if (!loading && !project) {
-    return (
-      <div style={{
-        minHeight: '100vh', background: TK.bg, display: 'flex', alignItems: 'center',
-        justifyContent: 'center', fontFamily: font,
-      }}>
-        <div style={{ textAlign: 'center', padding: 24 }}>
-          <AlertCircle style={{ width: 40, height: 40, color: TK.textLight, margin: '0 auto 12px' }} />
-          <p style={{ fontSize: 14, fontWeight: 500, color: TK.text, marginBottom: 8 }}>
-            {language === 'ar' ? 'المشروع غير موجود' : 'Project not found'}
-          </p>
-          <button
-            onClick={() => navigate('/app/projects')}
-            style={{
-              padding: '8px 18px', borderRadius: 8, background: TK.accent, color: 'white',
-              border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500,
-            }}
-          >
-            {language === 'ar' ? 'العودة لمشاريعي' : 'Back to Projects'}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const statusInfo = STATUS[project?.status] || STATUS.PLANNING;
-  const progress   = project?.progress ?? 0;
-  const pm         = project?.projectManager || null;
+  const statusKey  = (project?.phase || project?.status || 'PLANNING').toUpperCase();
+  const statusInfo = STATUS[statusKey] || STATUS.PLANNING;
+  const progress   = project?.progress || 0;
   const milestones = project?.milestones || [];
-  const files      = project?.files || [];
-  const invoices   = project?.invoices || [];
+  const changeRequests = project?.changeRequests || [];
   const activity   = buildActivity(project, language);
   const grouped    = groupMessagesByDate(reduxMessages);
 
+  // Active bottleneck detection
+  const reviewPendingMilestone = milestones.find(m => m.status === 'ready_for_review');
+  const pendingChangeOrder = changeRequests.find(cr => cr.status === 'pending_client_approval');
+
+  // Warranty calculation
+  const hasWarranty = project?.warrantyEndDate && new Date() < new Date(project.warrantyEndDate);
+  const warrantyDaysLeft = hasWarranty ? Math.ceil((new Date(project.warrantyEndDate) - new Date()) / 86400000) : 0;
+
   return (
     <div style={{
-      minHeight: '100vh', background: TK.bg,
-      fontFamily: font, direction: isRTL ? 'rtl' : 'ltr',
+      minHeight: '100vh',
+      background: TK.bg,
+      padding: '24px 28px 60px',
+      direction: isRTL ? 'rtl' : 'ltr',
+      fontFamily: font,
     }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
-      {/* ── Page Header ── */}
-      <div style={{
-        background: TK.surface, borderBottom: `1px solid ${TK.border}`,
-        padding: 'clamp(14px,2vw,20px) clamp(16px,3vw,32px)',
-      }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          {/* Back */}
-          <button
-            onClick={() => navigate('/app/projects')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: TK.textMuted, fontSize: 12.5, padding: '0 0 10px',
-              transition: 'color 0.14s', fontFamily: font,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = TK.accent; }}
-            onMouseLeave={e => { e.currentTarget.style.color = TK.textMuted; }}
-          >
-            <ArrowLeft style={{ width: 13, height: 13, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
-            {language === 'ar' ? 'العودة إلى مشاريعي' : 'Back to My Projects'}
-          </button>
+      {/* ── Top Nav Back ── */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: 'none', border: 'none', color: TK.textMuted,
+          fontSize: 12.5, cursor: 'pointer', fontFamily: font, marginBottom: 14,
+        }}
+      >
+        <ArrowLeft style={{ width: 14, height: 14, transform: isRTL ? 'rotate(180deg)' : 'none' }} />
+        {language === 'ar' ? 'العودة' : 'Back'}
+      </button>
 
-          {/* Title row */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: 'clamp(16px,2.5vw,22px)', fontWeight: 700, color: TK.text, margin: 0 }}>
-                  {project?.name}
-                </h1>
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                  padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 500,
-                  background: statusInfo.bg, color: statusInfo.dot,
-                }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusInfo.dot, display: 'inline-block' }} />
-                  {language === 'ar' ? statusInfo.ar : statusInfo.en}
-                </span>
-              </div>
-              {project?.description && (
-                <p style={{ fontSize: 12.5, color: TK.textMuted, margin: 0, lineHeight: 1.5, maxWidth: 600 }}>
-                  {project.description}
-                </p>
-              )}
+      {/* ── ACTION CENTER BANNER (Bottleneck highlight) ── */}
+      {reviewPendingMilestone && (
+        <div style={{
+          background: 'linear-gradient(90deg, rgba(217,119,6,0.12), rgba(245,158,11,0.06))',
+          border: '1px solid rgba(217,119,6,0.3)',
+          borderRadius: 12,
+          padding: '16px 20px',
+          marginBottom: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 14,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 9,
+              background: 'rgba(217,119,6,0.15)', color: '#D97706',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Sparkles style={{ width: 18, height: 18 }} />
             </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#B45309' }}>
+                {isRTL ? 'مخرج جاهز للمراجعة والاعتماد' : 'Deliverable Ready for Your Review'}
+              </div>
+              <div style={{ fontSize: 12.5, color: '#92400E', marginTop: 2 }}>
+                {isRTL
+                  ? `قام الفريق برفع تسليم مرحلة "${reviewPendingMilestone.title}". يرجى المعاينة والاعتماد للمتابعة.`
+                  : `Deliverables for "${reviewPendingMilestone.title}" are ready for sign-off.`}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            {reviewPendingMilestone.deliverables?.[0]?.url && (
+              <a
+                href={reviewPendingMilestone.deliverables[0].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                  background: TK.surface, border: '1px solid rgba(217,119,6,0.4)',
+                  color: '#B45309', textDecoration: 'none',
+                }}
+              >
+                <ExternalLink style={{ width: 12, height: 12 }} />
+                {isRTL ? 'معاينة المخرج' : 'View Deliverable'}
+              </a>
+            )}
+            <button
+              onClick={() => setApprovingMilestone(reviewPendingMilestone)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                background: '#16A34A', border: 'none', color: '#FFFFFF', cursor: 'pointer', fontFamily: font,
+              }}
+            >
+              <Check style={{ width: 13, height: 13 }} />
+              {isRTL ? 'اعتماد المخرج' : 'Approve Milestone'}
+            </button>
+            <button
+              onClick={() => setRevisingMilestone(reviewPendingMilestone)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                background: TK.surface, border: `1px solid ${TK.border}`,
+                color: TK.text, cursor: 'pointer', fontFamily: font,
+              }}
+            >
+              {isRTL ? 'طلب تعديل' : 'Request Revision'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 30-DAY WARRANTY BANNER (If active) ── */}
+      {hasWarranty && (
+        <div style={{
+          background: 'linear-gradient(90deg, rgba(22,163,74,0.1), rgba(16,185,129,0.04))',
+          border: '1px solid rgba(22,163,74,0.25)',
+          borderRadius: 12,
+          padding: '14px 18px',
+          marginBottom: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ShieldCheck style={{ width: 22, height: 22, color: '#16A34A' }} />
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#15803D' }}>
+                {isRTL ? `فترة الضمان التقني المجاني نشطة (متبقي ${warrantyDaysLeft} يوماً)` : `30-Day Technical Warranty Active (${warrantyDaysLeft} days remaining)`}
+              </div>
+              <div style={{ fontSize: 12, color: '#166534', marginTop: 1 }}>
+                {isRTL ? 'أي خطأ برمجي يتم إصلاحه مجاناً بأولوية قصوى خلال 24 ساعة.' : 'Any technical defect is resolved with priority under 24h SLA.'}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveTab('messages')}
+            style={{
+              padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+              background: '#16A34A', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: font,
+            }}
+          >
+            {isRTL ? 'إبلاغ عن عطل' : 'Report Warranty Issue'}
+          </button>
+        </div>
+      )}
+
+      {/* ── Project Header Card ── */}
+      <div style={{
+        background: TK.surface, borderRadius: 14,
+        border: `1px solid ${TK.border}`, padding: '22px 24px', marginBottom: 22,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: 20, fontWeight: 700, color: TK.text, margin: 0 }}>
+                {project?.title || project?.name}
+              </h1>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 600,
+                background: statusInfo.bg, color: statusInfo.dot,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusInfo.dot }} />
+                {language === 'ar' ? statusInfo.ar : statusInfo.en}
+              </span>
+            </div>
+
+            {project?.description && (
+              <p style={{ fontSize: 13, color: TK.textMuted, margin: 0, lineHeight: 1.5, maxWidth: 650 }}>
+                {project.description}
+              </p>
+            )}
+          </div>
+
+          {/* Quick Resource & Contact Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {project?.stagingUrl && (
+              <a
+                href={project.stagingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 9, fontSize: 12, fontWeight: 600,
+                  background: 'rgba(37,99,235,0.08)', color: TK.accent,
+                  textDecoration: 'none', border: `1px solid ${TK.accentBd}`,
+                }}
+              >
+                <ExternalLink style={{ width: 13, height: 13 }} />
+                {isRTL ? 'معاينة تجريبية (Staging)' : 'Live Staging'}
+              </a>
+            )}
+
+            {project?.figmaUrl && (
+              <a
+                href={project.figmaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 9, fontSize: 12, fontWeight: 600,
+                  background: 'rgba(124,58,237,0.08)', color: '#7c3aed',
+                  textDecoration: 'none', border: '1px solid rgba(124,58,237,0.2)',
+                }}
+              >
+                <ExternalLink style={{ width: 13, height: 13 }} />
+                {isRTL ? 'تصاميم Figma' : 'Figma Workspace'}
+              </a>
+            )}
 
             <a
               href="https://wa.me/201090385390"
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 16px', borderRadius: 9,
-                background: '#25D366', color: 'white',
-                textDecoration: 'none', fontSize: 12.5, fontWeight: 500, flexShrink: 0,
-                transition: 'opacity 0.15s',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 9, fontSize: 12, fontWeight: 600,
+                background: '#25D366', color: '#FFFFFF', textDecoration: 'none',
               }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
             >
               <WaIcon />
-              {language === 'ar' ? 'تواصل مع الفريق' : 'Contact Team'}
+              {isRTL ? 'تواصل مع الفريق' : 'Contact Team'}
             </a>
           </div>
+        </div>
 
-          {/* Progress */}
-          <div style={{ marginTop: 14, maxWidth: 500 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-              <span style={{ fontSize: 11, color: TK.textMuted }}>{language === 'ar' ? 'نسبة الإنجاز' : 'Progress'}</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: TK.accent }}>{progress}%</span>
-            </div>
-            <div style={{ height: 5, background: TK.accentBg, borderRadius: 99, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: 99, width: `${progress}%`,
-                background: `linear-gradient(90deg,${TK.accent},#60a5fa)`,
-                transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)',
-              }} />
-            </div>
-            {project?.estimatedDelivery && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
-                <Clock style={{ width: 11, height: 11, color: TK.textLight }} />
-                <span style={{ fontSize: 11, color: TK.textLight }}>
-                  {language === 'ar' ? 'موعد التسليم المتوقع: ' : 'Est. delivery: '}
-                  {fmt(project.estimatedDelivery)}
-                </span>
-              </div>
-            )}
+        {/* Progress Bar */}
+        <div style={{ marginTop: 18, maxWidth: 520 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontSize: 11.5, color: TK.textMuted }}>
+              {isRTL ? 'نسبة الإنجاز واعتماد المراحل' : 'Completion & Milestone Progress'}
+            </span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: TK.accent }}>{progress}%</span>
           </div>
+          <div style={{ height: 6, background: TK.accentBg, borderRadius: 99, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 99, width: `${progress}%`,
+              background: `linear-gradient(90deg, ${TK.accent}, #60a5fa)`,
+              transition: 'width 0.8s ease',
+            }} />
+          </div>
+        </div>
 
-          {/* Tabs */}
-          <div style={{
-            display: 'flex', gap: 0, marginTop: 20,
-            borderBottom: `2px solid ${TK.border}`,
-            overflowX: 'auto', scrollbarWidth: 'none',
-          }}>
-            {TABS.map(tab => {
-              const Icon     = tab.icon;
-              const isActive = activeTab === tab.id;
-              const badge    = tab.id === 'messages' && reduxMessages.length > 0 ? reduxMessages.length : null;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '9px 16px', fontSize: 12.5, fontWeight: isActive ? 500 : 400,
-                    color: isActive ? TK.accent : TK.textMuted,
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    borderBottom: isActive ? `2px solid ${TK.accent}` : '2px solid transparent',
-                    marginBottom: -2, transition: 'color 0.14s', whiteSpace: 'nowrap', fontFamily: font,
-                  }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = TK.text; }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = TK.textMuted; }}
-                >
-                  <Icon style={{ width: 13, height: 13 }} />
-                  {language === 'ar' ? tab.ar : tab.en}
-                  {badge && (
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      width: 16, height: 16, borderRadius: '50%',
-                      background: TK.accentBg, color: TK.accent, fontSize: 9, fontWeight: 700,
-                    }}>{badge}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+        {/* Tabs Bar */}
+        <div style={{
+          display: 'flex', gap: 4, marginTop: 22,
+          borderBottom: `1px solid ${TK.border}`,
+          overflowX: 'auto',
+        }}>
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '9px 16px', fontSize: 12.5, fontWeight: isActive ? 600 : 500,
+                  color: isActive ? TK.accent : TK.textMuted,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  borderBottom: isActive ? `2px solid ${TK.accent}` : '2px solid transparent',
+                  marginBottom: -1, fontFamily: font, whiteSpace: 'nowrap',
+                }}
+              >
+                <Icon style={{ width: 14, height: 14 }} />
+                {isRTL ? tab.ar : tab.en}
+                {tab.id === 'milestones' && reviewPendingMilestone && (
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#D97706' }} />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* ── Tab Content ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(16px,2.5vw,28px) clamp(16px,3vw,32px)' }}>
-
-        {/* ── OVERVIEW TAB ── */}
-        {activeTab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: 14 }}>
-
-            {/* Details card */}
-            <div style={{ background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`, padding: 20 }}>
-              <h3 style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: language === 'ar' ? 0 : '0.08em' }}>
-                {language === 'ar' ? 'تفاصيل المشروع' : 'Project Details'}
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[
-                  { label: language === 'ar' ? 'الحالة' : 'Status', value: language === 'ar' ? statusInfo.ar : statusInfo.en },
-                  { label: language === 'ar' ? 'آخر تحديث' : 'Last Updated', value: fmt(project.updatedAt) || '—' },
-                  { label: language === 'ar' ? 'تاريخ البدء' : 'Start Date', value: fmt(project.createdAt) || '—' },
-                  { label: language === 'ar' ? 'موعد التسليم' : 'Est. Delivery', value: fmt(project.estimatedDelivery) || (language === 'ar' ? 'سيتم تحديده' : 'To be confirmed') },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 12, color: TK.textMuted }}>{label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: TK.text, textAlign: isRTL ? 'left' : 'right' }}>{value}</span>
-                  </div>
-                ))}
-              </div>
+      {/* ── TAB CONTENT: OVERVIEW ── */}
+      {activeTab === 'overview' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+          <div style={{ background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: '18px 20px' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: TK.text, marginBottom: 12 }}>
+              {isRTL ? 'تفاصيل الميزانية والتعاقد' : 'Contract & Scope Overview'}
             </div>
-
-            {/* PM card */}
-            <div style={{ background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`, padding: 20 }}>
-              <h3 style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted, margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: language === 'ar' ? 0 : '0.08em' }}>
-                {language === 'ar' ? 'مدير مشروعك' : 'Your Project Manager'}
-              </h3>
-              {pm ? (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: 11, flexShrink: 0,
-                      background: TK.accentBg, border: `1px solid ${TK.accentBd}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 17, fontWeight: 700, color: TK.accent,
-                    }}>
-                      {pm.name?.[0]?.toUpperCase() || 'Y'}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: TK.text }}>{pm.name || 'YANSY Team'}</div>
-                      <div style={{ fontSize: 11.5, color: TK.textMuted }}>{language === 'ar' ? 'مدير المشروع' : 'Project Manager'}</div>
-                      {pm.workingHours && (
-                        <div style={{ fontSize: 10.5, color: TK.textLight, marginTop: 2 }}>
-                          <Clock style={{ width: 9, height: 9, display: 'inline', marginRight: 3 }} />
-                          {pm.workingHours}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <a
-                      href="https://wa.me/201090385390"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7,
-                        padding: '9px 14px', borderRadius: 9,
-                        background: '#25D366', color: 'white', textDecoration: 'none',
-                        fontSize: 12.5, fontWeight: 500, transition: 'opacity 0.15s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
-                      onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
-                    >
-                      <WaIcon />
-                      WhatsApp
-                    </a>
-                    {pm.email && (
-                      <a
-                        href={`mailto:${pm.email}`}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 7,
-                          padding: '9px 14px', borderRadius: 9,
-                          background: TK.accentBg, border: `1px solid ${TK.accentBd}`,
-                          color: TK.accent, textDecoration: 'none', fontSize: 12.5, fontWeight: 500,
-                        }}
-                      >
-                        <MessageSquare style={{ width: 13, height: 13 }} />
-                        {language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
-                      </a>
-                    )}
-                    <button
-                      onClick={() => setActiveTab('messages')}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7,
-                        padding: '9px 14px', borderRadius: 9,
-                        background: TK.bg, border: `1px solid ${TK.border}`,
-                        color: TK.textMuted, cursor: 'pointer', fontSize: 12.5, fontFamily: font, fontWeight: 500,
-                        transition: 'all 0.14s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = TK.accent; e.currentTarget.style.color = TK.accent; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = TK.border; e.currentTarget.style.color = TK.textMuted; }}
-                    >
-                      <MessageSquare style={{ width: 13, height: 13 }} />
-                      {language === 'ar' ? 'إرسال رسالة' : 'Send message'}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <p style={{ fontSize: 12.5, color: TK.textMuted, lineHeight: 1.5, marginBottom: 12 }}>
-                    {language === 'ar'
-                      ? 'سيُعيَّن مدير مشروعك بعد انطلاق المشروع. سنتواصل معك خلال ٢ ساعة.'
-                      : 'Your project manager will be assigned after project kickoff. We\'ll reach out within 2 hours.'}
-                  </p>
-                  <a
-                    href="https://wa.me/201090385390"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 7,
-                      padding: '9px 14px', borderRadius: 9,
-                      background: '#25D366', color: 'white', textDecoration: 'none',
-                      fontSize: 12.5, fontWeight: 500,
-                    }}
-                  >
-                    <WaIcon />
-                    {language === 'ar' ? 'تواصل معنا الآن' : 'Reach Us Now'}
-                  </a>
-                </div>
-              )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 12.5 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${TK.border}`, paddingBottom: 8 }}>
+                <span style={{ color: TK.textMuted }}>{isRTL ? 'قيمة المشروع الأساسية' : 'Base Budget'}</span>
+                <span style={{ fontWeight: 600, color: TK.text }}>{project?.budget || `${project?.budgetAmount || 0} ${project?.currency || 'USD'}`}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${TK.border}`, paddingBottom: 8 }}>
+                <span style={{ color: TK.textMuted }}>{isRTL ? 'إجمالي المراحل' : 'Total Milestones'}</span>
+                <span style={{ fontWeight: 600, color: TK.text }}>{milestones.length}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: TK.textMuted }}>{isRTL ? 'المراحل المعتمدة' : 'Approved Milestones'}</span>
+                <span style={{ fontWeight: 600, color: '#16A34A' }}>
+                  {milestones.filter(m => m.status === 'approved').length} / {milestones.length}
+                </span>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* ── MESSAGES TAB ── */}
-        {activeTab === 'messages' && (
-          <div style={{
-            background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`,
-            display: 'flex', flexDirection: 'column',
-            height: 'calc(100vh - 280px)', minHeight: 400,
-          }}>
-            {/* Header */}
-            <div style={{
-              padding: '12px 18px', borderBottom: `1px solid ${TK.border}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-            }}>
-              <div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: TK.text, fontFamily: font }}>
-                  {language === 'ar' ? 'محادثة المشروع' : 'Project Conversation'}
-                </div>
-                <div style={{ fontSize: 11, color: TK.textMuted, marginTop: 1, fontFamily: font }}>
-                  {language === 'ar' ? 'فريق YANSY · نرد خلال ساعتين' : 'YANSY Team · Replies within 2 hours'}
-                </div>
-              </div>
-              <a
-                href="https://wa.me/201090385390"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '6px 12px', borderRadius: 7,
-                  background: '#25D366', color: 'white', textDecoration: 'none',
-                  fontSize: 11.5, fontWeight: 500,
-                }}
-              >
-                <WaIcon />
-                WhatsApp
-              </a>
+          <div style={{ background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: '18px 20px' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: TK.text, marginBottom: 12 }}>
+              {isRTL ? 'فريق الدعم وإدارة المشروع' : 'Dedicated Project Team'}
             </div>
+            <p style={{ fontSize: 12.5, color: TK.textMuted, lineHeight: 1.5, margin: '0 0 12px' }}>
+              {isRTL
+                ? 'فريق YANSY يتابع معك المراحل مباشرة. يمكنك إرسال استفسار عبر تبويب الرسائل أو عبر واتساب.'
+                : 'YANSY engineering and product team handles execution directly. Chat via Messages or WhatsApp.'}
+            </p>
+            <button
+              onClick={() => setActiveTab('messages')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                background: TK.accent, color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: font,
+              }}
+            >
+              <MessageSquare style={{ width: 13, height: 13 }} />
+              {isRTL ? 'فتح محادثة المشروع' : 'Open Project Chat'}
+            </button>
+          </div>
+        </div>
+      )}
 
-            {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px' }}>
-              {reduxMessages.length === 0 ? (
-                <div style={{
-                  height: '100%', display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center',
-                }}>
-                  <MessageSquare style={{ width: 28, height: 28, color: TK.textLight }} />
-                  <p style={{ fontSize: 13.5, fontWeight: 500, color: TK.text, margin: 0, fontFamily: font }}>
-                    {language === 'ar' ? 'ابدأ المحادثة' : 'Start the conversation'}
-                  </p>
-                  <p style={{ fontSize: 12, color: TK.textMuted, margin: 0, fontFamily: font }}>
-                    {language === 'ar' ? 'أرسل رسالة لفريق YANSY أدناه' : 'Send a message to the YANSY team below'}
-                  </p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {grouped.map((item, idx) =>
-                    item.type === 'date' ? (
-                      <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '12px 0 8px' }}>
-                        <div style={{ flex: 1, height: 1, background: TK.border }} />
-                        <span style={{
-                          fontSize: 10.5, color: TK.textLight, fontWeight: 500, fontFamily: font,
-                          padding: '2px 10px', borderRadius: 99,
-                          background: TK.surface, border: `1px solid ${TK.border}`,
-                        }}>
-                          {fmtDateHeader(item.date, language)}
-                        </span>
-                        <div style={{ flex: 1, height: 1, background: TK.border }} />
-                      </div>
-                    ) : (
-                      (() => {
-                        const msg    = item.data;
-                        const isMe   = msg.sender?._id === user?._id || msg.sender === user?._id;
-                        const prevIt = idx > 0 && grouped[idx - 1]?.type === 'message' ? grouped[idx - 1].data : null;
-                        const nextIt = idx < grouped.length - 1 && grouped[idx + 1]?.type === 'message' ? grouped[idx + 1].data : null;
-                        const prevMe = prevIt && (prevIt.sender?._id === user?._id || prevIt.sender === user?._id);
-                        const nextMe = nextIt && (nextIt.sender?._id === user?._id || nextIt.sender === user?._id);
-                        const isLast = nextMe !== isMe || !nextIt;
-
-                        return (
-                          <div key={msg._id || idx} style={{
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: isMe ? (isRTL ? 'flex-start' : 'flex-end') : (isRTL ? 'flex-end' : 'flex-start'),
-                            marginBottom: isLast ? 3 : 1,
-                          }}>
-                            <div style={{
-                              maxWidth: 'min(70%, 520px)',
-                              padding: '9px 13px',
-                              borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                              background: isMe ? TK.accent : TK.bg,
-                              border: isMe ? 'none' : `1px solid ${TK.border}`,
-                              color: isMe ? 'white' : TK.text,
-                              fontSize: 13.5, lineHeight: 1.55, wordBreak: 'break-word',
-                              boxShadow: isMe ? '0 2px 8px rgba(37,99,235,0.18)' : '0 1px 4px rgba(0,0,0,0.04)',
-                            }}>
-                              {msg.content || msg.text || msg.message || ''}
-                            </div>
-                            {isLast && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
-                                <span style={{ fontSize: 10, color: TK.textLight }}>
-                                  {fmtMsgTime(msg.createdAt, language)}
-                                </span>
-                                {isMe && <CheckCheck style={{ width: 11, height: 11, color: TK.textLight }} />}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()
-                    )
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </div>
-
-            {/* Input */}
-            <div style={{
-              padding: '10px 14px 14px',
-              borderTop: `1px solid ${TK.border}`,
-              background: TK.surface, flexShrink: 0,
-            }}>
-              {/* `Composer`/`ComposerTextArea` (admin-ui) are the shared shell —
-                  see their doc comment in Primitives.jsx for why a manual
-                  per-page border/focus implementation here used to grow a
-                  second frame around the textarea on focus. */}
-              <Composer style={{ background: TK.bg, borderRadius: 12, padding: '8px 10px' }}>
-                <ComposerTextArea
-                  ref={textareaRef}
-                  value={msgText}
-                  onChange={e => setMsgText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...'}
-                  style={{ fontFamily: font, color: TK.text, maxHeight: 120, overflowY: 'auto' }}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!msgText.trim() || sending || !currentThread}
-                  aria-label={language === 'ar' ? 'إرسال' : 'Send'}
-                  style={{
-                    width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                    background: (msgText.trim() && currentThread && !sending) ? TK.accent : TK.accentBg,
-                    border: 'none',
-                    cursor: (msgText.trim() && currentThread && !sending) ? 'pointer' : 'default',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {sending ? (
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', animation: 'spin 0.75s linear infinite' }} />
-                  ) : (
-                    <Send style={{
-                      width: 13, height: 13,
-                      color: (msgText.trim() && currentThread) ? 'white' : TK.textLight,
-                      transform: isRTL ? 'rotate(180deg)' : 'none',
-                    }} />
-                  )}
-                </button>
-              </Composer>
-              <p style={{ fontSize: 10.5, color: TK.textLight, margin: '5px 0 0 4px', fontFamily: font }}>
-                {language === 'ar' ? 'Enter للإرسال · Shift+Enter لسطر جديد' : 'Enter to send · Shift+Enter for new line'}
+      {/* ── TAB CONTENT: DELIVERABLES & MILESTONES ── */}
+      {activeTab === 'milestones' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 780 }}>
+          {milestones.length === 0 ? (
+            <div style={{ background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: 48, textAlign: 'center' }}>
+              <CheckCircle2 style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
+              <p style={{ fontSize: 13, color: TK.textMuted, margin: 0 }}>
+                {isRTL ? 'لا توجد مراحل مسجلة بعد — سيتم جدولتها تلقائياً' : 'No milestones scheduled yet'}
               </p>
             </div>
-          </div>
-        )}
+          ) : (
+            milestones.map((m, idx) => {
+              const isApproved = m.status === 'approved';
+              const isReview   = m.status === 'ready_for_review';
+              const isRevision = m.status === 'revision_requested';
+              const isInProg   = m.status === 'in_progress';
 
-        {/* ── MILESTONES TAB ── */}
-        {activeTab === 'milestones' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 700 }}>
-            {milestones.length === 0 ? (
-              <div style={{
-                background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`,
-                padding: 48, textAlign: 'center',
-              }}>
-                <CheckCircle2 style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
-                <p style={{ fontSize: 13.5, color: TK.textMuted, margin: 0, fontFamily: font }}>
-                  {language === 'ar' ? 'لا معالم بعد — سيتم تحديثها قريباً' : 'No milestones yet — check back soon'}
-                </p>
-              </div>
-            ) : milestones.map((m, i) => {
-              const done    = m.status === 'COMPLETED' || m.completed;
-              const current = m.status === 'IN_PROGRESS' || m.current;
               return (
-                <div key={m._id || i} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  background: TK.surface, borderRadius: 12,
-                  border: `1px solid ${done ? 'rgba(22,163,74,0.2)' : current ? 'rgba(37,99,235,0.2)' : TK.border}`,
-                  padding: '16px 18px',
-                }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: done ? 'rgba(22,163,74,0.1)' : current ? TK.accentBg : 'rgba(0,0,0,0.03)',
-                    border: `2px solid ${done ? '#16a34a' : current ? TK.accent : TK.border}`,
-                    marginTop: 2,
-                  }}>
-                    {done
-                      ? <CheckCircle2 style={{ width: 14, height: 14, color: '#16a34a' }} />
-                      : current
-                        ? <Clock style={{ width: 12, height: 12, color: TK.accent }} />
-                        : <span style={{ width: 8, height: 8, borderRadius: '50%', background: TK.textLight, display: 'inline-block' }} />
-                    }
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                      <span style={{
-                        fontSize: 13.5, fontWeight: done || current ? 500 : 400,
-                        color: done ? '#16a34a' : current ? TK.text : TK.textMuted,
-                        fontFamily: font,
-                      }}>
-                        {m.title || m.name || `${language === 'ar' ? 'مرحلة' : 'Milestone'} ${i + 1}`}
-                      </span>
-                      {(m.dueDate || m.date) && (
-                        <span style={{ fontSize: 11, color: TK.textLight, flexShrink: 0 }}>
-                          {fmt(m.dueDate || m.date)}
+                <div
+                  key={m._id || idx}
+                  style={{
+                    background: TK.surface,
+                    borderRadius: 12,
+                    border: `1px solid ${isApproved ? 'rgba(22,163,74,0.3)' : isReview ? 'rgba(217,119,6,0.4)' : TK.border}`,
+                    padding: '18px 20px',
+                    boxShadow: isReview ? '0 2px 10px rgba(217,119,6,0.06)' : 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: TK.text }}>
+                          {m.title}
                         </span>
+                        {isApproved && (
+                          <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 10.5, fontWeight: 600, background: 'rgba(22,163,74,0.1)', color: '#16A34A' }}>
+                            ✓ {isRTL ? 'معتمد' : 'Approved'}
+                          </span>
+                        )}
+                        {isReview && (
+                          <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 10.5, fontWeight: 600, background: 'rgba(217,119,6,0.1)', color: '#D97706' }}>
+                            ● {isRTL ? 'بانتظار اعتمادك' : 'Ready for Review'}
+                          </span>
+                        )}
+                        {isRevision && (
+                          <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 10.5, fontWeight: 600, background: 'rgba(220,38,38,0.1)', color: '#DC2626' }}>
+                            ⟳ {isRTL ? 'تعديلات قيد التنفيذ' : 'Revision in Progress'}
+                          </span>
+                        )}
+                        {isInProg && (
+                          <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 10.5, fontWeight: 600, background: TK.accentBg, color: TK.accent }}>
+                            ● {isRTL ? 'قيد التطوير' : 'In Progress'}
+                          </span>
+                        )}
+                      </div>
+
+                      {m.description && (
+                        <p style={{ fontSize: 12.5, color: TK.textMuted, margin: '2px 0 8px', lineHeight: 1.5 }}>
+                          {m.description}
+                        </p>
                       )}
                     </div>
-                    {m.description && (
-                      <p style={{ fontSize: 12, color: TK.textMuted, margin: '3px 0 0', lineHeight: 1.5, fontFamily: font }}>
-                        {m.description}
-                      </p>
-                    )}
-                    {current && (
-                      <span style={{
-                        display: 'inline-block', marginTop: 6,
-                        padding: '2px 8px', borderRadius: 99, fontSize: 10.5,
-                        background: TK.accentBg, color: TK.accent, fontWeight: 500, fontFamily: font,
-                      }}>
-                        {language === 'ar' ? '● قيد التنفيذ' : '● In Progress'}
-                      </span>
+
+                    {/* Milestone Actions */}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {isReview && (
+                        <>
+                          <button
+                            onClick={() => setApprovingMilestone(m)}
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 5,
+                              padding: '6px 12px', borderRadius: 7, fontSize: 11.5, fontWeight: 600,
+                              background: '#16A34A', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: font,
+                            }}
+                          >
+                            <Check style={{ width: 12, height: 12 }} />
+                            {isRTL ? 'اعتماد المخرج' : 'Approve'}
+                          </button>
+                          <button
+                            onClick={() => setRevisingMilestone(m)}
+                            style={{
+                              padding: '6px 12px', borderRadius: 7, fontSize: 11.5, fontWeight: 500,
+                              background: TK.surface, border: `1px solid ${TK.border}`,
+                              color: TK.textMuted, cursor: 'pointer', fontFamily: font,
+                            }}
+                          >
+                            {isRTL ? 'طلب مراجعة' : 'Request Revision'}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Deliverables Attachments */}
+                  {m.deliverables && m.deliverables.length > 0 && (
+                    <div style={{
+                      marginTop: 12, paddingTop: 10, borderTop: `1px solid ${TK.border}`,
+                      display: 'flex', flexDirection: 'column', gap: 6,
+                    }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted }}>
+                        {isRTL ? 'مخرجات وروابط هذه المرحلة:' : 'Milestone Deliverables & Links:'}
+                      </div>
+                      {m.deliverables.map((d, dIdx) => (
+                        <div key={dIdx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+                          <span>{d.name}</span>
+                          <a
+                            href={d.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              color: TK.accent, textDecoration: 'none', fontWeight: 600,
+                            }}
+                          >
+                            <ExternalLink style={{ width: 11, height: 11 }} />
+                            {isRTL ? 'فتح ومعاينة' : 'Open / Preview'}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Revision Count Indicator */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, fontSize: 11, color: TK.textLight }}>
+                    <span>
+                      {isRTL
+                        ? `جولات التعديل: ${m.revisionsUsed || 0} مستخدمة من أصل ${m.revisionsMax || 3}`
+                        : `Revision Rounds: ${m.revisionsUsed || 0} of ${m.revisionsMax || 3} used`}
+                    </span>
+                    {m.dueDate && (
+                      <span>{isRTL ? 'تاريخ الاستحقاق: ' : 'Due: '}{new Date(m.dueDate).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}</span>
                     )}
                   </div>
                 </div>
               );
-            })}
-          </div>
-        )}
+            })
+          )}
+        </div>
+      )}
 
-        {/* ── ACTIVITY TAB ── */}
-        {activeTab === 'activity' && (
-          <div style={{ maxWidth: 700 }}>
-            {activity.length === 0 ? (
-              <div style={{
-                background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`,
-                padding: 48, textAlign: 'center',
-              }}>
-                <Activity style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
-                <p style={{ fontSize: 13.5, color: TK.textMuted, margin: 0, fontFamily: font }}>
-                  {language === 'ar' ? 'لا نشاط بعد' : 'No activity yet'}
-                </p>
-              </div>
-            ) : (
-              <div style={{ position: 'relative' }}>
-                {/* Timeline line */}
-                <div style={{
-                  position: 'absolute',
-                  [isRTL ? 'right' : 'left']: 17,
-                  top: 20, bottom: 20,
-                  width: 1, background: TK.border,
-                }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  {activity.map((event, i) => {
-                    const Icon = event.icon;
-                    return (
-                      <div key={event.id} style={{
-                        display: 'flex', gap: 14, padding: '12px 0',
-                        alignItems: 'flex-start',
-                      }}>
-                        {/* Icon */}
-                        <div style={{
-                          width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                          background: TK.surface, border: `1px solid ${TK.border}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          position: 'relative', zIndex: 1,
-                          boxShadow: '0 0 0 3px white',
-                        }}>
-                          <Icon style={{ width: 14, height: 14, color: event.color }} />
-                        </div>
-                        {/* Content */}
-                        <div style={{
-                          flex: 1, background: TK.surface, borderRadius: 10,
-                          border: `1px solid ${TK.border}`, padding: '10px 14px',
-                          marginTop: 4,
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 13, fontWeight: 500, color: TK.text, fontFamily: font }}>
-                              {event.title}
-                            </span>
-                            <span style={{ fontSize: 10.5, color: TK.textLight, flexShrink: 0, fontFamily: font }}>
-                              {fmt(event.date)}
-                            </span>
-                          </div>
-                          {event.desc && (
-                            <p style={{ fontSize: 12, color: TK.textMuted, margin: '3px 0 0', lineHeight: 1.5, fontFamily: font }}>
-                              {event.desc}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+      {/* ── TAB CONTENT: SCOPE CHANGE ORDERS ── */}
+      {activeTab === 'change-requests' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 780 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: TK.text, margin: '0 0 2px' }}>
+                {isRTL ? 'أوامر التعديل والإضافات الخارجة عن الاتفاق (Scope Changes)' : 'Scope Change Orders'}
+              </h3>
+              <p style={{ fontSize: 12, color: TK.textMuted, margin: 0 }}>
+                {isRTL ? 'أي ميزات إضافية تضاف بشفافية مع أثر السعر والوقت لحماية الجدول الزمني' : 'Transparent quotes for extra features and timeline adjustments'}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => setShowAddChangeOrder(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <Plus style={{ width: 13, height: 13 }} />
+              {isRTL ? 'طلب إضافة / تعديل' : 'New Change Order'}
+            </Button>
           </div>
-        )}
 
-        {/* ── FILES TAB ── */}
-        {activeTab === 'files' && (
-          <div>
-            {files.length === 0 ? (
-              <div style={{
-                background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`,
-                padding: 48, textAlign: 'center',
-              }}>
-                <FileText style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
-                <p style={{ fontSize: 13.5, color: TK.textMuted, margin: 0, fontFamily: font }}>
-                  {language === 'ar' ? 'لا ملفات مرفوعة بعد' : 'No files uploaded yet'}
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 12 }}>
-                {files.map((f, i) => (
-                  <div key={f._id || i} style={{
-                    background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`,
-                    padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12,
-                  }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-                      background: TK.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <FileText style={{ width: 16, height: 16, color: TK.accent }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 500, color: TK.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: font }}>
-                        {f.name || f.filename || 'File'}
-                      </div>
-                      <div style={{ fontSize: 10.5, color: TK.textMuted, fontFamily: font }}>
-                        {fmt(f.createdAt)} {f.size ? `· ${f.size}` : ''}
+          {changeRequests.length === 0 ? (
+            <div style={{ background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: 48, textAlign: 'center' }}>
+              <Layers style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
+              <p style={{ fontSize: 13, color: TK.textMuted, margin: 0 }}>
+                {isRTL ? 'لا توجد أوامر تعديل حتى الآن — العمل يسير وفق النطاق المتفق عليه' : 'No change orders. Project running on original scope.'}
+              </p>
+            </div>
+          ) : (
+            changeRequests.map((cr, idx) => {
+              const isPending = cr.status === 'pending_client_approval';
+              const isApproved = cr.status === 'approved';
+              return (
+                <div
+                  key={cr._id || idx}
+                  style={{
+                    background: TK.surface, borderRadius: 12,
+                    border: `1px solid ${isApproved ? 'rgba(22,163,74,0.3)' : isPending ? 'rgba(217,119,6,0.3)' : TK.border}`,
+                    padding: '16px 18px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: TK.text }}>{cr.title}</div>
+                      <p style={{ fontSize: 12.5, color: TK.textMuted, margin: '4px 0 10px', lineHeight: 1.5 }}>{cr.description}</p>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 12, fontWeight: 600 }}>
+                        <span style={{ color: TK.accent }}>
+                          {isRTL ? `+ ${cr.priceImpact} ${project?.currency || 'USD'}` : `+${cr.priceImpact} ${project?.currency || 'USD'}`}
+                        </span>
+                        <span style={{ color: TK.textSecondary }}>
+                          {isRTL ? `+ ${cr.timelineDaysImpact} أيام عمل` : `+${cr.timelineDaysImpact} Work Days`}
+                        </span>
                       </div>
                     </div>
-                    {f.url && (
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Download"
-                        style={{ color: TK.textMuted, transition: 'color 0.14s' }}
-                        onMouseEnter={e => { e.currentTarget.style.color = TK.accent; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = TK.textMuted; }}
-                      >
-                        <Download style={{ width: 14, height: 14 }} />
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* ── INVOICES TAB ── */}
-        {activeTab === 'invoices' && (
-          <div>
-            {invoices.length === 0 ? (
-              <div style={{
-                background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`,
-                padding: 48, textAlign: 'center',
-              }}>
-                <CreditCard style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
-                <p style={{ fontSize: 13.5, color: TK.textMuted, margin: 0, fontFamily: font }}>
-                  {language === 'ar' ? 'لا فواتير بعد' : 'No invoices yet'}
-                </p>
-                <p style={{ fontSize: 12, color: TK.textLight, margin: '6px 0 0', fontFamily: font }}>
-                  {language === 'ar' ? 'ستظهر الفواتير هنا بعد بدء المشروع' : 'Invoices will appear here after the project begins'}
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 700 }}>
-                {invoices.map((inv, i) => {
-                  const isPaid    = inv.status === 'PAID';
-                  const isOverdue = inv.status === 'OVERDUE';
-                  return (
-                    <div key={inv._id || i} style={{
-                      background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`,
-                      padding: '14px 18px', display: 'flex', alignItems: 'center',
-                      justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-                    }}>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 500, color: TK.text, marginBottom: 3, fontFamily: font }}>
-                          {language === 'ar' ? 'فاتورة' : 'Invoice'} #{inv.number || (i + 1)}
-                        </div>
-                        <div style={{ fontSize: 11, color: TK.textMuted, fontFamily: font }}>{fmt(inv.dueDate)}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: TK.text, fontFamily: font }}>
-                          {inv.currency || '$'}{inv.amount?.toLocaleString()}
-                        </span>
-                        <span style={{
-                          padding: '3px 9px', borderRadius: 99, fontSize: 10.5, fontWeight: 500,
-                          background: isPaid ? 'rgba(22,163,74,0.08)' : isOverdue ? 'rgba(220,38,38,0.08)' : 'rgba(217,119,6,0.08)',
-                          color: isPaid ? '#16a34a' : isOverdue ? '#dc2626' : '#d97706',
-                          fontFamily: font,
-                        }}>
-                          {language === 'ar'
-                            ? (isPaid ? 'مدفوعة' : isOverdue ? 'متأخرة' : 'معلقة')
-                            : (isPaid ? 'Paid' : isOverdue ? 'Overdue' : 'Pending')}
-                        </span>
-                        {!isPaid && inv.payUrl && (
-                          <a
-                            href={inv.payUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                    <div>
+                      {isPending && (
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            onClick={() => handleRespondChangeOrder(cr._id, 'approved')}
                             style={{
-                              padding: '6px 12px', borderRadius: 7,
-                              background: TK.accent, color: 'white', textDecoration: 'none',
-                              fontSize: 11.5, fontWeight: 500, fontFamily: font,
+                              padding: '6px 12px', borderRadius: 7, fontSize: 11.5, fontWeight: 600,
+                              background: '#16A34A', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: font,
                             }}
                           >
-                            {language === 'ar' ? 'ادفع الآن' : 'Pay Now'}
-                          </a>
-                        )}
-                      </div>
+                            {isRTL ? 'موافقة واعتماد' : 'Approve'}
+                          </button>
+                          <button
+                            onClick={() => handleRespondChangeOrder(cr._id, 'declined')}
+                            style={{
+                              padding: '6px 12px', borderRadius: 7, fontSize: 11.5, fontWeight: 500,
+                              background: TK.surface, border: `1px solid ${TK.border}`,
+                              color: TK.textMuted, cursor: 'pointer', fontFamily: font,
+                            }}
+                          >
+                            {isRTL ? 'اعتذار' : 'Decline'}
+                          </button>
+                        </div>
+                      )}
+                      {isApproved && (
+                        <Badge tone="success">{isRTL ? 'معتمد' : 'Approved'}</Badge>
+                      )}
+                      {cr.status === 'declined' && (
+                        <Badge tone="danger">{isRTL ? 'مرفوض' : 'Declined'}</Badge>
+                      )}
                     </div>
-                  );
-                })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* ── TAB CONTENT: MESSAGES ── */}
+      {activeTab === 'messages' && (
+        <div style={{
+          background: TK.surface, borderRadius: 14, border: `1px solid ${TK.border}`,
+          display: 'flex', flexDirection: 'column', height: 'calc(100vh - 280px)', minHeight: 400,
+        }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 18px 8px' }}>
+            {reduxMessages.length === 0 ? (
+              <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <MessageSquare style={{ width: 28, height: 28, color: TK.textLight }} />
+                <p style={{ fontSize: 13, color: TK.textMuted, margin: 0 }}>
+                  {isRTL ? 'ابدأ المحادثة مع فريق YANSY' : 'Start the conversation'}
+                </p>
               </div>
+            ) : (
+              grouped.map((item, idx) =>
+                item.type === 'date' ? (
+                  <div key={item.key} style={{ textAlign: 'center', margin: '12px 0', fontSize: 11, color: TK.textLight }}>
+                    {item.date}
+                  </div>
+                ) : (
+                  <div
+                    key={item.data._id || idx}
+                    style={{
+                      display: 'flex',
+                      justifyContent: item.data.sender?._id === user?._id ? 'flex-end' : 'flex-start',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div style={{
+                      maxWidth: '70%', padding: '9px 14px', borderRadius: 12,
+                      background: item.data.sender?._id === user?._id ? TK.accent : 'rgba(0,0,0,0.04)',
+                      color: item.data.sender?._id === user?._id ? '#FFFFFF' : TK.text,
+                      fontSize: 13, lineHeight: 1.4,
+                    }}>
+                      {item.data.content}
+                    </div>
+                  </div>
+                )
+              )
             )}
+            <div ref={messagesEndRef} />
           </div>
-        )}
-      </div>
+
+          <div style={{ padding: '10px 14px', borderTop: `1px solid ${TK.border}` }}>
+            <Composer style={{ background: TK.bg, borderRadius: 12, padding: '8px 10px' }}>
+              <ComposerTextArea
+                ref={textareaRef}
+                value={msgText}
+                onChange={e => setMsgText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isRTL ? 'اكتب رسالتك لفريق المشروع...' : 'Type your message...'}
+                style={{ fontFamily: font, color: TK.text }}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!msgText.trim() || sending || !currentThread}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: 'none',
+                  background: (msgText.trim() && currentThread) ? TK.accent : TK.accentBg,
+                  color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Send style={{ width: 13, height: 13 }} />
+              </button>
+            </Composer>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB CONTENT: ACTIVITY ── */}
+      {activeTab === 'activity' && (
+        <div style={{ maxWidth: 700, background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: '18px 20px' }}>
+          {activity.map(a => (
+            <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${TK.border}` }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: TK.text }}>{a.title}</div>
+                <div style={{ fontSize: 11.5, color: TK.textMuted }}>{a.desc}</div>
+              </div>
+              <span style={{ fontSize: 11, color: TK.textLight }}>{new Date(a.date).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── TAB CONTENT: FILES ── */}
+      {activeTab === 'files' && (
+        <div style={{ maxWidth: 700, background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: 32, textAlign: 'center' }}>
+          <FileText style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
+          <p style={{ fontSize: 13, color: TK.textMuted, margin: 0 }}>
+            {isRTL ? 'ملفات ومستندات المشروع تظهر هنا' : 'Project assets and files appear here'}
+          </p>
+        </div>
+      )}
+
+      {/* ── TAB CONTENT: INVOICES ── */}
+      {activeTab === 'invoices' && (
+        <div style={{ maxWidth: 700, background: TK.surface, borderRadius: 12, border: `1px solid ${TK.border}`, padding: 32, textAlign: 'center' }}>
+          <CreditCard style={{ width: 32, height: 32, color: TK.textLight, margin: '0 auto 10px' }} />
+          <p style={{ fontSize: 13, color: TK.textMuted, margin: 0 }}>
+            {isRTL ? 'فواتير الدفعات مرتبطة تلقائياً بهذا المشروع' : 'Invoices linked to this project'}
+          </p>
+        </div>
+      )}
+
+      {/* ── APPROVE MODAL ── */}
+      {approvingMilestone && (
+        <Modal
+          open={Boolean(approvingMilestone)}
+          onClose={() => setApprovingMilestone(null)}
+          title={isRTL ? 'اعتماد تسليم المرحلة رقمياً' : 'Approve Milestone Deliverables'}
+          width={480}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ fontSize: 13, color: TK.textMuted, lineHeight: 1.6, margin: 0 }}>
+              {isRTL
+                ? `أنت على وشك اعتماد مخرجات مرحلة "${approvingMilestone.title}". سيتم تسجيل تاريخ الاعتماد وفتح المرحلة التالية مباشرة.`
+                : `You are confirming approval for "${approvingMilestone.title}". This unlocks the next development phase.`}
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+              <Button variant="secondary" onClick={() => setApprovingMilestone(null)}>
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </Button>
+              <Button variant="primary" onClick={handleConfirmApprove} disabled={reviewLoading}>
+                {reviewLoading ? (isRTL ? 'جاري الاعتماد...' : 'Approving...') : (isRTL ? 'تأكيد الاعتماد' : 'Confirm Sign-off')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── REVISION MODAL ── */}
+      {revisingMilestone && (
+        <Modal
+          open={Boolean(revisingMilestone)}
+          onClose={() => setRevisingMilestone(null)}
+          title={isRTL ? 'طلب مراجعة وتعديلات على المخرج' : 'Request Milestone Revision'}
+          width={520}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ fontSize: 12.5, color: TK.textMuted, margin: 0 }}>
+              {isRTL
+                ? `يرجى تدوين الملاحظات المطلوب تعديلها على مرحلة "${revisingMilestone.title}". (متبقي ${(revisingMilestone.revisionsMax || 3) - (revisingMilestone.revisionsUsed || 0)} جولات مشمولة).`
+                : `Specify points to revise for "${revisingMilestone.title}".`}
+            </p>
+
+            <textarea
+              rows={4}
+              value={revisionNotes}
+              onChange={e => setRevisionNotes(e.target.value)}
+              placeholder={isRTL ? 'اكتب ملاحظاتك بشكل محدد...' : 'Detail your feedback here...'}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 8,
+                border: `1px solid ${TK.border}`, background: TK.surface,
+                fontSize: 12.5, fontFamily: font, outline: 'none', resize: 'vertical',
+              }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+              <Button variant="secondary" onClick={() => setRevisingMilestone(null)}>
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </Button>
+              <Button variant="primary" onClick={handleConfirmRevision} disabled={reviewLoading}>
+                {reviewLoading ? (isRTL ? 'جاري الإرسال...' : 'Sending...') : (isRTL ? 'إرسال الملاحظات' : 'Submit Feedback')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── ADD CHANGE ORDER MODAL ── */}
+      {showAddChangeOrder && (
+        <Modal
+          open={showAddChangeOrder}
+          onClose={() => setShowAddChangeOrder(false)}
+          title={isRTL ? 'طلب ميزة / تعديل خارج النطاق' : 'New Scope Change Order'}
+          width={520}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 4 }}>
+                {isRTL ? 'عنوان الميزة / التعديل المطلوب:' : 'Title:'}
+              </label>
+              <input
+                type="text"
+                value={changeOrderForm.title}
+                onChange={e => setChangeOrderForm(p => ({ ...p, title: e.target.value }))}
+                placeholder={isRTL ? 'مثال: إضافة بوابة دفع دولية ثانية...' : 'e.g. Add 2nd International Payment Gateway'}
+                style={{
+                  width: '100%', height: 36, padding: '0 10px', borderRadius: 8,
+                  border: `1px solid ${TK.border}`, background: TK.surface,
+                  fontSize: 12.5, fontFamily: font, outline: 'none',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 4 }}>
+                {isRTL ? 'تفاصيل النطاق والمواصفات:' : 'Description:'}
+              </label>
+              <textarea
+                rows={3}
+                value={changeOrderForm.description}
+                onChange={e => setChangeOrderForm(p => ({ ...p, description: e.target.value }))}
+                placeholder={isRTL ? 'وصف دقيق لما يشمله التعديل...' : 'Detailed requirements...'}
+                style={{
+                  width: '100%', padding: '8px 10px', borderRadius: 8,
+                  border: `1px solid ${TK.border}`, background: TK.surface,
+                  fontSize: 12.5, fontFamily: font, outline: 'none', resize: 'vertical',
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 4 }}>
+                  {isRTL ? 'التكلفة الإضافية:' : 'Extra Price:'}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={changeOrderForm.priceImpact}
+                  onChange={e => setChangeOrderForm(p => ({ ...p, priceImpact: e.target.value }))}
+                  style={{
+                    width: '100%', height: 36, padding: '0 10px', borderRadius: 8,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    fontSize: 12.5, fontFamily: font, outline: 'none',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: TK.textMuted, marginBottom: 4 }}>
+                  {isRTL ? 'أيام العمل الإضافية:' : 'Added Work Days:'}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={changeOrderForm.timelineDaysImpact}
+                  onChange={e => setChangeOrderForm(p => ({ ...p, timelineDaysImpact: e.target.value }))}
+                  style={{
+                    width: '100%', height: 36, padding: '0 10px', borderRadius: 8,
+                    border: `1px solid ${TK.border}`, background: TK.surface,
+                    fontSize: 12.5, fontFamily: font, outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+              <Button variant="secondary" onClick={() => setShowAddChangeOrder(false)}>
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </Button>
+              <Button variant="primary" onClick={handleSaveChangeOrder} disabled={reviewLoading}>
+                {reviewLoading ? (isRTL ? 'جاري الحفظ...' : 'Saving...') : (isRTL ? 'إصدار أمر التعديل' : 'Issue Change Order')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
     </div>
   );
-};
-
-export default ProjectDetails;
+}

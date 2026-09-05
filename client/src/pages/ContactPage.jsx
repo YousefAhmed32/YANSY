@@ -23,9 +23,9 @@ const waLink = (msg) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICompon
    Data
 ═══════════════════════════════════════════════════════════════ */
 const TRUST_INDICATORS = [
-  { icon: Clock, valueEN: '< 2 hours', valueAR: 'أقل من ساعتين', labelEN: 'Response time', labelAR: 'وقت الرد' },
+  { icon: Clock, valueEN: '< 15m WhatsApp · < 2h Forms', valueAR: '< 15 دقيقة واتساب · < ساعتين للنماذج', labelEN: 'Response time', labelAR: 'سرعة الاستجابة' },
   { icon: Sun,   valueEN: 'Sun–Thu, 9am–8pm', valueAR: 'الأحد–الخميس، 9ص–8م', labelEN: 'Working hours (Cairo)', labelAR: 'ساعات العمل (القاهرة)' },
-  { icon: Rocket, valueEN: '~14 days', valueAR: '~14 يوماً', labelEN: 'Average delivery', labelAR: 'متوسط التسليم' },
+  { icon: Rocket, valueEN: '2–4 weeks (typical)', valueAR: '2–4 أسابيع (المتوسط)', labelEN: 'Delivery timeline', labelAR: 'الجدول الزمني' },
 ];
 
 const CHANNELS = [
@@ -44,8 +44,8 @@ const CHANNELS = [
     id: 'call',
     icon: Calendar,
     color: '#7C3AED', bg: '#F5F3FF',
-    titleEN: 'Schedule a Call', titleAR: 'حدد موعد مكالمة',
-    descEN: 'Talk through scope live before committing to anything.', descAR: 'ناقش تفاصيل مشروعك مباشرة قبل أي التزام.',
+    titleEN: 'Schedule a Call (WhatsApp)', titleAR: 'تنسيق مكالمة عبر واتساب',
+    descEN: 'Coordinate a 30-min discovery call with our team via WhatsApp.', descAR: 'تنسيق مكالمة استشارية لمدة 30 دقيقة مع فريقنا عبر واتساب.',
     badgeEN: 'Free · 30 min', badgeAR: 'مجاناً · 30 دقيقة',
     action: 'link',
     href: waLink("Hi YANSY Tech! I'd like to schedule a call to discuss my project."),

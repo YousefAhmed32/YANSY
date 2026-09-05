@@ -110,7 +110,7 @@ const Dashboard = () => {
     <div className="cd-main">
       {activeProject ? (
         /* ── State: active project — real progress, real status ────────── */
-        <section className="cd-card cd-project"><div className="cd-project-copy"><div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ fontSize: 11, letterSpacing: ar ? 0 : '.12em', color: 'rgba(255,255,255,.62)', fontWeight: 650 }}>{T.current}</span><Badge tone={status[0]} dot>{ar ? status[1] : status[2]}</Badge></div><h2 style={{ fontSize: 'clamp(28px,4vw,44px)', lineHeight: 1.2, maxWidth: 580, margin: '34px 0 10px', letterSpacing: ar ? '-.035em' : '-.045em' }}>{activeProject.name || activeProject.title}</h2><p style={{ color: 'rgba(255,255,255,.66)', fontSize: 13 }}>{T.progress}</p><div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}><div style={{ height: 7, flex: 1, maxWidth: 410, borderRadius: 10, background: 'rgba(255,255,255,.12)', overflow: 'hidden' }}><div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg,#3B82F6,#fff)' }}/></div><strong dir="ltr">{progress}%</strong></div><div style={{ marginTop: 34 }}><Link className="cd-btn" to={`/app/projects/${activeProject._id}`} style={{ background: '#fff', color: '#172554' }}>{T.open}<Arrow size={15}/></Link></div></div><div className="cd-visual" aria-hidden="true"><img src="/assets/image/yansy-command-center-3d-v1.png" alt="" /></div></section>
+        <section className="cd-card cd-project"><div className="cd-project-copy"><div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ fontSize: 11, letterSpacing: ar ? 0 : '.12em', color: 'rgba(255,255,255,.62)', fontWeight: 650 }}>{T.current}</span><Badge tone={status[0]} dot>{ar ? status[1] : status[2]}</Badge></div><h2 style={{ fontSize: 'clamp(28px,4vw,44px)', lineHeight: 1.2, maxWidth: 580, margin: '34px 0 10px', letterSpacing: ar ? '-.035em' : '-.045em' }}>{activeProject.name || activeProject.title}</h2><p style={{ color: 'rgba(255,255,255,.66)', fontSize: 13 }}>{T.progress}</p><div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}><div style={{ height: 7, flex: 1, maxWidth: 410, borderRadius: 10, background: 'rgba(255,255,255,.12)', overflow: 'hidden' }}><div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg,#3B82F6,#fff)' }}/></div><strong dir="ltr">{progress}%</strong></div><div style={{ marginTop: 34 }}><Link className="cd-btn" to={`/app/projects/${activeProject._id}`} style={{ background: '#fff', color: '#172554' }}>{T.open}<Arrow size={15}/></Link></div></div><div className="cd-visual" aria-hidden="true"><img src="/assets/image/yansy-command-center-3d-v1.webp" alt="" /></div></section>
       ) : latestRequest ? (
         /* ── State: a request was submitted, no active project yet ─────── */
         (() => {
@@ -140,7 +140,7 @@ const Dashboard = () => {
                 <Link className="cd-btn" to="/app/messages" style={{ background: '#fff', color: '#172554' }}>{T.continueConvo}<Arrow size={15}/></Link>
                 <button className="cd-btn" onClick={() => setShowRequestForm(true)} style={{ background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.25)' }}>{T.newRequest}</button>
               </div>
-            </div><div className="cd-visual" aria-hidden="true"><img src="/assets/image/yansy-command-center-3d-v1.png" alt="" /></div></section>
+            </div><div className="cd-visual" aria-hidden="true"><img src="/assets/image/yansy-command-center-3d-v1.webp" alt="" /></div></section>
           );
         })()
       ) : (
@@ -153,7 +153,7 @@ const Dashboard = () => {
             <button className="cd-btn" onClick={() => setShowRequestForm(true)} style={{ background: '#fff', color: '#172554' }}>{T.startProject}<Sparkles size={15}/></button>
             <Link className="cd-btn" to="/app/messages" style={{ background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.25)' }}>{T.message}</Link>
           </div>
-        </div><div className="cd-visual" aria-hidden="true"><img src="/assets/image/yansy-command-center-3d-v1.png" alt="" /></div></section>
+        </div><div className="cd-visual" aria-hidden="true"><img src="/assets/image/yansy-command-center-3d-v1.webp" alt="" /></div></section>
       )}
       <aside className="cd-side">
         <section className="cd-card" style={{ padding: 24, background: 'linear-gradient(145deg,#EFF6FF,#fff)' }}><span style={{ color: TK.accent, fontSize: 11, fontWeight: 700 }}>{T.help}</span><p style={{ color: TK.textMuted, fontSize: 12.5, lineHeight: 1.8 }}>{T.helpBody}</p><Link to="/app/support" className="cd-btn" style={{ background: TK.accent, color: '#fff' }}>{T.support}<Arrow size={14}/></Link></section>

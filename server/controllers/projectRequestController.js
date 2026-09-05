@@ -302,21 +302,40 @@ exports.getRequestById = async (req, res, next) => {
   }
 };
 
-// ─── Admin: update status / notes ─────────────────────────────────────────
+// ─── Admin: update status / notes / pipeline fields ───────────────────────
+const VALID_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'negotiating', 'won', 'lost', 'in-progress', 'completed'];
+
 exports.updateRequestStatus = async (req, res, next) => {
   try {
-    const { status, adminNotes, assignedTo } = req.body;
+    const { status, adminNotes, assignedTo, priority, estimatedValue, nextFollowUpDate, lossReason, stageNote } = req.body;
     const updates = {};
 
-    if (status && ['new', 'in-progress', 'completed'].includes(status)) {
+    if (status && VALID_STATUSES.includes(status)) {
       updates.status = status;
     }
     if (adminNotes !== undefined) updates.adminNotes = adminNotes.trim();
     if (assignedTo !== undefined) updates.assignedTo = assignedTo || null;
+    if (priority && ['low', 'medium', 'high', 'urgent'].includes(priority)) updates.priority = priority;
+    if (estimatedValue !== undefined) updates.estimatedValue = Math.max(0, Number(estimatedValue) || 0);
+    if (nextFollowUpDate !== undefined) updates.nextFollowUpDate = nextFollowUpDate ? new Date(nextFollowUpDate) : null;
+    if (lossReason !== undefined) updates.lossReason = lossReason ? lossReason.trim() : null;
+
+    const pushOp = {};
+    if (status) {
+      pushOp.stageHistory = {
+        stage:   status,
+        movedAt: new Date(),
+        movedBy: req.user?._id || null,
+        note:    stageNote ? stageNote.trim() : '',
+      };
+    }
+
+    const updateDoc = { $set: updates };
+    if (pushOp.stageHistory) updateDoc.$push = pushOp;
 
     const request = await ProjectRequest.findByIdAndUpdate(
       req.params.id,
-      { $set: updates },
+      updateDoc,
       { new: true }
     )
       .populate('assignedTo', 'fullName email')
@@ -325,6 +344,141 @@ exports.updateRequestStatus = async (req, res, next) => {
     if (!request) return res.status(404).json({ error: 'Project request not found' });
 
     res.json({ request });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Admin: Sales Pipeline Board Data ───────────────────────────────────────
+exports.getPipeline = async (req, res, next) => {
+  try {
+    const stages = ['new', 'contacted', 'qualified', 'proposal_sent', 'negotiating', 'won', 'lost'];
+    const now = new Date();
+
+    const [allLeads, overdueCount] = await Promise.all([
+      ProjectRequest.find()
+        .sort({ createdAt: -1 })
+        .populate('assignedTo', 'fullName email')
+        .populate('user', 'fullName email')
+        .lean(),
+      ProjectRequest.countDocuments({
+        status: { $in: ['new', 'contacted', 'qualified', 'proposal_sent', 'negotiating'] },
+        nextFollowUpDate: { $lt: now },
+      }),
+    ]);
+
+    const pipeline = {};
+    stages.forEach(s => {
+      pipeline[s] = {
+        key:   s,
+        leads: [],
+        totalValue: 0,
+      };
+    });
+
+    allLeads.forEach(lead => {
+      // Map old status 'in-progress' to 'negotiating', 'completed' to 'won'
+      let stageKey = lead.status;
+      if (stageKey === 'in-progress') stageKey = 'negotiating';
+      if (stageKey === 'completed')   stageKey = 'won';
+      if (!pipeline[stageKey]) stageKey = 'new';
+
+      const isOverdue = lead.nextFollowUpDate && new Date(lead.nextFollowUpDate) < now && !['won', 'lost'].includes(stageKey);
+      const enrichedLead = { ...lead, isOverdue };
+
+      pipeline[stageKey].leads.push(enrichedLead);
+      pipeline[stageKey].totalValue += (Number(lead.estimatedValue) || 0);
+    });
+
+    res.json({
+      pipeline,
+      stages,
+      overdueCount,
+      totalLeads: allLeads.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Public: Magic Link Brief Retrieval ────────────────────────────────────
+exports.getBriefByToken = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    if (!token || token.trim().length < 8) {
+      return res.status(400).json({ error: 'Valid brief token is required' });
+    }
+
+    const request = await ProjectRequest.findOne({ magicToken: token.trim() })
+      .select('fullName email phoneNumber projectType projectDescription budgetRange timeline referenceUrl tags briefData status createdAt')
+      .lean();
+
+    if (!request) {
+      return res.status(404).json({ error: 'Brief not found or link has expired' });
+    }
+
+    res.json({ brief: request });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Public: Magic Link Brief Update / Enrichment ──────────────────────────
+exports.updateBriefByToken = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { projectDescription, budgetRange, timeline, referenceUrl, tags, briefData } = req.body;
+
+    const request = await ProjectRequest.findOne({ magicToken: token.trim() });
+    if (!request) {
+      return res.status(404).json({ error: 'Brief not found or link has expired' });
+    }
+
+    if (projectDescription) request.projectDescription = projectDescription.trim();
+    if (budgetRange) request.budgetRange = budgetRange;
+    if (timeline) request.timeline = timeline;
+    if (referenceUrl !== undefined) request.referenceUrl = referenceUrl ? referenceUrl.trim() : undefined;
+    if (Array.isArray(tags)) request.tags = tags;
+    if (briefData && typeof briefData === 'object') {
+      request.briefData = { ...(request.briefData || {}), ...briefData };
+    }
+
+    // Auto-advance status if it was still 'new'
+    if (request.status === 'new') {
+      request.status = 'qualified';
+      request.stageHistory.push({
+        stage:   'qualified',
+        movedAt: new Date(),
+        note:    'Client enriched project brief via magic link',
+      });
+    }
+
+    await request.save();
+
+    setImmediate(async () => {
+      try {
+        const User = require('../models/User');
+        const admins = await User.find({ role: { $in: ['ADMIN', 'SUPER_ADMIN'] } }).select('_id');
+        admins.forEach(admin => {
+          createNotification({
+            userId: admin._id,
+            type: 'alert',
+            title: 'Client Updated Brief',
+            message: `${request.fullName} just completed additional project brief details.`,
+            link: '/app/admin/project-requests',
+            priority: 'medium',
+            io: req.io,
+          });
+        });
+      } catch (err) {
+        console.error('Failed to dispatch brief update alert:', err.message);
+      }
+    });
+
+    res.json({
+      message: 'Brief updated successfully',
+      brief: request,
+    });
   } catch (error) {
     next(error);
   }
@@ -340,42 +494,65 @@ exports.deleteRequest = async (req, res, next) => {
   }
 };
 
-// ─── AI Chat Lead (public, minimal fields) ────────────────────────────────
+// ─── AI Chat / Homepage Lead (public, minimal fields) ──────────────────────────
+const normalizeServiceToType = (svc) => {
+  if (!svc) return 'other';
+  const s = String(svc).toLowerCase();
+  if (s.includes('e-commerce') || s.includes('ecommerce') || s.includes('تجارة') || s.includes('متجر')) return 'ecommerce';
+  if (s.includes('saas') || s.includes('منصة') || s.includes('web app') || s.includes('تطبيق ويب')) return 'saas';
+  if (s.includes('mobile') || s.includes('موبايل') || s.includes('تطبيق')) return 'mobile';
+  if (s.includes('erp') || s.includes('crm')) return 'erp';
+  if (s.includes('booking') || s.includes('حجز') || s.includes('جدولة')) return 'booking';
+  if (s.includes('automation') || s.includes('أتمتة')) return 'automation';
+  if (s.includes('website') || s.includes('landing') || s.includes('موقع') || s.includes('صفحة هبوط')) return 'website';
+  if (s.includes('clinic') || s.includes('عياد')) return 'clinic';
+  if (s.includes('restaurant') || s.includes('مطعم')) return 'restaurant';
+  if (s.includes('pharmacy') || s.includes('صيدل')) return 'pharmacy';
+  if (s.includes('realestate') || s.includes('عقار')) return 'realestate';
+  if (s.includes('education') || s.includes('تعليم')) return 'education';
+  if (s.includes('delivery') || s.includes('توصيل')) return 'delivery';
+  return 'other';
+};
+
 exports.submitAiLead = async (req, res, next) => {
   try {
-    const { service, name, contact, message, source } = req.body;
+    const { service, message, source } = req.body;
+    const name = (req.body.name || req.body.clientName || req.body.fullName || '').trim();
+    const contact = (req.body.contact || req.body.email || req.body.phone || req.body.phoneNumber || '').trim();
 
-    if (!name || name.trim().length < 2) {
+    if (!name || name.length < 2) {
       return res.status(400).json({ error: 'Name is required' });
     }
-    if (!contact || contact.trim().length < 5) {
+    if (!contact || contact.length < 5) {
       return res.status(400).json({ error: 'Contact is required' });
     }
 
-    const SERVICE_TO_TYPE = {
-      'e-commerce store': 'ecommerce',
-      'متجر إلكتروني':   'ecommerce',
-      'saas platform':    'saas',
-      'منصة saas':        'saas',
-    };
-
-    const projectType = SERVICE_TO_TYPE[(service || '').toLowerCase()] || 'other';
-    const sourceLabel  = source ? source.trim().slice(0, 60) : 'AI Chat Widget';
+    const projectType = normalizeServiceToType(service);
+    const sourceLabel = source ? source.trim().slice(0, 60) : 'Lead Capture';
     const trimmedMessage = message ? message.trim().slice(0, 2000) : '';
+
+    const cleanContact = contact.trim();
+    const isEmail = /^\S+@\S+\.\S+$/.test(cleanContact);
+    const email = isEmail ? cleanContact.toLowerCase() : undefined;
+    const phoneNumber = !isEmail ? cleanContact : '';
+
+    const sourceTag = source
+      ? source.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+      : 'quick-lead';
 
     const request = await ProjectRequest.create({
       projectType,
-      clientType:         'individual',
+      clientType:         'unknown',
       projectDescription: trimmedMessage
         ? `${sourceLabel} — ${trimmedMessage}`
         : `${sourceLabel} — Service: ${service || 'Not specified'}`,
-      budgetRange:        'less-than-500',
-      timeline:           'flexible',
+      budgetRange:        'unknown',
+      timeline:           'unknown',
       fullName:           name.trim(),
-      phoneNumber:        contact.trim(),
-      email:              /^\S+@\S+\.\S+$/.test(contact.trim()) ? contact.trim().toLowerCase() : undefined,
-      tags:               ['ai-chat-lead'],
-      adminNotes:         `Source: ${sourceLabel}\nRequested service: ${service || '—'}`,
+      phoneNumber:        phoneNumber || '',
+      email:              email,
+      tags:               [sourceTag],
+      adminNotes:         `Source: ${sourceLabel}\nRequested service: ${service || '—'}\nOriginal contact field: ${cleanContact}`,
     });
 
     setImmediate(() => notifyNewLead(request, req));

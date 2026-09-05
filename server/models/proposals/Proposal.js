@@ -97,6 +97,9 @@ const proposalSchema = new mongoose.Schema(
 
     currentVersion: { type: Number, default: 1 },
 
+    convertedProjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null },
+    convertedInvoiceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', default: null },
+
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },

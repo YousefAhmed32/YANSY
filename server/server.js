@@ -43,6 +43,7 @@ const { mountProposalLibraryRoutes } = require('./routes/proposalLibraries.route
 
 // Activity log route
 const activityRoutes = require('./routes/activity');
+const bookingRoutes = require('./routes/bookings');
 
 // Optional routes — loaded only when their files exist
 let auditRoutes, invoiceRoutes, searchRoutes, billingRoutes, aiRoutes, settingsRoutes, reportRoutes, supportRoutes, blogRoutes;
@@ -326,6 +327,7 @@ mountLibraryRoutes(app); // /api/team, /api/clients, /api/technologies, /api/tag
 app.use('/api/start-project', startProjectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity',      activityRoutes);
+app.use('/api/bookings',      bookingRoutes);
 
 // ── Proposal Management System ────────────────────────────────────────
 app.use('/api/proposals', proposalsRoutes);               // admin CRUD + publish/duplicate/archive/versions

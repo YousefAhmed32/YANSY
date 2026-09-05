@@ -13,6 +13,7 @@ import ProjectRequestForm from '../components/ProjectRequestForm';
 import HeroSection      from '../components/HeroSection';
 import PortfolioSection from '../components/PortfolioSection';
 import FloatingActionMenu from '../components/FloatingActionMenu';
+import MobileStickyBar from '../components/MobileStickyBar';
 
 import MetricsSection  from '../sections/MetricsSection';
 import CustomSoftwareSection from '../sections/CustomSoftwareSection';
@@ -188,6 +189,7 @@ const Home = () => {
         <AIChatWidget ref={aiWidgetRef} isRTL={isRTL} user={user} token={authToken} onOpenChange={setAiChatOpen} />
       </Suspense>
       <FloatingActionMenu isRTL={isRTL} onOpenAI={openAIChat} hidden={aiChatOpen} />
+      <MobileStickyBar onStartProject={open} isRTL={isRTL} hidden={aiChatOpen || isFormOpen} />
 
       <ProjectRequestForm isOpen={isFormOpen} onClose={close} />
     </div>

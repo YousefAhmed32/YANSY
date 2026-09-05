@@ -171,7 +171,19 @@ const AdminProposals = () => {
     { key: 'client', label: T.client, render: (r) => (isRTL ? r.client?.nameAr : r.client?.name) || r.client?.name || '—' },
     { key: 'project', label: T.project, render: (r) => (isRTL ? r.project?.titleAr : r.project?.title) || r.project?.title || '—' },
     { key: 'amount', label: T.amount, render: (r) => (r.type === 'IMPORTED_HTML' || r.pricing?.hidePriceFromClient ? '—' : money(r.pricing?.finalPrice, r.pricing?.currency)) },
-    { key: 'status', label: T.status, render: (r) => <Badge tone={STATUS_TONE[r.status] || 'neutral'} dot>{isRTL ? STATUS_LABEL[r.status]?.ar : STATUS_LABEL[r.status]?.en}</Badge> },
+    {
+      key: 'status', label: T.status,
+      render: (r) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+          <Badge tone={STATUS_TONE[r.status] || 'neutral'} dot>{isRTL ? STATUS_LABEL[r.status]?.ar : STATUS_LABEL[r.status]?.en}</Badge>
+          {r.convertedProjectId && (
+            <span style={{ fontSize: 10, color: '#16A34A', fontWeight: 600 }}>
+              {isRTL ? '✓ تم التحويل لمشروع' : '✓ Converted'}
+            </span>
+          )}
+        </div>
+      ),
+    },
     { key: 'createdAt', label: T.created, sortable: true, render: (r) => dateFmt(r.createdAt) },
     { key: 'lastViewedAt', label: T.lastViewed, render: (r) => dateFmt(r.lastViewedAt) },
     {
