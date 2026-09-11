@@ -137,7 +137,7 @@ const Header = ({ onStartProject }) => {
           {/* Logo */}
           <Link
             to="/"
-            aria-label="YANSY — Home"
+            aria-label={t('landing.nav.homeLink', 'YANSY — Home')}
             style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0, zIndex: 10 }}
           >
             <img
@@ -154,7 +154,7 @@ const Header = ({ onStartProject }) => {
           <nav
             className="desk-nav"
             role="navigation"
-            aria-label="Main navigation"
+            aria-label={t('landing.nav.mainNavLabel', 'Main navigation')}
             style={{ alignItems: 'center', gap: '36px' }}
           >
             {NAV.map((item, i) => (
@@ -213,7 +213,7 @@ const Header = ({ onStartProject }) => {
             <MobileLangToggle />
             <button
               onClick={() => setMobileMenuOpen(p => !p)}
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={mobileMenuOpen ? t('landing.nav.closeMenu', 'Close menu') : t('landing.nav.openMenu', 'Open menu')}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
               style={{
@@ -242,7 +242,7 @@ const Header = ({ onStartProject }) => {
           ref={menuRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Navigation menu"
+          aria-label={t('landing.nav.menuDialogLabel', 'Navigation menu')}
           style={{
             position: 'fixed', inset: 0, zIndex: 999,
             background: 'rgb(var(--bg))',
@@ -277,7 +277,7 @@ const Header = ({ onStartProject }) => {
             )}
 
             {/* Nav items */}
-            <nav aria-label="Mobile navigation" style={{ marginBottom: '36px' }}>
+            <nav aria-label={t('landing.nav.mobileNavLabel', 'Mobile navigation')} style={{ marginBottom: '36px' }}>
               {NAV.map((item, i) => {
                 const styles = {
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -315,16 +315,20 @@ const Header = ({ onStartProject }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                aria-label="WhatsApp"
+                aria-label={t('landing.nav.whatsappLabel', 'WhatsApp')}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   padding: '12px 16px', textDecoration: 'none', flexShrink: 0,
+                  /* #16a34a on this ~rgba(34,197,94,0.05)-over-white tint computes to
+                     ~4.6:1 — passes AA at this 11px/700 size, unlike a solid #25D366 fill
+                     with white text (~1.98:1, fails). Kept as the one WhatsApp-brand
+                     accent that's actually safe at small text sizes. */
                   border: '1px solid rgba(34,197,94,0.25)', borderRadius: '10px',
                   background: 'rgba(34,197,94,0.05)', color: '#16a34a',
                 }}
               >
                 <MessageCircle style={{ width: 15, height: 15 }} aria-hidden />
-                <span style={{ fontSize: 11, fontWeight: 700 }}>WA</span>
+                <span style={{ fontSize: 11, fontWeight: 700 }}>{t('landing.nav.whatsappLabel', 'WhatsApp')}</span>
               </a>
             </div>
 

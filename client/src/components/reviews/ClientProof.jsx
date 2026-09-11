@@ -180,7 +180,9 @@ const ClientProof = ({ isRTL: isRTLProp, onStartProject }) => {
   const clientLabel = isRTL ? 'عميل موثّق' : 'Verified Client';
   const chatTag = isRTL ? 'واتساب' : 'WhatsApp';
   const voiceTag = isRTL ? 'رسالة صوتية' : 'Voice Note';
-  const shownReviews = reviews.slice(0, 6);
+  // 3 strong reviews, not 6 stacked ones — enough to establish the pattern
+  // ("this keeps happening") without turning into a scroll of same-shaped cards.
+  const shownReviews = reviews.slice(0, 3);
 
   return (
     <section

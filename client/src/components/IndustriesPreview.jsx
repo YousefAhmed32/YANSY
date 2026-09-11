@@ -147,7 +147,13 @@ const IndustriesPreview = () => {
           gap: clamp(12px, 1.5vw, 18px);
         }
         @media (max-width: 1024px) { .industries-preview-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px)  { .industries-preview-grid { grid-template-columns: 1fr; } }
+        /* 400px, not 480px — each tile is just an icon + one-line hook, so it
+           holds up fine two-across down to ~400px; below that (320–390px,
+           where the icon row + arrow start to feel pinched) it drops to one
+           column. Keeping 2 columns as long as it's comfortable roughly halves
+           this section's scroll height on the 400–480px band instead of
+           stacking all 8 tiles. */
+        @media (max-width: 400px)  { .industries-preview-grid { grid-template-columns: 1fr; } }
       `}</style>
 
       <div className="section-inner">

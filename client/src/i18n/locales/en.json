@@ -549,7 +549,14 @@
       "contact": "Contact",
       "getStarted": "Start a Project",
       "work": "Our Work",
-      "support": "Support"
+      "support": "Support",
+      "homeLink": "YANSY — Home",
+      "mainNavLabel": "Main navigation",
+      "mobileNavLabel": "Mobile navigation",
+      "menuDialogLabel": "Navigation menu",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "whatsappLabel": "WhatsApp"
     },
     "hero": {
       "badge": "Digital Product Studio — Since 2020",

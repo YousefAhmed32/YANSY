@@ -153,6 +153,28 @@ const ProjectEstimator = () => {
         .est-grid { display: grid; grid-template-columns: 7fr 5fr; gap: clamp(20px, 3vw, 32px); align-items: start; }
         @media (max-width: 1024px) { .est-grid { grid-template-columns: 1fr; } }
 
+        /* Below 1024px the full summary card sits after all three form steps —
+           real scroll distance from "pick a type" to "see it reflected". Rather
+           than duplicating the whole card or making it position:sticky (which
+           would fight the floating WhatsApp/menu controls for the same screen
+           real estate), this is a single in-flow recap line right above the
+           steps, so the current selection is always one glance away, not one
+           scroll away. Desktop keeps the sticky full card beside the form, so
+           this is redundant there and hidden. */
+        .est-recap { display: none; }
+        @media (max-width: 1024px) {
+          .est-recap {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            flex-direction: ${isRTL ? 'row-reverse' : 'row'};
+            background: rgb(var(--accent-light)); border: 1px solid rgb(var(--accent) / 0.18);
+            border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: clamp(16px, 3vw, 24px);
+            font-size: 12.5px; color: rgb(var(--text-secondary));
+          }
+        }
+        .est-recap-label { font-weight: 600; }
+        .est-recap-value { font-weight: 800; color: rgb(var(--accent)); }
+        .est-recap-dot { color: rgb(var(--border-strong)); }
+
         /* ── Form card ── */
         .est-form-card {
           background: rgb(var(--bg-elevated));
@@ -270,7 +292,7 @@ const ProjectEstimator = () => {
         @media (max-width: 1024px) { .est-summary { position: relative; } }
         .est-summary-glow {
           position: absolute; top: -60px; ${isRTL ? 'left' : 'right'}: -60px; width: 220px; height: 220px;
-          border-radius: 50%; background: rgb(var(--accent) / 0.16); filter: blur(70px);
+          border-radius: 50%; background: rgb(var(--accent) / 0.10); filter: blur(70px);
           pointer-events: none;
         }
         .est-summary-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 22px; }
@@ -288,7 +310,14 @@ const ProjectEstimator = () => {
         }
 
         .est-summary-type-label { font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; }
-        .est-summary-type-name { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 6px; }
+        /* Explicit white here — this h3 sits on .est-summary's dark fill, but the
+           global "h1,h2,h3{color: text-primary}" base rule (index.css) is what
+           actually wins without this: that rule sets a near-black color on every
+           h3 by element selector, and nothing on this class was overriding it, so
+           the product name rendered near-black on near-black (~1:1) and looked
+           like it had gone missing — only the (correctly light-colored) desc line
+           below it was visible. Same trap for any other heading on a dark card. */
+        .est-summary-type-name { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 6px; color: rgb(var(--on-contrast)); }
         .est-summary-type-desc { font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.55); margin: 0; }
 
         .est-summary-panel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: var(--radius-lg); padding: 16px; }
@@ -325,15 +354,19 @@ const ProjectEstimator = () => {
         .est-included-chip svg { width: 12px; height: 12px; color: #4ADE80; flex-shrink: 0; }
 
         .est-summary-ctas { display: flex; flex-direction: column; gap: 10px; padding-top: 2px; }
+        /* --whatsapp, not the brand mark's #25D366 — white text on the bright
+           mark measures ~1.98:1 here (14px/800), well under WCAG AA's 4.5:1.
+           --whatsapp keeps the same hue at ~5:1. */
         .est-wa-btn {
           width: 100%; padding: 15px 22px; border-radius: var(--radius-lg); border: none; cursor: pointer;
-          background: #25D366; color: #fff; font-weight: 800; font-size: 14px;
+          background: rgb(var(--whatsapp)); color: #fff; font-weight: 800; font-size: 14px;
           display: flex; align-items: center; justify-content: center; gap: 10px;
           box-shadow: 0 8px 24px rgba(37,211,102,0.25);
           transition: background 0.2s ease, transform 0.2s ease;
         }
-        .est-wa-btn:hover { background: #1fbf5c; transform: translateY(-2px); }
+        .est-wa-btn:hover { background: rgb(var(--whatsapp-hover)); transform: translateY(-2px); }
         .est-wa-btn:active { transform: translateY(0) scale(0.98); }
+        .est-wa-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
         .est-consult-link {
           width: 100%; padding: 12px 22px; border-radius: var(--radius-lg);
           border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.75);
@@ -381,6 +414,13 @@ const ProjectEstimator = () => {
             : 'Shape your project to get a clear picture of its complexity, capabilities, and recommended delivery path — then share it directly with our team.'}
           maxWidth={620}
         />
+
+        <div className="est-recap" aria-live="polite">
+          <span className="est-recap-label">{isRTL ? 'اخترت الآن:' : 'Currently selected:'}</span>
+          <span className="est-recap-value">{isRTL ? selectedType.titleAr : selectedType.titleEn}</span>
+          <span className="est-recap-dot" aria-hidden>•</span>
+          <span className="est-recap-value">{isRTL ? complexity.labelAr : complexity.labelEn}</span>
+        </div>
 
         <div className="est-grid">
 

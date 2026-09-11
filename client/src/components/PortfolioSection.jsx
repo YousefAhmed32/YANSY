@@ -85,7 +85,10 @@ const PortfolioSection = () => {
 
   useEffect(() => {
     let alive = true;
-    api.get('/portfolio?featured=true&limit=6')
+    // 3 curated projects, not 6 — the homepage teaser only needs enough proof to
+    // earn a click through to "View all work"; 6 stacked cards ran the section
+    // to ~2991px in review. The full library is one tap away either way.
+    api.get('/portfolio?featured=true&limit=3')
       .then(({ data }) => { 
         if (alive) {
           const list = data.projects || [];
@@ -165,6 +168,11 @@ const PortfolioSection = () => {
         .portfolio-viewall svg { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
         .portfolio-viewall:hover svg { transform: translate(2px, -2px); }
         [dir="rtl"] .portfolio-viewall:hover svg { transform: scaleX(-1) translate(2px, -2px); }
+        .portfolio-viewall-wrap {
+          display: flex;
+          justify-content: center;
+          margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+        }
       `}</style>
 
       <div className="section-inner">
@@ -174,12 +182,6 @@ const PortfolioSection = () => {
           lead={isRTL
             ? 'لا ماكيتات، لا عروض تجريبية. منتجات حقيقية تعمل في الإنتاج وتخدم مستخدمين حقيقيين.'
             : 'No mockups, no demos. Real products running in production, serving real users.'}
-          action={
-            <Link to="/portfolio" className="portfolio-viewall">
-              {isRTL ? 'عرض كل الأعمال' : 'View all work'}
-              <ArrowUpRight style={{ width: 14, height: 14, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
-            </Link>
-          }
         />
 
         {/* Filters */}
@@ -214,7 +216,7 @@ const PortfolioSection = () => {
         <div aria-busy={loading} aria-live="polite">
           {loading ? (
             <div className="portfolio-grid">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 3 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
@@ -255,6 +257,15 @@ const PortfolioSection = () => {
             </div>
           )}
         </div>
+
+        {!loading && displayed.length > 0 && (
+          <div className="portfolio-viewall-wrap">
+            <Link to="/portfolio" className="portfolio-viewall">
+              {isRTL ? 'عرض جميع الأعمال' : 'View all work'}
+              <ArrowUpRight style={{ width: 14, height: 14, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

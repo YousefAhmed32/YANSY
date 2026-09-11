@@ -51,6 +51,7 @@ const MobileStickyBar = ({ onStartProject, isRTL, hidden = false }) => {
             to { transform: translateY(0); opacity: 1; }
           }
         }
+        .ys-mobile-wa-cta:hover, .ys-mobile-wa-cta:active { background: rgb(var(--whatsapp-hover)) !important; }
       `}</style>
       <aside
         className="ys-mobile-bar"
@@ -63,6 +64,7 @@ const MobileStickyBar = ({ onStartProject, isRTL, hidden = false }) => {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackWhatsAppClick('mobile-sticky-bar')}
+          className="ys-mobile-wa-cta"
           style={{
             flex: '1',
             display: 'inline-flex',
@@ -72,7 +74,9 @@ const MobileStickyBar = ({ onStartProject, isRTL, hidden = false }) => {
             height: 44,
             padding: '0 12px',
             borderRadius: 12,
-            background: '#25D366',
+            // rgb(var(--whatsapp)), not the brand mark's #25D366 — white text on
+            // the bright mark is ~1.98:1 here (13px/700), under WCAG AA's 4.5:1.
+            background: 'rgb(var(--whatsapp))',
             color: '#FFFFFF',
             fontSize: 13,
             fontWeight: 700,

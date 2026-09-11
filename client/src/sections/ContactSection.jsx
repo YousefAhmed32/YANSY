@@ -361,9 +361,14 @@ const ContactSection = ({ isRTL: isRTLProp }) => {
         .ff-wrap { margin-bottom: 12px; }
         .ff-box { position: relative; }
         .ff-control {
-          width: 100%; padding: 21px 16px 8px; border-radius: 12px;
+          width: 100%; padding: 22px 16px 8px; border-radius: 12px;
           border: 1.5px solid rgb(var(--border)); background: rgb(var(--bg-secondary));
-          font-size: 14px; color: rgb(var(--text-primary)); outline: none; box-sizing: border-box;
+          /* 16px, not 14px — below 16px, iOS Safari zooms the whole page in on
+             focus (its documented auto-zoom-to-avoid-tiny-text behavior), which
+             on a form this size effectively knocks the user out of the layout
+             they were just filling in. 16px is also the reviewed mobile target
+             for form inputs generally. */
+          font-size: 16px; color: rgb(var(--text-primary)); outline: none; box-sizing: border-box;
           font-family: inherit; line-height: 1.5; appearance: none; -webkit-appearance: none; -moz-appearance: none;
           transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
         }

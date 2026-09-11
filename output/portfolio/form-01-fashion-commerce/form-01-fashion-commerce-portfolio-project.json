@@ -1,0 +1,173 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "exportedAt": "2026-09-11T11:38:12.4263425Z",
+  "project": {
+    "title": "FORM/01 — Minimal Techwear Commerce",
+    "titleAr": "فورم 01 — تجربة تسوق رقمية للملابس التقنية",
+    "description": "A self-initiated UX/UI and front-end concept for a fictional Egyptian techwear label. The project presents a complete responsive commerce journey from campaign-led discovery and product exploration to cart, checkout, bilingual mobile browsing, and order tracking.",
+    "descriptionAr": "مشروع ذاتي لتصميم تجربة المستخدم والواجهات والتنفيذ الأمامي لعلامة ملابس تقنية مصرية متخيّلة. يعرض المشروع رحلة تجارة إلكترونية متكاملة ومتجاوبة تبدأ من اكتشاف الحملة والمنتجات وتصل إلى السلة وإتمام الطلب والتصفح بالعربية والإنجليزية ومتابعة الشحنة.",
+    "presentationMode": "showcase",
+    "deliveryStatus": "live",
+    "projectOrigin": "selfInitiated",
+    "category": {
+      "slug": "e-commerce",
+      "name": "E-commerce",
+      "nameAr": "التجارة الإلكترونية"
+    },
+    "industry": {
+      "slug": "fashion-apparel",
+      "name": "Fashion & Apparel",
+      "nameAr": "الأزياء والملابس"
+    },
+    "projectType": {
+      "slug": "web-project",
+      "name": "Web Project",
+      "nameAr": "موقع إلكتروني"
+    },
+    "highlights": [
+      {
+        "text": "A complete commerce journey covering discovery, product selection, cart, checkout, and post-purchase tracking.",
+        "textAr": "رحلة تجارة إلكترونية متكاملة تشمل اكتشاف المنتجات واختيارها والسلة وإتمام الطلب ومتابعته بعد الشراء."
+      },
+      {
+        "text": "Purpose-built responsive layouts for English and Arabic with clear LTR and RTL interaction patterns.",
+        "textAr": "واجهات متجاوبة مصممة خصيصًا للعربية والإنجليزية مع تجربة واضحة في اتجاهي الكتابة."
+      },
+      {
+        "text": "A cohesive minimal-tech visual system combining editorial fashion storytelling with conversion-focused commerce patterns.",
+        "textAr": "نظام بصري موحّد بطابع تقني بسيط يجمع بين السرد التحريري للأزياء وأنماط التسوق الموجهة لإتمام الشراء."
+      }
+    ],
+    "services": [
+      {
+        "slug": "uiux-design",
+        "name": "UX/UI Design",
+        "nameAr": "تصميم تجربة وواجهة المستخدم"
+      },
+      {
+        "slug": "frontend-development",
+        "name": "Front-end Development",
+        "nameAr": "تطوير الواجهات الأمامية"
+      }
+    ],
+    "technologies": [
+      {
+        "slug": "html",
+        "name": "HTML"
+      },
+      {
+        "slug": "css",
+        "name": "CSS"
+      },
+      {
+        "slug": "javascript",
+        "name": "JavaScript"
+      }
+    ],
+    "team": [],
+    "year": 2026,
+    "featured": true,
+    "displayOrder": 0,
+    "metaTitle": "FORM/01 Minimal Techwear Commerce UX/UI | YANSY TECH",
+    "metaDescription": "Explore FORM/01, a self-initiated bilingual fashion e-commerce UX/UI concept by YANSY TECH covering responsive discovery, product, cart, checkout, and order-tracking experiences."
+  },
+  "mediaManifest": [
+    {
+      "field": "coverImage",
+      "kind": "image",
+      "alt": "FORM/01 minimal techwear commerce experience across desktop and mobile",
+      "altAr": "تجربة متجر فورم 01 للملابس التقنية على الحاسوب والهاتف"
+    },
+    {
+      "field": "gallery",
+      "order": 0,
+      "kind": "image",
+      "alt": "FORM/01 portfolio concept cover",
+      "altAr": "غلاف مشروع فورم 01 في معرض الأعمال",
+      "caption": "Project introduction and visual direction",
+      "captionAr": "مقدمة المشروع واتجاهه البصري"
+    },
+    {
+      "field": "gallery",
+      "order": 1,
+      "kind": "image",
+      "alt": "FORM/01 campaign-led desktop homepage",
+      "altAr": "الصفحة الرئيسية لمتجر فورم 01 على الحاسوب",
+      "caption": "Campaign-led homepage and featured product",
+      "captionAr": "صفحة رئيسية تقودها الحملة مع المنتج المميز"
+    },
+    {
+      "field": "gallery",
+      "order": 2,
+      "kind": "image",
+      "alt": "FORM/01 editorial collection story",
+      "altAr": "قصة مجموعة فورم 01 بأسلوب تحريري",
+      "caption": "Editorial collection storytelling",
+      "captionAr": "سرد تحريري لقصة المجموعة"
+    },
+    {
+      "field": "gallery",
+      "order": 3,
+      "kind": "image",
+      "alt": "FORM/01 product discovery grid",
+      "altAr": "شبكة اكتشاف منتجات فورم 01",
+      "caption": "Structured product discovery and filtering",
+      "captionAr": "اكتشاف المنتجات وتصفيتها بشكل منظم"
+    },
+    {
+      "field": "gallery",
+      "order": 4,
+      "kind": "image",
+      "alt": "FORM/01 modular overshirt product detail page",
+      "altAr": "صفحة تفاصيل القميص الخارجي في متجر فورم 01",
+      "caption": "Product detail, colour, size, and fit guidance",
+      "captionAr": "تفاصيل المنتج واللون والمقاس وإرشادات الملاءمة"
+    },
+    {
+      "field": "gallery",
+      "order": 5,
+      "kind": "image",
+      "alt": "FORM/01 shopping bag drawer",
+      "altAr": "درج سلة التسوق في متجر فورم 01",
+      "caption": "Cart drawer with order summary and product recommendation",
+      "captionAr": "سلة جانبية مع ملخص الطلب واقتراح منتج"
+    },
+    {
+      "field": "gallery",
+      "order": 6,
+      "kind": "image",
+      "alt": "FORM/01 checkout experience",
+      "altAr": "تجربة إتمام الطلب في متجر فورم 01",
+      "caption": "Focused checkout and delivery details",
+      "captionAr": "إتمام طلب واضح مع تفاصيل التوصيل"
+    },
+    {
+      "field": "gallery",
+      "order": 7,
+      "kind": "image",
+      "alt": "FORM/01 English and Arabic responsive mobile interfaces",
+      "altAr": "واجهات فورم 01 المتجاوبة بالعربية والإنجليزية",
+      "caption": "Purpose-built bilingual mobile experience",
+      "captionAr": "تجربة هاتف مصممة خصيصًا للغتين"
+    },
+    {
+      "field": "gallery",
+      "order": 8,
+      "kind": "image",
+      "alt": "FORM/01 Arabic mobile product filters",
+      "altAr": "فلاتر المنتجات بالعربية على هاتف متجر فورم 01",
+      "caption": "Mobile-first Arabic filtering and navigation",
+      "captionAr": "تصفية وتنقل بالعربية مصممان للهاتف"
+    },
+    {
+      "field": "gallery",
+      "order": 9,
+      "kind": "image",
+      "alt": "FORM/01 order tracking interface",
+      "altAr": "واجهة متابعة الطلب في متجر فورم 01",
+      "caption": "Post-purchase order status and delivery timeline",
+      "captionAr": "حالة الطلب ومراحل التوصيل بعد الشراء"
+    }
+  ]
+}

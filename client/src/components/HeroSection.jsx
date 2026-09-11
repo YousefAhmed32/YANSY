@@ -188,6 +188,22 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
           transform: translateY(-1px);
         }
 
+        /* WhatsApp CTA — solid fill, so it needs --whatsapp (~5:1 with white),
+           not the brand mark's #25D366 (~1.98:1, fails AA at this 14px size). */
+        .hero-cta-whatsapp {
+          background: rgb(var(--whatsapp));
+          border-color: rgb(var(--whatsapp));
+          box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+          color: #FFFFFF;
+        }
+        .hero-cta-whatsapp:hover {
+          background: rgb(var(--whatsapp-hover));
+          border-color: rgb(var(--whatsapp-hover));
+          box-shadow: 0 6px 26px rgba(37,211,102,0.38);
+          transform: translateY(-2px);
+        }
+        .hero-cta-whatsapp:active { transform: translateY(0) scale(0.98); }
+
         /* ── Proof rail, anchored to the bottom of the 100vh hero ── */
         .hero-stats {
           position: relative;
@@ -246,7 +262,13 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
             <div style={{ textAlign: isRTL ? 'right' : 'left' }}>
 
               {/* Available badge */}
-              <div style={{ ...fly(0), marginBottom: 24, display: 'flex', justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+              {/* justifyContent: 'flex-start' is intentionally the same for both
+                  directions — it's writing-mode-relative (resolves to the text-start
+                  edge, right in RTL / left in LTR) via the section's ambient
+                  dir="rtl"/"ltr", matching the text-align above. An isRTL ternary here
+                  would flip it to the wrong edge — see constants/floatingUi.js's note
+                  on this exact anti-pattern. */}
+              <div style={{ ...fly(0), marginBottom: 24, display: 'flex', justifyContent: 'flex-start' }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 7,
                   padding: '6px 13px', borderRadius: '100px',
@@ -307,14 +329,14 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
               </p>
 
               {/* Service pills */}
-              <div className="hero-service-pills" style={{ ...fly(0.2), justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+              <div className="hero-service-pills" style={{ ...fly(0.2), justifyContent: 'flex-start' }}>
                 {services.map((s, i) => (
                   <span key={i} className="hero-service-pill">{s}</span>
                 ))}
               </div>
 
               {/* CTAs */}
-              <div className="hero-cta-group" style={{ ...fly(0.26), justifyContent: isRTL ? 'flex-end' : 'flex-start' }}>
+              <div className="hero-cta-group" style={{ ...fly(0.26), justifyContent: 'flex-start' }}>
                 <a
                   href={`https://wa.me/201090385390?text=${encodeURIComponent(
                     isRTL
@@ -324,14 +346,10 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackCTAClick('hero-whatsapp-direct')}
-                  className="btn-primary"
+                  className="btn-primary hero-cta-whatsapp"
                   style={{
                     fontSize: '14px',
                     padding: '13px 26px',
-                    background: '#25D366',
-                    borderColor: '#25D366',
-                    boxShadow: '0 4px 20px rgba(37,211,102,0.3)',
-                    color: '#FFFFFF',
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',

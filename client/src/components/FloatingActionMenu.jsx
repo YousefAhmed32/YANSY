@@ -24,6 +24,7 @@ const CSS = `
                 border-color .25s ease, color .25s ease;
   }
   .fab-main:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(13,17,23,0.18), 0 3px 10px rgba(13,17,23,0.08); }
+  .fab-main.is-wa:hover { background: rgb(var(--whatsapp-hover)) !important; border-color: rgb(var(--whatsapp-hover)) !important; }
   .fab-main[aria-expanded="true"] {
     border-color: rgba(37,99,235,.35);
     color: rgb(var(--accent));
@@ -264,11 +265,14 @@ const FloatingActionMenu = ({ isRTL, onOpenAI, hidden = false }) => {
               setOpen(false);
             }
           }}
-          className="fab-main"
+          className={`fab-main${open ? '' : ' is-wa'}`}
           style={{
-            background: open ? 'rgb(var(--bg-elevated))' : '#25D366',
+            // rgb(var(--whatsapp)), not the brand mark's #25D366 — a white icon
+            // directly on the bright mark is ~1.98:1, under WCAG AA's 3:1 minimum
+            // for graphical/UI-component contrast.
+            background: open ? 'rgb(var(--bg-elevated))' : 'rgb(var(--whatsapp))',
             color: open ? 'rgb(var(--text-primary))' : '#FFFFFF',
-            borderColor: open ? 'rgb(var(--border))' : '#25D366',
+            borderColor: open ? 'rgb(var(--border))' : 'rgb(var(--whatsapp))',
             boxShadow: open ? '0 8px 28px rgba(13,17,23,0.14)' : '0 8px 28px rgba(37,211,102,0.4)',
             position: 'relative',
           }}

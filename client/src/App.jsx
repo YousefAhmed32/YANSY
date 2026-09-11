@@ -11,6 +11,7 @@ import PageTransition from './components/PageTransition';
 import IntroOverlay from './components/IntroOverlay';
 import { trackPageView } from './utils/ga4';
 import { trackPageView as trackMetaPageView } from './utils/metaPixel';
+import { trackPageView as trackCustomPageView } from './utils/analytics';
 
 import './i18n/config';
 import './index.css';
@@ -127,8 +128,10 @@ const AnimatedRoutes = () => {
   const location = useLocation();
 
   useEffect(() => {
-    trackPageView(location.pathname + location.search);
+    const fullPath = location.pathname + location.search;
+    trackPageView(fullPath);
     trackMetaPageView();
+    trackCustomPageView(fullPath, document.title);
   }, [location.pathname, location.search]);
 
   return (

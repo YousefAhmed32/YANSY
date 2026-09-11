@@ -549,7 +549,14 @@
       "contact": "تواصل معنا",
       "getStarted": "ابدأ مشروعك",
       "work": "أعمالنا",
-      "support": "الدعم"
+      "support": "الدعم",
+      "homeLink": "يانسي — الرئيسية",
+      "mainNavLabel": "التنقل الرئيسي",
+      "mobileNavLabel": "التنقل عبر الجوال",
+      "menuDialogLabel": "قائمة التنقل",
+      "openMenu": "فتح القائمة",
+      "closeMenu": "إغلاق القائمة",
+      "whatsappLabel": "واتساب"
     },
     "hero": {
       "badge": "استوديو تطوير منتجات رقمية — منذ 2020",

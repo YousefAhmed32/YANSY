@@ -117,8 +117,8 @@ const Footer = () => {
       {/* Top brand statement */}
       <div style={{
         borderBottom: '1px solid rgb(var(--border))',
-        paddingTop: 'clamp(3.5rem, 7vw, 6rem)',
-        paddingBottom: 'clamp(3.5rem, 7vw, 6rem)',
+        paddingTop: 'clamp(2.5rem, 7vw, 6rem)',
+        paddingBottom: 'clamp(2.5rem, 7vw, 6rem)',
         paddingLeft:  'clamp(1.25rem, 5vw, 3rem)',
         paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
       }}>
@@ -177,8 +177,8 @@ const Footer = () => {
 
       {/* Nav grid */}
       <div style={{
-        paddingTop: 'clamp(2.5rem, 5vw, 4rem)',
-        paddingBottom: 'clamp(2.5rem, 5vw, 4rem)',
+        paddingTop: 'clamp(1.75rem, 5vw, 4rem)',
+        paddingBottom: 'clamp(1.75rem, 5vw, 4rem)',
         paddingLeft:  'clamp(1.25rem, 5vw, 3rem)',
         paddingRight: 'clamp(1.25rem, 5vw, 3rem)',
         borderBottom: '1px solid rgb(var(--border))',
@@ -186,8 +186,13 @@ const Footer = () => {
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: 'clamp(2rem, 4vw, 3rem)',
+            /* 130px, not 160px — at 160px, 320-390px phones (minus padding)
+               can't fit 2 columns and fall back to a single stacked column,
+               which is what ran the three link groups + contact block into one
+               tall column with large gaps between them. 130px reaches 2 columns
+               down to ~320px, 3 from ~480px, without cramping any label. */
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: 'clamp(1.75rem, 4vw, 3rem)',
           }}>
             {/* Resources */}
             <div>
@@ -233,12 +238,14 @@ const Footer = () => {
                 <ContactItem
                   icon={Mail}
                   value="yansytech@gmail.com"
+                  href="mailto:yansytech@gmail.com"
                   label={isRTL ? 'البريد الإلكتروني' : 'Email'}
                   toastMessage={isRTL ? 'تم نسخ البريد الإلكتروني' : 'Email address copied'}
                 />
                 <ContactItem
                   icon={Phone}
                   value="+201090385390"
+                  href="tel:+201090385390"
                   label={isRTL ? 'رقم الهاتف' : 'Phone'}
                   toastMessage={isRTL ? 'تم نسخ رقم الهاتف' : 'Phone number copied'}
                 />

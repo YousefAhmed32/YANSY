@@ -83,6 +83,16 @@
   --ring:          37 99 235;
   --hover-overlay: 0 0 0; /* used at low alpha, e.g. rgb(var(--hover-overlay) / .04) */
 
+  /* WhatsApp CTA fill — a solid button surface with white text/icon needs its
+     own token, distinct from the brand mark's #25D366. White-on-#25D366 is
+     ~1.98:1 (fails WCAG AA's 4.5:1 for normal text — measured against the
+     estimator/hero/mobile-bar buttons that used it directly at 13–14px).
+     This darker green keeps the same hue but reaches ~5:1. The bright mark
+     color stays fine for icon-only chips on a light tint (badges, small
+     glyphs) — only solid-fill + white-text/icon surfaces need this swap. */
+  --whatsapp:       21 128 61;
+  --whatsapp-hover: 14 102 47;
+
   /* Reserved strictly for tiny premium decorative accents (icons, dividers,
      rating stars, a hairline highlight) — never a CTA, link, or brand color. */
   --gold:       180 148 88;
@@ -702,6 +712,18 @@ button, [role="button"], [aria-label] {
   font-family: var(--font-arabic);
   line-height: var(--lh-display-ar);
   letter-spacing: 0;
+}
+/* --text-5xl clamps to its 2.5rem/40px floor under ~800px viewport width (5vw
+   drops below it), which measured 40px/56.8px line-height in review — a
+   section heading nearly as large as the hero's own h1, on every section,
+   the full width down to 320px. Scaled down toward the reviewed 28–32px
+   target specifically for section headers (not every --text-5xl consumer
+   site-wide, to keep this change scoped to the shared header primitive). */
+@media (max-width: 640px) {
+  .section-header__title,
+  .display-title {
+    font-size: clamp(1.75rem, 7vw, 2rem);
+  }
 }
 .section-header__lead {
   font-size: clamp(0.9375rem, 1.1vw, 1.0625rem);

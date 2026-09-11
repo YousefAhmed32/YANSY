@@ -105,7 +105,10 @@ const T = {
   border: 'rgb(var(--border))', borderStrong: 'rgb(var(--border-strong))',
   text: 'rgb(var(--text-primary))', textSecondary: 'rgb(var(--text-secondary))', textTertiary: 'rgb(var(--text-tertiary))',
   accent: 'rgb(var(--accent))', accentLight: 'rgb(var(--accent-light))', accentMuted: 'rgb(var(--accent-muted))', accentHover: 'rgb(var(--accent-hover))',
-  whatsapp: '#25D366', whatsappLight: '#ECFDF5', whatsappMuted: '#D1FAE5',
+  // rgb(var(--whatsapp)), not the brand mark's #25D366 — white text on the
+  // bright mark measured ~1.98:1 on .sp-btn-wa below (fails WCAG AA's 4.5:1);
+  // the darker --whatsapp token reaches ~5:1 while staying visibly green.
+  whatsapp: 'rgb(var(--whatsapp))', whatsappLight: '#ECFDF5', whatsappMuted: '#D1FAE5',
   danger: 'rgb(var(--danger))', dangerLight: 'rgb(var(--danger-light))',
 };
 
@@ -740,7 +743,7 @@ const ProjectRequestForm = ({ isOpen, onClose }) => {
         .sp-btn-primary:active:not(:disabled) { transform: scale(.97); }
 
         .sp-btn-wa { transition: background .18s ease, box-shadow .18s ease, transform .1s ease; background: ${T.whatsapp}; }
-        .sp-btn-wa:hover:not(:disabled)  { background: #1FB958; box-shadow: 0 4px 16px rgba(37,211,102,.3); }
+        .sp-btn-wa:hover:not(:disabled)  { background: rgb(var(--whatsapp-hover)); box-shadow: 0 4px 16px rgba(37,211,102,.3); }
         .sp-btn-wa:active:not(:disabled) { transform: scale(.97); }
 
         .sp-btn-back { transition: background .16s ease, border-color .16s ease; }

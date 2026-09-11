@@ -21,16 +21,25 @@ const copyText = async (text) => {
 };
 
 /**
- * Click-to-copy contact row (phone / email / any value worth copying).
- * Never navigates — copies to the clipboard and confirms with a toast.
+ * Contact row (phone / email) — a real `mailto:`/`tel:` link as the primary
+ * action, with a separate copy button beside it.
+ *
+ * Previously the whole row was a `<div role="button">` that only ever copied
+ * to the clipboard — tapping a phone number never offered to actually call
+ * it, and tapping an email never opened a mail client. Splitting it into an
+ * anchor (navigates) + a button (copies) gives both actions their own
+ * affordance instead of overloading one control with a behavior half the
+ * audience wouldn't expect from tapping a visible phone number.
  */
-const ContactItem = ({ icon, value, label, toastMessage }) => {
+const ContactItem = ({ icon, value, label, href, toastMessage }) => {
   const Icon = icon;
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       await copyText(value);
     } catch {
@@ -41,57 +50,59 @@ const ContactItem = ({ icon, value, label, toastMessage }) => {
     setTimeout(() => setCopied(false), 1600);
   }, [value, toastMessage]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleCopy();
-    }
-  };
-
   const active = hovered || focused;
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={`${label}: ${value}`}
-      onClick={handleCopy}
-      onKeyDown={handleKeyDown}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      className="focus-ring"
       style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-        padding: '8px 12px', borderRadius: '8px',
+        display: 'flex', alignItems: 'stretch', gap: 6,
+        borderRadius: '8px',
         border: `1px solid ${active ? 'rgb(var(--border-strong))' : 'rgb(var(--border))'}`,
         background: active ? 'rgb(var(--bg-elevated))' : 'rgb(var(--bg-secondary))',
-        cursor: 'pointer',
-        transform: active ? 'scale(1.02)' : 'scale(1)',
-        transformOrigin: 'center left',
-        transition: 'background 0.26s ease, border-color 0.26s ease, transform 0.26s ease',
+        transition: 'background 0.26s ease, border-color 0.26s ease',
       }}
     >
-      <span style={{
-        display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
-        color: active ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', fontSize: 12.5,
-        transition: 'color 0.26s ease',
-      }}>
+      <a
+        href={href}
+        aria-label={`${label}: ${value}`}
+        className="focus-ring"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 4px 8px 12px', textDecoration: 'none',
+          color: active ? 'rgb(var(--text-primary))' : 'rgb(var(--text-secondary))', fontSize: 12.5,
+          transition: 'color 0.26s ease',
+        }}
+      >
         <Icon style={{
           width: 13, height: 13, flexShrink: 0,
           color: active ? 'rgb(var(--accent))' : 'rgb(var(--text-tertiary))',
           transition: 'color 0.26s ease',
         }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
-      </span>
+      </a>
 
-      {/* Fixed-size slot so the copy/check icon fading in on hover never shifts layout */}
-      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 14, height: 14, flexShrink: 0 }} aria-hidden>
+      <button
+        type="button"
+        onClick={handleCopy}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        aria-label={toastMessage}
+        title={toastMessage}
+        className="focus-ring"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 30, flexShrink: 0, padding: '8px 10px 8px 4px',
+          border: 'none', background: 'none', cursor: 'pointer',
+        }}
+      >
         {copied
           ? <Check style={{ width: 13, height: 13, color: 'rgb(var(--success))' }} />
-          : <Copy style={{ width: 13, height: 13, color: 'rgb(var(--accent))', opacity: active ? 1 : 0, transition: 'opacity 0.22s ease' }} />}
-      </span>
+          : <Copy style={{ width: 13, height: 13, color: active ? 'rgb(var(--accent))' : 'rgb(var(--text-tertiary))', transition: 'color 0.22s ease' }} />}
+      </button>
     </div>
   );
 };

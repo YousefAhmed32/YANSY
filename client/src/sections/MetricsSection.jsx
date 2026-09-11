@@ -188,6 +188,13 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
           width: 4px; height: 4px; border-radius: 50%;
           background: rgb(var(--accent)); flex-shrink: 0;
         }
+
+        /* Below the header's split→stack breakpoint, the graphic renders full-width
+           directly above this same data restated as 4 cells — genuine duplication,
+           not reinforcement, once it's no longer a side-by-side companion to the
+           header text. The grid is the more legible, more detailed version (label +
+           source + case-study link), so it's the one that stays. */
+        @media (max-width: 720px) { .metrics-graphic-wrap { display: none; } }
       `}</style>
 
       <div className="section-inner">
@@ -203,7 +210,7 @@ const MetricsSection = ({ isRTL, onStartProject }) => {
             : 'Every number is built on real results from real projects — no estimates, no rounding up.'}
           maxLeadWidth={400}
           action={
-            <div style={{ maxWidth: 340, width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <div className="metrics-graphic-wrap" style={{ maxWidth: 340, width: '100%', display: 'flex', justifyContent: 'center' }}>
               <MetricsGraphic points={graphicPoints} />
             </div>
           }
