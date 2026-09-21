@@ -133,7 +133,7 @@ const DonutChart = ({ data = [], colorMap = {}, language }) => {
 
 // ── Hourly 24-Bar Distribution Chart ──────────────────────────────────────────
 
-const HourlyDistributionChart = ({ hourlyData, language }) => {
+const HourlyDistributionChart = ({ hourlyData, language, isMinute }) => {
   const hours = hourlyData?.hours || [];
   if (!hours.length) return <EmptyState icon={BarChart3} title={noDataTitle(language)} />;
 
@@ -147,22 +147,25 @@ const HourlyDistributionChart = ({ hourlyData, language }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Clock style={{ width: 14, height: 14, color: TK.accent }} />
             <span style={{ fontSize: 12, fontWeight: 600, color: TK.text }}>
-              {language === 'ar' ? 'ساعة الذروة اليومية:' : 'Daily Peak Traffic Hour:'}
+              {isMinute
+                ? (language === 'ar' ? 'أعلى فترة نشاط (5 دقائق):' : 'Peak 5-Minute Window:')
+                : (language === 'ar' ? 'ساعة الذروة في هذه الفترة:' : 'Peak Traffic Hour:')}
             </span>
             <Badge tone="accent">{language === 'ar' ? peak.labelAr : peak.label}</Badge>
           </div>
           <span style={{ fontSize: 12, color: TK.textMuted }}>
             {peak.sessions} {language === 'ar' ? 'جلسة' : 'sessions'} • {peak.views} {language === 'ar' ? 'مشاهدة' : 'views'}
+            {peak.conversions > 0 ? ` • 🎯 ${peak.conversions} ${language === 'ar' ? 'تحويل' : 'conversions'}` : ''}
           </span>
         </div>
       )}
 
-      {/* 24-hour bars */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: 3, alignItems: 'flex-end', height: 110, padding: '10px 0 4px', borderBottom: `1px solid ${TK.border}` }}>
+      {/* Grid distribution bars */}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${hours.length}, 1fr)`, gap: hours.length > 15 ? 3 : 8, alignItems: 'flex-end', height: 110, padding: '10px 0 4px', borderBottom: `1px solid ${TK.border}` }}>
         {hours.map((h, i) => {
           const val = (h.views || 0) + (h.sessions || 0);
           const heightPct = Math.max(8, Math.round((val / maxVisits) * 100));
-          const isPeak = peak?.hour === h.hour;
+          const isPeak = peak?.hour === h.hour || (peak?.label === h.label);
           const label = language === 'ar' ? h.labelAr : h.label;
 
           return (
@@ -186,11 +189,23 @@ const HourlyDistributionChart = ({ hourlyData, language }) => {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: TK.textLight, marginTop: -6 }}>
-        <span>12:00 AM</span>
-        <span>06:00 AM</span>
-        <span>12:00 PM</span>
-        <span>06:00 PM</span>
-        <span>11:00 PM</span>
+        {isMinute ? (
+          <>
+            <span>60m ago</span>
+            <span>45m ago</span>
+            <span>30m ago</span>
+            <span>15m ago</span>
+            <span>Now</span>
+          </>
+        ) : (
+          <>
+            <span>12:00 AM</span>
+            <span>06:00 AM</span>
+            <span>12:00 PM</span>
+            <span>06:00 PM</span>
+            <span>11:00 PM</span>
+          </>
+        )}
       </div>
     </div>
   );
@@ -206,7 +221,7 @@ const Panel = ({ icon, title, subtitle, action, children }) => (
   </Card>
 );
 
-// ── Helper: Format Duration ───────────────────────────────────────────────────
+// ── Helper: Format Duration & Relative Time ───────────────────────────────────
 
 const fmtDuration = (sec, language) => {
   const sLabel = language === 'ar' ? 'ث' : 's';
@@ -216,6 +231,22 @@ const fmtDuration = (sec, language) => {
   if (sec < 60) return `${sec}${sLabel}`;
   if (sec < 3600) return `${Math.floor(sec / 60)}${mLabel} ${sec % 60}${sLabel}`;
   return `${Math.floor(sec / 3600)}${hLabel} ${Math.floor((sec % 3600) / 60)}${mLabel}`;
+};
+
+const fmtRelativeTime = (isoString, language) => {
+  if (!isoString) return '—';
+  const diffSec = Math.max(0, Math.round((Date.now() - new Date(isoString).getTime()) / 1000));
+  if (diffSec < 45) return language === 'ar' ? 'الآن' : 'just now';
+  if (diffSec < 3600) {
+    const mins = Math.floor(diffSec / 60);
+    return language === 'ar' ? `منذ ${mins} دقيقة` : `${mins}m ago`;
+  }
+  if (diffSec < 86400) {
+    const hours = Math.floor(diffSec / 3600);
+    return language === 'ar' ? `منذ ${hours} ساعة` : `${hours}h ago`;
+  }
+  const days = Math.floor(diffSec / 86400);
+  return language === 'ar' ? `منذ ${days} يوم` : `${days}d ago`;
 };
 
 // ── Tab 1: Overview ───────────────────────────────────────────────────────────
@@ -228,33 +259,103 @@ const OverviewTab = ({ data, hourlyData, loading, language }) => {
   );
   if (!data) return <EmptyState icon={BarChart3} title={noDataTitle(language)} />;
 
+  const visitorsCount = data.visitorsInPeriod ?? data.uniqueSessions ?? 0;
+  const pageViews     = data.totalPageViews ?? 0;
+  const sessions      = data.uniqueSessions ?? 0;
+  const avgDuration   = data.avgSessionDuration ?? 0;
+  const bounceRate    = data.bounceRate ?? 0;
+  const conversions   = data.conversionsCount ?? 0;
+  const convRate      = data.conversionRate ?? 0;
+  const highIntent    = data.highIntentSessions ?? 0;
+  const returning     = data.returningVisitors ?? 0;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Dynamic Metrics for the Selected Period */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
-        <StatCard label={language === 'ar' ? 'زوار اليوم' : 'Visitors Today'}            value={data.visitorsToday?.toLocaleString() ?? '—'}  icon={Users}       tone="info" />
-        <StatCard label={language === 'ar' ? 'زوار هذا الأسبوع' : 'Visitors This Week'}   value={data.visitorsWeek?.toLocaleString() ?? '—'}   icon={Users}       tone="purple" />
-        <StatCard label={language === 'ar' ? 'زوار هذا الشهر' : 'Visitors This Month'}    value={data.visitorsMonth?.toLocaleString() ?? '—'}  icon={TrendingUp}  tone="success" />
-        <StatCard label={language === 'ar' ? 'مشاهدات الصفحة' : 'Page Views'}             value={data.totalPageViews?.toLocaleString() ?? '—'} icon={Eye}         tone="info" />
-        <StatCard label={language === 'ar' ? 'الجلسات الفريدة' : 'Unique Sessions'}       value={data.uniqueSessions?.toLocaleString() ?? '—'} icon={Zap}         tone="warning" />
-        <StatCard label={language === 'ar' ? 'الزوار العائدون' : 'Returning Visitors'}    value={data.returningVisitors?.toLocaleString() ?? '—'} icon={RefreshCw} tone="purple" />
-        <StatCard label={language === 'ar' ? 'متوسط مدة الجلسة' : 'Avg Duration'}        value={fmtDuration(data.avgSessionDuration, language)} icon={Clock}      tone="success" />
-        <StatCard label={language === 'ar' ? 'معدل الارتداد' : 'Bounce Rate'}             value={`${data.bounceRate ?? 0}%`}                icon={TrendingDown} tone={data.bounceRate > 60 ? 'danger' : 'info'} />
+        <StatCard
+          label={language === 'ar' ? 'زوار الفترة المحددة' : 'Period Visitors'}
+          value={visitorsCount.toLocaleString()}
+          icon={Users}
+          tone="info"
+          sub={language === 'ar' ? 'إجمالي الزوار في هذا النطاق' : 'Total unique visitors in range'}
+        />
+        <StatCard
+          label={language === 'ar' ? 'مشاهدات الصفحات الحقيقية' : 'Real Page Views'}
+          value={pageViews.toLocaleString()}
+          icon={Eye}
+          tone="purple"
+          sub={language === 'ar' ? 'استبعاد استدعاءات API' : 'Clean verified pageviews'}
+        />
+        <StatCard
+          label={language === 'ar' ? 'الجلسات الفريدة' : 'Unique Sessions'}
+          value={sessions.toLocaleString()}
+          icon={Zap}
+          tone="warning"
+          sub={language === 'ar' ? 'جلسات التصفح المستقلة' : 'Distinct visitor sessions'}
+        />
+        <StatCard
+          label={language === 'ar' ? 'متوسط مدة الجلسة' : 'Avg Duration'}
+          value={fmtDuration(avgDuration, language)}
+          icon={Clock}
+          tone="success"
+          sub={language === 'ar' ? 'بدقة الدقائق والثواني' : 'Accurate minutes & seconds'}
+        />
+        <StatCard
+          label={language === 'ar' ? 'معدل الارتداد' : 'Bounce Rate'}
+          value={`${bounceRate}%`}
+          icon={TrendingDown}
+          tone={bounceRate > 60 ? 'danger' : 'info'}
+          sub={language === 'ar' ? 'جلسات بصفحة واحدة فقط' : 'Single-page visits'}
+        />
+        <StatCard
+          label={language === 'ar' ? 'التحويلات والطلبات 🎯' : 'Conversions & Leads 🎯'}
+          value={conversions.toLocaleString()}
+          icon={Target}
+          tone="success"
+          sub={`${language === 'ar' ? 'معدل التحويل:' : 'Conversion rate:'} ${convRate}%`}
+        />
+        <StatCard
+          label={language === 'ar' ? 'عملاء بنية تعاقد عالية 🔥' : 'High-Intent Prospects 🔥'}
+          value={highIntent.toLocaleString()}
+          icon={Flame}
+          tone="warning"
+          sub={language === 'ar' ? 'تفاعل جاد مع الخدمات' : 'Engaged with services'}
+        />
+        <StatCard
+          label={language === 'ar' ? 'الزوار العائدون' : 'Returning Visitors'}
+          value={returning.toLocaleString()}
+          icon={RefreshCw}
+          tone="purple"
+          sub={language === 'ar' ? 'عملاء زاروا المنصة سابقاً' : 'Repeat platform visits'}
+        />
       </div>
 
-      {/* Hourly distribution panel */}
+      {/* Hourly / Minute distribution panel */}
       <Panel
         icon={Clock}
-        title={language === 'ar' ? 'توزيع الزيارات وأوقات الذروة بالساعة (24 ساعة)' : 'Hourly Traffic & Peak Times (24 Hours)'}
-        subtitle={language === 'ar' ? 'توضح بدقة ساعات النشاط العالية وتفاعل الزوار على مدار اليوم' : 'Breakdown of visitor activity and peak times throughout the day'}
+        title={data.isMinute
+          ? (language === 'ar' ? 'توزيع النشاط بالدقائق (آخر 60 دقيقة في فترات 5 دقائق)' : 'Minute-by-Minute Activity (5-min intervals)')
+          : (language === 'ar' ? 'توزيع الزيارات وأوقات الذروة بالساعة (24 ساعة)' : 'Hourly Traffic & Peak Times (24 Hours)')
+        }
+        subtitle={data.isMinute
+          ? (language === 'ar' ? 'مراقبة حية للنشاط والتفاعل دقيقة بدقيقة' : 'Live minute-by-minute monitoring of visitors and engagement')
+          : (language === 'ar' ? 'توضح بدقة ساعات النشاط العالية وتفاعل الزوار على مدار اليوم' : 'Breakdown of visitor activity and peak times throughout the day')
+        }
       >
-        <HourlyDistributionChart hourlyData={hourlyData} language={language} />
+        <HourlyDistributionChart hourlyData={hourlyData} language={language} isMinute={data.isMinute} />
       </Panel>
 
       {/* Timeline sparkline */}
       {data.timeline?.length > 1 && (
         <Panel
           icon={TrendingUp}
-          title={data.isHourly ? (language === 'ar' ? 'الاتجاه الزمني بالساعة' : 'Hourly Visitor Trend') : (language === 'ar' ? 'الاتجاه الزمني للزيارات' : 'Daily Visitor Trend')}
+          title={data.isMinute
+            ? (language === 'ar' ? 'الاتجاه الزمني بالدقائق' : 'Minute-by-Minute Trend')
+            : data.isHourly
+              ? (language === 'ar' ? 'الاتجاه الزمني بالساعة' : 'Hourly Visitor Trend')
+              : (language === 'ar' ? 'الاتجاه الزمني للزيارات' : 'Daily Visitor Trend')
+          }
           subtitle={language === 'ar' ? 'حجم المشاهدات والجلسات عبر الفترة المختارة' : 'Page views and sessions across selected timeframe'}
         >
           <SparkLine data={data.timeline} color={TK.accent} height={90} />
@@ -279,6 +380,7 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
   const [search, setSearch] = useState('');
   const [convOnly, setConvOnly] = useState(false);
   const [intentFilter, setIntentFilter] = useState('all');
+  const [activeOnly, setActiveOnly] = useState(false);
   const [copiedSessionId, setCopiedSessionId] = useState(null);
 
   // Drawer state
@@ -291,9 +393,10 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
     setLoading(true);
     try {
       let q = `/analytics/sessions?range=${range}&visitorFilter=${visitorFilter}&page=${page}&limit=12`;
-      if (startDate && endDate) q += `&startDate=${startDate}&endDate=${endDate}`;
+      if (startDate && endDate) q += `&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
       if (convOnly) q += '&hasConversion=true';
       if (intentFilter !== 'all') q += `&intentLevel=${intentFilter}`;
+      if (activeOnly) q += '&activeOnly=true';
       if (search.trim()) q += `&search=${encodeURIComponent(search.trim())}`;
 
       const res = await api.get(q);
@@ -305,7 +408,7 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
     } finally {
       setLoading(false);
     }
-  }, [range, visitorFilter, startDate, endDate, page, convOnly, intentFilter, search]);
+  }, [range, visitorFilter, startDate, endDate, page, convOnly, intentFilter, activeOnly, search]);
 
   useEffect(() => {
     fetchSessions();
@@ -373,6 +476,7 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
       '═════════════════════════════════════',
       '  تقرير رحلة العميل — YANSY Tech',
       '═════════════════════════════════════',
+      `• الحالة: ${session.isLive ? '🟢 متصل الآن بالمنصة' : 'مكتملة'}`,
       `• الهوية: ${session.userName || (session.isAdmin ? 'إداري النظام' : 'زائر المنصة')}`,
       session.userEmail ? `• البريد: ${session.userEmail}` : null,
       `• نوع الزائر: ${session.visitorType || 'guest'}`,
@@ -382,13 +486,14 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
       session.language ? `• لغة المتصفح: ${session.language}` : null,
       session.visitCount ? `• عدد الزيارات: ${session.visitCount}` : null,
       session.utm?.campaign ? `• الحملة الإعلانية: ${session.utm.campaign} (مصدر: ${session.utm.source || 'utm'})` : null,
+      `• توقيت البدء: ${new Date(session.startTime).toLocaleString('ar-EG')}`,
       `• إجمالي مدة الجلسة: ${fmtDuration(session.durationSec, language)}`,
       `• مستوى الاهتمام: ${session.intentLevel === 'high' ? '🔥 عالي (نية تعاقد)' : session.intentLevel === 'medium' ? '💡 متوسط (استكشاف)' : 'تصفح عادي'}`,
       `• تحويل فعلي؟: ${session.hasConversion ? 'نعم 🎯 (' + (session.conversions || []).join(', ') + ')' : 'لا'}`,
       `• تسجيل Clarity: https://clarity.microsoft.com/projects/view/x58kfxz02f/recordings`,
       '',
-      `التسلسل الزمني للإجراءات (${journey?.length || 0} خطوة):`,
-      ...(journey || []).map((j) => `  ${j.index}. [${fmtDuration(j.elapsedSec, language)}] ${language === 'ar' ? j.titleAr : j.titleEn} (${j.page})`),
+      `التسلسل الزمني الدقيق للإجراءات (${journey?.length || 0} خطوة):`,
+      ...(journey || []).map((j) => `  ${j.index}. [${j.timeWallAr || fmtDuration(j.elapsedSec, language)}] ${language === 'ar' ? j.titleAr : j.titleEn} (${j.page}) ${j.timeSpentOnStepSec > 0 ? `[قضى ${j.timeSpentOnStepSec}ث]` : ''}`),
       '═════════════════════════════════════',
     ].filter(Boolean).join('\n');
 
@@ -401,7 +506,7 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
     if (row.isAdmin || row.visitorType === 'admin') {
       return (
         <Badge tone="purple" dot>
-          👑 {language === 'ar' ? 'إداري' : 'Admin'}{row.userName ? `: ${row.userName}` : ''}
+          👑 {language === 'ar' ? 'فريق العمل / الإدارة' : 'Admin / Team'}{row.userName ? `: ${row.userName}` : ''}
         </Badge>
       );
     }
@@ -415,7 +520,6 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
     return (
       <Badge tone="neutral">
         👤 {language === 'ar' ? 'زائر' : 'Guest'}
-        {row.city || row.country ? ` (${row.city || ''}${row.city && row.country ? ', ' : ''}${row.country || ''})` : ''}
       </Badge>
     );
   };
@@ -481,6 +585,17 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {/* Active Live Only Toggle */}
+          <Button
+            variant={activeOnly ? 'primary' : 'secondary'}
+            size="sm"
+            icon={Zap}
+            onClick={() => { setActiveOnly(!activeOnly); setPage(1); }}
+            title={language === 'ar' ? 'عرض الجلسات النشطة حالياً على المنصة' : 'Show currently active live sessions'}
+          >
+            {language === 'ar' ? '🟢 متصل الآن فقط' : '🟢 Live Now Only'}
+          </Button>
+
           <Button
             variant={convOnly ? 'primary' : 'secondary'}
             size="sm"
@@ -509,7 +624,7 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
       {/* Sessions Table */}
       <Panel
         icon={Users}
-        title={language === 'ar' ? 'سجل جلسات الزوار والعملاء' : 'Visitor & Client Sessions Log'}
+        title={language === 'ar' ? 'سجل جلسات الزوار والعملاء بدقة اللحظة' : 'Visitor & Client Sessions Log'}
         subtitle={`${totalSessions} ${language === 'ar' ? 'جلسة مطابقة في الفترة المحددة' : 'matching sessions in selected period'}`}
       >
         {loading ? (
@@ -525,9 +640,34 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
                 key: 'visitor',
                 label: language === 'ar' ? 'الزائر والهوية' : 'Visitor & Identity',
                 render: (row) => (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <div>{getVisitorBadge(row)}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      {getVisitorBadge(row)}
+                      {row.isLive && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          fontSize: 10,
+                          fontWeight: 600,
+                          color: '#15803D',
+                          background: '#DCFCE7',
+                          border: '1px solid #86EFAC',
+                          padding: '2px 8px',
+                          borderRadius: 999,
+                        }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A', boxShadow: '0 0 0 2px rgba(22, 163, 74, 0.3)' }} />
+                          {language === 'ar' ? 'متصل الآن' : 'Live'}
+                        </span>
+                      )}
+                    </div>
                     {row.userEmail && <span style={{ fontSize: 10, color: TK.textLight }}>{row.userEmail}</span>}
+                    {(row.city || row.country) && (
+                      <span style={{ fontSize: 10, color: TK.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <MapPin style={{ width: 10, height: 10, flexShrink: 0, color: TK.textLight }} />
+                        {row.city ? `${row.city}, ` : ''}{row.country || ''}
+                      </span>
+                    )}
                   </div>
                 ),
               },
@@ -551,7 +691,19 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
                 key: 'entry',
                 label: language === 'ar' ? 'صفحة الدخول' : 'Entry Page',
                 render: (row) => (
-                  <span style={{ fontSize: 11, color: TK.text, display: 'inline-block', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                    color: TK.text,
+                    background: TK.bg,
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    display: 'inline-block',
+                    maxWidth: 160,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
                     {row.entryPage || '/'}
                   </span>
                 ),
@@ -561,8 +713,12 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
                 label: language === 'ar' ? 'المدة والتفاعل' : 'Duration & Pages',
                 render: (row) => (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, color: TK.text }}>{fmtDuration(row.durationSec, language)}</span>
-                    <span style={{ fontSize: 10, color: TK.textLight }}>{row.viewsCount} {language === 'ar' ? 'صفحات' : 'views'}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: TK.text, fontVariantNumeric: 'tabular-nums' }}>
+                      {fmtDuration(row.durationSec, language)}
+                    </span>
+                    <span style={{ fontSize: 10, color: TK.textLight }}>
+                      {row.viewsCount} {language === 'ar' ? 'صفحات تصفح' : 'views'}
+                    </span>
                   </div>
                 ),
               },
@@ -572,6 +728,8 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
                 render: (row) => (
                   row.hasConversion ? (
                     <Badge tone="success" dot>{language === 'ar' ? 'تحويل 🎯' : 'Converted 🎯'}</Badge>
+                  ) : row.intentLevel === 'high' ? (
+                    <span style={{ fontSize: 10, color: '#D97706', fontWeight: 500 }}>⏳ {language === 'ar' ? 'قيد المتابعة' : 'In Pipeline'}</span>
                   ) : (
                     <span style={{ fontSize: 11, color: TK.textLight }}>—</span>
                   )
@@ -579,11 +737,16 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
               },
               {
                 key: 'time',
-                label: language === 'ar' ? 'التوقيت' : 'Time',
+                label: language === 'ar' ? 'التوقيت الدقيق' : 'Time & Date',
                 render: (row) => (
-                  <span style={{ fontSize: 11, color: TK.textMuted }}>
-                    {new Date(row.startTime).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: TK.text, fontVariantNumeric: 'tabular-nums' }}>
+                      {new Date(row.startTime).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                    <span style={{ fontSize: 10, color: TK.textLight }}>
+                      {fmtRelativeTime(row.startTime, language)}
+                    </span>
+                  </div>
                 ),
               },
               {
@@ -608,12 +771,12 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
         )}
       </Panel>
 
-      {/* Visitor Journey Drawer */}
+      {/* Visitor Journey Drawer (Client Dossier) */}
       <Drawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        title={language === 'ar' ? 'رحلة الزائر بالتفصيل خطوة بخطوة' : 'Visitor Journey Dossier'}
-        width="560px"
+        title={language === 'ar' ? 'ملف العميل وتسجيل رحلة التصفح خطوة بخطوة' : 'Visitor Journey & Behavioral Dossier'}
+        width="580px"
         side={isRTL ? 'left' : 'right'}
       >
         {journeyLoading ? (
@@ -622,6 +785,25 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
           <EmptyState icon={Users} title={noDataTitle(language)} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Live Status Banner */}
+            {journeyData.session.isLive && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: '#DCFCE7',
+                border: '1px solid #86EFAC',
+                color: '#15803D',
+                padding: '10px 14px',
+                borderRadius: 10,
+                fontSize: 12,
+                fontWeight: 600,
+              }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16A34A', boxShadow: '0 0 0 3px rgba(22, 163, 74, 0.3)' }} />
+                <span>{language === 'ar' ? 'العميل متصل بالمنصة الآن ويجري تصفحاً حياً في الوقت الفعلي!' : 'Client is currently browsing live on the platform right now!'}</span>
+              </div>
+            )}
+
             {/* Dossier Header Info */}
             <div style={{ background: TK.bg, padding: 16, borderRadius: 12, border: `1px solid ${TK.border}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
@@ -635,16 +817,24 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
               </div>
 
               {/* Dossier Technical & Behavioral Metrics Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, color: TK.textMuted }}>
-                <div>📍 {journeyData.session.city || '—'}, {journeyData.session.country || '—'}</div>
-                <div>💻 {journeyData.session.device || 'Desktop'} ({journeyData.session.os || 'OS'}, {journeyData.session.browser || 'Browser'})</div>
-                <div>⏱️ {fmtDuration(journeyData.session.durationSec, language)} {language === 'ar' ? 'مدة الجلسة' : 'session duration'}</div>
-                <div>🔢 {journeyData.totalEvents} {language === 'ar' ? 'أحداث مُسجلة' : 'tracked events'}</div>
-                <div>🖥️ {journeyData.session.screenResolution || 'دقة غير محددة'}</div>
-                <div>🌐 {journeyData.session.language || 'لغة المتصفح: —'}</div>
-                <div>🔁 {journeyData.session.visitCount > 1 ? (language === 'ar' ? `الزيارة رقم ${journeyData.session.visitCount} (عميل متكرر 🔥)` : `Visit #${journeyData.session.visitCount} (Returning)`) : (language === 'ar' ? 'الزيارة الأولى' : 'First Visit')}</div>
-                <div>🎯 {journeyData.session.hasConversion ? (language === 'ar' ? 'أتم تحويلاً ناجحاً 🎯' : 'Converted Lead 🎯') : (language === 'ar' ? 'لم يقم بتحويل بعد' : 'No conversion yet')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 11, color: TK.textMuted }}>
+                <div>📍 <strong>{language === 'ar' ? 'الموقع:' : 'Location:'}</strong> {journeyData.session.city || '—'}, {journeyData.session.country || '—'}</div>
+                <div>💻 <strong>{language === 'ar' ? 'الجهاز:' : 'Device:'}</strong> {journeyData.session.device || 'Desktop'} ({journeyData.session.os || 'OS'}, {journeyData.session.browser || 'Browser'})</div>
+                <div>⏱️ <strong>{language === 'ar' ? 'مدة الجلسة:' : 'Duration:'}</strong> {fmtDuration(journeyData.session.durationSec, language)}</div>
+                <div>🔢 <strong>{language === 'ar' ? 'الأحداث:' : 'Events:'}</strong> {journeyData.totalEvents} {language === 'ar' ? 'إجراء مسجل' : 'tracked events'}</div>
+                <div>🖥️ <strong>{language === 'ar' ? 'الشاشة:' : 'Screen:'}</strong> {journeyData.session.screenResolution || '—'}</div>
+                <div>🌐 <strong>{language === 'ar' ? 'اللغة:' : 'Language:'}</strong> {journeyData.session.language || '—'}</div>
+                <div>🕐 <strong>{language === 'ar' ? 'وقت الدخول:' : 'Start Time:'}</strong> {new Date(journeyData.session.startTime).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                <div>🔁 <strong>{language === 'ar' ? 'الزيارات:' : 'Visits:'}</strong> {journeyData.session.visitCount > 1 ? (language === 'ar' ? `الزيارة رقم ${journeyData.session.visitCount} (عميل متكرر 🔥)` : `Visit #${journeyData.session.visitCount} (Returning)`) : (language === 'ar' ? 'الزيارة الأولى' : 'First Visit')}</div>
               </div>
+
+              {/* Conversion notification if present */}
+              {journeyData.session.hasConversion && (
+                <div style={{ padding: '8px 12px', background: '#DCFCE7', borderRadius: 8, border: '1px solid #86EFAC', fontSize: 11, color: '#15803D', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
+                  <Target style={{ width: 14, height: 14 }} />
+                  <span>{language === 'ar' ? 'أتم تحويلاً أو طلباً ناجحاً 🎯:' : 'Converted lead 🎯:'} {(journeyData.session.conversions || []).join(', ') || 'Lead submitted'}</span>
+                </div>
+              )}
 
               {/* UTM Campaign Badge if present */}
               {journeyData.session.utm?.campaign && (
@@ -697,20 +887,20 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
             {/* Step-by-Step Chronological Timeline */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: TK.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {language === 'ar' ? 'التسلسل الزمني الدقيق للرحلة:' : 'Chronological Timeline:'}
+                {language === 'ar' ? 'التسلسل الزمني الدقيق للرحلة بالدقيقة والثانية:' : 'Chronological Timeline (Minute & Second Precision):'}
               </div>
 
               {journeyData.journey?.map((step, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: 12, position: 'relative' }}>
                   {/* Timeline vertical bar */}
                   {idx < journeyData.journey.length - 1 && (
-                    <div style={{ position: 'absolute', top: 22, bottom: -12, insetInlineStart: 12, width: 2, background: TK.border }} />
+                    <div style={{ position: 'absolute', top: 24, bottom: -12, insetInlineStart: 13, width: 2, background: TK.border }} />
                   )}
 
                   {/* Bullet */}
                   <div style={{
-                    width: 26,
-                    height: 26,
+                    width: 28,
+                    height: 28,
                     borderRadius: '50%',
                     background: step.badge === 'success' ? TK.greenBg : step.badge === 'purple' ? TK.purpleBg : TK.accentBg,
                     border: `1.5px solid ${step.badge === 'success' ? TK.green : step.badge === 'purple' ? TK.purple : TK.accent}`,
@@ -727,17 +917,32 @@ const JourneysTab = ({ language, isRTL, range, visitorFilter, startDate, endDate
 
                   {/* Card item */}
                   <div style={{ flex: 1, background: TK.surface, padding: '10px 14px', borderRadius: 8, border: `1px solid ${TK.border}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 4 }}>
                       <span style={{ fontSize: 12, fontWeight: 600, color: TK.text }}>
                         {language === 'ar' ? step.titleAr : step.titleEn}
                       </span>
-                      <span style={{ fontSize: 10, color: TK.textLight, fontVariantNumeric: 'tabular-nums' }}>
-                        +{fmtDuration(step.elapsedSec, language)}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: TK.textLight, fontVariantNumeric: 'tabular-nums' }}>
+                        {(step.timeWallAr || step.timeWallEn) && (
+                          <span style={{ fontWeight: 600, color: TK.textMuted }}>
+                            {language === 'ar' ? step.timeWallAr : step.timeWallEn}
+                          </span>
+                        )}
+                        <span>(+{fmtDuration(step.elapsedSec, language)})</span>
+                      </div>
                     </div>
 
-                    <div style={{ fontSize: 11, color: TK.textMuted }}>
-                      {step.page && <span style={{ fontFamily: 'monospace', background: TK.bg, padding: '2px 6px', borderRadius: 4 }}>{step.page}</span>}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', fontSize: 11, color: TK.textMuted }}>
+                      {step.page && (
+                        <span style={{ fontFamily: 'monospace', background: TK.bg, padding: '2px 6px', borderRadius: 4 }}>
+                          {step.page}
+                        </span>
+                      )}
+
+                      {step.timeSpentOnStepSec > 0 && (
+                        <span style={{ fontSize: 10, color: TK.purple, fontWeight: 500, background: TK.purpleBg, padding: '2px 6px', borderRadius: 4 }}>
+                          ⏱️ {language === 'ar' ? `قضى ${step.timeSpentOnStepSec} ثانية في هذه الخطوة` : `Spent ${step.timeSpentOnStepSec}s on this step`}
+                        </span>
+                      )}
                     </div>
 
                     {step.scrollDepth > 0 && (
@@ -1366,30 +1571,40 @@ const TAB_LABELS = {
   Conversions: { en: 'Conversions',          ar: 'التحويلات' },
 };
 
+const toLocalISOString = (d) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 const RANGES = [
-  { value: 'today',     en: 'Today (Hourly)', ar: 'اليوم (بالساعة)' },
-  { value: 'yesterday', en: 'Yesterday',      ar: 'أمس' },
-  { value: '7d',        en: '7 Days',         ar: '7 أيام' },
-  { value: '30d',       en: '30 Days',        ar: '30 يوم' },
-  { value: '90d',       en: '90 Days',        ar: '90 يوم' },
-  { value: 'custom',    en: 'Custom Range 📅',ar: 'فترة مخصصة 📅' },
+  { value: '60m',       en: '⚡ Last 60m (5-min)',  ar: '⚡ آخر 60 دقيقة' },
+  { value: 'today',     en: '⏱️ Today (Hourly)',   ar: '⏱️ اليوم (بالساعة)' },
+  { value: 'yesterday', en: 'Yesterday',           ar: 'أمس' },
+  { value: '24h',       en: 'Last 24h',            ar: 'آخر 24 ساعة' },
+  { value: '7d',        en: '7 Days',              ar: '7 أيام' },
+  { value: '30d',       en: '30 Days',             ar: '30 يوم' },
+  { value: '90d',       en: '90 Days',             ar: '90 يوم' },
+  { value: 'custom',    en: '🎯 Custom by Minute', ar: '🎯 فترة مخصصة بالدقائق' },
 ];
 
 const VISITOR_FILTERS = [
-  { value: 'all',          en: '👥 All Traffic',       ar: '👥 جميع الزيارات' },
-  { value: 'clients_only', en: '⭐ Clients & Guests',  ar: '⭐ العملاء والزوار الفعليين' },
-  { value: 'admin_only',   en: '👑 Admin & Team Only', ar: '👑 فريق العمل والإدارة' },
+  { value: 'clients_only', en: '⭐ Clients & Guests',      ar: '⭐ العملاء والزوار الفعليين' },
+  { value: 'high_intent',  en: '🔥 High-Intent Leads',     ar: '🔥 عملاء بنية تعاقد عالية' },
+  { value: 'all',          en: '👥 All Traffic',           ar: '👥 جميع الزيارات' },
+  { value: 'admin_only',   en: '👑 Admin & Internal Only', ar: '👑 فريق العمل والمطور' },
 ];
 
 export default function AdminAnalytics() {
   const { language, isRTL } = useLanguage();
   const font = FONT(isRTL);
 
-  const [tab, setTab]                     = useState('Overview');
-  const [range, setRange]                 = useState('30d');
-  const [visitorFilter, setVisitorFilter] = useState('clients_only'); // Default to clients only to isolate real leads!
-  const [startDate, setStartDate]         = useState('');
-  const [endDate, setEndDate]             = useState('');
+  const [tab, setTab]                           = useState('Overview');
+  const [range, setRange]                       = useState('30d');
+  const [visitorFilter, setVisitorFilter]       = useState('clients_only'); // Default to clients only to isolate real leads!
+  const [startDate, setStartDate]               = useState('');
+  const [endDate, setEndDate]                   = useState('');
+  const [appliedStartDate, setAppliedStartDate] = useState('');
+  const [appliedEndDate, setAppliedEndDate]     = useState('');
   const [showCustomPicker, setShowCustomPicker] = useState(false);
 
   const [loading, setLoading]       = useState({});
@@ -1400,13 +1615,13 @@ export default function AdminAnalytics() {
   const realtimeTimer = useRef(null);
 
   // Build query string
-  const buildQuery = useCallback((r = range, vf = visitorFilter, sd = startDate, ed = endDate) => {
+  const buildQuery = useCallback((r = range, vf = visitorFilter, sd = appliedStartDate, ed = appliedEndDate) => {
     let q = `range=${r}&visitorFilter=${vf}`;
     if (r === 'custom' && sd && ed) {
-      q += `&startDate=${sd}&endDate=${ed}`;
+      q += `&startDate=${encodeURIComponent(sd)}&endDate=${encodeURIComponent(ed)}`;
     }
     return q;
-  }, [range, visitorFilter, startDate, endDate]);
+  }, [range, visitorFilter, appliedStartDate, appliedEndDate]);
 
   const fetchTab = useCallback(async (tabName) => {
     const q = buildQuery();
@@ -1450,7 +1665,7 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     fetchTab(tab);
-  }, [tab, range, visitorFilter, fetchTab]);
+  }, [tab, range, visitorFilter, appliedStartDate, appliedEndDate, fetchTab]);
 
   // Auto-refresh real-time tab every 15 seconds
   useEffect(() => {
@@ -1464,17 +1679,53 @@ export default function AdminAnalytics() {
 
   const handleRangeChange = (r) => {
     if (r === 'custom') {
+      const now = new Date();
+      const threeHoursAgo = new Date(now.getTime() - 3 * 3600 * 1000);
+      const startISO = startDate || toLocalISOString(threeHoursAgo);
+      const endISO = endDate || toLocalISOString(now);
+      setStartDate(startISO);
+      setEndDate(endISO);
+      setAppliedStartDate(startISO);
+      setAppliedEndDate(endISO);
       setShowCustomPicker(true);
       setRange('custom');
     } else {
       setShowCustomPicker(false);
       setRange(r);
+      setAppliedStartDate('');
+      setAppliedEndDate('');
     }
+  };
+
+  const applyPreset = (presetKey) => {
+    const now = new Date();
+    let s, e = now;
+    if (presetKey === 'last3h') {
+      s = new Date(now.getTime() - 3 * 3600 * 1000);
+    } else if (presetKey === 'todaySoFar') {
+      s = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    } else if (presetKey === 'workHours') {
+      s = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+      e = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0);
+    } else if (presetKey === 'yesterdayFull') {
+      const y = new Date(now.getTime() - 86400000);
+      s = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 0, 0, 0);
+      e = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59);
+    }
+    const sStr = toLocalISOString(s);
+    const eStr = toLocalISOString(e);
+    setStartDate(sStr);
+    setEndDate(eStr);
+    setAppliedStartDate(sStr);
+    setAppliedEndDate(eStr);
+    setRange('custom');
+    setShowCustomPicker(true);
   };
 
   const handleApplyCustomDate = () => {
     if (startDate && endDate) {
-      fetchTab(tab);
+      setAppliedStartDate(startDate);
+      setAppliedEndDate(endDate);
     }
   };
 
@@ -1592,32 +1843,104 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        {/* Custom date picker row */}
+        {/* Custom date & minute-level picker panel */}
         {(showCustomPicker || range === 'custom') && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', paddingTop: 12, borderTop: `1px dashed ${TK.border}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-              <span style={{ color: TK.textMuted }}>{language === 'ar' ? 'من تاريخ:' : 'From:'}</span>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${TK.border}`, background: TK.bg, fontSize: 12, color: TK.text }}
-              />
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            paddingTop: 14,
+            borderTop: `1px dashed ${TK.border}`,
+          }}>
+            {/* Quick Presets Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: TK.textMuted }}>
+                {language === 'ar' ? 'اختيارات سريعة:' : 'Quick Presets:'}
+              </span>
+              {[
+                { key: 'last3h',        ar: '⚡ آخر 3 ساعات (دقيقة بدقيقة)', en: '⚡ Last 3 Hours (Minute-level)' },
+                { key: 'todaySoFar',    ar: '⏱️ اليوم حتى اللحظة',           en: '⏱️ Today So Far' },
+                { key: 'workHours',     ar: '💼 ساعات العمل (9ص - 5م)',      en: '💼 Business Hours (9am-5pm)' },
+                { key: 'yesterdayFull', ar: '📅 أمس كاملاً',                 en: '📅 Full Yesterday' },
+              ].map((preset) => (
+                <button
+                  key={preset.key}
+                  onClick={() => applyPreset(preset.key)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    border: `1px solid ${TK.border}`,
+                    background: TK.bg,
+                    color: TK.text,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = TK.accent; e.currentTarget.style.color = TK.accent; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = TK.border; e.currentTarget.style.color = TK.text; }}
+                >
+                  {language === 'ar' ? preset.ar : preset.en}
+                </button>
+              ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-              <span style={{ color: TK.textMuted }}>{language === 'ar' ? 'إلى تاريخ:' : 'To:'}</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${TK.border}`, background: TK.bg, fontSize: 12, color: TK.text }}
-              />
-            </div>
+            {/* Exact Datetime-local inputs */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                <span style={{ fontWeight: 600, color: TK.textMuted }}>{language === 'ar' ? 'من:' : 'From:'}</span>
+                <input
+                  type="datetime-local"
+                  step="60"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    border: `1px solid ${TK.border}`,
+                    background: TK.bg,
+                    fontSize: 12,
+                    color: TK.text,
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
 
-            <Button size="sm" variant="primary" onClick={handleApplyCustomDate} disabled={!startDate || !endDate}>
-              {language === 'ar' ? 'تطبيق الفترة' : 'Apply Range'}
-            </Button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                <span style={{ fontWeight: 600, color: TK.textMuted }}>{language === 'ar' ? 'إلى:' : 'To:'}</span>
+                <input
+                  type="datetime-local"
+                  step="60"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    border: `1px solid ${TK.border}`,
+                    background: TK.bg,
+                    fontSize: 12,
+                    color: TK.text,
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+
+              <Button
+                size="sm"
+                variant="primary"
+                icon={Check}
+                onClick={handleApplyCustomDate}
+                disabled={!startDate || !endDate}
+              >
+                {language === 'ar' ? 'تطبيق الفلترة بالدقائق' : 'Apply Exact Filter'}
+              </Button>
+
+              {appliedStartDate && appliedEndDate && (
+                <span style={{ fontSize: 11, color: TK.accent, background: TK.accentBg, padding: '3px 8px', borderRadius: 6, fontWeight: 500 }}>
+                  {language === 'ar' ? '✓ تم تطبيق النطاق الزمني بنجاح' : '✓ Custom range applied'}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -1651,8 +1974,8 @@ export default function AdminAnalytics() {
           isRTL={isRTL}
           range={range}
           visitorFilter={visitorFilter}
-          startDate={startDate}
-          endDate={endDate}
+          startDate={appliedStartDate}
+          endDate={appliedEndDate}
         />
       )}
 

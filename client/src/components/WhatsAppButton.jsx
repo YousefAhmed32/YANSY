@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { trackWhatsAppHover, trackWhatsAppClick } from '../utils/analytics';
 
 const PHONE = '+201090385390';
 const WA_URL = `https://wa.me/201090385390`;
@@ -103,10 +104,19 @@ const WhatsAppButton = () => {
         rel="noopener noreferrer"
         className={`wa-btn ${isRTL ? 'rtl-pos' : 'ltr-pos'} ${hovered ? 'expanded' : ''}`}
         aria-label={label}
-        onMouseEnter={() => setHovered(true)}
+        onMouseEnter={() => {
+          setHovered(true);
+          trackWhatsAppHover('floating_button');
+        }}
         onMouseLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
+        onFocus={() => {
+          setHovered(true);
+          trackWhatsAppHover('floating_button');
+        }}
         onBlur={() => setHovered(false)}
+        onClick={() => {
+          trackWhatsAppClick('floating_button');
+        }}
         style={{ bottom: '24px' }}
       >
         <span className="wa-icon-wrap">

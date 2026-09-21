@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight, Menu, X, MessageCircle } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 import MobileLangToggle from './MobileLangToggle';
+import { trackCTAClick } from '../utils/analytics';
 
 const Header = ({ onStartProject }) => {
   const { isAuthenticated, user } = useSelector(s => s.auth);
@@ -193,7 +194,10 @@ const Header = ({ onStartProject }) => {
                   {t('common.login', 'Sign in')}
                 </Link>
                 <button
-                  onClick={onStartProject}
+                  onClick={() => {
+                    trackCTAClick('start_project_cta', 'header');
+                    onStartProject?.();
+                  }}
                   className="btn-primary"
                   style={{ fontSize: '12.5px', padding: '9px 20px' }}
                 >
@@ -261,7 +265,11 @@ const Header = ({ onStartProject }) => {
             {!isAuthenticated && (
               <button
                 ref={firstFocRef}
-                onClick={() => { setMobileMenuOpen(false); onStartProject?.(); }}
+                onClick={() => {
+                  trackCTAClick('start_project_cta', 'mobile_drawer');
+                  setMobileMenuOpen(false);
+                  onStartProject?.();
+                }}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
                   width: '100%', padding: '18px 20px', marginBottom: '28px',

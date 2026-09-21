@@ -4,8 +4,9 @@ const c = require('../controllers/analyticsController');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
 // Public (no auth) — track events from any visitor
-router.post('/events',       c.trackEvent);
-router.post('/sessions/end', c.endSession);
+router.post('/events',            c.trackEvent);
+router.post('/sessions/end',      c.endSession);
+router.post('/sessions/heartbeat', c.heartbeatSession);
 
 // Admin-only analytics endpoints
 router.get('/dashboard',                  authenticate, requireAdmin, c.getDashboard);

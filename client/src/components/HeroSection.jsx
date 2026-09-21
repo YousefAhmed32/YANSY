@@ -2,6 +2,7 @@ import { useState, useEffect, forwardRef } from 'react';
 import { ArrowUpRight, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { trackCTAClick } from '../utils/ga4';
+import { trackWhatsAppHover, trackWhatsAppClick } from '../utils/analytics';
 
 const SERVICES_EN = ['Websites', 'E-commerce', 'SaaS', 'Mobile Apps', 'ERP & CRM', 'Automation'];
 const SERVICES_AR = ['مواقع ويب', 'متاجر إلكترونية', 'SaaS', 'تطبيقات موبايل', '⁦ERP و CRM⁩', 'أتمتة'];
@@ -345,7 +346,11 @@ const HeroSection = forwardRef(function HeroSection({ onStartProject }, ref) {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackCTAClick('hero-whatsapp-direct')}
+                  onMouseEnter={() => trackWhatsAppHover('hero')}
+                  onClick={() => {
+                    trackWhatsAppClick('hero');
+                    trackCTAClick('hero-whatsapp-direct');
+                  }}
                   className="btn-primary hero-cta-whatsapp"
                   style={{
                     fontSize: '14px',

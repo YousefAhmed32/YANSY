@@ -82,10 +82,26 @@ const getEnvironmentMeta = () => ({
   visitCount: getVisitCount(),
 });
 
-// Initialize session
+// Initialize session with 30-minute inactivity expiration
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
 export const initSession = () => {
-  sessionId = localStorage.getItem('sessionId') || generateSessionId();
-  localStorage.setItem('sessionId', sessionId);
+  const now = Date.now();
+  const lastActive = parseInt(localStorage.getItem('yansy_last_active') || '0', 10);
+  const storedSessionId = localStorage.getItem('sessionId');
+
+  // If last activity was > 30 min ago or no session exists, start a brand new session
+  if (!storedSessionId || !lastActive || (now - lastActive > SESSION_TIMEOUT_MS)) {
+    sessionId = generateSessionId();
+    sessionStartTime = now;
+    localStorage.setItem('sessionId', sessionId);
+    localStorage.setItem('yansy_session_start', String(now));
+  } else {
+    sessionId = storedSessionId;
+    sessionStartTime = parseInt(localStorage.getItem('yansy_session_start') || String(now), 10);
+  }
+
+  localStorage.setItem('yansy_last_active', String(now));
 
   const identity = getUserIdentity();
 
@@ -106,15 +122,26 @@ export const initSession = () => {
 
 // Track event
 export const trackEvent = async (eventType, data = {}) => {
-  if (!sessionId) initSession();
+  const now = Date.now();
+  const lastActive = parseInt(localStorage.getItem('yansy_last_active') || '0', 10);
+
+  if (!sessionId || (lastActive && now - lastActive > SESSION_TIMEOUT_MS)) {
+    initSession();
+  }
+
+  localStorage.setItem('yansy_last_active', String(now));
+
+  // Never track backend api endpoints as frontend page events
+  const currentPage = data.page || window.location.pathname;
+  if (currentPage && currentPage.startsWith('/api')) return;
 
   const identity = getUserIdentity();
   const envMeta = getEnvironmentMeta();
 
   const event = {
     eventType,
-    page: window.location.pathname,
-    title: document.title,
+    page: currentPage,
+    title: data.title || document.title,
     sessionId,
     ...identity,
     ...envMeta,
@@ -144,6 +171,18 @@ export const trackPageView = (page, title) => {
   trackEvent('page_view', {
     page: page || window.location.pathname,
     title: title || document.title,
+  });
+};
+
+let lastWaHover = 0;
+export const trackWhatsAppHover = (source = 'button') => {
+  const now = Date.now();
+  if (now - lastWaHover < 5000) return;
+  lastWaHover = now;
+  trackEvent('whatsapp_hover', {
+    elementId: 'whatsapp_cta',
+    elementType: 'button',
+    metadata: { source },
   });
 };
 
@@ -205,18 +244,52 @@ export const trackClick = (elementId, elementType) => {
   trackEvent('click', { elementId, elementType });
 };
 
+export const sendHeartbeat = () => {
+  if (!sessionId) return;
+  const now = Date.now();
+  localStorage.setItem('yansy_last_active', String(now));
+  const durationSec = Math.max(1, Math.round((now - sessionStartTime) / 1000));
+  const base = getApiBase();
+  if (!base) return;
+
+  const payload = JSON.stringify({
+    sessionId,
+    durationSec,
+    lastPage: window.location.pathname,
+  });
+
+  const url = `${base.replace(/\/$/, '')}/analytics/sessions/heartbeat`;
+  if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+    navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+  } else {
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+  }
+};
+
 export const endSession = async () => {
   const duration = Date.now() - sessionStartTime;
   await trackEvent('session_end', { duration });
 
   const base = getApiBase();
   if (base) {
-    await fetch(`${base.replace(/\/$/, '')}/analytics/sessions/end`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ sessionId }),
-    }).catch(() => {});
+    const payload = JSON.stringify({ sessionId });
+    const url = `${base.replace(/\/$/, '')}/analytics/sessions/end`;
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+    } else {
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
+    }
   }
 };
 
@@ -227,5 +300,7 @@ if (typeof window !== 'undefined') {
     scrollTimeout = setTimeout(trackScroll, 100);
   });
   window.addEventListener('beforeunload', endSession);
+  // Send active heartbeat every 30 seconds
+  setInterval(sendHeartbeat, 30000);
 }
 
