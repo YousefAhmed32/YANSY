@@ -1,0 +1,115 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "project": {
+    "title": "Titan Forge Gym — Strength & Fitness Website",
+    "titleAr": "تايتن فورج جيم — موقع لتدريبات القوة واللياقة البدنية",
+    "description": "A bold website for Titan Forge Gym, a men-only strength and fitness facility. The experience brings training programs, membership plans, trainer profiles, class schedules, equipment, and transformation stories into one cohesive presentation. A black-and-red visual identity, oversized typography, and cinematic training imagery express the brand's strength-focused character, with clear calls to action that guide visitors toward exploring programs and choosing a membership.",
+    "descriptionAr": "موقع بهوية بصرية جريئة لتايتن فورج جيم، نادٍ رياضي للرجال متخصص في تدريبات القوة واللياقة البدنية. يجمع الموقع البرامج التدريبية وباقات العضوية وملفات المدربين وجداول الحصص والمعدات وقصص التحول البدني في تجربة عرض متكاملة. تعكس الألوان السوداء والحمراء والعناوين الكبيرة والصور الرياضية السينمائية شخصية العلامة القائمة على القوة، مع دعوات واضحة لاتخاذ الخطوة التالية واستكشاف البرامج واختيار العضوية المناسبة.",
+    "presentationMode": "showcase",
+    "deliveryStatus": "live",
+    "projectOrigin": "selfInitiated",
+    "highlights": [
+      {
+        "text": "A distinctive black-and-red identity combining bold typography and cinematic gym imagery to communicate strength and focus.",
+        "textAr": "هوية مميزة بالأسود والأحمر تمزج العناوين الجريئة والصور الرياضية السينمائية لتعكس القوة والتركيز."
+      },
+      {
+        "text": "Clear presentation of powerlifting, strength building, muscle building, and conditioning programs alongside membership options and class schedules.",
+        "textAr": "عرض واضح لبرامج رفع القوة وتطوير القوة وبناء العضلات واللياقة البدنية، إلى جانب خيارات العضوية وجداول الحصص."
+      },
+      {
+        "text": "Trainer profiles, equipment showcases, transformation stories, and member testimonials help visitors explore the gym before taking the next step.",
+        "textAr": "ملفات المدربين وعرض المعدات وقصص التحول البدني وآراء الأعضاء تساعد الزائر على التعرف على النادي قبل اتخاذ الخطوة التالية."
+      }
+    ],
+    "liveUrl": "https://titan-torge.yansytech.com/",
+    "figmaUrl": "",
+    "githubUrl": "",
+    "year": 2026,
+    "featured": false,
+    "metaTitle": "Titan Forge Gym Website | YANSY TECH",
+    "metaDescription": "Explore the Titan Forge Gym website by YANSY TECH: a bold fitness experience featuring strength programs, membership plans, trainers, and class schedules.",
+    "category": {
+      "slug": "services",
+      "name": "Services",
+      "nameAr": "الخدمات"
+    },
+    "industry": {
+      "slug": "fitness-sports",
+      "name": "Fitness & Sports",
+      "nameAr": "اللياقة البدنية والرياضة"
+    },
+    "projectType": {
+      "slug": "web-project",
+      "name": "Web Project",
+      "nameAr": "موقع إلكتروني"
+    },
+    "services": [],
+    "technologies": [],
+    "team": []
+  },
+  "mediaManifest": [
+    {
+      "field": "coverImage",
+      "kind": "image",
+      "alt": "Titan Forge Gym website presented on a laptop and smartphone in a black-and-red gym setting",
+      "altAr": "غلاف ترويجي لموقع تايتن فورج جيم على لابتوب وهاتف داخل أجواء رياضية بالأسود والأحمر"
+    },
+    {
+      "field": "gallery",
+      "order": 0,
+      "kind": "image",
+      "alt": "Athlete performing an incline dumbbell press in a dark gym with red lighting",
+      "altAr": "رياضي يؤدي تمرين ضغط الدمبل على مقعد مائل داخل صالة رياضية بإضاءة حمراء",
+      "caption": "Strength training visual identity",
+      "captionAr": "الهوية البصرية لتدريبات القوة"
+    },
+    {
+      "field": "gallery",
+      "order": 1,
+      "kind": "image",
+      "alt": "Three pairs of fitness transformation comparison portraits in a black-and-red gym setting",
+      "altAr": "ثلاث مجموعات من صور المقارنة للتحول البدني داخل صالة بالأسود والأحمر",
+      "caption": "Fitness transformation imagery",
+      "captionAr": "صور عرض التحول البدني"
+    },
+    {
+      "field": "gallery",
+      "order": 2,
+      "kind": "image",
+      "alt": "Athlete preparing to deadlift a loaded barbell in a dark strength training gym",
+      "altAr": "رياضي يستعد لرفع بار محمل بالأوزان في تمرين الرفعة الميتة داخل صالة لتدريبات القوة",
+      "caption": "Powerlifting and strength training imagery",
+      "captionAr": "صور رفع القوة والتدريب بالأوزان"
+    },
+    {
+      "field": "gallery",
+      "order": 3,
+      "kind": "image",
+      "alt": "Titan Forge Gym homepage showing training programs, membership plans, trainers, equipment, class schedule, and testimonials",
+      "altAr": "الواجهة الرئيسية لموقع تايتن فورج جيم وتضم البرامج والعضويات والمدربين والمعدات وجدول الحصص وآراء الأعضاء",
+      "caption": "Website interface and membership discovery",
+      "captionAr": "واجهة الموقع واستكشاف باقات العضوية"
+    },
+    {
+      "field": "gallery",
+      "order": 4,
+      "kind": "image",
+      "alt": "Athlete performing a loaded barbell squat inside a black-and-red gym",
+      "altAr": "رياضي يؤدي تمرين القرفصاء ببار محمل بالأوزان داخل صالة بالأسود والأحمر",
+      "caption": "Barbell training program imagery",
+      "captionAr": "صور برامج التدريب بالبار"
+    },
+    {
+      "field": "gallery",
+      "order": 5,
+      "kind": "image",
+      "alt": "Dark gym interior with power racks, dumbbells, plate-loaded machines, sleds, and battle ropes",
+      "altAr": "صالة رياضية داكنة تضم أقفاص تدريب ودمبل وأجهزة أوزان وزلاجات مقاومة وحبال لياقة",
+      "caption": "Equipment and training environment",
+      "captionAr": "المعدات وبيئة التدريب"
+    }
+  ],
+  "exportedAt": "2026-10-15T14:35:35.239Z"
+}

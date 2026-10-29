@@ -354,12 +354,10 @@ const ProjectEstimator = () => {
         .est-included-chip svg { width: 12px; height: 12px; color: #4ADE80; flex-shrink: 0; }
 
         .est-summary-ctas { display: flex; flex-direction: column; gap: 10px; padding-top: 2px; }
-        /* --whatsapp, not the brand mark's #25D366 — white text on the bright
-           mark measures ~1.98:1 here (14px/800), well under WCAG AA's 4.5:1.
-           --whatsapp keeps the same hue at ~5:1. */
+        /* Dark ink keeps the bright brand green legible at this text size. */
         .est-wa-btn {
           width: 100%; padding: 15px 22px; border-radius: var(--radius-lg); border: none; cursor: pointer;
-          background: rgb(var(--whatsapp)); color: #fff; font-weight: 800; font-size: 14px;
+          background: rgb(var(--whatsapp)); color: rgb(var(--on-whatsapp)); font-weight: 600; font-size: 14px;
           display: flex; align-items: center; justify-content: center; gap: 10px;
           box-shadow: 0 8px 24px rgba(37,211,102,0.25);
           transition: background 0.2s ease, transform 0.2s ease;

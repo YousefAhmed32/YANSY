@@ -1,0 +1,42 @@
+{
+  "format": "yansy-portfolio-project",
+  "schemaVersion": 1,
+  "project": {
+    "title": "Titan Forge Gym — Strength & Fitness Website",
+    "titleAr": "تايتن فورج جيم — موقع لتدريبات القوة واللياقة البدنية",
+    "description": "A bold website for Titan Forge Gym, a men-only strength and fitness facility. The experience brings training programs, membership plans, trainer profiles, class schedules, equipment, and transformation stories into one cohesive presentation. A black-and-red visual identity, oversized typography, and cinematic training imagery express the brand's strength-focused character, with clear calls to action that guide visitors toward exploring programs and choosing a membership.",
+    "descriptionAr": "موقع بهوية بصرية جريئة لتايتن فورج جيم، نادٍ رياضي للرجال متخصص في تدريبات القوة واللياقة البدنية. يجمع الموقع البرامج التدريبية وباقات العضوية وملفات المدربين وجداول الحصص والمعدات وقصص التحول البدني في تجربة عرض متكاملة. تعكس الألوان السوداء والحمراء والعناوين الكبيرة والصور الرياضية السينمائية شخصية العلامة القائمة على القوة، مع دعوات واضحة لاتخاذ الخطوة التالية واستكشاف البرامج واختيار العضوية المناسبة.",
+    "presentationMode": "showcase",
+    "deliveryStatus": "live",
+    "projectOrigin": "selfInitiated",
+    "highlights": [
+      {
+        "text": "A distinctive black-and-red identity combining bold typography and cinematic gym imagery to communicate strength and focus.",
+        "textAr": "هوية مميزة بالأسود والأحمر تمزج العناوين الجريئة والصور الرياضية السينمائية لتعكس القوة والتركيز."
+      },
+      {
+        "text": "Clear presentation of powerlifting, strength building, muscle building, and conditioning programs alongside membership options and class schedules.",
+        "textAr": "عرض واضح لبرامج رفع القوة وتطوير القوة وبناء العضلات واللياقة البدنية، إلى جانب خيارات العضوية وجداول الحصص."
+      },
+      {
+        "text": "Trainer profiles, equipment showcases, transformation stories, and member testimonials help visitors explore the gym before taking the next step.",
+        "textAr": "ملفات المدربين وعرض المعدات وقصص التحول البدني وآراء الأعضاء تساعد الزائر على التعرف على النادي قبل اتخاذ الخطوة التالية."
+      }
+    ],
+    "liveUrl": "https://titan-torge.yansytech.com/",
+    "figmaUrl": "",
+    "githubUrl": "",
+    "year": 2026,
+    "featured": false,
+    "metaTitle": "Titan Forge Gym Website | YANSY TECH",
+    "metaDescription": "Explore the Titan Forge Gym website by YANSY TECH: a bold fitness experience featuring strength programs, membership plans, trainers, and class schedules."
+  },
+  "mediaManifest": [
+    {
+      "field": "coverImage",
+      "kind": "image",
+      "alt": "Titan Forge Gym website with a black-and-red strength training hero, program cards, membership plans, trainers, and class schedule",
+      "altAr": "واجهة موقع تايتن فورج جيم بالأسود والأحمر، تعرض تدريبات القوة والبرامج وباقات العضوية والمدربين وجدول الحصص"
+    }
+  ]
+}

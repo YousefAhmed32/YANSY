@@ -1,8 +1,8 @@
-import { useState, useRef, useCallback, lazy, Suspense } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSEO } from '../hooks/useSEO';
+import { useFeaturedProjects } from '../hooks/useFeaturedProjects';
 
 // Layout
 import Header             from '../components/Header';
@@ -14,6 +14,7 @@ import HeroSection      from '../components/HeroSection';
 import PortfolioSection from '../components/PortfolioSection';
 import FloatingActionMenu from '../components/FloatingActionMenu';
 import MobileStickyBar from '../components/MobileStickyBar';
+import '../styles/home-mobile.css';
 
 import MetricsSection  from '../sections/MetricsSection';
 import CustomSoftwareSection from '../sections/CustomSoftwareSection';
@@ -40,18 +41,19 @@ const ContactSection        = lazy(() => import('../sections/ContactSection'));
 const ProjectEstimator      = lazy(() => import('../components/ProjectEstimator'));
 
 const Home = () => {
-  const { t }               = useTranslation();
   const { isRTL, language } = useLanguage();
   const user                = useSelector(s => s.auth?.user);
   const authToken            = useSelector(s => s.auth?.token);
 
+  const featuredWork = useFeaturedProjects();
+
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const open  = () => setIsFormOpen(true);
   const close = () => setIsFormOpen(false);
 
   const aiWidgetRef = useRef(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
-  const openAIChat = useCallback(() => aiWidgetRef.current?.open(), []);
 
   useSEO({
     title: isRTL
@@ -102,41 +104,16 @@ const Home = () => {
   });
 
   return (
-    <div key={`home-${language}`} style={{ background: '#FFFFFF' }}>
+    <div key={`home-${language}`} className="home-page" style={{ background: '#FFFFFF' }}>
 
-      <Header onStartProject={open} />
+      <Header onStartProject={open} onMenuOpenChange={setMobileMenuOpen} />
 
-      {/*
-        Narrative order. The page previously ran hero → brand film → stat strip →
-        industries → work, which spent its first three screens before showing a
-        single thing YANSY had built, and put an 8-tile grid of links *out* to
-        /industries at position 4 — an exit ramp before the visitor had any
-        reason to stay. The order below states the promise, then proves it
-        without interruption, then explains — with the interactive scope
-        estimator inside the explanation block, not the proof block, since it's
-        a lead-gen tool the visitor uses, not evidence of past work — then
-        handles objections, then asks.
-      */}
-
-      {/* 01 — Promise. Hero carries the proof-stat rail (was a standalone strip). */}
-      <HeroSection onStartProject={open} isRTL={isRTL} t={t} />
-
-      {/* 01.6 — Why custom software, not a template. Answers the objection
-              before the proof sections below ask the visitor to already
-              believe a bespoke build was the right call. */}
+      <HeroSection onStartProject={open} />
       <CustomSoftwareSection isRTL={isRTL} />
-
-      {/* 01.5 — Immediate credibility: brand logo wall, admin-managed, hidden
-              entirely when empty/disabled. Renders nothing until fetched, so
-              it never reserves layout space or shifts the fold beneath it. */}
       <Suspense fallback={null}>
         <TrustedByLogos />
       </Suspense>
-
-      {/* ── Proof block: work → outcomes → voices, uninterrupted ── */}
-
-      {/* 02 — The work itself. Nothing earns attention faster than shipped product. */}
-      <PortfolioSection />
+      <PortfolioSection projects={featuredWork.projects} loading={featuredWork.loading} failed={featuredWork.failed} onRetry={featuredWork.retry} />
 
       {/* 03 — What that work did for the business. */}
       <MetricsSection isRTL={isRTL} onStartProject={open} />
@@ -179,17 +156,22 @@ const Home = () => {
         {/* 10 — FAQ: objection handling */}
         <FAQ onStartProject={open} />
 
-        {/* 11 — Contact: final CTA */}
-        <ContactSection isRTL={isRTL} />
       </Suspense>
+
+      {/* Stable observer target while the contact form is loading. */}
+      <div id="home-contact">
+        <Suspense fallback={null}>
+          <ContactSection isRTL={isRTL} />
+        </Suspense>
+      </div>
 
       <Footer />
 
       <Suspense fallback={null}>
         <AIChatWidget ref={aiWidgetRef} isRTL={isRTL} user={user} token={authToken} onOpenChange={setAiChatOpen} />
       </Suspense>
-      <FloatingActionMenu isRTL={isRTL} onOpenAI={openAIChat} hidden={aiChatOpen} />
-      <MobileStickyBar onStartProject={open} isRTL={isRTL} hidden={aiChatOpen || isFormOpen} />
+      <FloatingActionMenu isRTL={isRTL} hidden={aiChatOpen || isFormOpen || mobileMenuOpen} desktopOnly />
+      <MobileStickyBar onStartProject={open} isRTL={isRTL} hidden={aiChatOpen || isFormOpen || mobileMenuOpen} />
 
       <ProjectRequestForm isOpen={isFormOpen} onClose={close} />
     </div>

@@ -249,9 +249,22 @@ const fmtRelativeTime = (isoString, language) => {
   return language === 'ar' ? `منذ ${days} يوم` : `${days}d ago`;
 };
 
+const PAGE_NAMES = {
+  '/': { ar: 'الصفحة الرئيسية', en: 'Homepage' },
+  '/portfolio': { ar: 'معرض الأعمال والمشاريع', en: 'Portfolio Showcase' },
+  '/services': { ar: 'الخدمات والحلول الرقمية', en: 'Services & Solutions' },
+  '/about': { ar: 'من نحن وقصتنا', en: 'About YANSY' },
+  '/contact': { ar: 'صفحة التواصل والتعاقد', en: 'Contact Us' },
+  '/quote': { ar: 'طلب تسعير واستشارة', en: 'Request a Quote' },
+  '/blog': { ar: 'المدونة والمقالات', en: 'Insights & Blog' },
+  '/careers': { ar: 'الوظائف والفرص', en: 'Careers' },
+};
+
 // ── Tab 1: Overview ───────────────────────────────────────────────────────────
 
-const OverviewTab = ({ data, hourlyData, loading, language }) => {
+const OverviewTab = ({ data, hourlyData, loading, language, isRTL, visitorFilter, onSwitchVisitorFilter }) => {
+  const [showLiveDetails, setShowLiveDetails] = useState(true);
+
   if (loading) return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
       {Array(8).fill(0).map((_, i) => <Skeleton key={i} height="130px" />)}
@@ -269,8 +282,166 @@ const OverviewTab = ({ data, hourlyData, loading, language }) => {
   const highIntent    = data.highIntentSessions ?? 0;
   const returning     = data.returningVisitors ?? 0;
 
+  const activeNow     = data.activeNow ?? 0;
+  const liveVisitors  = data.liveVisitors ?? [];
+  const topPages      = data.topPages ?? [];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* ── Realtime Live Radar & Active Visitors Room ── */}
+      <div style={{
+        background: '#FFFFFF',
+        border: `1px solid ${activeNow > 0 ? '#86EFAC' : TK.border}`,
+        borderRadius: 14,
+        padding: '18px 22px',
+        boxShadow: activeNow > 0 ? '0 4px 20px -2px rgba(34, 197, 94, 0.15)' : '0 1px 3px rgba(0,0,0,0.04)',
+        transition: 'all 0.3s ease',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}>
+              <span style={{
+                position: 'absolute',
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: activeNow > 0 ? '#22C55E' : '#94A3B8',
+                opacity: 0.25,
+                animation: activeNow > 0 ? 'au-pulse 1.8s infinite' : 'none'
+              }} />
+              <span style={{
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: activeNow > 0 ? '#22C55E' : '#94A3B8',
+                display: 'block'
+              }} />
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: TK.text }}>
+                  {activeNow > 0
+                    ? (language === 'ar' ? `يوجد ${activeNow} زائر متصل حالياً على المنصة` : `${activeNow} Visitor${activeNow > 1 ? 's' : ''} Online Right Now`)
+                    : (language === 'ar' ? 'لا يوجد زوار نشطين في هذه اللحظة' : 'No active visitors right now')}
+                </span>
+                {activeNow > 0 && (
+                  <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 12, background: '#DCFCE7', color: '#15803D', fontWeight: 700, letterSpacing: '0.02em' }}>
+                    {language === 'ar' ? '🟢 نبض حي مباشر' : '🟢 LIVE PULSE'}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 12, color: TK.textMuted, marginTop: 2 }}>
+                {language === 'ar'
+                  ? 'رصد فوري بحساب النبضات كل 15 ثانية — استشعار فوري للتفاعل والصفحة الحالية'
+                  : 'Real-time telemetry refreshed every 15s — instant page & interaction tracking'}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {liveVisitors.length > 0 && (
+              <button
+                onClick={() => setShowLiveDetails(!showLiveDetails)}
+                style={{
+                  background: TK.bg,
+                  border: `1px solid ${TK.border}`,
+                  borderRadius: 8,
+                  padding: '7px 14px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: TK.text,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <Activity style={{ width: 14, height: 14, color: '#2563EB' }} />
+                <span>{showLiveDetails ? (language === 'ar' ? 'إخفاء تفاصيل المتصلين' : 'Hide Live List') : (language === 'ar' ? `عرض المتصلين (${liveVisitors.length})` : `Show Live (${liveVisitors.length})`)}</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Live Visitors Cards */}
+        {showLiveDetails && liveVisitors.length > 0 && (
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${TK.borderSoft}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 12 }}>
+              {liveVisitors.map((v, i) => (
+                <div
+                  key={v.sessionId || i}
+                  style={{
+                    background: v.status === 'active' ? '#F0FDF4' : '#F8FAFC',
+                    border: `1px solid ${v.status === 'active' ? '#BBF7D0' : TK.borderSoft}`,
+                    borderRadius: 10,
+                    padding: '14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10,
+                    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: v.status === 'active' ? '#22C55E' : '#F59E0B',
+                        display: 'inline-block'
+                      }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: v.status === 'active' ? '#166534' : '#92400E' }}>
+                        {v.status === 'active'
+                          ? (language === 'ar' ? `نشط الآن (${v.lastActiveAgoSec}ث)` : `Active (${v.lastActiveAgoSec}s ago)`)
+                          : (language === 'ar' ? `خامل (${Math.round(v.lastActiveAgoSec / 60)}د)` : `Idle (${Math.round(v.lastActiveAgoSec / 60)}m)`)}
+                      </span>
+                    </div>
+
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: 6,
+                      background: v.isAdmin ? '#F3E8FF' : '#E0E7FF',
+                      color: v.isAdmin ? '#7E22CE' : '#3730A3',
+                    }}>
+                      {v.isAdmin ? (language === 'ar' ? '👑 أنت (الأدمن)' : '👑 Admin') : (language === 'ar' ? '👤 عميل' : '👤 Client')}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: TK.text }}>
+                    <Globe style={{ width: 14, height: 14, color: '#2563EB', flexShrink: 0 }} />
+                    <span style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', direction: 'ltr', textAlign: isRTL ? 'right' : 'left' }}>
+                      {v.currentPage || '/'}
+                    </span>
+                    {PAGE_NAMES[v.currentPage] && (
+                      <span style={{ fontSize: 11, color: TK.textMuted, fontWeight: 400 }}>
+                        ({language === 'ar' ? PAGE_NAMES[v.currentPage].ar : PAGE_NAMES[v.currentPage].en})
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: TK.textMuted }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {v.device === 'Mobile' ? <Smartphone style={{ width: 13, height: 13 }} /> : <Laptop style={{ width: 13, height: 13 }} />}
+                      <span>{v.device} • {v.browser}</span>
+                    </div>
+                    <span>{v.country ? `${v.city ? v.city + '، ' : ''}${v.country}` : 'Global'}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: TK.textLight, borderTop: `1px dashed ${TK.borderSoft}`, paddingTop: 8 }}>
+                    <span>{language === 'ar' ? 'مدة الجلسة:' : 'Duration:'} <strong style={{ color: TK.text }}>{fmtDuration(v.durationSec, language)}</strong></span>
+                    <span>{v.pageViewsCount || 1} {language === 'ar' ? 'صفحة' : 'pages'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Dynamic Metrics for the Selected Period */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
         <StatCard
@@ -306,7 +477,7 @@ const OverviewTab = ({ data, hourlyData, loading, language }) => {
           value={`${bounceRate}%`}
           icon={TrendingDown}
           tone={bounceRate > 60 ? 'danger' : 'info'}
-          sub={language === 'ar' ? 'جلسات بصفحة واحدة فقط' : 'Single-page visits'}
+          sub={language === 'ar' ? 'جلسات سريعة دون تفاعل' : 'Quick unengaged visits'}
         />
         <StatCard
           label={language === 'ar' ? 'التحويلات والطلبات 🎯' : 'Conversions & Leads 🎯'}
@@ -331,15 +502,83 @@ const OverviewTab = ({ data, hourlyData, loading, language }) => {
         />
       </div>
 
+      {/* ── Most Visited Pages Telemetry Table ── */}
+      <Panel
+        icon={Eye}
+        title={language === 'ar' ? 'إحصائيات وأداء الصفحات في هذه الفترة' : 'Page Views & Engagement Breakdown'}
+        subtitle={language === 'ar' ? 'كم مرة اتفتحت كل صفحة، كم زائر مستقل، والنشطين فيها في هذه اللحظة' : 'Views per page, unique visitors, and active visitors right now'}
+      >
+        {topPages && topPages.length > 0 ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${TK.border}`, color: TK.textMuted, fontSize: 11, textAlign: isRTL ? 'right' : 'left' }}>
+                  <th style={{ padding: '10px 12px' }}>{language === 'ar' ? 'الصفحة' : 'Page'}</th>
+                  <th style={{ padding: '10px 12px' }}>{language === 'ar' ? 'عدد مرات الفتح (Views)' : 'Page Views'}</th>
+                  <th style={{ padding: '10px 12px' }}>{language === 'ar' ? 'الزوار الفريدين' : 'Unique Visitors'}</th>
+                  <th style={{ padding: '10px 12px' }}>{language === 'ar' ? 'النشطون الآن' : 'Active Now'}</th>
+                  <th style={{ padding: '10px 12px', width: 140 }}>{language === 'ar' ? 'النسبة من الإجمالي' : 'Share'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topPages.map((p, idx) => {
+                  const maxViews = Math.max(...topPages.map(tp => tp.views), 1);
+                  const pct = Math.round((p.views / maxViews) * 100);
+                  const readableName = PAGE_NAMES[p.page] ? (language === 'ar' ? PAGE_NAMES[p.page].ar : PAGE_NAMES[p.page].en) : null;
+                  return (
+                    <tr key={idx} style={{ borderBottom: `1px solid ${TK.borderSoft}`, transition: 'background 0.15s ease' }}>
+                      <td style={{ padding: '12px', fontWeight: 600, color: TK.text }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ color: TK.accent, direction: 'ltr', fontFamily: 'monospace' }}>{p.page}</span>
+                          {readableName && (
+                            <span style={{ fontSize: 11, color: TK.textMuted, fontWeight: 500 }}>({readableName})</span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: TK.text }}>
+                        {p.views.toLocaleString()}
+                      </td>
+                      <td style={{ padding: '12px', fontVariantNumeric: 'tabular-nums', color: TK.textMuted }}>
+                        {p.uniqueVisitors.toLocaleString()}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        {p.activeNow > 0 ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 12, background: '#DCFCE7', color: '#15803D', fontSize: 11, fontWeight: 700 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E' }} />
+                            {p.activeNow} {language === 'ar' ? 'نشط الآن' : 'active'}
+                          </span>
+                        ) : (
+                          <span style={{ color: TK.textLight, fontSize: 11 }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ flex: 1, height: 6, background: TK.bg, borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${pct}%`, height: '100%', background: TK.accent, borderRadius: 3 }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: TK.textMuted, width: 32, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState icon={BarChart3} title={noDataTitle(language)} />
+        )}
+      </Panel>
+
       {/* Hourly / Minute distribution panel */}
       <Panel
         icon={Clock}
         title={data.isMinute
-          ? (language === 'ar' ? 'توزيع النشاط بالدقائق (آخر 60 دقيقة في فترات 5 دقائق)' : 'Minute-by-Minute Activity (5-min intervals)')
+          ? (language === 'ar' ? 'توزيع النشاط بالدقائق (تفصيل زمني مباشر)' : 'Minute-by-Minute Activity Distribution')
           : (language === 'ar' ? 'توزيع الزيارات وأوقات الذروة بالساعة (24 ساعة)' : 'Hourly Traffic & Peak Times (24 Hours)')
         }
         subtitle={data.isMinute
-          ? (language === 'ar' ? 'مراقبة حية للنشاط والتفاعل دقيقة بدقيقة' : 'Live minute-by-minute monitoring of visitors and engagement')
+          ? (language === 'ar' ? 'مراقبة حية للنشاط والتفاعل دقيقة بدقيقة في النطاق المحدد' : 'Live minute-by-minute monitoring of visitors and engagement')
           : (language === 'ar' ? 'توضح بدقة ساعات النشاط العالية وتفاعل الزوار على مدار اليوم' : 'Breakdown of visitor activity and peak times throughout the day')
         }
       >
@@ -1577,21 +1816,25 @@ const toLocalISOString = (d) => {
 };
 
 const RANGES = [
-  { value: '60m',       en: '⚡ Last 60m (5-min)',  ar: '⚡ آخر 60 دقيقة' },
-  { value: 'today',     en: '⏱️ Today (Hourly)',   ar: '⏱️ اليوم (بالساعة)' },
-  { value: 'yesterday', en: 'Yesterday',           ar: 'أمس' },
-  { value: '24h',       en: 'Last 24h',            ar: 'آخر 24 ساعة' },
-  { value: '7d',        en: '7 Days',              ar: '7 أيام' },
-  { value: '30d',       en: '30 Days',             ar: '30 يوم' },
-  { value: '90d',       en: '90 Days',             ar: '90 يوم' },
-  { value: 'custom',    en: '🎯 Custom by Minute', ar: '🎯 فترة مخصصة بالدقائق' },
+  { value: '10m',       en: '⏱️ Last 10m',            ar: '⏱️ آخر 10 دقائق' },
+  { value: '15m',       en: '⏱️ Last 15m (Quarter)',  ar: '⏱️ آخر ربع ساعة' },
+  { value: '30m',       en: '⏱️ Last 30m (Half)',     ar: '⏱️ آخر نصف ساعة' },
+  { value: '60m',       en: '⚡ Last 1h (Hourly)',     ar: '⚡ آخر ساعة' },
+  { value: '90m',       en: '⏱️ Last 1.5h',           ar: '⏱️ آخر ساعة ونصف' },
+  { value: '3h',        en: '⏱️ Last 3h',             ar: '⏱️ آخر 3 ساعات' },
+  { value: 'today',     en: '📅 Today',               ar: '📅 اليوم (بالساعة)' },
+  { value: 'yesterday', en: 'Yesterday',              ar: 'أمس' },
+  { value: '24h',       en: 'Last 24h',               ar: 'آخر 24 ساعة' },
+  { value: '7d',        en: '7 Days',                 ar: '7 أيام' },
+  { value: '30d',       en: '30 Days',                ar: '30 يوم' },
+  { value: 'custom',    en: '🎯 Custom Minute Range', ar: '🎯 فترة مخصصة بالدقائق' },
 ];
 
 const VISITOR_FILTERS = [
-  { value: 'clients_only', en: '⭐ Clients & Guests',      ar: '⭐ العملاء والزوار الفعليين' },
-  { value: 'high_intent',  en: '🔥 High-Intent Leads',     ar: '🔥 عملاء بنية تعاقد عالية' },
-  { value: 'all',          en: '👥 All Traffic',           ar: '👥 جميع الزيارات' },
-  { value: 'admin_only',   en: '👑 Admin & Internal Only', ar: '👑 فريق العمل والمطور' },
+  { value: 'clients_only', en: '⭐ Real Clients (Excl. Admin)', ar: '⭐ العملاء الفعليين (بدون الأدمن)' },
+  { value: 'all',          en: '⚡ All Traffic (QA & Test Mode)', ar: '⚡ شامل الأدمن (وضع الاختبار المباشر)' },
+  { value: 'admin_only',   en: '👑 Admin & Internal Team Only',  ar: '👑 حركاتي كأدمن فقط' },
+  { value: 'high_intent',  en: '🔥 High-Intent Prospects',       ar: '🔥 عملاء بنية تعاقد عالية' },
 ];
 
 export default function AdminAnalytics() {
@@ -1669,8 +1912,8 @@ export default function AdminAnalytics() {
 
   // Auto-refresh real-time tab every 15 seconds
   useEffect(() => {
-    if (tab === 'Real-time') {
-      realtimeTimer.current = setInterval(() => fetchTab('Real-time'), 15000);
+    if (tab === 'Real-time' || tab === 'Overview') {
+      realtimeTimer.current = setInterval(() => fetchTab(tab), 15000);
     } else {
       clearInterval(realtimeTimer.current);
     }
@@ -1840,7 +2083,73 @@ export default function AdminAnalytics() {
               onChange={handleRangeChange}
               options={RANGES.map(r => ({ value: r.value, label: language === 'ar' ? r.ar : r.en }))}
             />
+          </div>        </div>
+
+        {/* Admin QA Traffic Notice & Quick Switcher */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '10px 16px',
+          borderRadius: 8,
+          background: visitorFilter === 'all' ? '#EFF6FF' : '#F8FAFC',
+          border: `1px solid ${visitorFilter === 'all' ? '#BFDBFE' : TK.border}`,
+          fontSize: 12,
+          gap: 12,
+          flexWrap: 'wrap',
+          transition: 'all 0.2s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ShieldCheck style={{ width: 16, height: 16, color: visitorFilter === 'all' ? '#2563EB' : TK.textMuted, flexShrink: 0 }} />
+            <span style={{ color: TK.text, fontWeight: 500 }}>
+              {language === 'ar'
+                ? (visitorFilter === 'clients_only'
+                    ? 'أنت تتصفح كمسؤول: زياراتك مستبعدة من هذا الفلتر لضمان نقاء بيانات العملاء. (هل تريد اختبار الموقع وتتبع حركتك فوراً؟)'
+                    : visitorFilter === 'all'
+                      ? '⚡ وضع الاختبار المباشر مُفعّل: جميع الزيارات بما فيها حركتك كأدمن مسجلة ومحسوبة مباشرة في اللوحة!'
+                      : '👑 وضع فحص الأدمن مُفعّل: يعرض حصراً زيارات وتفاعلات الإدارة وفريق العمل.')
+                : (visitorFilter === 'clients_only'
+                    ? 'You are browsing as Admin: Your own visits are excluded from client metrics. Want to test tracking live?'
+                    : visitorFilter === 'all'
+                      ? '⚡ Live QA Mode Active: All visits including your own admin actions are counted and visible in real-time!'
+                      : '👑 Admin Inspection Mode Active: Showing internal team & admin telemetry only.')
+              }
+            </span>
           </div>
+          {visitorFilter === 'clients_only' && (
+            <button
+              onClick={() => setVisitorFilter('all')}
+              style={{
+                background: '#2563EB',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: 6,
+                padding: '5px 12px',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              {language === 'ar' ? 'تفعيل شامل الأدمن للاختبار' : 'Enable QA Mode to Test'}
+            </button>
+          )}
+          {visitorFilter === 'all' && (
+            <button
+              onClick={() => setVisitorFilter('clients_only')}
+              style={{
+                background: '#FFFFFF',
+                color: '#2563EB',
+                border: '1px solid #BFDBFE',
+                borderRadius: 6,
+                padding: '5px 12px',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              {language === 'ar' ? 'الرجوع للعملاء الفعليين فقط' : 'Switch back to Clients Only'}
+            </button>
+          )}
         </div>
 
         {/* Custom date & minute-level picker panel */}
@@ -1965,6 +2274,9 @@ export default function AdminAnalytics() {
           hourlyData={hourlyData}
           loading={loading['Overview']}
           language={language}
+          isRTL={isRTL}
+          visitorFilter={visitorFilter}
+          onSwitchVisitorFilter={setVisitorFilter}
         />
       )}
 

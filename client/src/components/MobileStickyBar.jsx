@@ -1,127 +1,73 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, MessageCircle } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { trackCTAClick, trackWhatsAppClick } from '../utils/ga4';
+import WhatsAppGlyph from './WhatsAppGlyph';
+import { useIsMobile } from '../hooks/useIsMobile';
+import './MobileStickyBar.css';
 
 const WA_URL = 'https://wa.me/201090385390';
 
 const MobileStickyBar = ({ onStartProject, isRTL, hidden = false }) => {
-  const [visible, setVisible] = useState(false);
+  const isMobile = useIsMobile();
+  const [pastActions, setPastActions] = useState(false);
+  const [atContact, setAtContact] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
-      // Show after scrolling past the hero action zone (~320px)
-      setVisible(window.scrollY > 320);
+    if (!isMobile) return undefined;
+    const actions = document.querySelector('#hero .hero-cta-group');
+    const contact = document.querySelector('#home-contact');
+    if (!actions) return undefined;
+
+    // Observe the real actions, including restored scroll positions and reflow.
+    // A fixed scroll threshold overlaps the hero on narrow phones.
+    const heroObserver = new IntersectionObserver(([entry]) => {
+      setPastActions(!entry.isIntersecting && entry.boundingClientRect.bottom <= 68);
+    }, { rootMargin: '-68px 0px 0px', threshold: 0 });
+    heroObserver.observe(actions);
+
+    const contactObserver = new IntersectionObserver(([entry]) => setAtContact(entry.isIntersecting));
+    if (contact) contactObserver.observe(contact);
+    return () => {
+      heroObserver.disconnect();
+      contactObserver.disconnect();
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [isMobile]);
 
-  if (hidden || !visible) return null;
-
+  const visible = isMobile && pastActions && !atContact && !hidden;
   const waText = isRTL
-    ? 'مرحباً YANSY 👋 حابب أستفسر عن بدء مشروع جديد'
-    : "Hi YANSY 👋 I'd like to ask about starting a new project.";
+    ? 'مرحباً YANSY، حابب أتكلم معاكم عن مشروع جديد'
+    : "Hi YANSY, I'd like to discuss a new project.";
 
   return (
-    <>
-      <style>{`
-        .ys-mobile-bar {
-          display: none;
-        }
-        @media (max-width: 768px) {
-          .ys-mobile-bar {
-            display: flex;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 850;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px max(10px, env(safe-area-inset-bottom));
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 -4px 20px rgba(13, 17, 23, 0.08);
-            animation: ys-slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-          }
-          @keyframes ys-slide-up {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-        }
-        .ys-mobile-wa-cta:hover, .ys-mobile-wa-cta:active { background: rgb(var(--whatsapp-hover)) !important; }
-      `}</style>
-      <aside
-        className="ys-mobile-bar"
-        dir={isRTL ? 'rtl' : 'ltr'}
-        aria-label={isRTL ? 'إجراءات سريعة للتواصل' : 'Quick Actions'}
+    <aside
+      className={`ys-mobile-bar${visible ? ' is-visible' : ''}`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+      aria-label={isRTL ? 'تواصل معنا' : 'Get in touch'}
+      aria-hidden={!visible}
+      inert={!visible}
+    >
+      <a
+        href={`${WA_URL}?text=${encodeURIComponent(waText)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackWhatsAppClick('mobile-sticky-bar')}
+        className="ys-mobile-wa-cta"
       >
-        {/* Direct WhatsApp button */}
-        <a
-          href={`${WA_URL}?text=${encodeURIComponent(waText)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackWhatsAppClick('mobile-sticky-bar')}
-          className="ys-mobile-wa-cta"
-          style={{
-            flex: '1',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 7,
-            height: 44,
-            padding: '0 12px',
-            borderRadius: 12,
-            // rgb(var(--whatsapp)), not the brand mark's #25D366 — white text on
-            // the bright mark is ~1.98:1 here (13px/700), under WCAG AA's 4.5:1.
-            background: 'rgb(var(--whatsapp))',
-            color: '#FFFFFF',
-            fontSize: 13,
-            fontWeight: 700,
-            textDecoration: 'none',
-            boxShadow: '0 2px 10px rgba(37,211,102,0.25)',
-            fontFamily: isRTL ? "'IBM Plex Sans Arabic',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <MessageCircle style={{ width: 17, height: 17 }} aria-hidden />
-          <span>{isRTL ? 'واتساب فوري' : 'WhatsApp'}</span>
-        </a>
-
-        {/* Start project brief modal trigger */}
-        <button
-          type="button"
-          onClick={() => {
-            trackCTAClick('mobile-sticky-start-project');
-            onStartProject?.();
-          }}
-          style={{
-            flex: '1.2',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 7,
-            height: 44,
-            padding: '0 14px',
-            borderRadius: 12,
-            background: 'rgb(var(--accent))',
-            color: '#FFFFFF',
-            fontSize: 13,
-            fontWeight: 700,
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 2px 12px rgba(37,99,235,0.28)',
-            fontFamily: isRTL ? "'IBM Plex Sans Arabic',system-ui,sans-serif" : "'Inter',system-ui,sans-serif",
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Sparkles style={{ width: 15, height: 15 }} aria-hidden />
-          <span>{isRTL ? 'طلب تسعير ومواصفات' : 'Start Project'}</span>
-        </button>
-      </aside>
-    </>
+        <span className="ys-mobile-wa-icon"><WhatsAppGlyph size={19} /></span>
+        <span>{isRTL ? 'نتكلم واتساب' : 'WhatsApp us'}</span>
+      </a>
+      <button
+        type="button"
+        className="ys-mobile-project-cta"
+        onClick={() => {
+          trackCTAClick('mobile-sticky-start-project');
+          onStartProject?.();
+        }}
+      >
+        <span>{isRTL ? 'ناقش مشروعك' : 'Discuss a project'}</span>
+        <ArrowUpRight size={17} className="icon-directional" aria-hidden />
+      </button>
+    </aside>
   );
 };
 

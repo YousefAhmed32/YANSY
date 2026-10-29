@@ -42,29 +42,6 @@
       />
     </noscript>
 
-    <!-- ── Hero image preload — eliminates LCP delay ─────────── -->
-    <!-- English is the default document language (lang="en" above); the Arabic
-         variant loads on-demand for AR visitors instead of double-preloading. -->
-    <!-- imagesrcset mirrors the media queries in HeroSection's .hero-section
-         rule, so the preload and the CSS resolve to the same file instead of
-         racing and fetching two. -->
-    <link
-      rel="preload"
-      as="image"
-      href="/hero-en-1280.webp"
-      imagesrcset="/hero-en-768.webp 768w, /hero-en-1280.webp 1280w, /hero-en-1920.webp 1920w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
-    <link
-      rel="preload"
-      as="image"
-      href="/hero-ar-1280.webp"
-      imagesrcset="/hero-ar-768.webp 768w, /hero-ar-1280.webp 1280w, /hero-ar-1920.webp 1920w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
-
     <!-- ── Favicon ────────────────────────────────────────────── -->
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/image/logo/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="96x96" href="/assets/image/logo/favicon-96x96.png" />

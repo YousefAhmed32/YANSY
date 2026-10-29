@@ -1,0 +1,7 @@
+/* Phone viewport and fixed contact dock clearance. Sections use shared responsive styles. */
+@media (max-width: 767px) {
+  html:has(.home-page) { scrollbar-gutter: auto; }
+  .home-page {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}

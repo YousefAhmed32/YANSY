@@ -34,8 +34,11 @@ const RelationPicker = forwardRef(({
   disabled = false,
   hasAvatar = false,          // show an [image-or-initials] avatar per item (Client/Team/Testimonial pickers)
   createTitle,                // quick-create modal title override, e.g. { en: 'Create client', ar: 'إنشاء عميل' }
+  createLabel,                // optional always-visible create action, even with an item selected
+  createDescription,          // optional localized explanation of what creating an item does
   error = false,              // publish-validation invalid state — red trigger border, see Field's auto-clone
   id,                         // anchors the search input for label htmlFor / focus-management
+  'aria-describedby': describedBy,
 }, forwardedRef) => {
   const { isRTL } = useLanguage();
   const [items, setItems] = useState([]);
@@ -49,6 +52,7 @@ const RelationPicker = forwardRef(({
   const [copyOpen, setCopyOpen] = useState(false);
   const [copyProjects, setCopyProjects] = useState(null);
   const containerRef = useRef(null);
+  const loadedApiBase = useRef(null);
   const createId = useId().replace(/:/g, '');
   // Merge the internal ref (click-outside detection) with any ref the
   // caller passed in (publish-validation's scrollIntoView/focus) — both
@@ -79,10 +83,15 @@ const RelationPicker = forwardRef(({
   const selectedIds = new Set(selectedList.map((i) => i._id));
 
   useEffect(() => {
-    if (!open || items.length) return;
+    if (!open || loadedApiBase.current === apiBase) return;
     setLoading(true);
     api.get(apiBase, { params: { limit: 200 } })
-      .then(({ data }) => setItems(data.items || []))
+      .then(({ data }) => {
+        // Creating before opening the list must not mark the library loaded
+        // or hide existing entries. Preserve any item created during this fetch.
+        setItems((prev) => [...new Map([...(data.items || []), ...prev].map((item) => [item._id, item])).values()]);
+        loadedApiBase.current = apiBase;
+      })
       .catch(() => toast.error(isRTL ? 'فشل تحميل القائمة' : 'Failed to load list'))
       .finally(() => setLoading(false));
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -95,7 +104,8 @@ const RelationPicker = forwardRef(({
   }, [open]);
 
   const q = query.trim().toLowerCase();
-  const filtered = q ? items.filter((i) => label(i).toLowerCase().includes(q)) : items;
+  const searchLabels = (item) => [label(item), item.name, item.nameAr].filter(Boolean).map((text) => text.trim().toLowerCase());
+  const filtered = q ? items.filter((i) => searchLabels(i).some((text) => text.includes(q))) : items;
   const available = filtered.filter((i) => !selectedIds.has(i._id));
   const pinned = !q ? available.filter((i) => i.isPinned) : [];
   const recent = !q ? [...available].filter((i) => i.lastUsedAt).sort((a, b) => new Date(b.lastUsedAt) - new Date(a.lastUsedAt)).slice(0, 5) : [];
@@ -124,14 +134,16 @@ const RelationPicker = forwardRef(({
   const openCreate = () => {
     const seed = {};
     fields.forEach((f) => {
-      seed[f.key] = f.type === 'image' ? null : (f.key === (typeof displayField === 'string' ? displayField : 'name') ? query : '');
+      seed[f.key] = f.type === 'image' ? null : (f.key === (typeof displayField === 'string' ? displayField : 'name') ? query.trim() : '');
     });
     setCreateForm(seed);
     setCreateErrors({});
+    setOpen(false);
     setCreateOpen(true);
   };
 
   const submitCreate = async () => {
+    if (creating) return;
     const missing = fields.find((f) => f.required && f.type !== 'image' && !createForm[f.key]?.trim());
     if (missing) {
       setCreateErrors({ [missing.key]: isRTL ? 'هذا الحقل مطلوب' : 'This field is required' });
@@ -144,7 +156,7 @@ const RelationPicker = forwardRef(({
       // Falsy image-field values go out as `undefined` (dropped by
       // JSON.stringify) rather than `null` — an explicit null would ask the
       // API to set the subdocument path to null instead of just omitting it.
-      const body = { ...createForm };
+      const body = Object.fromEntries(Object.entries(createForm).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value]));
       imageFields.forEach((f) => { body[f.key] = createForm[f.key] || undefined; });
 
       const { data } = await api.post(apiBase, body);
@@ -152,8 +164,10 @@ const RelationPicker = forwardRef(({
       select(data.item);
       setCreateOpen(false);
       toast.success(isRTL ? 'تمت الإضافة ✓' : 'Added ✓');
-    } catch (err) {
-      toast.error(err?.response?.data?.error || (isRTL ? 'فشلت الإضافة' : 'Failed to create'));
+    } catch {
+      const message = isRTL ? 'تعذّرت الإضافة. راجع البيانات وحاول مرة أخرى.' : 'Could not create the item. Check the details and try again.';
+      setCreateErrors({ _form: message });
+      toast.error(message);
     } finally {
       setCreating(false);
     }
@@ -300,11 +314,24 @@ const RelationPicker = forwardRef(({
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
             aria-invalid={error ? true : undefined}
+            aria-describedby={describedBy}
             placeholder={placeholder || (isRTL ? 'بحث أو اختيار…' : 'Search or select…')}
             style={{ flex: 1, fontSize: '13px', color: TK.text, minWidth: 0 }}
           />
           <ChevronDown style={{ width: 12, height: 12, color: TK.textMuted, flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none' }} />
         </div>
+      )}
+
+      {allowCreate && createLabel && !disabled && (
+        <Button
+          type="button"
+          variant="secondary"
+          icon={Plus}
+          onClick={openCreate}
+          style={{ marginTop: 8, minHeight: 44, whiteSpace: 'normal', textAlign: 'start' }}
+        >
+          {createLabel}
+        </Button>
       )}
 
       {open && !disabled && (
@@ -317,7 +344,7 @@ const RelationPicker = forwardRef(({
             <div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}><Spinner size={18} /></div>
           ) : (
             <>
-              {allowCreate && q && !filtered.some((i) => label(i).toLowerCase() === q) && (
+              {allowCreate && q && !filtered.some((i) => searchLabels(i).includes(q)) && (
                 <button type="button" onClick={openCreate} className="au-row" style={{
                   display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px',
                   background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: RADIUS.sm,
@@ -392,6 +419,8 @@ const RelationPicker = forwardRef(({
           style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); submitCreate(); } }}
         >
+          {createDescription && <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.7, color: TK.textMuted }}>{createDescription}</p>}
+          {createErrors._form && <p role="alert" style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: TK.red }}>{createErrors._form}</p>}
           {imageFields.map((f) => (
             <div key={f.key}>
               <label style={quickCreateLabelStyle}>{(isRTL ? f.labelAr : f.label) || f.key}</label>

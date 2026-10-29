@@ -93,31 +93,77 @@ const parseDateFilter = (query = {}) => {
     return {
       start,
       end,
-      isMinute: diffMinutes <= 180, // <= 3 hours: minute-level breakdown (5-min slots)
+      diffMinutes,
+      isMinute: diffMinutes <= 180, // <= 3 hours: minute-level breakdown
       isHourly: diffHours <= 72 && diffMinutes > 180, // 3h to 72h: hourly breakdown
       cacheKeySuffix: `custom_${start.getTime()}_${end.getTime()}`,
     };
   }
 
-  if (range === 'realtime' || range === 'now') {
-    const start = new Date(now.getTime() - 30 * 60 * 1000);
+  // Exact minute and sub-hour ranges
+  if (range === '10m') {
     return {
-      start,
+      start: new Date(now.getTime() - 10 * 60 * 1000),
       end: now,
+      diffMinutes: 10,
       isMinute: true,
       isHourly: false,
-      cacheKeySuffix: 'realtime',
+      cacheKeySuffix: '10m',
+    };
+  }
+
+  if (range === '15m') {
+    return {
+      start: new Date(now.getTime() - 15 * 60 * 1000),
+      end: now,
+      diffMinutes: 15,
+      isMinute: true,
+      isHourly: false,
+      cacheKeySuffix: '15m',
+    };
+  }
+
+  if (range === '30m' || range === 'realtime' || range === 'now') {
+    return {
+      start: new Date(now.getTime() - 30 * 60 * 1000),
+      end: now,
+      diffMinutes: 30,
+      isMinute: true,
+      isHourly: false,
+      cacheKeySuffix: '30m',
     };
   }
 
   if (range === '60m' || range === '1h') {
-    const start = new Date(now.getTime() - 60 * 60 * 1000);
     return {
-      start,
+      start: new Date(now.getTime() - 60 * 60 * 1000),
       end: now,
+      diffMinutes: 60,
       isMinute: true,
       isHourly: false,
       cacheKeySuffix: '60m',
+    };
+  }
+
+  if (range === '90m' || range === '1.5h') {
+    return {
+      start: new Date(now.getTime() - 90 * 60 * 1000),
+      end: now,
+      diffMinutes: 90,
+      isMinute: true,
+      isHourly: false,
+      cacheKeySuffix: '90m',
+    };
+  }
+
+  if (range === '3h') {
+    return {
+      start: new Date(now.getTime() - 3 * 60 * 60 * 1000),
+      end: now,
+      diffMinutes: 180,
+      isMinute: true,
+      isHourly: false,
+      cacheKeySuffix: '3h',
     };
   }
 
@@ -126,6 +172,7 @@ const parseDateFilter = (query = {}) => {
     return {
       start,
       end: now,
+      diffMinutes: Math.max(1, (now.getTime() - start.getTime()) / (1000 * 60)),
       isMinute: false,
       isHourly: true,
       cacheKeySuffix: 'today',
@@ -138,6 +185,7 @@ const parseDateFilter = (query = {}) => {
     return {
       start,
       end,
+      diffMinutes: 24 * 60,
       isMinute: false,
       isHourly: true,
       cacheKeySuffix: 'yesterday',
@@ -149,6 +197,7 @@ const parseDateFilter = (query = {}) => {
     return {
       start,
       end: now,
+      diffMinutes: 24 * 60,
       isMinute: false,
       isHourly: true,
       cacheKeySuffix: '24h',
@@ -160,6 +209,7 @@ const parseDateFilter = (query = {}) => {
   return {
     start,
     end: now,
+    diffMinutes: days * 24 * 60,
     isMinute: false,
     isHourly: false,
     cacheKeySuffix: `${days}d`,
@@ -328,16 +378,31 @@ exports.trackEvent = async (req, res, next) => {
           }
         }
 
-        if (isAdmin) {
-          updateOps.$set.isAdmin = true;
-          updateOps.$set.visitorType = 'admin';
-        } else if (visitorType === 'client') {
-          updateOps.$set.visitorType = 'client';
-        }
+        updateOps.$set.isAdmin = Boolean(isAdmin);
+        updateOps.$set.visitorType = visitorType || (isAdmin ? "admin" : "guest");
+        if (userId) updateOps.$set.userId = userId;
         if (userName) updateOps.$set.userName = userName;
         if (userEmail) updateOps.$set.userEmail = userEmail;
 
-        await Session.findOneAndUpdate({ sessionId }, updateOps, { new: true });
+        await Session.findOneAndUpdate(
+          { sessionId },
+          {
+            ...updateOps,
+            $setOnInsert: {
+              sessionId,
+              entryPage: page || "/",
+              startTime: new Date(),
+              ip,
+              userAgent: ua,
+              device: parseDevice(ua),
+              browser: parseBrowser(ua),
+              os: parseOS(ua),
+              country: geo?.country || null,
+              city: geo?.city || null,
+            },
+          },
+          { new: true, upsert: true }
+        );
       } catch (err) {
         console.error('[Analytics] Session update error:', err.message);
       }
@@ -395,7 +460,7 @@ exports.endSession = async (req, res, next) => {
   }
 };
 
-// ── Visitors overview (Dynamic Period-Specific Metrics + Minute/Hourly Resolution) ──
+// ── Visitors overview (Dynamic Period-Specific Metrics + Live Radar + Top Pages) ──
 exports.getVisitors = async (req, res, next) => {
   try {
     const { range = '30d', startDate, endDate, visitorFilter = 'clients_only' } = req.query;
@@ -410,6 +475,8 @@ exports.getVisitors = async (req, res, next) => {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const startOfWeek  = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
     const startOfMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const activeCutoff = new Date(now.getTime() - 90 * 1000);
+    const idleCutoff   = new Date(now.getTime() - 5 * 60 * 1000);
 
     const sessionMatchRange = {
       startTime: { $gte: dateFilter.start, $lte: dateFilter.end },
@@ -437,15 +504,17 @@ exports.getVisitors = async (req, res, next) => {
       returningVisitorsRange,
       highIntentRange,
       conversionsRange,
-      singleViewSessions,
       timelineData,
       visitorsToday,
       visitorsWeek,
       visitorsMonth,
+      activeNowCount,
+      recentActiveSessions,
+      topPagesAgg,
     ] = await Promise.all([
       Session.countDocuments(sessionMatchRange),
       AnalyticsEvent.countDocuments(eventMatchRange),
-      Session.find(sessionMatchRange).select('duration pages startTime endTime').lean(),
+      Session.find(sessionMatchRange).select('duration pages startTime endTime pageViewsCount hasConversion').lean(),
       Session.countDocuments({ ...sessionMatchRange, $or: [{ visitCount: { $gt: 1 } }, { userId: { $exists: true, $ne: null } }] }),
       Session.countDocuments({ ...sessionMatchRange, intentLevel: 'high' }),
       AnalyticsEvent.countDocuments({
@@ -453,22 +522,39 @@ exports.getVisitors = async (req, res, next) => {
         eventType: { $in: conversionTypes },
         ...vFilter,
       }),
-      Session.countDocuments({ ...sessionMatchRange, pageViewsCount: { $lte: 1 } }),
       AnalyticsEvent.aggregate([
         { $match: eventMatchRange },
         { $group: { _id: { $dateToString: { format: timelineFormat, date: '$createdAt' } }, views: { $sum: 1 }, sessions: { $addToSet: '$sessionId' } } },
         { $project: { _id: 1, views: 1, sessions: { $size: '$sessions' } } },
         { $sort: { _id: 1 } },
       ]),
-      // Reference baseline counters
+      // Baseline counters
       Session.countDocuments({ startTime: { $gte: startOfToday }, ...vFilter }),
       Session.countDocuments({ startTime: { $gte: startOfWeek }, ...vFilter }),
       Session.countDocuments({ startTime: { $gte: startOfMonth }, ...vFilter }),
+      // Active Right Now (< 90 seconds ping)
+      Session.countDocuments({ endTime: { $gte: activeCutoff }, ...vFilter }),
+      // Live Sessions stream (< 5 min ping)
+      Session.find({ endTime: { $gte: idleCutoff }, ...vFilter })
+        .sort({ endTime: -1 })
+        .limit(10)
+        .select('sessionId startTime endTime duration visitorType isAdmin userName userEmail country city device browser os entryPage exitPage pages pageViewsCount hasConversion')
+        .lean(),
+      // Top Pages Performance during this period
+      AnalyticsEvent.aggregate([
+        { $match: eventMatchRange },
+        { $group: { _id: '$page', views: { $sum: 1 }, uniqueSessions: { $addToSet: '$sessionId' } } },
+        { $project: { page: '$_id', views: 1, uniqueVisitors: { $size: '$uniqueSessions' } } },
+        { $sort: { views: -1 } },
+        { $limit: 8 },
+      ]),
     ]);
 
     // Calculate avg duration safely
     let totalDurationSec = 0;
     let countedSessions = 0;
+    let bouncedCount = 0;
+
     sessionDurations.forEach((s) => {
       let durSec = 0;
       if (s.duration && s.duration > 0 && s.duration < 4 * 3600 * 1000) {
@@ -477,23 +563,67 @@ exports.getVisitors = async (req, res, next) => {
         const delta = Math.round((new Date(s.endTime) - new Date(s.startTime)) / 1000);
         if (delta > 0 && delta < 4 * 3600) durSec = delta;
       }
+      if (durSec === 0 && s.startTime) {
+        const ageSec = Math.round((now.getTime() - new Date(s.startTime).getTime()) / 1000);
+        if (ageSec > 0 && ageSec < 300) durSec = Math.max(5, ageSec);
+      }
       if (durSec > 0) {
         totalDurationSec += durSec;
         countedSessions++;
       }
-    });
-    const avgDuration = countedSessions > 0 ? Math.round(totalDurationSec / countedSessions) : 0;
 
+      // Engaged vs Bounce (GA4 standard: bounced if <= 1 page view, < 10s duration, and no conversion)
+      const pagesCount = s.pageViewsCount || (s.pages && s.pages.length) || 1;
+      const isBounced = pagesCount <= 1 && durSec < 10 && !s.hasConversion;
+      if (isBounced) bouncedCount++;
+    });
+
+    const avgDuration = countedSessions > 0 ? Math.round(totalDurationSec / countedSessions) : 0;
     const bounceRate = uniqueSessionsRange > 0
-      ? Math.min(100, Math.round((singleViewSessions / uniqueSessionsRange) * 100))
+      ? Math.min(100, Math.round((bouncedCount / uniqueSessionsRange) * 100))
       : 0;
 
     const conversionRate = uniqueSessionsRange > 0
       ? Number(((conversionsRange / uniqueSessionsRange) * 100).toFixed(1))
       : 0;
 
+    const liveVisitors = recentActiveSessions.map((s) => {
+      const lastPing = new Date(s.endTime || s.startTime).getTime();
+      const lastActiveAgoSec = Math.max(0, Math.round((now.getTime() - lastPing) / 1000));
+      const isActuallyActive = lastActiveAgoSec <= 90;
+      const durationSec = Math.max(1, Math.round((lastPing - new Date(s.startTime).getTime()) / 1000));
+      const currentPage = s.exitPage || (s.pages && s.pages.length ? s.pages[s.pages.length - 1].page : s.entryPage) || '/';
+
+      return {
+        sessionId: s.sessionId,
+        status: isActuallyActive ? 'active' : 'idle',
+        lastActiveAgoSec,
+        durationSec,
+        currentPage,
+        device: s.device || 'Desktop',
+        browser: s.browser || 'Browser',
+        os: s.os || 'OS',
+        country: s.country || 'Global',
+        city: s.city || null,
+        visitorType: s.visitorType || 'guest',
+        isAdmin: Boolean(s.isAdmin),
+        userName: s.userName || null,
+        pageViewsCount: s.pageViewsCount || 1,
+      };
+    });
+
+    // Decorate top pages with active now count
+    const topPages = topPagesAgg.map((p) => {
+      const activeInPage = liveVisitors.filter((lv) => lv.status === 'active' && lv.currentPage === p.page).length;
+      return {
+        page: p.page,
+        views: p.views,
+        uniqueVisitors: p.uniqueVisitors,
+        activeNow: activeInPage,
+      };
+    });
+
     const result = {
-      // Dynamic period metrics (matching active date filter)
       visitorsInPeriod: uniqueSessionsRange,
       uniqueSessions: uniqueSessionsRange,
       totalPageViews,
@@ -503,6 +633,11 @@ exports.getVisitors = async (req, res, next) => {
       conversionRate,
       highIntentSessions: highIntentRange,
       returningVisitors: returningVisitorsRange,
+
+      // Live presence for Overview
+      activeNow: activeNowCount,
+      liveVisitors,
+      topPages,
 
       // Baseline compatibility
       visitorsToday,
@@ -517,7 +652,9 @@ exports.getVisitors = async (req, res, next) => {
       endDate: dateFilter.end,
     };
 
-    cache.set(cacheKey, result);
+    // Use 3-second cache TTL for minute-level / realtime queries, 30s for long ranges
+    const ttl = dateFilter.isMinute ? 3000 : 30000;
+    cache.set(cacheKey, result, ttl);
     res.json(result);
   } catch (error) {
     next(error);
@@ -543,13 +680,17 @@ exports.getHourly = async (req, res, next) => {
 
     const conversionTypes = ['whatsapp_click', 'contact_form', 'booking_request', 'cta_click', 'lead'];
 
-    // If minute-level (e.g. 60m or <= 3 hours):
+    // If minute-level (e.g. 10m, 15m, 30m, 60m, 90m, or <= 3 hours):
     if (dateFilter.isMinute) {
+      const totalMin = Math.max(5, Math.round(dateFilter.diffMinutes || 60));
+      const slotStepMin = totalMin <= 15 ? 1 : totalMin <= 30 ? 2 : totalMin <= 60 ? 5 : 10;
+      const numSlots = Math.min(24, Math.ceil(totalMin / slotStepMin));
       const slots = [];
       const endTime = dateFilter.end.getTime();
-      for (let i = 11; i >= 0; i--) {
-        const slotEnd = new Date(endTime - i * 5 * 60 * 1000);
-        const slotStart = new Date(endTime - (i + 1) * 5 * 60 * 1000);
+
+      for (let i = numSlots - 1; i >= 0; i--) {
+        const slotEnd = new Date(endTime - i * slotStepMin * 60 * 1000);
+        const slotStart = new Date(endTime - (i + 1) * slotStepMin * 60 * 1000);
         const label = slotStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const labelAr = slotStart.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
         slots.push({ slotStart, slotEnd, label, labelAr, views: 0, sessions: 0, conversions: 0 });
@@ -587,7 +728,7 @@ exports.getHourly = async (req, res, next) => {
         period: dateFilter.cacheKeySuffix,
       };
 
-      cache.set(cacheKey, result);
+      cache.set(cacheKey, result, 3000);
       return res.json(result);
     }
 
@@ -912,28 +1053,51 @@ exports.getRealtime = async (req, res, next) => {
   try {
     const { visitorFilter = 'clients_only' } = req.query;
     const vFilter = parseVisitorFilter(visitorFilter);
+    const now = new Date();
+    const activeCutoff = new Date(now.getTime() - 90 * 1000);
+    const idleCutoff = new Date(now.getTime() - 5 * 60 * 1000);
+    const fifteenMinAgo = new Date(now.getTime() - 15 * 60 * 1000);
 
-    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
-
-    const [activeNow, recentActivity, recentSessions, liveSessions] = await Promise.all([
-      Session.countDocuments({ isActive: true, startTime: { $gte: thirtyMinAgo }, ...vFilter }),
-      AnalyticsEvent.find({ createdAt: { $gte: fiveMinAgo }, ...nonApiPageFilter, ...vFilter })
+    const [activeSessions, recentActivity, recentSessionsCount] = await Promise.all([
+      Session.find({
+        endTime: { $gte: idleCutoff },
+        ...vFilter,
+      })
+        .sort({ endTime: -1 })
+        .limit(20)
+        .select('sessionId startTime endTime duration visitorType isAdmin userName userEmail country city device browser os entryPage exitPage pages pageViewsCount hasConversion intentLevel')
+        .lean(),
+      AnalyticsEvent.find({ createdAt: { $gte: fifteenMinAgo }, ...nonApiPageFilter, ...vFilter })
         .sort({ createdAt: -1 })
-        .limit(25)
-        .select('page title eventType createdAt sessionId visitorType isAdmin userName userEmail city country device')
+        .limit(30)
+        .select('page title eventType createdAt sessionId visitorType isAdmin userName userEmail city country device browser')
         .lean(),
-      Session.countDocuments({ startTime: { $gte: fiveMinAgo }, ...vFilter }),
-      Session.find({ isActive: true, startTime: { $gte: thirtyMinAgo }, ...vFilter })
-        .sort({ startTime: -1 })
-        .limit(10)
-        .select('sessionId startTime visitorType isAdmin userName userEmail country city device browser entryPage pageViewsCount hasConversion')
-        .lean(),
+      Session.countDocuments({ startTime: { $gte: idleCutoff }, ...vFilter }),
     ]);
+
+    const liveSessions = activeSessions.map(s => {
+      const lastPingTime = new Date(s.endTime || s.startTime).getTime();
+      const lastActiveAgoSec = Math.max(0, Math.round((now.getTime() - lastPingTime) / 1000));
+      const isActuallyActive = lastActiveAgoSec <= 90;
+      const currentPage = s.exitPage || (s.pages && s.pages.length > 0 ? s.pages[s.pages.length - 1].page : s.entryPage) || '/';
+      const durationSec = Math.max(1, Math.round((lastPingTime - new Date(s.startTime).getTime()) / 1000));
+
+      return {
+        ...s,
+        currentPage,
+        lastActiveAgoSec,
+        status: isActuallyActive ? 'active' : 'idle',
+        durationSec,
+      };
+    });
+
+    const activeNow = liveSessions.filter(s => s.status === 'active').length;
+    const idleNow = liveSessions.filter(s => s.status === 'idle').length;
 
     res.json({
       activeNow,
-      recentSessions,
+      idleNow,
+      recentSessions: recentSessionsCount,
       recentActivity,
       liveSessions,
     });

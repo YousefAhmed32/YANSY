@@ -4,6 +4,7 @@ import { TK, RADIUS, TextInput, Switch, Spinner, FilterPills } from '../../admin
 import { mediaSrc } from '../../utils/media';
 import { Field, BilingualPair } from './shared';
 import RelationPicker from './RelationPicker';
+import CategoryPicker from './CategoryPicker';
 import { PROJECT_TYPE_CREATE_TITLE, PROJECT_TYPE_QUICK_CREATE_FIELDS } from './projectTypeQuickCreate';
 import ProjectOriginField from './ProjectOriginField';
 import HighlightsEditor from './HighlightsEditor';
@@ -159,7 +160,7 @@ const OverviewSection = ({ form, set, isRTL, uploadMedia, deleteMedia, pendingUp
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label={L.category} required isRTL={isRTL}>
-          <RelationPicker apiBase="/categories" value={form.category} onChange={(v) => set('category', v)} allowCreate={false} placeholder={isRTL ? 'اختيار فئة…' : 'Select category…'} />
+          <CategoryPicker value={form.category} onChange={(v) => set('category', v)} />
         </Field>
         <Field label={L.industry} isRTL={isRTL}>
           <RelationPicker

@@ -1,17 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight } from 'lucide-react';
-import api from '../utils/api';
 import PortfolioCard from './PortfolioCard';
 import SectionHeader from './SectionHeader';
 import { categoryLabel } from '../utils/portfolioTaxonomy';
-
-// mediaSrc() resolves bare `coverImage.url` paths against the backend's media origin
-// (correct for real uploaded assets) — these fallback cards use static files shipped
-// in client/public instead, so they need an absolute, already-qualified URL to pass
-// through resolveUrl() unchanged rather than being misresolved to the API host.
-const frontendAsset = (path) => ({ url: `${window.location.origin}${path}` });
 
 /**
  * Loading skeleton mirroring the uniform 16:10 card layout exactly.
@@ -34,78 +27,10 @@ const SkeletonCard = () => (
   </div>
 );
 
-const FALLBACK_PROJECTS = [
-  {
-    _id: 'fallback-1',
-    slug: 'nexusrealty',
-    title: 'NexusRealty Platform',
-    titleAr: 'منصة نكسس ريالتي العقارية',
-    category: { name: 'Real Estate', nameAr: 'العقارات' },
-    industry: { name: 'Real Estate', nameAr: 'العقارات' },
-    year: '2024',
-    tagline: 'Full digital real estate platform generating 3x leads',
-    taglineAr: 'منصة رقمية عقارية متكاملة تُضاعف المبيعات 3 مرات',
-    coverImage: frontendAsset('/placeholders/case-studies/nexusrealty.jpg'),
-    metrics: [{ value: '3x', label: 'Lead Growth', labelAr: 'نمو المبيعات' }],
-  },
-  {
-    _id: 'fallback-2',
-    slug: 'lumina-store',
-    title: 'Lumina E-Commerce Store',
-    titleAr: 'متجر لومينا الإلكتروني الفاخر',
-    category: { name: 'E-commerce', nameAr: 'التجارة الإلكترونية' },
-    industry: { name: 'E-commerce', nameAr: 'التجارة الإلكترونية' },
-    year: '2024',
-    tagline: 'High-converting luxury online storefront with custom checkout',
-    taglineAr: 'متجر إلكتروني فاخر وسريع يدعم بوابات الدفع المتعددة',
-    coverImage: frontendAsset('/placeholders/case-studies/ecommerce.jpg'),
-    metrics: [{ value: '2.1s', label: 'Load Speed', labelAr: 'سرعة التحميل' }],
-  },
-  {
-    _id: 'fallback-3',
-    slug: 'apex-saas',
-    title: 'Apex AI Operations Platform',
-    titleAr: 'منصة أبكس لإدارة العمليات بالذكاء الاصطناعي',
-    category: { name: 'SaaS / Platforms', nameAr: 'برمجيات / منصات' },
-    industry: { name: 'SaaS / AI', nameAr: 'برمجيات / ذكاء اصطناعي' },
-    year: '2024',
-    tagline: 'Enterprise operations dashboard with real-time AI insights',
-    taglineAr: 'لوحة تحكم مؤسسية لإدارة البيانات والتحليلات الفورية',
-    coverImage: frontendAsset('/placeholders/case-studies/saas.jpg'),
-    metrics: [{ value: '99.9%', label: 'Uptime', labelAr: 'استقرار النظام' }],
-  },
-];
-
-const PortfolioSection = () => {
+const PortfolioSection = ({ projects = [], loading = false, failed = false, onRetry }) => {
   const { isRTL, dir } = useLanguage();
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [failed, setFailed]     = useState(false);
-  const [filter, setFilter]     = useState('All');
-
-  useEffect(() => {
-    let alive = true;
-    // 3 curated projects, not 6 — the homepage teaser only needs enough proof to
-    // earn a click through to "View all work"; 6 stacked cards ran the section
-    // to ~2991px in review. The full library is one tap away either way.
-    api.get('/portfolio?featured=true&limit=3')
-      .then(({ data }) => { 
-        if (alive) {
-          const list = data.projects || [];
-          setProjects(list.length > 0 ? list : FALLBACK_PROJECTS);
-        }
-      })
-      .catch(() => { 
-        if (alive) {
-          setFailed(true);
-          setProjects(FALLBACK_PROJECTS);
-        }
-      })
-      .finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
-  }, []);
-
-  const activeProjects = projects.length > 0 ? projects : FALLBACK_PROJECTS;
+  const [filter, setFilter] = useState('All');
+  const activeProjects = projects;
 
   const categories = useMemo(
     () => ['All', ...new Set(activeProjects.map(p => p.category?.name).filter(Boolean))],
@@ -238,6 +163,7 @@ const PortfolioSection = () => {
                   ? (isRTL ? 'تصفح معرض الأعمال الكامل بدلاً من ذلك.' : 'Browse the full portfolio instead.')
                   : (isRTL ? 'جرّب فئة أخرى أو تصفح كل الأعمال.' : 'Try another category, or browse everything.')}
               </p>
+              {failed && onRetry && <button type="button" onClick={onRetry} className="portfolio-viewall" style={{ marginInlineEnd: 10 }}>{isRTL ? 'إعادة المحاولة' : 'Try again'}</button>}
               <Link to="/portfolio" className="portfolio-viewall">
                 {isRTL ? 'عرض كل الأعمال' : 'View all work'}
                 <ArrowUpRight style={{ width: 14, height: 14, transform: isRTL ? 'scaleX(-1)' : 'none' }} aria-hidden />

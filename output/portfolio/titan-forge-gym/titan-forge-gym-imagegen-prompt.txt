@@ -1,0 +1,19 @@
+Use case: ads-marketing / premium portfolio project cover.
+Create ONE final landscape promotional cover, EXACT 4:3 aspect ratio, ideally 2048x1536. This is a YANSY TECH website portfolio case-study cover for TITAN FORGE GYM.
+
+Input images:
+1. The supplied Titan Forge Gym full website screenshot is the authoritative UI and brand reference. Preserve its authentic black/red visual identity, Spartan shield logo, English language, condensed white/red typography, gym photographs and real section structure. Place this actual design naturally within device screens. Do not substitute a generic landing page.
+2. Deadlift photograph is supporting mood and photographic identity reference only.
+3. Empty gym photograph is supporting material/lighting reference only.
+
+Art direction: elite strength brand meets refined digital product presentation. Photorealistic premium studio device mockup, dark graphite and restrained deep crimson, crisp typography, dramatic directional light and realistic soft shadows. Expensive editorial visual, carefully composed negative space. No generic SaaS gradients.
+
+Composition: top left generous clear headline area taking the upper 22 percent. Lower central two-thirds dominated by a beautiful open matte-black slim laptop in a subtle three-quarter perspective, screen clearly displaying the supplied authentic homepage with the original hero and real program/membership sections. A single black smartphone stands slightly forward at the lower right, partially overlapping the laptop, its screen showing a faithful narrow crop of the same hero design (not an invented app or dashboard). Devices sit on one low architectural dark concrete plinth. Laptop is the hero and large enough to read at portfolio thumbnail size. Keep both devices fully inside the composition with margins, no cropped phone or laptop edges. Subtle gym-industrial atmosphere as distant charcoal texture, one restrained red edge-light, no busy gym equipment surrounding the devices. Do not add standalone people outside screens.
+
+Only THREE designed overlay text elements, spelling exactly:
+"TITAN FORGE GYM" — large upper left, ivory condensed bold capitals, FORGE may be red.
+"Strength & Fitness Website" — concise smaller subtitle directly below.
+"YANSY TECH" — small refined footer signature bottom left.
+Existing text within the authentic UI remains visible as screenshot content; do not add any other presentation text. No extra badges, stats, feature labels, fake metrics or decorative numbers.
+
+Constraints: preserve correct logo and actual UI; clean device geometry; premium 4:3 cover; excellent contrast; restrained materials; no browser address bars, no watermarks, no duplicate floating logos, no excessive red glow, no unrelated app screens.

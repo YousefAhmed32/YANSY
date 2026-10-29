@@ -113,6 +113,7 @@ export const initSession = () => {
     }
   }
 
+  sendHeartbeat();
   trackEvent('session_start', {
     page: window.location.pathname,
     title: document.title,
@@ -244,6 +245,16 @@ export const trackClick = (elementId, elementType) => {
   trackEvent('click', { elementId, elementType });
 };
 
+let lastUserActivity = Date.now();
+if (typeof window !== 'undefined') {
+  const markActive = () => { lastUserActivity = Date.now(); };
+  window.addEventListener('mousemove', markActive, { passive: true });
+  window.addEventListener('keydown', markActive, { passive: true });
+  window.addEventListener('scroll', markActive, { passive: true });
+  window.addEventListener('click', markActive, { passive: true });
+  window.addEventListener('touchstart', markActive, { passive: true });
+}
+
 export const sendHeartbeat = () => {
   if (!sessionId) return;
   const now = Date.now();
@@ -252,10 +263,15 @@ export const sendHeartbeat = () => {
   const base = getApiBase();
   if (!base) return;
 
+  const isVisible = typeof document !== 'undefined' ? document.visibilityState === 'visible' : true;
+  const isActiveUser = isVisible && (now - lastUserActivity < 75000);
+
   const payload = JSON.stringify({
     sessionId,
     durationSec,
     lastPage: window.location.pathname,
+    title: document.title,
+    isActiveUser,
   });
 
   const url = `${base.replace(/\/$/, '')}/analytics/sessions/heartbeat`;
@@ -300,7 +316,15 @@ if (typeof window !== 'undefined') {
     scrollTimeout = setTimeout(trackScroll, 100);
   });
   window.addEventListener('beforeunload', endSession);
-  // Send active heartbeat every 30 seconds
-  setInterval(sendHeartbeat, 30000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      lastUserActivity = Date.now();
+      sendHeartbeat();
+    } else {
+      sendHeartbeat();
+    }
+  });
+  // Send active heartbeat every 15 seconds for realtime precision
+  setInterval(sendHeartbeat, 15000);
 }
 

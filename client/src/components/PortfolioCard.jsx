@@ -9,7 +9,7 @@ import { projectOriginLabel } from '../utils/portfolioOrigin';
  * subtle brightness/elevation hover feedback (no foreground zooming), category & delivery badges,
  * headline-metric proof chip, and balanced typography.
  */
-const PortfolioCard = ({ project, isRTL, featured = false, priority = false }) => {
+const PortfolioCard = ({ project, isRTL, featured = false, priority = false, variant = 'default' }) => {
   const title       = isRTL ? (project.titleAr || project.title) : (project.title || project.titleAr);
   const tagline     = isRTL ? (project.taglineAr || project.tagline) : (project.tagline || project.taglineAr);
   const description = isRTL ? (project.descriptionAr || project.description) : (project.description || project.descriptionAr);
@@ -34,6 +34,41 @@ const PortfolioCard = ({ project, isRTL, featured = false, priority = false }) =
     : (project.gallery || []).find((g) => g?.url) || null;
 
   const hasVideo = Boolean(project.coverVideo?.url) || (project.gallery || []).some((g) => g?.kind === 'video');
+
+  if (variant === 'editorial') {
+    return (
+      <Link to={`/portfolio/${project.slug || project._id}`} className="portfolio-editorial-card" data-card>
+        <div className="portfolio-editorial-card__media">
+          <ProgressiveImage
+            asset={displayAsset}
+            alt={title}
+            priority={priority}
+            fill
+            fit="contain"
+            sizes="(min-width: 1360px) 624px, (min-width: 700px) calc((100vw - 96px) / 2), calc(100vw - 40px)"
+            fallbackIcon={categoryIcon(categoryName)}
+            fallbackLabel={categoryDisplay}
+            isRTL={isRTL}
+            fallbackVariant="card"
+          />
+          {hasVideo && <span className="portfolio-editorial-card__video"><Play size={14} aria-hidden="true" /><span>{isRTL ? 'فيديو' : 'Video'}</span></span>}
+        </div>
+        <div className="portfolio-editorial-card__body">
+          <h2>{title}</h2>
+          {dek && <p className="portfolio-editorial-card__description">{dek}</p>}
+          <div className="portfolio-editorial-card__footer">
+            <div className="portfolio-editorial-card__labels">
+              {categoryDisplay && <span>{categoryDisplay}</span>}
+              {deliveryBadge && <span>{isRTL ? deliveryBadge.ar : deliveryBadge.en}</span>}
+              {originLabel && <span>{originLabel}</span>}
+              {project.confidential && <span><ShieldCheck size={12} aria-hidden="true" />{isRTL ? 'عميل سري' : 'Confidential client'}</span>}
+            </div>
+            <ArrowUpRight size={21} className="portfolio-editorial-card__arrow" aria-hidden="true" />
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link

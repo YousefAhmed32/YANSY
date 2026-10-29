@@ -8,7 +8,7 @@ import LanguageSelector from './LanguageSelector';
 import MobileLangToggle from './MobileLangToggle';
 import { trackCTAClick } from '../utils/analytics';
 
-const Header = ({ onStartProject }) => {
+const Header = ({ onStartProject, onMenuOpenChange }) => {
   const { isAuthenticated, user } = useSelector(s => s.auth);
   const { t }    = useTranslation();
   const { isRTL } = useLanguage();
@@ -19,6 +19,8 @@ const Header = ({ onStartProject }) => {
   const [mounted,        setMounted]        = useState(false);
   const menuRef     = useRef(null);
   const firstFocRef = useRef(null);
+
+  useEffect(() => { onMenuOpenChange?.(mobileMenuOpen); }, [mobileMenuOpen, onMenuOpenChange]);
 
   const whatsappUrl = `https://wa.me/201090385390?text=${encodeURIComponent(
     t('landing.whatsapp.message', 'Hello, I need help with YANSY')
@@ -36,16 +38,17 @@ const Header = ({ onStartProject }) => {
   }, []);
 
   useEffect(() => {
-    if (mobileMenuOpen) {
-      const y = window.scrollY;
-      Object.assign(document.body.style, { overflow: 'hidden', position: 'fixed', top: `-${y}px`, width: '100%' });
-      setTimeout(() => firstFocRef.current?.focus(), 80);
-    } else {
-      const y = Math.abs(parseInt(document.body.style.top || '0', 10));
-      Object.assign(document.body.style, { overflow: '', position: '', top: '', width: '' });
-      if (y) window.scrollTo(0, y);
-    }
-    return () => Object.assign(document.body.style, { overflow: '', position: '', top: '', width: '' });
+    if (!mobileMenuOpen) return undefined;
+    const y = window.scrollY;
+    const bodyStyle = document.body.style;
+    const previous = { overflow: bodyStyle.overflow, position: bodyStyle.position, top: bodyStyle.top, width: bodyStyle.width };
+    Object.assign(bodyStyle, { overflow: 'hidden', position: 'fixed', top: `-${y}px`, width: '100%' });
+    const focusTimer = setTimeout(() => firstFocRef.current?.focus({ preventScroll: true }), 80);
+    return () => {
+      clearTimeout(focusTimer);
+      Object.assign(bodyStyle, previous);
+      window.scrollTo({ top: y, behavior: 'instant' });
+    };
   }, [mobileMenuOpen]);
 
   useEffect(() => {
@@ -54,7 +57,10 @@ const Header = ({ onStartProject }) => {
     return () => window.removeEventListener('keydown', fn);
   }, []);
 
-  useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMobileMenuOpen(false));
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname]);
 
   const NAV = [
     { labelKey: 'landing.nav.portfolio',  def: isRTL ? 'أعمالنا' : 'Portfolio',   href: '/portfolio' },
@@ -98,6 +104,10 @@ const Header = ({ onStartProject }) => {
 
         .desk-nav, .desk-right { display: none; }
         .mob-cluster { display: flex; }
+        @media (max-width: 767px) {
+          .public-header { --public-header-height: 64px; --public-logo-height: 56px; }
+          .public-header .mob-cluster { gap: 4px !important; }
+        }
         @media (min-width: 1024px) {
           .desk-nav   { display: flex; }
           .desk-right { display: flex; }
@@ -109,6 +119,7 @@ const Header = ({ onStartProject }) => {
       `}</style>
 
       <header
+        className="public-header"
         role="banner"
         style={{
           position:     'fixed',
@@ -116,7 +127,7 @@ const Header = ({ onStartProject }) => {
           left:         0,
           right:        0,
           zIndex:       1000,
-          height:       '68px',
+          height:       'var(--public-header-height, 68px)',
           background:   'rgb(var(--bg))',
           borderBottom: scrolled ? '1px solid rgb(var(--border))' : '1px solid transparent',
           boxShadow:    scrolled ? '0 1px 16px rgba(0,0,0,0.05)' : 'none',
@@ -147,7 +158,7 @@ const Header = ({ onStartProject }) => {
               width={90}
               height={60}
               className="site-logo"
-              style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: 'var(--public-logo-height, 60px)', width: 'auto', objectFit: 'contain' }}
             />
           </Link>
 
@@ -214,15 +225,15 @@ const Header = ({ onStartProject }) => {
               overlapped/truncated at 320–375px; that CTA now lives as the
               first, most prominent action inside the drawer instead. */}
           <div className="mob-cluster" style={{ alignItems: 'center', gap: '8px' }}>
-            <MobileLangToggle />
+            <MobileLangToggle style={{ minHeight: 44, height: 44, background: 'transparent', borderColor: 'transparent' }} />
             <button
               onClick={() => setMobileMenuOpen(p => !p)}
               aria-label={mobileMenuOpen ? t('landing.nav.closeMenu', 'Close menu') : t('landing.nav.openMenu', 'Open menu')}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
               style={{
-                width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'none', border: '1px solid rgb(var(--border))', borderRadius: '8px',
+                width: 44, height: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'none', border: '1px solid transparent', borderRadius: '10px',
                 cursor: 'pointer', color: 'rgb(var(--text-secondary))', flexShrink: 0,
                 transition: 'background 0.18s, border-color 0.18s',
               }}
@@ -231,7 +242,7 @@ const Header = ({ onStartProject }) => {
             >
               {mobileMenuOpen
                 ? <X style={{ width: 15, height: 15 }} aria-hidden />
-                : <Menu style={{ width: 15, height: 15 }} aria-hidden />
+                : <Menu style={{ width: 20, height: 20 }} aria-hidden />
               }
             </button>
           </div>

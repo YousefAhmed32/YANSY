@@ -77,16 +77,16 @@ const CustomSoftwareSection = ({ isRTL }) => {
       className="section-shell section-shell--tint"
     >
       <style>{`
-        .custom-grid {
+        .custom-software-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: clamp(16px, 1.8vw, 22px);
           margin-top: clamp(2.5rem, 5vw, 3.5rem);
         }
-        @media (max-width: 900px) { .custom-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 560px) { .custom-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { .custom-software-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .custom-software-grid { grid-template-columns: 1fr; } }
 
-        .custom-card {
+        .custom-software-card {
           position: relative;
           background: rgb(var(--bg-elevated));
           border: 1px solid rgb(var(--border));
@@ -98,7 +98,7 @@ const CustomSoftwareSection = ({ isRTL }) => {
           text-align: ${rtl ? 'right' : 'left'};
           transition: border-color 0.3s ease, box-shadow 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
         }
-        .custom-card::before {
+        .custom-software-card::before {
           content: '';
           position: absolute;
           inset-inline: 0;
@@ -109,7 +109,7 @@ const CustomSoftwareSection = ({ isRTL }) => {
           transform-origin: ${rtl ? 'right' : 'left'};
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
         }
-        .custom-card::after {
+        .custom-software-card::after {
           content: '';
           position: absolute;
           inset: 0;
@@ -119,15 +119,15 @@ const CustomSoftwareSection = ({ isRTL }) => {
           transition: opacity 0.5s ease;
           pointer-events: none;
         }
-        .custom-card:hover {
+        .custom-software-card:hover {
           border-color: rgb(var(--border-strong));
           box-shadow: var(--shadow-card-hover);
           transform: translateY(-4px);
         }
-        .custom-card:hover::before { transform: scaleX(1); }
-        .custom-card:hover::after { opacity: 1; }
+        .custom-software-card:hover::before { transform: scaleX(1); }
+        .custom-software-card:hover::after { opacity: 1; }
 
-        .custom-card-icon {
+        .custom-software-card-icon {
           position: relative;
           z-index: 1;
           width: 46px;
@@ -146,8 +146,8 @@ const CustomSoftwareSection = ({ isRTL }) => {
           box-shadow: 0 1px 2px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s cubic-bezier(0.16,1,0.3,1), background 0.45s ease;
         }
-        .custom-card-icon svg { width: 21px; height: 21px; stroke-width: 1.9; }
-        .custom-card:hover .custom-card-icon {
+        .custom-software-card-icon svg { width: 21px; height: 21px; stroke-width: 1.9; }
+        .custom-software-card:hover .custom-software-card-icon {
           transform: translateY(-2px) scale(1.07);
           background: linear-gradient(155deg,
             color-mix(in srgb, var(--card-accent) 24%, rgb(var(--bg-elevated))) 0%,
@@ -155,7 +155,7 @@ const CustomSoftwareSection = ({ isRTL }) => {
           box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--card-accent) 55%, transparent), inset 0 1px 0 rgba(255,255,255,0.7);
         }
 
-        .custom-card-title {
+        .custom-software-card-title {
           position: relative;
           z-index: 1;
           font-size: clamp(0.9375rem, 1.15vw, 1.0625rem);
@@ -165,8 +165,8 @@ const CustomSoftwareSection = ({ isRTL }) => {
           letter-spacing: -0.02em;
           line-height: 1.3;
         }
-        [dir="rtl"] .custom-card-title { font-family: var(--font-arabic); letter-spacing: 0; line-height: 1.45; }
-        .custom-card-desc {
+        [dir="rtl"] .custom-software-card-title { font-family: var(--font-arabic); letter-spacing: 0; line-height: 1.45; }
+        .custom-software-card-desc {
           position: relative;
           z-index: 1;
           font-size: 13px;
@@ -174,10 +174,10 @@ const CustomSoftwareSection = ({ isRTL }) => {
           line-height: 1.65;
           margin: 0;
         }
-        [dir="rtl"] .custom-card-desc { font-family: var(--font-arabic); line-height: 1.85; }
+        [dir="rtl"] .custom-software-card-desc { font-family: var(--font-arabic); line-height: 1.85; }
 
         @media (prefers-reduced-motion: reduce) {
-          .custom-card, .custom-card::before, .custom-card::after, .custom-card-icon {
+          .custom-software-card, .custom-software-card::before, .custom-software-card::after, .custom-software-card-icon {
             transition: none !important;
           }
         }
@@ -193,16 +193,16 @@ const CustomSoftwareSection = ({ isRTL }) => {
           action={<EcosystemHubGraphic isRTL={rtl} />}
         />
 
-        <RevealItems className="custom-grid" step={0.05}>
+        <RevealItems className="custom-software-grid" step={0.05}>
           {CARDS.map((c, i) => {
             const Icon = c.icon;
             return (
-              <article key={i} className="custom-card" style={{ '--card-accent': c.accent }}>
-                <div className="custom-card-icon" aria-hidden>
+              <article key={i} className="custom-software-card" style={{ '--card-accent': c.accent }}>
+                <div className="custom-software-card-icon" aria-hidden>
                   <Icon />
                 </div>
-                <h3 className="custom-card-title">{rtl ? c.titleAR : c.titleEN}</h3>
-                <p className="custom-card-desc">{rtl ? c.descAR : c.descEN}</p>
+                <h3 className="custom-software-card-title">{rtl ? c.titleAR : c.titleEN}</h3>
+                <p className="custom-software-card-desc">{rtl ? c.descAR : c.descEN}</p>
               </article>
             );
           })}

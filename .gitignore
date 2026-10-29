@@ -18,3 +18,11 @@ logs
 # Design/media masters pulled out of client/public so they stop shipping in the
 # build. Kept on disk for reference; the originals remain in git history.
 design-assets/
+
+.playwright-mcp/
+output/*.png
+
+output/mobile-hero-covers/
+output/portfolio-design-options-2026-10-24/
+output/vps-deploy/
+output/local-run/

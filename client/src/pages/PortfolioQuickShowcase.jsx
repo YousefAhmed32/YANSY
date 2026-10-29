@@ -8,6 +8,7 @@ import { TK, RADIUS, PageSpinner, Badge, Button, TextInput, Switch, FilterPills,
 import { mediaSrc } from '../utils/media';
 import { Field, BilingualPair } from '../components/portfolio-wizard/shared';
 import RelationPicker from '../components/portfolio-wizard/RelationPicker';
+import CategoryPicker from '../components/portfolio-wizard/CategoryPicker';
 import { PROJECT_TYPE_CREATE_TITLE, PROJECT_TYPE_QUICK_CREATE_FIELDS } from '../components/portfolio-wizard/projectTypeQuickCreate';
 import TeamSection from '../components/portfolio-wizard/TeamSection';
 import BlocksEditor from '../components/portfolio-wizard/BlocksEditor';
@@ -568,7 +569,7 @@ const PortfolioQuickShowcase = () => {
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label={L.category} required isRTL={isRTL} id="field-category" ref={(el) => { fieldRefs.current.category = el; }} error={fieldErrorMsg('category')}>
-                <RelationPicker apiBase="/categories" value={form.category} onChange={(v) => set('category', v)} allowCreate={false} placeholder={isRTL ? 'اختيار فئة…' : 'Select category…'} />
+                <CategoryPicker value={form.category} onChange={(v) => set('category', v)} />
               </Field>
               <Field label={L.industry} isRTL={isRTL}>
                 <RelationPicker apiBase="/industries" value={form.industry} onChange={(v) => set('industry', v)} quickCreateFields={[{ key: 'name', label: 'Name', labelAr: 'الاسم', required: true }, { key: 'nameAr', label: 'Name (Arabic)', labelAr: 'الاسم (عربي)' }]} placeholder={isRTL ? 'مثال: تقنية مالية' : 'e.g. Fintech'} />

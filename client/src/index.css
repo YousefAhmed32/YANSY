@@ -83,20 +83,19 @@
   --ring:          37 99 235;
   --hover-overlay: 0 0 0; /* used at low alpha, e.g. rgb(var(--hover-overlay) / .04) */
 
-  /* WhatsApp CTA fill — a solid button surface with white text/icon needs its
-     own token, distinct from the brand mark's #25D366. White-on-#25D366 is
-     ~1.98:1 (fails WCAG AA's 4.5:1 for normal text — measured against the
-     estimator/hero/mobile-bar buttons that used it directly at 13–14px).
-     This darker green keeps the same hue but reaches ~5:1. The bright mark
-     color stays fine for icon-only chips on a light tint (badges, small
-     glyphs) — only solid-fill + white-text/icon surfaces need this swap. */
-  --whatsapp:       21 128 61;
-  --whatsapp-hover: 14 102 47;
+  /* Bright WhatsApp green uses dark ink across desktop and mobile. */
+  --whatsapp:       37 211 102;
+  --whatsapp-hover: 31 196 93;
+  --on-whatsapp:    7 54 29;
+  --whatsapp-brand: 37 211 102;
+  --whatsapp-brand-hover: 31 196 93;
+  --on-whatsapp-brand: 7 54 29;
 
   /* Reserved strictly for tiny premium decorative accents (icons, dividers,
      rating stars, a hairline highlight) — never a CTA, link, or brand color. */
   --gold:       180 148 88;
   --gold-light: 250 246 237;
+  --rating-star: 251 191 36;
 
   /* Deliberately-inverted "spotlight" sections (e.g. the closing contact CTA)
      that are meant to read as a permanently dark band regardless of context. */

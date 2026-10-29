@@ -30,11 +30,13 @@ const ProgressiveImage = ({
 }) => {
   const hasBlur = Boolean(asset?.blurDataURL);
   const [loaded, setLoaded] = useState(() => !hasBlur);
+  const [failedSource, setFailedSource] = useState(null);
+  const source = mediaSrc(asset);
   const wrapperPosition = fill ? { position: 'absolute', inset: 0 } : { position: 'relative' };
   const imageFitClass = fit === 'contain' ? 'object-contain' : 'object-cover';
   const showAmbient = ambient && fit === 'contain' && Boolean(asset?.url);
 
-  if (!asset?.url) {
+  if (!asset?.url || failedSource === source) {
     return (
       <div className={className} style={{ ...wrapperPosition, overflow: 'hidden', background: 'rgb(var(--bg-surface))', ...style }}>
         <GeneratedPlaceholder icon={fallbackIcon} label={fallbackLabel} color={fallbackColor} isRTL={isRTL} variant={fallbackVariant} />
@@ -78,6 +80,7 @@ const ProgressiveImage = ({
         decoding="async"
         fetchPriority={priority ? 'high' : 'auto'}
         onLoad={() => setLoaded(true)}
+        onError={() => setFailedSource(source)}
         className={`relative z-10 w-full h-full ${imageFitClass} transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'} ${imgClassName}`}
       />
     </div>

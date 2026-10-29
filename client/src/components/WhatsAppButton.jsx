@@ -31,7 +31,7 @@ const WhatsAppButton = () => {
           align-items: center;
           gap: 10px;
           background: #25D366;
-          color: #fff;
+          color: rgb(var(--on-whatsapp));
           border: none;
           border-radius: 50px;
           padding: 0;

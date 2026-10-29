@@ -1,4 +1,50 @@
 {
+  "portfolioEditorial": {
+    "loaded": "{{count}} projects shown",
+    "eyebrow": "Portfolio",
+    "headline": "Work that speaks",
+    "lead": "Websites, apps and systems. Designed to work for your business.",
+    "selected": "Selected work",
+    "note": "From client projects to design explorations, we shape ideas worth seeing.",
+    "all": "All",
+    "categories": "Project categories",
+    "search": "Search projects",
+    "clearSearch": "Clear search",
+    "filters": "Filter projects",
+    "industry": "Industry",
+    "allIndustries": "All industries",
+    "technology": "Technology",
+    "allTechnologies": "All technologies",
+    "sort": "Sort by",
+    "latest": "Latest",
+    "oldest": "Oldest",
+    "popular": "Most viewed",
+    "format": "Presentation",
+    "allFormats": "All formats",
+    "caseStudy": "Case studies",
+    "showcase": "Quick showcases",
+    "workType": "Work type",
+    "allWork": "All work",
+    "live": "Live projects",
+    "concept": "Design concepts",
+    "featuredOnly": "Featured projects only",
+    "reset": "Clear filters",
+    "filtering": "Results filtered to your selection",
+    "loading": "Loading projects",
+    "loadMore": "Load more projects",
+    "retry": "Try again",
+    "loadError": "Projects couldn't load",
+    "loadErrorDescription": "Please try again to browse our work.",
+    "empty": "No matching projects",
+    "emptyDescription": "Try another search or adjust your filters.",
+    "results": "Projects",
+    "loaded_one": "1 project shown",
+    "loaded_other": "{{count}} projects shown",
+    "nextTitle": "Your idea could be our next project.",
+    "nextDescription": "Tell us what you have in mind. We'll work out the first step together.",
+    "start": "Discuss your project",
+    "whatsapp": "WhatsApp us"
+  },
   "common": {
     "or": "or",
     "backHome": "Home",
@@ -813,6 +859,24 @@
       "exitFullscreen": "Exit fullscreen",
       "loading": "Loading",
       "watch": "Watch"
+    },
+    "mobileHero": {
+      "studio": "YANSY / DIGITAL STUDIO",
+      "availability": "Open for projects",
+      "headline": "Websites & apps.",
+      "accent": "Built for your business.",
+      "description": "Websites, apps and custom systems. Built around your brand, with a clear budget.",
+      "whatsapp": "WhatsApp us",
+      "project": "Start a project",
+      "assurance": "Free consultation. Full code ownership.",
+      "whatsappMessage": "Hi YANSY, I'd like to discuss a new project.",
+      "proofLabel": "YANSY in numbers",
+      "stats": {
+        "projects": "Projects delivered",
+        "rating": "Client rating",
+        "proposal": "First proposal",
+        "experience": "Years building"
+      }
     }
   },
   "feedback": {
@@ -1108,13 +1172,21 @@
         "title": "Continue on WhatsApp",
         "description": "Talk directly with our team and get a quick response.",
         "responseTime": "Usually replies in minutes",
-        "benefits": ["Direct reply", "Talk to a real person", "Quick conversation"]
+        "benefits": [
+          "Direct reply",
+          "Talk to a real person",
+          "Quick conversation"
+        ]
       },
       "form": {
         "title": "Submit a Project Request",
         "description": "Share your project details and receive a structured proposal.",
         "responseTime": "Takes about 2 minutes",
-        "benefits": ["A structured proposal", "Nothing gets lost", "Track it anytime"]
+        "benefits": [
+          "A structured proposal",
+          "Nothing gets lost",
+          "Track it anytime"
+        ]
       }
     },
     "whatsappBrief": {

@@ -49,6 +49,7 @@ const SESSION_INVALID_CODES = new Set([
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (axios.isCancel(error)) return Promise.reject(error);
     const status  = error.response?.status;
     const code    = error.response?.data?.code;
     const message = error.response?.data?.error;
